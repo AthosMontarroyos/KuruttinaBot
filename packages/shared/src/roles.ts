@@ -45,7 +45,6 @@ export interface ColorRoleDefinition {
   name: string;
   category: string;
   hex: string;
-  discordNote?: string;
 }
 
 export interface ColorCategoryDefinition {
@@ -71,11 +70,6 @@ export const COLOR_ROLE_CATEGORIES: ColorCategoryDefinition[] = [
 
 /**
  * LISTA DE CARGOS DE CORES EXCLUSIVAS PARA EXIBIÇÃO NOS NOMES/NICKNAMES DOS USUÁRIOS NO DISCORD.
- * 
- * ⚠️ NOTA IMPORTANTE SOBRE A RENDERIZAÇÃO DO DISCORD:
- * O cliente do Discord interpreta o hexadecimal `#000000` (Preto puro) como "SEM COR" (cor padrão da função/membro).
- * Portanto, a cor "Preto" foi ajustada para `#050505` (Preto profundo) para garantir que a cor seja efetivamente aplicada
- * e visível no nome do usuário no Discord sem resetar para a cor padrão do tema.
  */
 export const COLOR_ROLES: ColorRoleDefinition[] = [
   // 1. Vermelho
@@ -129,13 +123,7 @@ export const COLOR_ROLES: ColorRoleDefinition[] = [
   { id: 'color_magenta', name: 'Magenta', category: 'rosa', hex: '#FF00FF' },
 
   // 8. Neutras Frias
-  { 
-    id: 'color_preto', 
-    name: 'Preto', 
-    category: 'neutras_frias', 
-    hex: '#050505', 
-    discordNote: 'Ajustado de #000000 puro para #050505 para evitar que o cliente do Discord resete a cor do nome para transparente/padrão.' 
-  },
+  { id: 'color_preto', name: 'Preto', category: 'neutras_frias', hex: '#050505' },
   { id: 'color_carvao', name: 'Carvão', category: 'neutras_frias', hex: '#1C1C1C' },
   { id: 'color_grafite', name: 'Grafite', category: 'neutras_frias', hex: '#2D2D2D' },
   { id: 'color_cinza_escuro', name: 'Cinza Escuro', category: 'neutras_frias', hex: '#4A4A4A' },

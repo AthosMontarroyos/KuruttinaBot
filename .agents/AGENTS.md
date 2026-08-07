@@ -85,7 +85,13 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Sanitization & Anonymization**: Never expose raw user IDs or internal guild data in public telemetry, error messages, or logs.
 - **Data Removal (LGPD/GDPR)**: Ensure bot architecture supports data deletion/anonymization if a server removes Kuruttina or a user requests data erasure.
 
-### 9. Code Architecture & Style
+### 9. Never Trust the Frontend (Server-Side Validation & Authorization)
+- **MANDATORY SECURITY PRINCIPLE**: Never rely on client-side / frontend validation, checks, or state. The frontend is considered an untrusted environment.
+- **Server-Side Authorization**: Every API route, WebSocket connection, or backend action must re-verify user identity (Discord OAuth2 session), permissions (Administrator/Manage Guild permissions), and guild ownership on the server before modifying database or bot state.
+- **Server-Side Validation**: Validate all incoming payload schemas (using type-safe schema validators like Zod) and sanitize inputs on the server to prevent injection attacks, parameter tampering, or unauthorized privilege escalation.
+- **Client Checks Are UX Only**: Client-side form checks or hidden buttons are for user experience only, never for security enforcement.
+
+### 10. Code Architecture & Style
 
 #### TypeScript & Type Safety
 - Enforce strict typing for slash command options, Supabase database schemas, and API responses. Avoid using `any` wherever possible.

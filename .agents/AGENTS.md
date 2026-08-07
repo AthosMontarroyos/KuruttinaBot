@@ -1,10 +1,13 @@
-# AGENTS.md - KuruttinaBot Guidelines
+# AGENTS.md - Kuruttina Guidelines
 
 Guidelines and rules for AI coding assistants working in this repository.
 
+## Naming Naming Convention
+- **Bot Name**: Always refer to the bot strictly as **Kuruttina** (never "KuruttinaBot" or other variations in responses, UI text, or documentation).
+
 ## Tech Stack & Ecosystem
 
-`KuruttinaBot` is a full-stack Discord bot application utilizing:
+`Kuruttina` is a full-stack Discord bot application utilizing:
 - **Language**: TypeScript (`.ts`, `.tsx`)
 - **Bot Engine**: Discord.js v14 (`TypeScript`)
 - **Database**: PostgreSQL (Data persistence, server configs, moderation logs, user states)

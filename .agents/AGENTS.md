@@ -78,7 +78,14 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Console & Error Log Sanitization**: Never log sensitive credential values or environment strings to stdout, stderr, or external crash reports.
 - **Gateway Intents**: Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
 
-### 8. Code Architecture & Style
+### 8. Strict User & Guild Data Privacy & Protection Policy (100% Care)
+- **100% Data Care Policy**: All user personal data (user IDs, avatars, preferences) and guild server data (server IDs, roles, moderation logs, settings) must be handled with total privacy, confidentiality, and security.
+- **Data Minimization**: Collect and store only the minimal data strictly required for bot operations and dashboard features. Never store private DMs, message content outside command scope, or sensitive user information.
+- **Database Access Security (Supabase RLS)**: Enforce Supabase Row Level Security (RLS) policies so guild data can only be accessed or modified by authorized server administrators/moderators.
+- **Sanitization & Anonymization**: Never expose raw user IDs or internal guild data in public telemetry, error messages, or logs.
+- **Data Removal (LGPD/GDPR)**: Ensure bot architecture supports data deletion/anonymization if a server removes Kuruttina or a user requests data erasure.
+
+### 9. Code Architecture & Style
 
 #### TypeScript & Type Safety
 - Enforce strict typing for slash command options, Supabase database schemas, and API responses. Avoid using `any` wherever possible.

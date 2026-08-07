@@ -16,7 +16,9 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Database (Active)**: **Supabase** (Cloud PostgreSQL database + `@supabase/supabase-js` for server configs, moderation logs, user states).
 - **Database (In Development)**: **Kurubase** (Personal self-hosted Supabase database instance).
 - **Frontend / Dashboard**: Next.js / React (TypeScript) with **Impeccable** integration for UI craft and auditing.
-- **Hosting & Domain**: **Cloudflare Tunnel** routing to `kuruttinabot.athosmontarroyos.com`.
+- **Hosting (Development)**: **Vercel** (Frontend) or **Railway** (Bot / Backend staging).
+- **Hosting (Production Final)**: **Amazon AWS** (AWS ECS/EC2/Fargate/S3).
+- **Domain & Tunnel Routing**: **Cloudflare Tunnel** routing traffic to `kuruttinabot.athosmontarroyos.com`.
 
 ## Shared Files & Image Assets Architecture
 

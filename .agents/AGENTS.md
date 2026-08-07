@@ -93,7 +93,14 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Server-Side Validation**: Validate all incoming payload schemas (using type-safe schema validators like Zod) and sanitize inputs on the server to prevent injection attacks, parameter tampering, or unauthorized privilege escalation.
 - **Client Checks Are UX Only**: Client-side form checks or hidden buttons are for user experience only, never for security enforcement.
 
-### 10. Code Architecture & Style
+### 10. Supabase Security & RLS Hardening Policy (Zero AI Fragility)
+- **Mandatory Row Level Security (RLS)**: EVERY Supabase table MUST have Row Level Security enabled (`ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;`). NEVER leave tables unshielded.
+- **Strict Anti-Wildcard Policies**: NEVER create permissive policies like `FOR ALL USING (true)`. Scopes MUST explicitly verify `auth.uid()` or checked server permissions.
+- **Service Role Key Shield**: `SUPABASE_SERVICE_ROLE_KEY` and `DATABASE_URL` must ONLY exist in Node.js server environments or Next.js server actions. NEVER expose them to the browser or `NEXT_PUBLIC_` variables.
+- **Type-Safe SDK Queries**: Use parameterized `@supabase/supabase-js` SDK queries with auto-generated TypeScript schema types. Avoid raw SQL string concatenation.
+- **Zero Destructive Drops**: AI assistants must NEVER execute `DROP TABLE`, `TRUNCATE`, or destructive migrations. All DB changes must be non-destructive, version-controlled migrations.
+
+### 11. Code Architecture & Style
 
 #### TypeScript & Type Safety
 - Enforce strict typing for slash command options, Supabase database schemas, and API responses. Avoid using `any` wherever possible.

@@ -20,35 +20,27 @@ Master architecture skill connecting **`discord-bot-architect`** (Discord.js v14
 1. **Strict DRY Policy (Don't Repeat Yourself)**:
    - Zero duplication of logic, TypeScript schemas, validation rules, or UI components.
    - Share types, constants, and API payload definitions between the Discord bot backend and the React dashboard frontend.
-2. **Component & Utility Organization**:
+2. **Shared Package Data Sharing (`packages/shared`)**:
+   - Store static defaults (e.g. `PLACEHOLDERS`, `DEFAULT_ROLE_GROUPS`, `DEFAULT_BOT_CONFIG`) inside `@kuruttina/shared` (`packages/shared/`) instead of making unnecessary database reads to Supabase.
+3. **Component & Utility Organization**:
    - Organize components into dedicated directories grouped strictly by utility, domain, and reusable layer.
-3. **Unified Full-Stack State**:
-   - PostgreSQL serves as the single source of truth for both bot runtime configurations and dashboard management.
-4. **Cohesive Copy & Persona**:
-   - Apply `copywriting` principles across both Discord bot responses (embed descriptions, command output, system alerts) and web dashboard surfaces.
+4. **Unified Full-Stack State**:
+   - PostgreSQL serves as the single source of truth for dynamic bot runtime configurations and server settings.
 
-## Component & Directory Separation by Utility
-
-Organize code cleanly into utility-based folders:
+## Shared Package (`packages/shared`) Structure
 
 ```
-src/
-├── components/                  # React UI Components (Separated by utility)
-│   ├── ui/                      # Base Atomic UI (Button, Input, Badge, Modal, Card)
-│   ├── layout/                  # Shell Layouts (Sidebar, Header, PageContainer, Navigation)
-│   ├── bot/                     # Bot Domain UI (BotStatusCard, GuildSelector, ModerationTable)
-│   ├── forms/                   # Form Controls (FormGroup, ToggleSwitch, SelectInput)
-│   └── feedback/                # Feedback & Status (SkeletonLoader, ErrorBanner, Toast)
-├── hooks/                       # Shared Custom React Hooks (useBotStatus, useGuildConfig)
-├── shared/                      # Full-Stack Shared Code (Used by Bot & Dashboard)
-│   ├── types/                   # Shared TypeScript Interfaces (User, GuildConfig, Command)
-│   ├── constants/               # Global Constants (BotPermissions, DefaultSettings)
-│   └── utils/                   # Helper Utilities (Formatters, Validators, API Client)
+packages/shared/
+├── src/
+│   ├── placeholders.ts          # Shared Placeholders ({user}, {server}, {channel})
+│   ├── roles.ts                 # Shared Default Role Groups (Admin, Mod, Member, Muted)
+│   ├── constants.ts             # Bot Constants (Default Prefix k!, Domain)
+│   └── index.ts                 # Export entry point
+└── package.json                 # Shared package manifest (@kuruttina/shared)
 ```
 
 ## DRY Component & Copy Rules
 
 - **Extract Primitive UI Elements**: Never write inline styled buttons or inputs repeatedly; reuse `components/ui/Button.tsx` and `components/ui/Input.tsx`.
-- **Reusable Domain Components**: Components like `BotStatusCard` or `GuildSelector` live in `components/bot/` and are reused across different dashboard pages.
-- **Shared Type Definitions**: Define bot event payloads and API response contracts once in `shared/types/` and import them in both command handlers and React components.
-- **Unified Copywriting**: Use the `copywriting` skill to write persuasive headlines, value propositions, and CTAs across website pages, as well as clear, ENTP-toned embed messages in bot slash commands.
+- **Import Shared Placeholders & Roles**: Always import placeholders and role groups from `@kuruttina/shared` in both `apps/bot` (command rendering) and `apps/website` (dashboard UI editors).
+- **Shared Type Definitions**: Define bot event payloads and API response contracts once in `@kuruttina/shared` and import them across apps.

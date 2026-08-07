@@ -70,11 +70,13 @@ Guidelines and rules for AI coding assistants working in this repository.
 - All Discord interaction triggers (Slash Commands, Buttons, Select Menus, Modals) **must be acknowledged within 3 seconds**.
 - For async operations exceeding 3 seconds (DB queries with Supabase, external API calls, LLM processing), call `interaction.deferReply()` or `interaction.deferUpdate()` immediately.
 
-### 7. Intent & Security Best Practices
-- Never hardcode Discord Bot Tokens, Supabase Connection Keys (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), or sensitive credentials in source code.
-- Always load credentials from environment variables stored in the root `.env` file.
-- Ensure `.env` is listed in `.gitignore`.
-- Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
+### 7. Absolute Zero-Leak Security & Environment Protection Policy
+- **MANDATORY POLICY (ZERO EXCEPTION)**: Under NO CIRCUMSTANCES should any Discord Bot Token, Supabase API key, Database Connection String (`DATABASE_URL`), secret key, or credential string EVER be hardcoded directly into source code, sample scripts, commit messages, or public documentation files.
+- **Root `.env` Strict Containment**: Secrets live exclusively in the untracked `.env` file at the root of the project.
+- **Git Shield**: Always verify `.gitignore` contains `.env`, `.env.local`, `.env.*.local` before staging or committing any files.
+- **`.env.example` Template**: Public templates (`.env.example`) must contain placeholder text only (`your_token_here`).
+- **Console & Error Log Sanitization**: Never log sensitive credential values or environment strings to stdout, stderr, or external crash reports.
+- **Gateway Intents**: Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
 
 ### 8. Code Architecture & Style
 

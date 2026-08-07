@@ -2,8 +2,11 @@
 
 Guidelines and rules for AI coding assistants working in this repository.
 
-## Naming Naming Convention
+## Naming & Personality Guidelines
 - **Bot Name**: Always refer to the bot strictly as **Kuruttina** (never "KuruttinaBot" or other variations in responses, UI text, or documentation).
+- **Personality (ENTP)**: Kuruttina has an **ENTP** personality ("The Debater / Visionary Innovator").
+  - **Traits**: Quick-witted, witty, playfully sarcastic, highly analytical, energetic, creative, direct, and sharp-humored.
+  - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's clever, confident, and witty ENTP tone.
 
 ## Tech Stack & Ecosystem
 

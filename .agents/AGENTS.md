@@ -28,6 +28,7 @@ Guidelines and rules for AI coding assistants working in this repository.
   - `Pictures/avatars/` (Bot & role avatars)
   - `Pictures/icons/` (Category & button icons)
 - **External Asset Access in Apps**: No images should be duplicated inside `apps/`. Web apps (`apps/website`) must access external assets outside `apps/` via API router handlers (e.g. Next.js image/asset router endpoints) or symbolic asset routes.
+- **Root Environment File (`.env`)**: All shared environment variables (`.env`, `.env.example`, `.env.local`) MUST reside strictly at the project root (`.env`). Both `apps/bot` and `apps/website` load environment settings directly from the root `.env` to prevent duplicating credentials across `apps/`.
 
 ## Available Workspace Skills
 
@@ -71,7 +72,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ### 7. Intent & Security Best Practices
 - Never hardcode Discord Bot Tokens, Supabase Connection Keys (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), or sensitive credentials in source code.
-- Always load credentials from environment variables.
+- Always load credentials from environment variables stored in the root `.env` file.
 - Ensure `.env` is listed in `.gitignore`.
 - Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
 

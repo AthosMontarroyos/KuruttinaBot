@@ -29,7 +29,7 @@ Acessado via navegadores web em desktop e dispositivos móveis, integrado ao eco
 ## Capabilities and Constraints
 
 - **Capacidades**: Configurações de servidores por guild (mensagens de boas-vindas, cargos automáticos, logs de moderação), controle de acesso por comando e monitoramento de telemetria ao vivo (servidores, latência, uptime).
-- **Restrições**: Princípio DRY rigoroso, zero valores/URLs hardcoded, assets visuais armazenados na raiz (`Pictures/`), código otimizado para deploy na Amazon AWS.
+- **Restrições**: Princípio DRY rigoroso, zero valores/URLs hardcoded, arquivo `.env` mantido estritamente na raiz do repositório, assets visuais armazenados na raiz (`Pictures/`), código otimizado para deploy na Amazon AWS.
 
 ## Brand Commitments
 
@@ -45,7 +45,7 @@ Acessado via navegadores web em desktop e dispositivos móveis, integrado ao eco
 
 ## Product Principles
 
-1. **DRY & Reutilização Absoluta**: Componentes e tipos TypeScript centralizados e sem duplicação.
+1. **DRY & Reutilização Absoluta**: Componentes, tipos TypeScript e arquivos compartilhados (como `.env` na raiz) centralizados e sem duplicação.
 2. **Extrema Otimização de Recursos (AWS Ready)**: Consultas SQL seletivas no Supabase, zero vazamentos de memória e alta eficiência.
 3. **Resiliência e Busca Dinâmica**: Dados sempre buscados dinamicamente via APIs (Discord API e Supabase).
 4. **Qualidade de UI Impecável**: Interface limpa no modo *Operate*, focada em escaneabilidade, acessibilidade e elegância em dark mode.

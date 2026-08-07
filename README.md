@@ -1,4 +1,4 @@
-# ⚡ Kuruttina — Full-Stack Discord Bot Ecosystem & Web Dashboard
+# Kuruttina — Full-Stack Discord Bot Ecosystem & Web Dashboard
 
 > **Kuruttina** é um ecossistema full-stack moderno, resiliente e altamente otimizado para Discord, combinando um bot de alta performance em **TypeScript (Discord.js v14)** com um painel web intuitivo em **Next.js / React** e persistência de dados no **Supabase (PostgreSQL)**.
 

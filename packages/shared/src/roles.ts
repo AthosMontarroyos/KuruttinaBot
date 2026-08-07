@@ -70,6 +70,11 @@ export const COLOR_ROLE_CATEGORIES: ColorCategoryDefinition[] = [
 
 /**
  * LISTA DE CARGOS DE CORES EXCLUSIVAS PARA EXIBIÇÃO NOS NOMES/NICKNAMES DOS USUÁRIOS NO DISCORD.
+ * 
+ * ⚠️ NOTA IMPORTANTE SOBRE A RENDERIZAÇÃO DO DISCORD:
+ * O cliente do Discord interpreta o hexadecimal `#000000` (Preto puro) como "SEM COR" (cor padrão da função/membro).
+ * Portanto, a cor "Preto" foi ajustada para `#050505` (Preto profundo) para garantir que a cor seja efetivamente aplicada
+ * e visível no nome do usuário no Discord sem resetar para a cor padrão do tema.
  */
 export const COLOR_ROLES: ColorRoleDefinition[] = [
   // 1. Vermelho

@@ -48,21 +48,29 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Granular Commits**: Do not accumulate massive uncommitted changes. Perform clean, atomic commits after code edits pass basic checks.
 - **Conventional Commits**: Format commit messages clearly using conventional conventions (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `style:`).
 
-### 3. Discord.js & API Documentation Research
+### 3. Extreme Optimization & AWS Resource Efficiency
+- **Mandatory Policy**: Since Kuruttina targets production deployment on **Amazon AWS** (ECS/Fargate/EC2), all code must be **extremely optimized** for low memory overhead, CPU efficiency, and minimal database/network latency.
+- **Zero Memory Leaks**: Always clean up message component collectors, unbind event listeners, and set TTL limits on in-memory caches.
+- **Database Query Optimization (Supabase)**: Select explicit required columns (`select('id, guild_id')` instead of `select('*')`), use indexed queries, pagination, and connection pooling.
+- **In-Memory Caching**: Cache frequent read-heavy server configurations and permissions to minimize external DB roundtrips.
+- **Non-blocking Event Loop**: Never execute heavy synchronous operations (`readFileSync`, heavy calculation loops) on the main Node.js event loop.
+- **Bundle & Asset Efficiency**: Optimize frontend bundles (tree-shaking, lazy loading) and serve compressed visual assets.
+
+### 4. Discord.js & API Documentation Research
 - Always refer to official Discord.js v14 documentation (`discord.js.org` / `discordjs.dev`).
 - When encountering unfamiliar Discord API features, deprecations, or version changes, perform deep research on `discord.js.org`.
 
-### 4. Interaction Guidelines (3-Second Rule)
+### 5. Interaction Guidelines (3-Second Rule)
 - All Discord interaction triggers (Slash Commands, Buttons, Select Menus, Modals) **must be acknowledged within 3 seconds**.
 - For async operations exceeding 3 seconds (DB queries with Supabase, external API calls, LLM processing), call `interaction.deferReply()` or `interaction.deferUpdate()` immediately.
 
-### 5. Intent & Security Best Practices
+### 6. Intent & Security Best Practices
 - Never hardcode Discord Bot Tokens, Supabase Connection Keys (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), or sensitive credentials in source code.
 - Always load credentials from environment variables.
 - Ensure `.env` is listed in `.gitignore`.
 - Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
 
-### 6. Code Architecture & Style
+### 7. Code Architecture & Style
 
 #### TypeScript & Type Safety
 - Enforce strict typing for slash command options, Supabase database schemas, and API responses. Avoid using `any` wherever possible.

@@ -8,13 +8,24 @@ Guidelines and rules for AI coding assistants working in this repository.
   - **Traits**: Quick-witted, witty, playfully sarcastic, highly analytical, energetic, creative, direct, and sharp-humored.
   - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's clever, confident, and witty ENTP tone.
 
-## Tech Stack & Ecosystem
+## Tech Stack & Infrastructure
 
 `Kuruttina` is a full-stack Discord bot application utilizing:
 - **Language**: TypeScript (`.ts`, `.tsx`)
 - **Bot Engine**: Discord.js v14 (`TypeScript`)
-- **Database**: PostgreSQL (Data persistence, server configs, moderation logs, user states)
-- **Frontend / Dashboard**: React (TypeScript) with **Impeccable** integration for UI craft and auditing.
+- **Database (Active)**: **Supabase** (Cloud PostgreSQL database + `@supabase/supabase-js` for server configs, moderation logs, user states).
+- **Database (In Development)**: **Kurubase** (Personal self-hosted Supabase database instance).
+- **Frontend / Dashboard**: Next.js / React (TypeScript) with **Impeccable** integration for UI craft and auditing.
+- **Hosting & Domain**: **Cloudflare Tunnel** routing to `kuruttinabot.athosmontarroyos.com`.
+
+## Shared Files & Image Assets Architecture
+
+- **Root Image Storage (`Pictures/`)**: All image files and visual assets must be stored strictly in `Pictures/` at the project root, organized into utility subfolders:
+  - `Pictures/branding/` (Logos, banners, brand assets)
+  - `Pictures/dashboard/` (UI screenshots, dashboard media)
+  - `Pictures/avatars/` (Bot & role avatars)
+  - `Pictures/icons/` (Category & button icons)
+- **External Asset Access in Apps**: No images should be duplicated inside `apps/`. Web apps (`apps/website`) must access external assets outside `apps/` via API router handlers (e.g. Next.js image/asset router endpoints) or symbolic asset routes.
 
 ## Available Workspace Skills
 
@@ -41,31 +52,31 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ### 4. Interaction Guidelines (3-Second Rule)
 - All Discord interaction triggers (Slash Commands, Buttons, Select Menus, Modals) **must be acknowledged within 3 seconds**.
-- For async operations exceeding 3 seconds (DB queries with PostgreSQL, external API calls, LLM processing), call `interaction.deferReply()` or `interaction.deferUpdate()` immediately.
+- For async operations exceeding 3 seconds (DB queries with Supabase, external API calls, LLM processing), call `interaction.deferReply()` or `interaction.deferUpdate()` immediately.
 
 ### 5. Intent & Security Best Practices
-- Never hardcode Discord Bot Tokens, Database Connection Strings, API keys, or sensitive credentials in source code.
-- Always load credentials from environment variables (`process.env.DISCORD_TOKEN`, `process.env.DATABASE_URL`, etc.).
+- Never hardcode Discord Bot Tokens, Supabase Connection Keys (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), or sensitive credentials in source code.
+- Always load credentials from environment variables.
 - Ensure `.env` is listed in `.gitignore`.
 - Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
 
 ### 6. Code Architecture & Style
 
 #### TypeScript & Type Safety
-- Enforce strict typing for slash command options, database models, and API responses. Avoid using `any` wherever possible.
+- Enforce strict typing for slash command options, Supabase database schemas, and API responses. Avoid using `any` wherever possible.
 - Define interfaces and types for database models and bot event payloads.
 
 #### Bot Modular Architecture
 - **Slash Commands**: Prefer Slash Commands over message content parsing.
-- **Commands & Events Structure**: Organize command handlers in `src/commands/` and event handlers in `src/events/`.
+- **Commands & Events Structure**: Organize command handlers in `src/commands/` and event handlers in `src/events/` by category/sub-category.
 - **Command Deployment**: Keep command registration in a separate deployment script (`src/deploy-commands.ts`). Do not sync commands automatically on every bot startup.
 - **Error Handling**: Wrap interaction execution in `try / catch` blocks to gracefully handle errors and notify users.
 
-#### Database (PostgreSQL)
-- Use parametrized queries or a type-safe ORM / query builder (e.g. Prisma or Drizzle) to prevent SQL injection.
+#### Database (Supabase / PostgreSQL)
+- Use `@supabase/supabase-js` or type-safe query builders with auto-generated Supabase TypeScript definitions.
 - Ensure database connections and queries are optimized for async execution in bot command handlers.
 
-#### Frontend (React + Impeccable)
+#### Frontend (Next.js / React + Impeccable)
 - Build modular, clean React components using modern React patterns (Functional Components, Hooks, Custom Hooks).
+- Serve shared assets from `Pictures/` via Next.js API asset routers.
 - Use `frontend-architect` and `impeccable` rules for UI design, responsiveness, accessibility (a11y), and visual polish.
-- Ensure strict TypeScript typing for props and component states.

@@ -35,6 +35,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **`fullstack-architect`**: Master skill linking `discord-bot-architect` and `frontend-architect`. Enforces full-stack DRY principles, shared TypeScript types, and folder separation by utility.
 - **`discord-bot-architect`**: Specialized skill for building production-ready Discord bots in TypeScript (Slash commands, intents, rate limiting, sharding).
 - **`frontend-architect`**: Specialized skill for building React + TypeScript dashboards, incorporating **Impeccable** for UI polish, accessibility, and visual audits.
+- **`commit-architect`**: Specialized skill for executing atomic Conventional Commits with pre-commit security checks (.env shielding) and GitHub synchronization.
 - **`impeccable`**: Design framework and audit tool for frontend UI craft.
 
 ## Core Rules & Principles

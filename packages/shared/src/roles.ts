@@ -65,7 +65,6 @@ export const COLOR_ROLE_CATEGORIES: ColorCategoryDefinition[] = [
   { id: 'azul', name: 'Azul', description: 'Tons azuis, ciano e azul escuro' },
   { id: 'roxo', name: 'Roxo / Violeta', description: 'Tons de lavanda, lilás, roxo e violeta' },
   { id: 'rosa', name: 'Rosa', description: 'Tons de rosa pastel, choque e magenta' },
-  { id: 'neon', name: 'Neon', description: 'Cores de alto contraste e iluminação vibrante' },
   { id: 'neutras_frias', name: 'Neutras Frias', description: 'Escala de cinzas, prata, carvão e off-white' },
   { id: 'neutras_quentes', name: 'Neutras Quentes', description: 'Tons amadeirados, marrom, bege e areia' },
 ];
@@ -129,17 +128,7 @@ export const COLOR_ROLES: ColorRoleDefinition[] = [
   { id: 'color_rosa_escuro', name: 'Rosa Escuro', category: 'rosa', hex: '#C71585' },
   { id: 'color_magenta', name: 'Magenta', category: 'rosa', hex: '#FF00FF' },
 
-  // 8. Neon
-  { id: 'color_vermelho_neon', name: 'Vermelho Neon', category: 'neon', hex: '#FF0033' },
-  { id: 'color_laranja_neon', name: 'Laranja Neon', category: 'neon', hex: '#FF6600' },
-  { id: 'color_amarelo_neon', name: 'Amarelo Neon', category: 'neon', hex: '#CCFF00' },
-  { id: 'color_verde_neon', name: 'Verde Neon', category: 'neon', hex: '#39FF14' },
-  { id: 'color_ciano_neon', name: 'Ciano Neon', category: 'neon', hex: '#00FFFF' },
-  { id: 'color_azul_neon', name: 'Azul Neon', category: 'neon', hex: '#1F51FF' },
-  { id: 'color_roxo_neon', name: 'Roxo Neon', category: 'neon', hex: '#BC13FE' },
-  { id: 'color_rosa_neon', name: 'Rosa Neon', category: 'neon', hex: '#FF10F0' },
-
-  // 9. Neutras Frias
+  // 8. Neutras Frias
   { 
     id: 'color_preto', 
     name: 'Preto', 
@@ -157,7 +146,7 @@ export const COLOR_ROLES: ColorRoleDefinition[] = [
   { id: 'color_off_white', name: 'Off-White', category: 'neutras_frias', hex: '#F5F5F5' },
   { id: 'color_branco', name: 'Branco', category: 'neutras_frias', hex: '#FFFFFF' },
 
-  // 10. Neutras Quentes
+  // 9. Neutras Quentes
   { id: 'color_marrom_escuro', name: 'Marrom Escuro', category: 'neutras_quentes', hex: '#3E1C00' },
   { id: 'color_marrom', name: 'Marrom', category: 'neutras_quentes', hex: '#7B3F00' },
   { id: 'color_marrom_claro', name: 'Marrom Claro', category: 'neutras_quentes', hex: '#A0522D' },

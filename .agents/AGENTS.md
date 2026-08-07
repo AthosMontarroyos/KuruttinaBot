@@ -100,7 +100,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - Define interfaces and types for database models and bot event payloads.
 
 #### Bot Modular Architecture
-- **Slash Commands**: Prefer Slash Commands over message content parsing.
+- **Dual Slash & Prefix Commands**: Slash Commands (`/command`) are the default primary interface. Every Slash Command **MUST ALSO have an equivalent Prefix Command counterpart** (e.g. `k!command` or custom guild prefix). Core execution logic must be shared via a unified `CommandContext` (DRY principle).
 - **Commands & Events Structure**: Organize command handlers in `src/commands/` and event handlers in `src/events/` by category/sub-category.
 - **Command Deployment**: Keep command registration in a separate deployment script (`src/deploy-commands.ts`). Do not sync commands automatically on every bot startup.
 - **Error Handling**: Wrap interaction execution in `try / catch` blocks to gracefully handle errors and notify users.

@@ -1,18 +1,19 @@
 ---
 name: fullstack-architect
-description: Master skill linking discord-bot-architect and frontend-architect. Enforces full-stack architecture for Kuruttina, strict DRY (Don't Repeat Yourself) component organization, shared TypeScript types, and folder separation by utility.
+description: Master skill linking discord-bot-architect, frontend-architect, and copywriting. Enforces full-stack architecture for Kuruttina, strict DRY (Don't Repeat Yourself) component organization, shared TypeScript types, and high-impact UX copywriting.
 risk: unknown
 date_added: 2026-08-07
 ---
 
 # Fullstack Architect (Kuruttina)
 
-Master architecture skill connecting the **`discord-bot-architect`** (Discord.js v14 + PostgreSQL) and **`frontend-architect`** (React + TypeScript Dashboard + Impeccable).
+Master architecture skill connecting **`discord-bot-architect`** (Discord.js v14 + PostgreSQL), **`frontend-architect`** (React + TypeScript Dashboard + Impeccable), and **`copywriting`** (High-Converting Copy & UX Messaging).
 
 ## Linked Workspace Skills
 
 - **`discord-bot-architect`**: Handles bot gateway events, slash commands, interactive components, rate limiting, and sharding in TypeScript.
 - **`frontend-architect`**: Handles React dashboard views, UI craft, Impeccable integration, accessibility, and visual polish.
+- **`copywriting`**: Handles persuasive web copy, marketing copy, CTAs, headlines, value propositions, and ENTP voice consistency.
 
 ## Principles
 
@@ -23,6 +24,8 @@ Master architecture skill connecting the **`discord-bot-architect`** (Discord.js
    - Organize components into dedicated directories grouped strictly by utility, domain, and reusable layer.
 3. **Unified Full-Stack State**:
    - PostgreSQL serves as the single source of truth for both bot runtime configurations and dashboard management.
+4. **Cohesive Copy & Persona**:
+   - Apply `copywriting` principles across both Discord bot responses (embed descriptions, command output, system alerts) and web dashboard surfaces.
 
 ## Component & Directory Separation by Utility
 
@@ -43,12 +46,9 @@ src/
 │   └── utils/                   # Helper Utilities (Formatters, Validators, API Client)
 ```
 
-## DRY Component Rules
+## DRY Component & Copy Rules
 
 - **Extract Primitive UI Elements**: Never write inline styled buttons or inputs repeatedly; reuse `components/ui/Button.tsx` and `components/ui/Input.tsx`.
 - **Reusable Domain Components**: Components like `BotStatusCard` or `GuildSelector` live in `components/bot/` and are reused across different dashboard pages.
 - **Shared Type Definitions**: Define bot event payloads and API response contracts once in `shared/types/` and import them in both command handlers and React components.
-
-## When to Use
-
-Use this skill when designing, organizing, or refactoring full-stack features that span both the Kuruttina Discord bot backend and the React web dashboard.
+- **Unified Copywriting**: Use the `copywriting` skill to write persuasive headlines, value propositions, and CTAs across website pages, as well as clear, ENTP-toned embed messages in bot slash commands.

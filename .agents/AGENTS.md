@@ -32,9 +32,10 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ## Available Workspace Skills
 
-- **`fullstack-architect`**: Master skill linking `discord-bot-architect` and `frontend-architect`. Enforces full-stack DRY principles, shared TypeScript types, and folder separation by utility.
+- **`fullstack-architect`**: Master skill linking `discord-bot-architect`, `frontend-architect`, and `copywriting`. Enforces full-stack DRY principles, shared TypeScript types, folder separation by utility, and persuasive UX copy.
 - **`discord-bot-architect`**: Specialized skill for building production-ready Discord bots in TypeScript (Slash commands, intents, rate limiting, sharding).
-- **`frontend-architect`**: Specialized skill for building React + TypeScript dashboards, incorporating **Impeccable** for UI polish, accessibility, and visual audits.
+- **`frontend-architect`**: Specialized skill for building React + TypeScript dashboards, incorporating **Impeccable** for UI polish and **Copywriting** for headlines, CTAs, and onboarding text.
+- **`copywriting`**: Specialized skill for persuasive headlines, CTAs, landing page copy, value propositions, and ENTP voice alignment.
 - **`commit-architect`**: Specialized skill for executing atomic Conventional Commits with pre-commit security checks (.env shielding) and GitHub synchronization.
 - **`impeccable`**: Design framework and audit tool for frontend UI craft.
 
@@ -108,7 +109,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - Use `@supabase/supabase-js` or type-safe query builders with auto-generated Supabase TypeScript definitions.
 - Ensure database connections and queries are optimized for async execution in bot command handlers.
 
-#### Frontend (Next.js / React + Impeccable)
+#### Frontend (Next.js / React + Impeccable + Copywriting)
 - Build modular, clean React components using modern React patterns (Functional Components, Hooks, Custom Hooks).
 - Serve shared assets from `Pictures/` via Next.js API asset routers.
-- Use `frontend-architect` and `impeccable` rules for UI design, responsiveness, accessibility (a11y), and visual polish.
+- Use `frontend-architect`, `impeccable`, and `copywriting` rules for UI design, persuasive UX copy, responsiveness, accessibility (a11y), visual polish, and ENTP voice consistency.

@@ -1,21 +1,30 @@
 ---
 name: frontend-architect
-description: Specialized skill for building modern, responsive React + TypeScript frontend interfaces and dashboards for KuruttinaBot. Integrates the Impeccable skill for UI craft, audits, visual polish, typography, and component design.
+description: Specialized skill for building modern, responsive React + TypeScript frontend interfaces and dashboards for KuruttinaBot. Integrates the Impeccable skill for UI craft and the Copywriting skill for persuasive UX copy, headlines, and CTAs.
 risk: unknown
 date_added: 2026-08-07
 ---
 
 # Frontend Architect (React + TypeScript)
 
-Specialized skill for engineering production-ready React web interfaces and dashboards for KuruttinaBot. Incorporates the **Impeccable** design framework for visual craft, UI audits, micro-interactions, and design quality enforcement.
+Specialized skill for engineering production-ready React web interfaces and dashboards for KuruttinaBot. Incorporates the **Impeccable** design framework for visual craft, UI audits, micro-interactions, and the **Copywriting** skill for persuasive headlines, CTAs, and onboarding UX text.
 
 ## Principles
 
 - **TypeScript Type Safety**: All props, states, API payloads, and custom hooks must be strictly typed.
 - **Component Modularity**: Divide UI into clear layers (Layouts, Views, Components, UI Elements).
 - **Impeccable Integration**: Use the `impeccable` skill rules and tools for visual polish, audits (`audit`), styling hierarchy, and design detector feedback.
+- **Copywriting Integration**: Apply the `copywriting` skill for all customer-facing text, landing page copy, value propositions, hero headlines, feature titles, empty states, and Call to Actions (CTAs).
 - **Dashboard Usability**: Prioritize scanability, responsiveness, dark mode elegance, and fast data updates for bot stats and guild configurations.
 - **State Management & Async**: Clean data fetching (React Query / SWR / custom hooks) paired with PostgreSQL-backed API endpoints.
+
+## Copywriting & UX Copy Integration
+
+When building or refining user-facing interfaces, landing pages, and dashboard views:
+- **Hero & Landing Copy**: Craft punchy, benefit-driven main headlines, subheadlines, and value propositions.
+- **CTAs (Call to Actions)**: Write compelling, action-oriented button text (e.g., "Adicionar Kuruttina", "Configurar Servidor").
+- **Feature Copy & Onboarding**: Use clear signposting and natural transitions (referencing `references/natural-transitions.md`) to guide users seamlessly through setup flows.
+- **ENTP Tone & Voice**: Infuse Kuruttina's ENTP personality (sharp, witty, analytical, confident) into UI messages, toast notifications, empty states, and error callouts.
 
 ## Context Artifacts: PRODUCT.md & DESIGN.md
 
@@ -50,27 +59,8 @@ For complete code examples and component templates, refer to [references/dashboa
 ```
 src/
 ├── components/
-│   ├── ui/             # Buttons, Cards, Inputs, Modals, Badges
-│   ├── layout/         # Sidebar, Header, PageContainer, Navigation
-│   └── dashboard/      # GuildSelector, BotStats, ModerationLogs, ServerConfigForm
-├── hooks/              # Custom hooks (useBotStatus, useGuildConfig, useAuth)
-├── services/           # API clients & WebSocket listeners
-├── types/              # TypeScript interfaces for API & Bot models
-└── pages/              # Overview, GuildSettings, CommandsList, Analytics
+│   ├── layout/          # Shell, Navigation, Sidebar, Header
+│   ├── views/           # Full Page Views (Dashboard, ServerConfig, BotStats)
+│   ├── modules/         # Domain Modules (ModerationLogs, RoleManager, WelcomeEditor)
+│   └── ui/              # Reusable Base Components (Button, Card, Input, Badge)
 ```
-
-### 2. State & Data Flow
-- Use typed async hooks for fetching server state from PostgreSQL endpoints.
-- Optimistic UI updates for quick user feedback on toggle switches (e.g. enabling bot features per guild).
-- Real-time updates via WebSockets/SSE for live bot statistics and activity logs.
-
-## Sharp Edges & Quality Checks
-
-- **Missing Loading/Error States**: Always provide skeleton loaders and user-friendly error banners.
-- **Unresponsive Controls**: Ensure sidebar and data tables adapt seamlessly to mobile and tablet viewports.
-- **Hardcoded Colors & Magic Numbers**: Use CSS variables or design tokens defined in the theme.
-- **Accessibility (a11y)**: Ensure interactive elements have accessible names, proper aria attributes, and keyboard focus indicators.
-
-## When to Use
-
-Use this skill when developing, refactoring, or auditing the React + TypeScript web dashboard and frontend interfaces for KuruttinaBot.

@@ -33,14 +33,4 @@ export const STATUS_COLORS = {
     number: 0x747D8C,
     description: 'Estados neutros, dados inativos e rodapés',
   },
-  PRIMARY: {
-    hex: '#5F27CD',
-    number: 0x5F27CD,
-    description: 'Cor primária oficial da marca Kuruttina (Roxo ENTP)',
-  },
-  SECONDARY: {
-    hex: '#FF6B6B',
-    number: 0xFF6B6B,
-    description: 'Cor secundária da marca (Destaques e CTAs)',
-  },
 } as const;

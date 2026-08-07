@@ -56,21 +56,26 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Non-blocking Event Loop**: Never execute heavy synchronous operations (`readFileSync`, heavy calculation loops) on the main Node.js event loop.
 - **Bundle & Asset Efficiency**: Optimize frontend bundles (tree-shaking, lazy loading) and serve compressed visual assets.
 
-### 4. Discord.js & API Documentation Research
+### 4. Dynamic API & Database Fetching (No Hardcoded State)
+- **Mandatory Policy**: Never hardcode values or state variables that may change over time (e.g., bot avatar URL, server icon, user nicknames, role IDs, guild settings).
+- **Dynamic Fetching**: Always request dynamic data live from APIs (e.g. Discord API `client.user?.displayAvatarURL()`, `guild.iconURL()`) or query Supabase database.
+- **Data Resilience**: Guarantee that if a bot avatar, guild setting, or user profile changes, the application reflects it dynamically without requiring code edits or redeployments.
+
+### 5. Discord.js & API Documentation Research
 - Always refer to official Discord.js v14 documentation (`discord.js.org` / `discordjs.dev`).
 - When encountering unfamiliar Discord API features, deprecations, or version changes, perform deep research on `discord.js.org`.
 
-### 5. Interaction Guidelines (3-Second Rule)
+### 6. Interaction Guidelines (3-Second Rule)
 - All Discord interaction triggers (Slash Commands, Buttons, Select Menus, Modals) **must be acknowledged within 3 seconds**.
 - For async operations exceeding 3 seconds (DB queries with Supabase, external API calls, LLM processing), call `interaction.deferReply()` or `interaction.deferUpdate()` immediately.
 
-### 6. Intent & Security Best Practices
+### 7. Intent & Security Best Practices
 - Never hardcode Discord Bot Tokens, Supabase Connection Keys (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), or sensitive credentials in source code.
 - Always load credentials from environment variables.
 - Ensure `.env` is listed in `.gitignore`.
 - Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
 
-### 7. Code Architecture & Style
+### 8. Code Architecture & Style
 
 #### TypeScript & Type Safety
 - Enforce strict typing for slash command options, Supabase database schemas, and API responses. Avoid using `any` wherever possible.

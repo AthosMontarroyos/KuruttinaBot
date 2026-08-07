@@ -1,6 +1,6 @@
 ---
 name: discord-bot-architect
-description: Specialized skill for building production-ready Discord bots. Covers Discord.js (TypeScript/JavaScript), gateway intents, dual slash/prefix commands, interactive components, rate limiting, PostgreSQL/Supabase integration, React dashboards, and sharding.
+description: Specialized skill for building production-ready Discord bots. Covers Discord.js (TypeScript/JavaScript), gateway intents, dual slash/prefix commands, rate limiting, PostgreSQL/Supabase integration, React dashboards, and sharding.
 risk: unknown
 source: vibeship-spawner-skills (Apache 2.0)
 date_added: 2026-02-27
@@ -9,18 +9,18 @@ date_added: 2026-02-27
 # Discord Bot Architect
 
 Specialized skill for building production-ready Discord bots and web dashboards.
-Covers Discord.js with TypeScript, PostgreSQL/Supabase database integrations, React web interfaces, gateway intents, dual Slash & Prefix commands, interactive components, rate limiting, and sharding.
+Covers Discord.js with TypeScript, PostgreSQL/Supabase database integrations, React web interfaces, gateway intents, dual Slash & Prefix commands (Default Prefix: `k!`), interactive components, rate limiting, and sharding.
 
 ## Principles
 
 - **TypeScript First**: Enforce type safety across command handlers, event listeners, and API contracts.
 - **Categorized Folder Structure**: Commands and events MUST be organized into nested category and sub-category directories (e.g. `src/commands/moderation/actions/ban.ts`, `src/events/client/lifecycle/ready.ts`).
 - **Recursive Event/Command Loading**: Use recursive file loaders to discover and register all commands/events dynamically regardless of directory nesting depth.
-- **Dual Command Requirement (Slash + Prefix)**: Slash commands are the default standard interface (`/command`), but **EVERY Slash Command MUST ALSO have a corresponding Prefix Command counterpart** (e.g. `k!command`).
+- **Dual Command Requirement (Slash + Prefix `k!`)**: Slash commands are the default standard interface (`/command`), but **EVERY Slash Command MUST ALSO have a corresponding Prefix Command counterpart using default prefix `k!`** (e.g. `k!ping`, `k!ban`, `k!config`).
 - **DRY Shared Command Execution**: Use a shared `CommandContext` abstraction so the core business logic is written ONCE and consumed by both Slash Interaction (`ChatInputCommandInteraction`) and Prefix Message (`Message`) handlers.
 - **3-Second Acknowledgment Rule**: Acknowledge interactions within 3 seconds, using `deferReply()` for operations >3s.
 - **Request Minimal Intents**: Request only required intents (minimize privileged intents).
-- **Supabase / PostgreSQL Persistence**: Store bot settings, user profiles, and logs securely with parameterized queries / Supabase SDK.
+- **Supabase / PostgreSQL Persistence**: Store bot settings, guild custom prefixes, user profiles, and logs securely with parameterized queries / Supabase SDK.
 - **React Dashboard**: Build modern web dashboards for bot management using React with TypeScript.
 - **Deep Research & Documentation**: Whenever encountering unfamiliar Discord.js features, methods, or version-specific details, perform web searches against official Discord.js documentation (`discord.js.org` / `discordjs.dev`).
 
@@ -52,17 +52,17 @@ src/
 │   │       ├── ready.ts
 │   │       └── shardReady.ts
 │   ├── guild/                     # Category: Guild
-│   │   ├── message/               # Sub-category: Message (Prefix Command Dispatcher)
+│   │   ├── message/               # Sub-category: Message (Prefix Command Dispatcher - listens for k!)
 │   │   │   └── messageCreate.ts
 │   │   └── interactions/          # Sub-category: Interactions (Slash Command Dispatcher)
 │   │       └── interactionCreate.ts
 ```
 
-## Dual Command Pattern (Slash + Prefix)
+## Dual Command Pattern (Slash + Prefix `k!`)
 
 Every command module exports:
 1. `data`: `SlashCommandBuilder` definition for Discord Slash Registration.
-2. `prefix`: String array or primary name for Prefix Command matching (e.g. `['ping', 'p']`).
+2. `prefix`: String array or primary name for Prefix Command matching with default prefix `k!` (e.g. `k!ping`, `k!p`).
 3. `execute`: Unified execution handler receiving a normalized `CommandContext`.
 
 ### Unified Execution Pattern Example (TypeScript)
@@ -75,6 +75,7 @@ export const command = {
   data: new SlashCommandBuilder()
     .setName('ping')
     .setDescription('Exibe a latência da Kuruttina e da API do Discord'),
+  defaultPrefix: 'k!',
   prefixAliases: ['ping', 'p', 'latencia'],
   
   // Shared execution logic (DRY)

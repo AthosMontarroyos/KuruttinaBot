@@ -1,45 +1,78 @@
 # Discord Bot Architect - Detailed Patterns & Code Examples
 
-## Discord.js v14 Foundation
+## Categorized Commands & Events Loader (TypeScript)
 
-Modern Discord bot setup with Discord.js v14 and slash commands.
+Recursive loader supporting nested category and sub-category folder structures: `src/commands/<category>/<subcategory>/<command>.ts` and `src/events/<category>/<subcategory>/<event>.ts`.
 
-```javascript
-// src/index.js
-const { Client, Collection, GatewayIntentBits, Events } = require('discord.js');
-const fs = require('node:fs');
-const path = require('node:path');
-require('dotenv').config();
+```typescript
+// src/utils/fileLoader.ts
+import fs from 'node:fs';
+import path from 'node:path';
 
-// Create client with minimal required intents
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    // Add only what you need:
-    // GatewayIntentBits.GuildMessages,
-    // GatewayIntentBits.MessageContent,  // PRIVILEGED - avoid if possible
-  ]
-});
+/**
+ * Recursively fetches all file paths matching an extension within nested category/subcategory directories.
+ */
+export function getFilesRecursively(dir: string, extension: string = '.ts'): string[] {
+  let fileList: string[] = [];
+  if (!fs.existsSync(dir)) return fileList;
 
-// Load commands
-client.commands = new Collection();
+  const files = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const file of files) {
+    const filePath = path.join(dir, file.name);
+    if (file.isDirectory()) {
+      fileList = fileList.concat(getFilesRecursively(filePath, extension));
+    } else if (file.name.endsWith(extension) && !file.name.endsWith('.d.ts')) {
+      fileList.push(filePath);
+    }
+  }
+
+  return fileList;
+}
+```
+
+```typescript
+// src/index.ts (Categorized Loading Example)
+import { Client, Collection, GatewayIntentBits } from 'discord.js';
+import path from 'node:path';
+import dotenv from 'dotenv';
+import { getFilesRecursively } from './utils/fileLoader';
+
+dotenv.config();
+
+export interface Command {
+  category: string;
+  subCategory?: string;
+  data: any;
+  execute: (interaction: any) => Promise<void>;
+}
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+(client as any).commands = new Collection<string, Command>();
+
+// Load commands recursively across category/subcategory folders
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'));
+const commandFiles = getFilesRecursively(commandsPath);
 
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
+for (const filePath of commandFiles) {
   const command = require(filePath);
   if ('data' in command && 'execute' in command) {
-    client.commands.set(command.data.name, command);
+    // Infer category and subcategory from path relative to commands directory
+    const relativePath = path.relative(commandsPath, filePath);
+    const pathParts = relativePath.split(path.sep);
+    
+    command.category = pathParts.length > 1 ? pathParts[0] : 'general';
+    command.subCategory = pathParts.length > 2 ? pathParts[1] : undefined;
+
+    (client as any).commands.set(command.data.name, command);
   }
 }
 
-// Load events
+// Load events recursively across category/subcategory folders
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'));
+const eventFiles = getFilesRecursively(eventsPath);
 
-for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
+for (const filePath of eventFiles) {
   const event = require(filePath);
   if (event.once) {
     client.once(event.name, (...args) => event.execute(...args));
@@ -50,6 +83,7 @@ for (const file of eventFiles) {
 
 client.login(process.env.DISCORD_TOKEN);
 ```
+
 
 ```javascript
 // src/commands/ping.js

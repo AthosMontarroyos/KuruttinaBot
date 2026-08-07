@@ -14,6 +14,8 @@ Covers Discord.js with TypeScript, PostgreSQL database integrations, React web i
 ## Principles
 
 - **TypeScript First**: Enforce type safety across command handlers, event listeners, and API contracts.
+- **Categorized Folder Structure**: Commands and events MUST be organized into nested category and sub-category directories (e.g. `src/commands/moderation/actions/ban.ts`, `src/events/client/lifecycle/ready.ts`).
+- **Recursive Event/Command Loading**: Use recursive file loaders to discover and register all commands/events dynamically regardless of directory nesting depth.
 - Slash commands over message parsing (Message Content Intent deprecated)
 - Acknowledge interactions within 3 seconds, always
 - Request only required intents (minimize privileged intents)
@@ -25,18 +27,52 @@ Covers Discord.js with TypeScript, PostgreSQL database integrations, React web i
 - Test with guild commands first, deploy global when ready
 - **Deep Research & Documentation**: Whenever encountering unfamiliar Discord.js features, methods, or version-specific details, perform web searches against official Discord.js documentation (`discord.js.org` / `discordjs.dev`).
 
+## Command & Event Directory Hierarchy
+
+Organize handlers into clear category and sub-category folders:
+
+```
+src/
+├── commands/                      # Slash Commands (Category/Sub-category)
+│   ├── admin/                     # Category: Admin
+│   │   ├── settings/              # Sub-category: Settings
+│   │   │   └── set-logs.ts
+│   │   └── roles/                 # Sub-category: Roles
+│   │       └── add-role.ts
+│   ├── moderation/                # Category: Moderation
+│   │   ├── actions/               # Sub-category: Actions
+│   │   │   ├── ban.ts
+│   │   │   └── kick.ts
+│   │   └── logs/                  # Sub-category: Logs
+│   │       └── view-logs.ts
+│   └── utility/                   # Category: Utility
+│       └── general/               # Sub-category: General
+│           ├── ping.ts
+│           └── help.ts
+├── events/                        # Event Handlers (Category/Sub-category)
+│   ├── client/                    # Category: Client Gateway
+│   │   ├── lifecycle/             # Sub-category: Lifecycle
+│   │   │   └── ready.ts
+│   │   └── interactions/          # Sub-category: Interactions
+│   │       └── interactionCreate.ts
+│   └── guild/                     # Category: Guild Events
+│       └── members/               # Sub-category: Members
+│           ├── guildMemberAdd.ts
+│           └── guildMemberRemove.ts
+```
+
 ## Patterns & Architecture
 
-For detailed code implementations and project templates, refer to [references/patterns.md](references/patterns.md).
+For detailed code implementations and recursive file loaders, refer to [references/patterns.md](references/patterns.md).
 
 ### Core Concepts
 
 1. **Discord.js v14 Foundation (TypeScript)**: Modular structure using `Client`, `Collection`, typed slash commands (`SlashCommandBuilder`), and typed event handlers.
-2. **PostgreSQL Database Integration**: Type-safe query models for user profiles, guild configurations, and bot analytics.
-3. **React Web Dashboard**: Modern React components (Hooks, Tailwind/CSS) for bot administration and user settings.
-4. **Interactive Components**: Buttons (`ButtonBuilder`), Select Menus (`StringSelectMenuBuilder`), and Modals (`ModalBuilder`).
-5. **Deferred Responses**: Call `interaction.deferReply()` within 3 seconds for database queries or external API calls.
-6. **Embed Builders**: Use `EmbedBuilder` with strict limits (max 10 embeds, 6000 total characters).
+2. **Recursive Command & Event Handlers**: Load commands/events recursively from nested category/sub-category subfolders.
+3. **PostgreSQL Database Integration**: Type-safe query models for user profiles, guild configurations, and bot analytics.
+4. **React Web Dashboard**: Modern React components for bot administration and user settings.
+5. **Interactive Components**: Buttons (`ButtonBuilder`), Select Menus (`StringSelectMenuBuilder`), and Modals (`ModalBuilder`).
+6. **Deferred Responses**: Call `interaction.deferReply()` within 3 seconds for database queries or external API calls.
 7. **Rate Limiting & Sharding**: Handle global 50 req/s, gateway limits, and scaling with `ShardingManager`.
 
 ## Component Limits
@@ -77,6 +113,7 @@ For detailed code implementations and project templates, refer to [references/pa
 ## Validation Checks
 
 - **Hardcoded Token or DB Credentials**: ERROR - Credentials must never be hardcoded.
+- **Uncategorized Flat Commands/Events**: WARNING - Commands & events must be organized in category/sub-category subfolders.
 - **Untyped any Usage**: WARNING - Use proper TypeScript types/interfaces.
 - **Slow DB Operation Without Defer**: WARNING - DB operations >3s must use deferral.
 - **Interaction Without Error Handling**: WARNING - Wrap handlers in try/catch.

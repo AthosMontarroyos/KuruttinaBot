@@ -149,3 +149,13 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Engaging & Dynamic Message Formatting (No Plain Text)**: All bot messages, embeds, and responses MUST be visually polished, structured, and highly readable. Avoid plain or unformatted text blocks. Use rich Markdown elements (bold text, inline code blocks `` `value` ``, blockquotes, and lists) to create clean visual hierarchy.
 - **Discord Developer Portal Emojis Integration (`EMOJIS`)**: Centralize all emojis in `@kuruttina/shared` (`EMOJIS` constant). Use clean icons/emojis in field titles, headers, and status messages to enhance visual appeal. Supports seamless swapping to custom Discord Application Emojis (`<:name:id>`).
 - **Standardized Status Colors & Highlights**: Always use predefined `STATUS_COLORS` (`SUCCESS`, `WARNING`, `ERROR`, `INFO`, `NEUTRAL`) for embed borders, status indicators, and badges to ensure visual consistency across the Bot and Web Dashboard.
+
+### 17. Multi-Scope Deployment & AWS Resource Efficiency for Affiliate/Custom Commands
+- **Multi-Scope Deployment Scopes**:
+  - `dev` (`npm run deploy:dev`): Deploys strictly `developer` category commands to `DEV_GUILD_ID`.
+  - `public` (`npm run deploy:public`): Deploys public commands (`utility`, `moderation`, `admin`) globally or to the dev guild for testing.
+  - `affiliate` (`npm run deploy:affiliate`): Syncs commands specifically for affiliate servers stored in Supabase.
+  - `all` (`npm run deploy`): Performs full sync across scopes.
+- **AWS Infrastructure Resource Efficiency (Zero Polling / Zero Gateway Abuse)**:
+  - Custom guild / affiliate commands stored in Supabase MUST NOT use continuous polling loops on AWS Fargate (prevents CPU spikes, memory churn, and Discord REST API rate-limiting).
+  - Affiliate/Custom commands are registered **On-Demand** via targeted REST calls (`client.application.commands.set(commands, guildId)`) triggered by Supabase Webhooks or direct guild events (`guildCreate`), caching registered command hashes to skip redundant API roundtrips.

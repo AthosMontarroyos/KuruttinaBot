@@ -45,24 +45,44 @@ const rest = new REST({ version: '10' }).setToken(token);
 
 (async () => {
   try {
-    console.log(loggerColors.highlight(`🚀 [Deploy] Iniciando registro de ${commands.length} comandos Slash...`));
+    const isClear = process.argv.includes('--clear');
+
+    if (isClear) {
+      console.log(loggerColors.warn('🧹 [Deploy] Limpando todos os comandos Slash do cache do Discord...'));
+
+      if (guildId) {
+        await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
+        console.log(loggerColors.success('✅ [Deploy] Cache de comandos do servidor DEV zerado!'));
+      }
+
+      await rest.put(Routes.applicationCommands(clientId), { body: [] });
+      console.log(loggerColors.success('✅ [Deploy] Cache de comandos GLOBAIS zerado!'));
+      return;
+    }
+
+    console.log(loggerColors.highlight(`🚀 [Deploy] Sincronizando ${commands.length} comando(s) Slash ativos...`));
 
     if (guildId) {
-      // Fast guild deploy for development
-      console.log(loggerColors.info(`📌 [Deploy] Efetuando deploy no servidor de desenvolvimento (Guild ID: ${guildId})...`));
+      // 1. Overwrite Guild Commands (DEV)
+      console.log(loggerColors.info(`📌 [Deploy] Sincronizando comandos no servidor DEV (Guild ID: ${guildId})...`));
       await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
         body: commands,
       });
-      console.log(loggerColors.success('✅ [Deploy] Comandos Slash registrados no servidor DEV com sucesso!'));
+      console.log(loggerColors.success('✅ [Deploy] Comandos Slash registrados no servidor DEV!'));
+
+      // 2. Clear stale Global commands to prevent duplicate entries in dev
+      console.log(loggerColors.info('🧹 [Deploy] Limpando comandos globais antigos para evitar duplicação...'));
+      await rest.put(Routes.applicationCommands(clientId), { body: [] });
+      console.log(loggerColors.success('✅ [Deploy] Cache global antigo zerado com sucesso!'));
     } else {
       // Global deploy
-      console.log(loggerColors.info('🌐 [Deploy] Efetuando deploy GLOBAL de comandos Slash...'));
+      console.log(loggerColors.info('🌐 [Deploy] Sincronizando comandos GLOBALMENTE no Discord...'));
       await rest.put(Routes.applicationCommands(clientId), {
         body: commands,
       });
       console.log(loggerColors.success('✅ [Deploy] Comandos Slash registrados GLOBALMENTE com sucesso!'));
     }
   } catch (error) {
-    console.error(loggerColors.error('❌ [Deploy] Erro ao registrar comandos Slash no Discord REST API:'), error);
+    console.error(loggerColors.error('❌ [Deploy] Erro ao sincronizar comandos Slash no Discord REST API:'), error);
   }
 })();

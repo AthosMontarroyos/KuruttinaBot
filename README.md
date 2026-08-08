@@ -9,7 +9,7 @@
 Kuruttina é projetada com arquitetura monorepo (**Turborepo**), focada em extrema eficiência de recursos (AWS Ready), com dados buscados dinamicamente via APIs sem duplicação de código (**DRY**).
 
 - **Nome Oficial**: Kuruttina
-- **Personalidade**: **ENTP** ("The Debater / Visionary Innovator") — Analítica, sagaz, carismática e direta.
+- **Personalidade**: **INFJ** ("The Advocate / Insightful Protector / Visionary Guardian") — Empática, protetora, intuitiva, ética e perspicaz.
 - **Domínio Oficial**: [`kuruttinabot.athosmontarroyos.com`](https://kuruttinabot.athosmontarroyos.com) (roteado via Cloudflare Tunnel).
 
 ---

@@ -1,5 +1,6 @@
 import { Client, Events, ActivityType } from 'discord.js';
 import { DEFAULT_BOT_CONFIG, loggerColors } from '@kuruttina/shared';
+import { syncSlashCommands } from '../../../deploy-commands';
 
 export const event = {
   name: Events.ClientReady,
@@ -29,5 +30,8 @@ export const event = {
       ],
       status: 'online',
     });
+
+    // Automatically sync Slash Commands on startup
+    await syncSlashCommands('all');
   },
 };

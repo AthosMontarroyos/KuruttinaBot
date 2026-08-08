@@ -24,6 +24,7 @@ Covers Discord.js with TypeScript, PostgreSQL/Supabase database integrations, Re
 - **React Dashboard**: Build modern web dashboards for bot management using React with TypeScript.
 - **JavaScript Object (JSON Format) for Embeds & Components V2**: All Embeds and Components V2 MUST be defined as raw JavaScript Objects / JSON structures (`APIEmbed`, `APIActionRowComponent`, `APIButtonComponent` or `{ title, description, color, fields, components }`). This guarantees 100% serializability to Supabase DB and seamless exportability/sharing between the Bot and Web Dashboard.
 - **Discord Developer Portal Application Emojis Resolver**: Access emojis via `EMOJIS` constant from `@kuruttina/shared` OR dynamically via `getEmoji(client, 'KEY')` (`src/utils/emoji-resolver.ts`), which automatically resolves Application Emojis (`<:name:id>` / `<a:name:id>`) uploaded to Discord Developer Portal (`client.application.emojis`).
+- **Automatic Startup Command Deployment**: Command deployment (`syncSlashCommands`) runs automatically upon bot startup (`ready.ts` event) and can also be triggered manually via CLI (`npm run deploy`) or scope-specific commands (`npm run deploy:dev`, `npm run deploy:public`).
 - **Deep Research & Documentation**: Whenever encountering unfamiliar Discord.js features, methods, or version-specific details, perform web searches against official Discord.js documentation (`discord.js.org` / `discordjs.dev`).
 
 ## Command & Event Directory Hierarchy

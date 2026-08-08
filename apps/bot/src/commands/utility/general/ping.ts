@@ -7,12 +7,12 @@ export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('ping')
     .setDescription('Exibe a latência da Gateway e da API do Discord'),
-  prefixAliases: ['ping', 'p', 'latencia'],
+  prefixAliases: ['ping', 'p'],
   category: 'utility',
   subCategory: 'general',
   guide: {
     syntax: 'k!ping ou /ping',
-    examples: ['/ping', 'k!ping', 'k!latencia'],
+    examples: ['/ping', 'k!ping'],
     detailedDescription: 'Verifica em tempo real a velocidade de resposta da WebSocket Gateway e a latência da API do Discord.',
   },
 

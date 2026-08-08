@@ -29,8 +29,8 @@ export const command: CommandModule = {
         .setRequired(false)
     ),
   prefixAliases: ['dev-emoji-add', 'devemojiadd', 'addappemoji'],
-  category: 'admin',
-  subCategory: 'developer',
+  category: 'developer',
+  subCategory: 'emojis',
   guide: {
     syntax: 'k!dev-emoji-add <nome> [emoji_customizado|arquivo]',
     examples: [

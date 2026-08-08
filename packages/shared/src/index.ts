@@ -3,3 +3,4 @@ export * from './roles';
 export * from './colors';
 export * from './constants';
 export * from './i18n';
+export * from './terminal';

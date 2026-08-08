@@ -7,13 +7,13 @@ import {
   TextBasedChannel,
   InteractionReplyOptions,
   MessageReplyOptions,
-  MessagePayload,
   EmbedBuilder,
+  APIEmbed,
 } from 'discord.js';
 
 export interface CommandReplyOptions {
   content?: string;
-  embeds?: EmbedBuilder[];
+  embeds?: (APIEmbed | EmbedBuilder)[];
   ephemeral?: boolean;
 }
 

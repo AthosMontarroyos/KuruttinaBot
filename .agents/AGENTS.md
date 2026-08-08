@@ -88,11 +88,12 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Sanitization & Anonymization**: Never expose raw user IDs or internal guild data in public telemetry, error messages, or logs.
 - **Data Removal (LGPD/GDPR)**: Ensure bot architecture supports data deletion/anonymization if a server removes Kuruttina or a user requests data erasure.
 
-### 9. Never Trust the Frontend (Server-Side Validation & Authorization)
-- **MANDATORY SECURITY PRINCIPLE**: Never rely on client-side / frontend validation, checks, or state. The frontend is considered an untrusted environment.
-- **Server-Side Authorization**: Every API route, WebSocket connection, or backend action must re-verify user identity (Discord OAuth2 session), permissions (Administrator/Manage Guild permissions), and guild ownership on the server before modifying database or bot state.
-- **Server-Side Validation**: Validate all incoming payload schemas (using type-safe schema validators like Zod) and sanitize inputs on the server to prevent injection attacks, parameter tampering, or unauthorized privilege escalation.
-- **Client Checks Are UX Only**: Client-side form checks or hidden buttons are for user experience only, never for security enforcement.
+### 9. Never Trust the Frontend & Zero-Eval Command Security Policy
+- **MANDATORY SECURITY PRINCIPLE**: Never rely on client-side / frontend validation, checks, or state. All inputs and custom command definitions are considered untrusted.
+- **Pillar 1: Absolute Zero-Eval Policy (No Dynamic Code Execution)**: NEVER use `eval()`, `new Function()`, or dynamic script execution for custom/affiliate commands. All custom/affiliate commands stored in Supabase MUST be **Declarative Data Structures (JSON templates)** rendered by a fixed, type-safe execution engine (`customCommandPayloadSchema`).
+- **Pillar 2: Server-Side Schema Validation & Input Sanitization (Zod)**: Validate all command options, text payloads, and inputs using strict Zod schemas and `sanitizeText()` (`@kuruttina/shared`) to strip control characters, dangerous tags, and malicious script tokens.
+- **Pillar 3: Database Parameterized Queries (Supabase SDK Only)**: NEVER concatenate raw SQL strings. Always use parameterized `@supabase/supabase-js` SDK queries to guarantee 100% SQL injection immunity.
+- **Pillar 4: Server-Side Authorization Enforcement**: Every API route, command execution, or bot action must re-verify user identity (Discord OAuth2 / User ID) and server permissions (Dev Guild / Manage Guild) on the server before executing. Client checks are UX only, never security.
 
 ### 10. Supabase Security & RLS Hardening Policy (Zero AI Fragility)
 - **Mandatory Row Level Security (RLS)**: EVERY Supabase table MUST have Row Level Security enabled (`ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;`). NEVER leave tables unshielded.

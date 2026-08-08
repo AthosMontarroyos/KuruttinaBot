@@ -138,3 +138,8 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **MANDATORY POLICY**: Production builds (`npm run build` / `tsc` disk emission) are strictly **unnecessary and prohibited** during active development.
 - **Development Execution (`npm run dev`)**: All development testing and execution MUST run exclusively using `npm run dev` (`ts-node` in-memory execution for `@kuruttina/bot` and Vite/Next dev server for `@kuruttina/website`).
 - **Zero Compiled JS Files in `src/`**: Using `npm run dev` guarantees that no compiled `.js` files pollute `src/` source directories. Only build production bundles if explicitly requested by the user or when validating a final deployment build.
+
+### 15. Mandatory Command Usage Guide Metadata & Help Delegation Policy
+- **MANDATORY POLICY**: Every command module created MUST define a structured `guide` property (`CommandUsageGuide` containing `syntax`, `examples`, `detailedDescription`, `requiredPermissions`).
+- **Help Delegation Architecture (DRY Principle)**: Individual commands MUST NOT render custom help menus or giant instruction blocks when executed. Instead, command usage metadata is consumed centrally by the `/help` (or `k!help`) command and rendered automatically on the official Website Command Directory (`apps/website`).
+- **Interactive Help Guidance**: If a user runs a command with invalid parameters or requests help, the system points them directly to `/help <command>` or to the web command directory link (`https://kuruttinabot.athosmontarroyos.com/commands`).

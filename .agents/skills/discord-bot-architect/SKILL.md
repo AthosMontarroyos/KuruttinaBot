@@ -70,14 +70,21 @@ Every command module exports:
 
 ```ts
 import { SlashCommandBuilder } from 'discord.js';
-import { CommandContext } from '../../shared/types/command-context';
+import { CommandContext } from '../../types/command-context';
+import { CommandModule } from '../../types/command-interface';
 
-export const command = {
+export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('ping')
     .setDescription('Exibe a latência da Kuruttina e da API do Discord'),
-  defaultPrefix: 'k!',
   prefixAliases: ['ping', 'p', 'latencia'],
+  category: 'utility',
+  subCategory: 'general',
+  guide: {
+    syntax: 'k!ping ou /ping',
+    examples: ['/ping', 'k!ping'],
+    detailedDescription: 'Exibe a velocidade de resposta da Gateway e API do Discord.',
+  },
   
   // Shared execution logic (DRY)
   async execute(ctx: CommandContext) {

@@ -10,6 +10,11 @@ export const command: CommandModule = {
   prefixAliases: ['ping', 'p', 'latencia'],
   category: 'utility',
   subCategory: 'general',
+  guide: {
+    syntax: 'k!ping ou /ping',
+    examples: ['/ping', 'k!ping', 'k!latencia'],
+    detailedDescription: 'Verifica em tempo real a velocidade de resposta da WebSocket Gateway e a latência da API do Discord.',
+  },
 
   async execute(ctx: CommandContext): Promise<void> {
     const gatewayPing = Math.round(ctx.client.ws.ping);

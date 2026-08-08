@@ -33,21 +33,21 @@ Organize handlers into clear category and sub-category folders:
 ```
 src/
 ├── commands/                      # Dual Slash & Prefix Commands
-│   ├── admin/                     # Category: Admin
-│   │   ├── settings/              # Sub-category: Settings
-│   │   │   └── set-logs.ts
-│   │   └── roles/                 # Sub-category: Roles
-│   │       └── add-role.ts
-│   ├── moderation/                # Category: Moderation
-│   │   ├── actions/               # Sub-category: Actions
-│   │   │   ├── ban.ts
-│   │   │   └── kick.ts
-│   │   └── logs/                  # Sub-category: Logs
-│   │       └── view-logs.ts
-│   └── utility/                   # Category: Utility
-│       └── general/               # Sub-category: General
-│           ├── ping.ts
-│           └── info.ts
+│   ├── admin/                     # Category: Admin (Server management & configs)
+│   │   ├── settings/
+│   │   └── roles/
+│   ├── affiliate/                 # Category: Affiliate (Custom partner server commands)
+│   │   └── custom/
+│   ├── developer/                 # Category: Developer (Dev Guild & Creator commands)
+│   │   ├── emojis/
+│   │   │   └── dev-emoji-add.ts
+│   │   └── system/
+│   ├── moderation/                # Category: Moderation (Sanctions & logs)
+│   │   ├── actions/
+│   │   └── logs/
+│   └── utility/                   # Category: Utility (Public commands)
+│       └── general/
+│           └── ping.ts
 ├── events/                        # Event Handlers
 │   ├── client/                    # Category: Client
 │   │   └── lifecycle/             # Sub-category: Lifecycle

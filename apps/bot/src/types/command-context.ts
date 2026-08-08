@@ -9,6 +9,7 @@ import {
   MessageReplyOptions,
   EmbedBuilder,
   APIEmbed,
+  MessageFlags,
 } from 'discord.js';
 
 export interface CommandReplyOptions {
@@ -56,7 +57,9 @@ export class CommandContext {
   public async deferReply(ephemeral = false): Promise<void> {
     if (this.isSlash && this.slashInteraction) {
       if (!this.slashInteraction.deferred && !this.slashInteraction.replied) {
-        await this.slashInteraction.deferReply({ ephemeral });
+        await this.slashInteraction.deferReply({
+          flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+        });
       }
     } else if (this.message) {
       if ('sendTyping' in this.message.channel) {
@@ -75,7 +78,7 @@ export class CommandContext {
       const interactionOptions: InteractionReplyOptions = {
         content: payload.content,
         embeds: payload.embeds,
-        ephemeral: payload.ephemeral ?? false,
+        flags: payload.ephemeral ? MessageFlags.Ephemeral : undefined,
       };
 
       if (this.slashInteraction.deferred || this.slashInteraction.replied) {

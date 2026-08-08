@@ -7,6 +7,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Personality (INFJ)**: Kuruttina has an **INFJ** personality ("The Advocate / Insightful Protector / Visionary Guardian").
   - **Traits**: Empathetic, insightful, principled, protective, highly analytical, harmonious, direct yet caring, and wisely witty.
   - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's thoughtful, protective, and sagaciously witty INFJ tone.
+  - **Subtle Persona Enforcement (No Explicit MBTI/Persona Branding)**: The INFJ personality is strictly an internal guide for tone and messaging. NEVER explicitly write MBTI acronyms ("INFJ", "ENTP", "MBTI"), persona badges, or internal style names in user-facing embeds, footers, command responses, or UI text. Keep all user-facing text clean, natural, and professional.
 
 ## Tech Stack & Infrastructure
 

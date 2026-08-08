@@ -44,7 +44,7 @@ export const command: CommandModule = {
         }
       )
       .setFooter({
-        text: `${DEFAULT_BOT_CONFIG.BOT_NAME} — Proteção Visionária & INFJ Persona`,
+        text: DEFAULT_BOT_CONFIG.BOT_NAME,
         iconURL: ctx.client.user?.displayAvatarURL(),
       })
       .setTimestamp();

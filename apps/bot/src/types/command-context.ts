@@ -10,12 +10,14 @@ import {
   EmbedBuilder,
   APIEmbed,
   MessageFlags,
+  MessageMentionOptions,
 } from 'discord.js';
 
 export interface CommandReplyOptions {
   content?: string;
   embeds?: (APIEmbed | EmbedBuilder)[];
   ephemeral?: boolean;
+  allowedMentions?: MessageMentionOptions;
 }
 
 export class CommandContext {
@@ -70,15 +72,18 @@ export class CommandContext {
 
   /**
    * Unified reply method for both Slash and Prefix commands.
+   * Enforces allowedMentions: { parse: [] } by default to prevent ping spams!
    */
   public async reply(options: CommandReplyOptions | string): Promise<void> {
     const payload = typeof options === 'string' ? { content: options } : options;
+    const defaultAllowedMentions: MessageMentionOptions = payload.allowedMentions || { parse: [] };
 
     if (this.isSlash && this.slashInteraction) {
       const interactionOptions: InteractionReplyOptions = {
         content: payload.content,
         embeds: payload.embeds,
         flags: payload.ephemeral ? MessageFlags.Ephemeral : undefined,
+        allowedMentions: defaultAllowedMentions,
       };
 
       if (this.slashInteraction.deferred || this.slashInteraction.replied) {
@@ -90,6 +95,7 @@ export class CommandContext {
       const messageOptions: MessageReplyOptions = {
         content: payload.content,
         embeds: payload.embeds,
+        allowedMentions: defaultAllowedMentions,
       };
 
       await this.message.reply(messageOptions);

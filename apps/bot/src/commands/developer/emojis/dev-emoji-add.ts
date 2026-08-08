@@ -5,6 +5,7 @@ import {
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
+import { PermissionGuard } from '../../../utils/permission-guard';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -42,37 +43,9 @@ export const command: CommandModule = {
   },
 
   async execute(ctx: CommandContext): Promise<void> {
-    const devGuildId = process.env.DEV_GUILD_ID;
-    const creatorId = process.env.CREATOR_ACCOUNT_ID;
-    const devId = process.env.DEV_ACCOUNT_ID;
-
-    // 1. Verify Dev Guild Only Restriction
-    if (!ctx.guild || (devGuildId && ctx.guild.id !== devGuildId)) {
-      const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Acesso Negado`,
-        description:
-          'Este comando só pode ser executado dentro do servidor de desenvolvimento oficial da Kuruttina.',
-        color: STATUS_COLORS.ERROR.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
-      return;
-    }
-
-    // 2. Verify Creator or Dev Account Only Restriction
-    const userId = ctx.user.id;
-    const isAuthorized =
-      (creatorId && userId === creatorId) || (devId && userId === devId);
-
-    if (!isAuthorized) {
-      const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Permissão Insuficiente`,
-        description:
-          'Apenas os desenvolvedores autorizados ou o criador da Kuruttina podem executar este comando.',
-        color: STATUS_COLORS.ERROR.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
-      return;
-    }
+    // 1. Enforce Dev Only Permission & Dev Guild Security Guard
+    const isAuthorized = await PermissionGuard.enforceDevOnly(ctx);
+    if (!isAuthorized) return;
 
     await ctx.deferReply(true);
 

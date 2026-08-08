@@ -1,31 +1,80 @@
 Copyright (c) 2026 Athos Montarroyos. All rights reserved. / Todos os direitos reservados.
 
 ===============================================================================
-TERMOS DE LICENÇA E USO (PORTUGUÊS)
+TERMOS DE LICENÇA E USO — FONTE DISPONÍVEL DA KURUTTINA (PORTUGUÊS)
 ===============================================================================
-Este código-fonte é de propriedade exclusiva de Athos Montarroyos e é 
-disponibilizado publicamente APENAS para fins de visualização, auditoria de 
-código e exibição em portfólio.
 
-É ESTRITAMENTE PROIBIDO:
-- Copiar, duplicar ou clonar este código (no todo ou em parte);
-- Modificar, adaptar ou criar obras derivadas;
-- Redistribuir, sublicenciar, vender ou monetizar este software;
-- Hospedar, executar ou implantar instâncias deste software para uso comercial
-  ou não comercial por terceiros, sem a permissão prévia e expressa por escrito 
-  do detentor dos direitos autorais.
+Este código-fonte é propriedade intelectual exclusiva de Athos Montarroyos. 
+O acesso a este repositório é disponibilizado publicamente no modelo "Source-Available" 
+ESTRITAMENTE para fins de visualização técnica, auditoria de segurança e exibição de portfólio.
+
+-------------------------------------------------------------------------------
+1. USOS PERMITIDOS
+-------------------------------------------------------------------------------
+Você PODE:
+• Visualizar e estudar o código-fonte publicamente neste repositório;
+• Avaliar a qualidade arquitetural, design system e padrões de código para fins de contratação ou recrutamento;
+• Realizar análises e auditorias de segurança no código exposto.
+
+-------------------------------------------------------------------------------
+2. USOS ESTRITAMENTE PROIBIDOS (SEM EXCEÇÃO)
+-------------------------------------------------------------------------------
+É ESTRITAMENTE PROIBIDO a qualquer terceiro, sem autorização prévia, expressa e por escrito de Athos Montarroyos:
+• Copiar, clonar, baixar ou reproduzir este código (no todo ou em parte) para qualquer finalidade;
+• Modificar, adaptar, traduzir ou criar obras derivadas baseadas neste software;
+• Redistribuir, publicar, sublicenciar, vender ou monetizar este código ou suas partes;
+• Hospedar, executar ou implantar instâncias públicas ou privadas deste bot/dashboard para uso comercial ou não comercial.
+
+-------------------------------------------------------------------------------
+3. MARCAS REGISTRADAS E ATIVOS VISUAIS
+-------------------------------------------------------------------------------
+O nome "Kuruttina", a marca, avatares, arte visual, slogans e elementos de identidade
+pertencem exclusivamente a Athos Montarroyos e não estão licenciados sob estes termos.
+
+-------------------------------------------------------------------------------
+4. ISENÇÃO DE GARANTIA
+-------------------------------------------------------------------------------
+ESTE SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPLÍCITA. 
+EM NENHUM CASO O AUTOR SERÁ RESPONSÁVEL POR QUAISQUER RECLAMAÇÕES, DANOS OU OUTRAS RESPONSABILIDADES.
+
+Para solicitações de licença comercial ou parcerias: athosmontarroyos@gmail.com
+
 
 ===============================================================================
-TERMS OF LICENSE AND USE (ENGLISH)
+TERMS OF LICENSE AND USE — KURUTTINA SOURCE-AVAILABLE LICENSE (ENGLISH)
 ===============================================================================
-This source code is the exclusive property of Athos Montarroyos and is made 
-publicly available STRICTLY for viewing, code auditing, and portfolio display 
-purposes only.
 
-IT IS STRICTLY PROHIBITED TO:
-- Copy, duplicate, or clone this code (in whole or in part);
-- Modify, adapt, or create derivative works;
-- Redistribute, sublicense, sell, or monetize this software;
-- Host, run, or deploy instances of this software for commercial or 
-  non-commercial use by third parties, without prior explicit written 
-  permission from the copyright holder.
+This source code is the exclusive intellectual property of Athos Montarroyos.
+Access to this repository is made available under a "Source-Available" model
+STRICTLY for technical viewing, security auditing, and portfolio evaluation purposes.
+
+-------------------------------------------------------------------------------
+1. PERMITTED USES
+-------------------------------------------------------------------------------
+You MAY:
+• View and inspect the source code publicly within this repository;
+• Review code quality, architecture, and design patterns for hiring or recruitment purposes;
+• Perform security audits and code inspections on the exposed source code.
+
+-------------------------------------------------------------------------------
+2. STRICTLY PROHIBITED ACTIONS (ZERO EXCEPTION)
+-------------------------------------------------------------------------------
+Without prior, explicit, written authorization from Athos Montarroyos, it is STRICTLY PROHIBITED to:
+• Copy, clone, download, or reproduce this code (in whole or in part) for any purpose;
+• Modify, adapt, translate, or create derivative works based on this software;
+• Redistribute, republish, sublicense, sell, or monetize this code or any portion thereof;
+• Host, deploy, or run public or private instances of this bot/dashboard for commercial or non-commercial use.
+
+-------------------------------------------------------------------------------
+3. TRADEMARKS & VISUAL ASSETS
+-------------------------------------------------------------------------------
+The name "Kuruttina", logo, branding, visual assets, avatars, and brand identity are the exclusive
+property of Athos Montarroyos and are not licensed under these terms.
+
+-------------------------------------------------------------------------------
+4. DISCLAIMER OF WARRANTY
+-------------------------------------------------------------------------------
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY.
+
+For commercial licensing requests or business inquiries: athosmontarroyos@gmail.com

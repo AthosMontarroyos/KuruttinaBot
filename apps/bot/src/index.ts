@@ -1,6 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import { GatewayIntentBits } from 'discord.js';
+import { loggerColors } from '@kuruttina/shared';
 import { getFilesRecursively } from './utils/recursive-loader';
 import { CommandModule } from './types/command-interface';
 import { KuruttinaClient } from './types/kuruttina-client';
@@ -10,7 +11,9 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const token = process.env.DISCORD_TOKEN;
 if (!token) {
-  console.error('❌ [Kuruttina Bot] DISCORD_TOKEN não encontrado no arquivo .env da raiz!');
+  console.error(
+    loggerColors.error('❌ [Kuruttina Bot] DISCORD_TOKEN não encontrado no arquivo .env da raiz!')
+  );
   process.exit(1);
 }
 
@@ -28,7 +31,7 @@ const client = new KuruttinaClient({
 const commandsDir = path.join(__dirname, 'commands');
 const commandFiles = getFilesRecursively(commandsDir);
 
-console.log(`📦 [Kuruttina Loader] Carregando ${commandFiles.length} comando(s)...`);
+console.log(loggerColors.info(`📦 [Kuruttina Loader] Carregando ${commandFiles.length} comando(s)...`));
 
 for (const filePath of commandFiles) {
   try {
@@ -38,13 +41,13 @@ for (const filePath of commandFiles) {
     if (commandModule && commandModule.data) {
       client.commands.set(commandModule.data.name, commandModule);
       console.log(
-        `  ✓ Comando registrado: /${commandModule.data.name} (Prefixo: ${
-          commandModule.prefixAliases?.join(', ') || 'nenhum'
-        })`
+        loggerColors.success(
+          `  ✓ Comando registrado: /${commandModule.data.name}`
+        ) + loggerColors.muted(` (Prefixo: ${commandModule.prefixAliases?.join(', ') || 'nenhum'})`)
       );
     }
   } catch (err) {
-    console.error(`  ❌ Falha ao carregar arquivo de comando ${filePath}:`, err);
+    console.error(loggerColors.error(`  ❌ Falha ao carregar arquivo de comando ${filePath}:`), err);
   }
 }
 
@@ -52,7 +55,7 @@ for (const filePath of commandFiles) {
 const eventsDir = path.join(__dirname, 'events');
 const eventFiles = getFilesRecursively(eventsDir);
 
-console.log(`📡 [Kuruttina Loader] Carregando ${eventFiles.length} evento(s)...`);
+console.log(loggerColors.info(`📡 [Kuruttina Loader] Carregando ${eventFiles.length} evento(s)...`));
 
 for (const filePath of eventFiles) {
   try {
@@ -65,15 +68,15 @@ for (const filePath of eventFiles) {
       } else {
         client.on(eventModule.name, (...args) => eventModule.execute(...args));
       }
-      console.log(`  ✓ Evento registrado: ${eventModule.name}`);
+      console.log(loggerColors.success(`  ✓ Evento registrado: ${eventModule.name}`));
     }
   } catch (err) {
-    console.error(`  ❌ Falha ao carregar arquivo de evento ${filePath}:`, err);
+    console.error(loggerColors.error(`  ❌ Falha ao carregar arquivo de evento ${filePath}:`), err);
   }
 }
 
 // 5. Connect Kuruttina to Discord Gateway
 client.login(token).catch((err) => {
-  console.error('❌ [Kuruttina Bot] Falha ao efetuar login no Discord:', err);
+  console.error(loggerColors.error('❌ [Kuruttina Bot] Falha ao efetuar login no Discord:'), err);
   process.exit(1);
 });

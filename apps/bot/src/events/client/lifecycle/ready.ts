@@ -1,5 +1,5 @@
 import { Client, Events, ActivityType } from 'discord.js';
-import { DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { DEFAULT_BOT_CONFIG, loggerColors } from '@kuruttina/shared';
 
 export const event = {
   name: Events.ClientReady,
@@ -9,10 +9,14 @@ export const event = {
     if (!botUser) return;
 
     console.log(
-      `⚡ [Kuruttina] Bot conectada com sucesso como ${botUser.tag}! (ID: ${botUser.id})`
+      loggerColors.highlight(
+        `⚡ [Kuruttina] Bot conectada com sucesso como ${botUser.tag}! (ID: ${botUser.id})`
+      )
     );
     console.log(
-      `🎯 [Kuruttina] Personalidade: ${DEFAULT_BOT_CONFIG.PERSONALITY} | Prefixo Padrão: ${DEFAULT_BOT_CONFIG.DEFAULT_PREFIX}`
+      loggerColors.info(
+        `🎯 [Kuruttina] Personalidade: ${DEFAULT_BOT_CONFIG.PERSONALITY} | Prefixo Padrão: ${DEFAULT_BOT_CONFIG.DEFAULT_PREFIX}`
+      )
     );
 
     // Set presence status

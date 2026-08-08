@@ -164,3 +164,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **AWS Infrastructure Resource Efficiency (Zero Polling / Zero Gateway Abuse)**:
   - Custom guild / affiliate commands stored in Supabase MUST NOT use continuous polling loops on AWS Fargate (prevents CPU spikes, memory churn, and Discord REST API rate-limiting).
   - Affiliate/Custom commands are registered **On-Demand** via targeted REST calls (`client.application.commands.set(commands, guildId)`) triggered by Supabase Webhooks or direct guild events (`guildCreate`), caching registered command hashes to skip redundant API roundtrips.
+
+### 18. Mandatory Knowledge Persistence & Skill Documentation Policy
+- **MANDATORY POLICY (ZERO EXCEPTION)**: NEVER, under ANY circumstances, fail to document valuable new technical decisions, architectural rules, security policies, workflows, or developer guidelines inside **`AGENTS.md`** or the specific relevant **Skill file** (`.agents/skills/<skill_name>/SKILL.md`).
+- **Immediate Context Persistence**: Every new rule, constraint, or pattern established during development MUST be immediately persisted into the appropriate documentation file so future AI sessions and team members inherit the context automatically.

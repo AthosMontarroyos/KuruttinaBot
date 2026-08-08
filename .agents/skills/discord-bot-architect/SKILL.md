@@ -22,6 +22,7 @@ Covers Discord.js with TypeScript, PostgreSQL/Supabase database integrations, Re
 - **Request Minimal Intents**: Request only required intents (minimize privileged intents).
 - **Supabase / PostgreSQL Persistence**: Store bot settings, guild custom prefixes, user profiles, and logs securely with parameterized queries / Supabase SDK.
 - **React Dashboard**: Build modern web dashboards for bot management using React with TypeScript.
+- **JavaScript Object (JSON Format) for Embeds & Components V2**: All Embeds and Components V2 MUST be defined as raw JavaScript Objects / JSON structures (`APIEmbed`, `APIActionRowComponent`, `APIButtonComponent` or `{ title, description, color, fields, components }`). This guarantees 100% serializability to Supabase DB and seamless exportability/sharing between the Bot and Web Dashboard.
 - **Deep Research & Documentation**: Whenever encountering unfamiliar Discord.js features, methods, or version-specific details, perform web searches against official Discord.js documentation (`discord.js.org` / `discordjs.dev`).
 
 ## Command & Event Directory Hierarchy

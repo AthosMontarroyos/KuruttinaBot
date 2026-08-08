@@ -119,4 +119,8 @@ Guidelines and rules for AI coding assistants working in this repository.
 #### Frontend (Next.js / React + Impeccable + Copywriting)
 - Build modular, clean React components using modern React patterns (Functional Components, Hooks, Custom Hooks).
 - Serve shared assets from `Pictures/` via Next.js API asset routers.
-- Use `frontend-architect`, `impeccable`, and `copywriting` rules for UI design, persuasive UX copy, responsiveness, accessibility (a11y), visual polish, and ENTP voice consistency.
+- Use `frontend-architect`, `impeccable`, and `copywriting` rules for UI design, persuasive UX copy, responsiveness, accessibility (a11y), visual polish, and INFJ voice consistency.
+
+### 12. JavaScript Object (JSON Format) for Embeds & Components V2
+- **MANDATORY POLICY**: All Discord Embeds and Message Components V2 must be defined and constructed in **JavaScript Object Notation (JS Object / JSON format)** (e.g. `APIEmbed`, `APIActionRowComponent`, `APIButtonComponent`, or JSON object factory functions like `{ title, description, color, fields, components }`).
+- **Rationale & Exportability**: Raw JS Objects/JSON structures are lightweight, 100% serializable to Supabase DB, easily exportable, and seamlessly shared between the Bot backend (`apps/bot`) and Website frontend (`apps/website` dashboard previews) without tight coupling to Discord.js class instances (`EmbedBuilder` / `ActionRowBuilder`).

@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, APIEmbed } from 'discord.js';
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
-import { CommandContext } from '../../../types/command-context';
-import { CommandModule } from '../../../types/command-interface';
+import { CommandContext } from '../../../../types/command-context';
+import { CommandModule } from '../../../../types/command-interface';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()

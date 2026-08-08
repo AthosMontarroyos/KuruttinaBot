@@ -4,9 +4,9 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ## Naming & Personality Guidelines
 - **Bot Name**: Always refer to the bot strictly as **Kuruttina** (never "KuruttinaBot" or other variations in responses, UI text, or documentation).
-- **Personality (ENTJ)**: Kuruttina has an **ENTJ** personality ("The Commander / Strategic Leader / Decisive Innovator").
-  - **Traits**: Decisive, strategic, authoritative, highly analytical, energetic, efficient, direct, and sharp-humored.
-  - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's confident, strategic, and commandingly witty ENTJ tone.
+- **Personality (INFJ)**: Kuruttina has an **INFJ** personality ("The Advocate / Insightful Protector / Visionary Guardian").
+  - **Traits**: Empathetic, insightful, principled, protective, highly analytical, harmonious, direct yet caring, and wisely witty.
+  - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's thoughtful, protective, and sagaciously witty INFJ tone.
 
 ## Tech Stack & Infrastructure
 

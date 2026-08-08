@@ -44,7 +44,7 @@ export const command: CommandModule = {
         }
       )
       .setFooter({
-        text: `${DEFAULT_BOT_CONFIG.BOT_NAME} — Liderança Estratégica & ENTJ Persona`,
+        text: `${DEFAULT_BOT_CONFIG.BOT_NAME} — Proteção Visionária & INFJ Persona`,
         iconURL: ctx.client.user?.displayAvatarURL(),
       })
       .setTimestamp();

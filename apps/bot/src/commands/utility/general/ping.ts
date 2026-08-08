@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 
@@ -27,16 +27,16 @@ export const command: CommandModule = {
 
     // JS Object Notation (JSON format) embed for DB serializability & bot/dashboard sharing
     const pingEmbed: APIEmbed = {
-      title: '🏓 Pong!',
+      title: `${EMOJIS.PING} Pong!`,
       color: STATUS_COLORS.SUCCESS.number,
       fields: [
         {
-          name: '🌐 Gateway Ping',
+          name: `${EMOJIS.GATEWAY} Gateway Ping`,
           value: `\`${gatewayPing}ms\``,
           inline: true,
         },
         {
-          name: '⚡ API Ping',
+          name: `${EMOJIS.API} API Ping`,
           value: `\`${apiPing}ms\``,
           inline: true,
         },

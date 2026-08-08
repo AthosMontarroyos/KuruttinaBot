@@ -125,3 +125,11 @@ Guidelines and rules for AI coding assistants working in this repository.
 ### 12. JavaScript Object (JSON Format) for Embeds & Components V2
 - **MANDATORY POLICY**: All Discord Embeds and Message Components V2 must be defined and constructed in **JavaScript Object Notation (JS Object / JSON format)** (e.g. `APIEmbed`, `APIActionRowComponent`, `APIButtonComponent`, or JSON object factory functions like `{ title, description, color, fields, components }`).
 - **Rationale & Exportability**: Raw JS Objects/JSON structures are lightweight, 100% serializable to Supabase DB, easily exportable, and seamlessly shared between the Bot backend (`apps/bot`) and Website frontend (`apps/website` dashboard previews) without tight coupling to Discord.js class instances (`EmbedBuilder` / `ActionRowBuilder`).
+
+### 13. Code Language & Multilingual Localization (i18n) Policy
+- **Primary Code Base Language**: **English (`en-US`)** is the mandatory codebase language for variable names, function names, types, inline code comments, git commit messages, and internal architecture documentation.
+- **Bot & Dashboard Multilingual Support**: Kuruttina is built multi-lingual from day one, launching with default initial locale support for **`pt-BR`** (Portuguese - Brazil) and **`en-US`** (English).
+- **Strict Localization & Translation Rules**:
+  - **Zero Literal Translations**: NEVER translate technical terms, idioms, or expressions word-for-word.
+  - **Slang & Cultural Adaptation**: Slang and idiomatic expressions MUST be culturally adapted to fit the target language's natural flow (e.g. `pt-BR`: "Tá ligado?" ➔ `en-US`: "Are you with me?").
+  - **Proper Names Preservation**: Proper names, brand names, and bot identity (`Kuruttina`) MUST NEVER be translated unless phonetically or orthographically impossible to comprehend in the target language.

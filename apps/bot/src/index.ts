@@ -1,8 +1,9 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits, Collection } from 'discord.js';
+import { GatewayIntentBits } from 'discord.js';
 import { getFilesRecursively } from './utils/recursive-loader';
 import { CommandModule } from './types/command-interface';
+import { KuruttinaClient } from './types/kuruttina-client';
 
 // 1. Load root .env file strictly from project root
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
@@ -13,8 +14,8 @@ if (!token) {
   process.exit(1);
 }
 
-// 2. Initialize Discord Client with GatewayIntents
-const client = new Client({
+// 2. Initialize KuruttinaClient with GatewayIntents
+const client = new KuruttinaClient({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -22,9 +23,6 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
   ],
 });
-
-// Initialize collection for commands
-client.commands = new Collection<string, CommandModule>();
 
 // 3. Load Commands Recursively
 const commandsDir = path.join(__dirname, 'commands');
@@ -39,7 +37,11 @@ for (const filePath of commandFiles) {
 
     if (commandModule && commandModule.data) {
       client.commands.set(commandModule.data.name, commandModule);
-      console.log(`  ✓ Comando registrado: /${commandModule.data.name} (Prefixo: ${commandModule.prefixAliases?.join(', ') || 'nenhum'})`);
+      console.log(
+        `  ✓ Comando registrado: /${commandModule.data.name} (Prefixo: ${
+          commandModule.prefixAliases?.join(', ') || 'nenhum'
+        })`
+      );
     }
   } catch (err) {
     console.error(`  ❌ Falha ao carregar arquivo de comando ${filePath}:`, err);

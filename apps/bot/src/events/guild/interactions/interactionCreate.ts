@@ -1,14 +1,7 @@
-import { Interaction, Collection, EmbedBuilder } from 'discord.js';
+import { Interaction, EmbedBuilder } from 'discord.js';
 import { STATUS_COLORS } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
-import { CommandModule } from '../../../types/command-interface';
-
-// Extended Client type carrying commands collection
-declare module 'discord.js' {
-  interface Client {
-    commands: Collection<string, CommandModule>;
-  }
-}
+import { KuruttinaClient } from '../../../types/kuruttina-client';
 
 export const event = {
   name: 'interactionCreate',
@@ -16,8 +9,9 @@ export const event = {
   async execute(interaction: Interaction): Promise<void> {
     if (!interaction.isChatInputCommand()) return;
 
+    const client = interaction.client as KuruttinaClient;
     const commandName = interaction.commandName;
-    const command = interaction.client.commands.get(commandName);
+    const command = client.commands.get(commandName);
 
     if (!command) {
       console.warn(`⚠️ [Kuruttina] Comando Slash desconhecido recebido: ${commandName}`);

@@ -1,6 +1,7 @@
 import { Message, EmbedBuilder } from 'discord.js';
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
+import { KuruttinaClient } from '../../../types/kuruttina-client';
 
 export const event = {
   name: 'messageCreate',
@@ -17,8 +18,10 @@ export const event = {
 
     if (!commandTrigger) return;
 
+    const client = message.client as KuruttinaClient;
+
     // Find command by Slash name or Prefix Aliases
-    const command = message.client.commands.find((cmd) => {
+    const command = client.commands.find((cmd) => {
       if (cmd.data.name === commandTrigger) return true;
       if (cmd.prefixAliases && cmd.prefixAliases.includes(commandTrigger)) return true;
       return false;

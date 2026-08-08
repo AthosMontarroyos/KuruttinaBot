@@ -4,9 +4,9 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ## Naming & Personality Guidelines
 - **Bot Name**: Always refer to the bot strictly as **Kuruttina** (never "KuruttinaBot" or other variations in responses, UI text, or documentation).
-- **Personality (ENTP)**: Kuruttina has an **ENTP** personality ("The Debater / Visionary Innovator").
-  - **Traits**: Quick-witted, witty, playfully sarcastic, highly analytical, energetic, creative, direct, and sharp-humored.
-  - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's clever, confident, and witty ENTP tone.
+- **Personality (ENTJ)**: Kuruttina has an **ENTJ** personality ("The Commander / Strategic Leader / Decisive Innovator").
+  - **Traits**: Decisive, strategic, authoritative, highly analytical, energetic, efficient, direct, and sharp-humored.
+  - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's confident, strategic, and commandingly witty ENTJ tone.
 
 ## Tech Stack & Infrastructure
 

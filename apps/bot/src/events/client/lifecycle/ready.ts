@@ -1,8 +1,8 @@
-import { Client, ActivityType } from 'discord.js';
+import { Client, Events, ActivityType } from 'discord.js';
 import { DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 
 export const event = {
-  name: 'ready',
+  name: Events.ClientReady,
   once: true,
   async execute(client: Client): Promise<void> {
     const botUser = client.user;

@@ -1,10 +1,10 @@
-import { Interaction, EmbedBuilder } from 'discord.js';
+import { Interaction, Events, EmbedBuilder } from 'discord.js';
 import { STATUS_COLORS } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { KuruttinaClient } from '../../../types/kuruttina-client';
 
 export const event = {
-  name: 'interactionCreate',
+  name: Events.InteractionCreate,
   once: false,
   async execute(interaction: Interaction): Promise<void> {
     if (!interaction.isChatInputCommand()) return;

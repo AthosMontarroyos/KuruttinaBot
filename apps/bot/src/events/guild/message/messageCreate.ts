@@ -1,10 +1,10 @@
-import { Message, EmbedBuilder } from 'discord.js';
+import { Message, Events, EmbedBuilder } from 'discord.js';
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { KuruttinaClient } from '../../../types/kuruttina-client';
 
 export const event = {
-  name: 'messageCreate',
+  name: Events.MessageCreate,
   once: false,
   async execute(message: Message): Promise<void> {
     if (message.author.bot || !message.guild) return;

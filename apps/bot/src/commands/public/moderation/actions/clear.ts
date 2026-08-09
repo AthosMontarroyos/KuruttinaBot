@@ -5,14 +5,22 @@ import {
   TextChannel,
   NewsChannel,
   ThreadChannel,
-  Collection,
-  Message,
 } from 'discord.js';
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { PermissionGuard } from '../../../../utils/permission-guard';
 import { CooldownManager } from '../../../../utils/cooldown-manager';
+
+/**
+ * Extrai o ID numérico do usuário aceitando menção (<@ID> / <@!ID>) ou ID bruto (123456789012345678).
+ */
+function extractUserId(input?: string | null): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+  const match = trimmed.match(/^<@!?(\d+)>$/) || trimmed.match(/^(\d{17,20})$/);
+  return match ? match[1] : null;
+}
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -27,16 +35,10 @@ export const command: CommandModule = {
         .setMaxValue(200)
         .setRequired(true)
     )
-    .addUserOption((option) =>
-      option
-        .setName('usuario')
-        .setDescription('Filtrar e apagar mensagens apenas deste usuário')
-        .setRequired(false)
-    )
     .addStringOption((option) =>
       option
-        .setName('id_usuario')
-        .setDescription('ID do usuário para filtrar (caso ele não esteja no servidor)')
+        .setName('usuario')
+        .setDescription('Filtrar por usuário enviando uma menção <@membro> ou ID numérico')
         .setRequired(false)
     ),
   prefixAliases: ['clear', 'limpar', 'purge', 'clean'],
@@ -46,12 +48,13 @@ export const command: CommandModule = {
     syntax: 'k!clear <1-200> [@usuario|ID]',
     examples: [
       '/clear quantidade:50',
-      '/clear quantidade:100 usuario:@membro',
+      '/clear quantidade:100 usuario:<@123456789012345678>',
+      '/clear quantidade:100 usuario:123456789012345678',
       'k!clear 100',
       'k!limpar 50 123456789012345678',
     ],
     detailedDescription:
-      'Limpa mensagens em massa no canal atual (máximo 200 mensagens). Filtra por membro ou ID se especificado, ignorando mensagens mais antigas que 14 dias para evitar falhas.',
+      'Limpa mensagens em massa no canal atual (máximo 200 mensagens). Aceita menção <@usuario> ou ID numérico direto na mesma opção, ignorando mensagens mais antigas que 14 dias para evitar falhas.',
     requiredPermissions: ['ManageMessages'],
   },
 
@@ -116,9 +119,8 @@ export const command: CommandModule = {
 
     if (ctx.isSlash && ctx.slashInteraction) {
       amount = ctx.slashInteraction.options.getInteger('quantidade', true);
-      const userOption = ctx.slashInteraction.options.getUser('usuario');
-      const userIdOption = ctx.slashInteraction.options.getString('id_usuario');
-      targetUserId = userOption ? userOption.id : userIdOption ? userIdOption.trim() : null;
+      const userParam = ctx.slashInteraction.options.getString('usuario');
+      targetUserId = extractUserId(userParam);
     } else {
       amount = parseInt(ctx.args[0], 10);
       if (isNaN(amount) || amount < 1 || amount > 200) {
@@ -134,7 +136,7 @@ export const command: CommandModule = {
       if (ctx.message && ctx.message.mentions.users.size > 0) {
         targetUserId = ctx.message.mentions.users.first()!.id;
       } else if (ctx.args[1]) {
-        targetUserId = ctx.args[1].trim();
+        targetUserId = extractUserId(ctx.args[1]);
       }
     }
 

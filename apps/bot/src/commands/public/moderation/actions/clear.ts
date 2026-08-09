@@ -146,6 +146,7 @@ export const command: CommandModule = {
 
     try {
       let totalDeleted = 0;
+      let skippedOldMessages = false;
       let lastMessageId: string | undefined = !ctx.isSlash && ctx.message ? ctx.message.id : undefined;
       const targetAmount = amount;
 
@@ -196,6 +197,10 @@ export const command: CommandModule = {
         const deletedBatch = await channel.bulkDelete(messagesToDelete, true);
         totalDeleted += deletedBatch.size;
 
+        if (deletedBatch.size < messagesToDelete.size) {
+          skippedOldMessages = true;
+        }
+
         // Stop if no messages deleted (remaining messages are >14 days old) or end of channel reached
         if (deletedBatch.size === 0 || fetchedMessages.size < fetchLimit) {
           break;
@@ -204,27 +209,33 @@ export const command: CommandModule = {
 
       // Render success response
       const filterNotice = targetUserId ? ` do usuário <@${targetUserId}>` : '';
+      const fields = [
+        {
+          name: '📊 Solicitadas',
+          value: `\`${amount}\``,
+          inline: true,
+        },
+        {
+          name: '🗑️ Deletadas',
+          value: `\`${totalDeleted}\``,
+          inline: true,
+        },
+      ];
+
+      // Conditionally show 14-day limit warning ONLY if older messages were actually skipped
+      if (skippedOldMessages) {
+        fields.push({
+          name: '🕒 Trava de 14 Dias',
+          value: 'Algumas mensagens com mais de 14 dias não puderam ser apagadas e foram ignoradas automaticamente.',
+          inline: false,
+        });
+      }
+
       const successEmbed: APIEmbed = {
         title: `${EMOJIS.SUCCESS} Limpeza Concluída`,
         description: `Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
         color: STATUS_COLORS.SUCCESS.number,
-        fields: [
-          {
-            name: '📊 Solicitadas',
-            value: `\`${amount}\``,
-            inline: true,
-          },
-          {
-            name: '🗑️ Deletadas',
-            value: `\`${totalDeleted}\``,
-            inline: true,
-          },
-          {
-            name: '🕒 Trava de 14 Dias',
-            value: 'Mensagens com mais de 14 dias foram ignoradas automaticamente.',
-            inline: false,
-          },
-        ],
+        fields,
         footer: {
           text: DEFAULT_BOT_CONFIG.BOT_NAME,
           icon_url: ctx.client.user?.displayAvatarURL(),

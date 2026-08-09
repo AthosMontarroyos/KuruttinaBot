@@ -8,7 +8,10 @@ import { CommandModule } from './types/command-interface';
 // Load root .env file
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
-export async function syncSlashCommands(targetScope: 'dev' | 'public' | 'affiliate' | 'all' = 'all', isClear = false): Promise<void> {
+export async function syncSlashCommands(
+  targetScope: 'dev' | 'public' | 'affiliate' | 'all' = 'all',
+  isClear = false
+): Promise<void> {
   const token = process.env.DISCORD_TOKEN;
   const clientId = process.env.CLIENT_ID || process.env.DISCORD_CLIENT_ID;
   const guildId = process.env.DEV_GUILD_ID;
@@ -48,39 +51,47 @@ export async function syncSlashCommands(targetScope: 'dev' | 'public' | 'affilia
 
   try {
     if (isClear) {
-      console.log(loggerColors.warn(`🧹 [Auto-Deploy] Limpando comandos Slash (Escopo: ${targetScope.toUpperCase()})...`));
+      console.log(loggerColors.warn(`🧹 [Deploy] Limpando comandos Slash (Escopo: ${targetScope.toUpperCase()})...`));
 
       if ((targetScope === 'dev' || targetScope === 'all') && guildId) {
         await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
-        console.log(loggerColors.success('✅ [Auto-Deploy] Cache do servidor DEV zerado!'));
+        console.log(loggerColors.success('✅ [Deploy] Cache do servidor DEV zerado!'));
       }
 
       if (targetScope === 'public' || targetScope === 'all') {
         await rest.put(Routes.applicationCommands(clientId), { body: [] });
-        console.log(loggerColors.success('✅ [Auto-Deploy] Cache GLOBAIS zerado!'));
+        console.log(loggerColors.success('✅ [Deploy] Cache GLOBAL zerado!'));
       }
       return;
     }
 
-    console.log(loggerColors.highlight(`🚀 [Auto-Deploy] Sincronizando comandos Slash no bot startup...`));
+    console.log(loggerColors.highlight(`🚀 [Deploy] Sincronizando comandos Slash...`));
 
-    if (guildId) {
-      const allDevGuildCommands = [...devCommands, ...publicCommands];
-      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: allDevGuildCommands });
+    // 1. Register Public Commands GLOBALLY (Available in ALL servers where Kuruttina is invited)
+    if (targetScope === 'public' || targetScope === 'all') {
       console.log(
-        loggerColors.success(
-          `✅ [Auto-Deploy] ${allDevGuildCommands.length} comando(s) sincronizado(s) no servidor DEV!`
+        loggerColors.info(`🌐 [Deploy Public] Sincronizando ${publicCommands.length} comando(s) públicos GLOBALMENTE...`)
+      );
+      await rest.put(Routes.applicationCommands(clientId), { body: publicCommands });
+      console.log(
+        loggerColors.success(`✅ [Deploy Public] ${publicCommands.length} comando(s) públicos registrados GLOBALMENTE!`)
+      );
+    }
+
+    // 2. Register Developer Commands ONLY in DEV_GUILD_ID
+    if ((targetScope === 'dev' || targetScope === 'all') && guildId) {
+      console.log(
+        loggerColors.info(
+          `📌 [Deploy Dev] Sincronizando ${devCommands.length} comando(s) /developer na Dev Guild (${guildId})...`
         )
       );
-
-      // Clean stale global commands
-      await rest.put(Routes.applicationCommands(clientId), { body: [] });
-    } else {
-      await rest.put(Routes.applicationCommands(clientId), { body: publicCommands });
-      console.log(loggerColors.success(`✅ [Auto-Deploy] ${publicCommands.length} comando(s) sincronizado(s) GLOBALMENTE!`));
+      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: devCommands });
+      console.log(
+        loggerColors.success(`✅ [Deploy Dev] ${devCommands.length} comando(s) /developer registrados na Dev Guild!`)
+      );
     }
   } catch (error) {
-    console.error(loggerColors.error('❌ [Auto-Deploy] Erro na sincronização automática de comandos:'), error);
+    console.error(loggerColors.error('❌ [Deploy] Erro na sincronização de comandos Slash:'), error);
   }
 }
 
@@ -90,7 +101,13 @@ if (require.main === module) {
     const scopeArg = process.argv.find((arg) => arg.startsWith('--scope='));
     if (scopeArg) {
       const value = scopeArg.split('=')[1]?.toLowerCase();
-      if (value === 'dev' || value === 'public' || value === 'commands' || value === 'affiliate' || value === 'all') {
+      if (
+        value === 'dev' ||
+        value === 'public' ||
+        value === 'commands' ||
+        value === 'affiliate' ||
+        value === 'all'
+      ) {
         return value === 'commands' ? 'public' : (value as any);
       }
     }

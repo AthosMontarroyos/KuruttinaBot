@@ -152,7 +152,16 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ### 16. Message Writing Philosophy, Emojis & Visual Highlights Policy
 - **Engaging & Dynamic Message Formatting (No Plain Text)**: All bot messages, embeds, and responses MUST be visually polished, structured, and highly readable. Avoid plain or unformatted text blocks. Use rich Markdown elements (bold text, inline code blocks `` `value` ``, blockquotes, and lists) to create clean visual hierarchy.
-- **Discord Developer Portal Emojis Integration (`EMOJIS`)**: Centralize all emojis in `@kuruttina/shared` (`EMOJIS` constant). Use clean icons/emojis in field titles, headers, and status messages to enhance visual appeal. Supports seamless swapping to custom Discord Application Emojis (`<:name:id>`).
+- **Discord Developer Portal Emojis Integration (`getEmoji`)**:
+  - All visual designs and embeds MUST use `await getEmoji(client, 'NOME')` (`src/utils/emoji-resolver.ts`) or `EMOJIS.NOME` (`@kuruttina/shared`).
+  - **Dynamic Resolution Engine**: When the developer uploads a custom emoji to the Discord Developer Portal with a name matching a system key (e.g. `success`, `error`, `moderation`, `shield`), `getEmoji()` automatically detects it from `client.application.emojis.cache` and renders the custom Developer Portal emoji (`<:name:id>` / `<a:name:id>`) in all bot embeds and UI designs without requiring code changes!
+  - **Official Emoji Naming Matrix**:
+    - Status: `success`, `error`, `warning`, `info`, `loading`
+    - Categories: `moderation`, `utility`, `developer`, `admin`, `fun`, `affiliate`
+    - Actions: `ban`, `kick`, `mute`, `unmute`, `clear`, `search`, `add`, `trash`
+    - Infrastructure: `ping`, `gateway`, `api`, `bot_status`, `uptime`
+    - Security: `shield`, `lock`, `unlock`, `settings`, `logs`, `user`, `guild`, `crown`
+    - Branding: `link`, `documentation`, `star`
 - **Standardized Status Colors & Highlights**: Always use predefined `STATUS_COLORS` (`SUCCESS`, `WARNING`, `ERROR`, `INFO`, `NEUTRAL`) for embed borders, status indicators, and badges to ensure visual consistency across the Bot and Web Dashboard.
 
 ### 17. Multi-Scope Deployment & AWS Resource Efficiency for Affiliate/Custom Commands

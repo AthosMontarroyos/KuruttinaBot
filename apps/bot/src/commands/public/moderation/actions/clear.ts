@@ -141,12 +141,16 @@ export const command: CommandModule = {
       }
     }
 
+    // Immediately clean up prefix trigger message as a bonus if executed via prefix
+    if (!ctx.isSlash && ctx.message && ctx.message.deletable) {
+      ctx.message.delete().catch(() => {});
+    }
+
     // Defer response ephemerally (3-second rule)
     await ctx.deferReply(true);
 
     try {
       let totalDeleted = 0;
-      // Start fetching BEFORE the trigger message if it's a prefix command
       let lastMessageId: string | undefined = !ctx.isSlash && ctx.message ? ctx.message.id : undefined;
       const targetAmount = amount;
 
@@ -203,34 +207,39 @@ export const command: CommandModule = {
         }
       }
 
-      // Also clean up prefix command trigger message if executed via prefix
-      if (!ctx.isSlash && ctx.message && ctx.message.deletable) {
-        ctx.message.delete().catch(() => {});
-      }
-
       // Render success response
       const filterNotice = targetUserId ? ` do usuário <@${targetUserId}>` : '';
+      const fields = [
+        {
+          name: '📊 Solicitadas',
+          value: `\`${amount}\``,
+          inline: true,
+        },
+        {
+          name: '🗑️ Deletadas',
+          value: `\`${totalDeleted}\``,
+          inline: true,
+        },
+        {
+          name: '🕒 Trava de 14 Dias',
+          value: 'Mensagens com mais de 14 dias foram ignoradas automaticamente.',
+          inline: false,
+        },
+      ];
+
+      if (!ctx.isSlash) {
+        fields.push({
+          name: '🎁 Bônus de Limpeza',
+          value: 'A mensagem do comando por prefixo foi limpa automaticamente como bônus (sem descontar das solicitadas).',
+          inline: false,
+        });
+      }
+
       const successEmbed: APIEmbed = {
         title: `${EMOJIS.SUCCESS} Limpeza Concluída`,
         description: `Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
         color: STATUS_COLORS.SUCCESS.number,
-        fields: [
-          {
-            name: '📊 Solicitadas',
-            value: `\`${amount}\``,
-            inline: true,
-          },
-          {
-            name: '🗑️ Deletadas',
-            value: `\`${totalDeleted}\``,
-            inline: true,
-          },
-          {
-            name: '🕒 Trava de 14 Dias',
-            value: 'Mensagens com mais de 14 dias foram ignoradas automaticamente.',
-            inline: false,
-          },
-        ],
+        fields,
         footer: {
           text: DEFAULT_BOT_CONFIG.BOT_NAME,
           icon_url: ctx.client.user?.displayAvatarURL(),

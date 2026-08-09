@@ -1,7 +1,8 @@
 import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
+import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
+import { getEmoji } from '../../../../utils/emoji-resolver';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -25,18 +26,22 @@ export const command: CommandModule = {
 
     const apiPing = Date.now() - startMsgTime;
 
+    // Resolve live emojis from Developer Portal
+    const dancingEmoji = await getEmoji(ctx.client, 'DANCING');
+    const verifiedEmoji = await getEmoji(ctx.client, 'VERIFIED');
+
     // JS Object Notation (JSON format) embed for DB serializability & bot/dashboard sharing
     const pingEmbed: APIEmbed = {
-      title: `${EMOJIS.PING} Pong!`,
+      title: `${dancingEmoji} Pong!`,
       color: STATUS_COLORS.SUCCESS.number,
       fields: [
         {
-          name: `${EMOJIS.GATEWAY} Gateway Ping`,
+          name: `${verifiedEmoji} Gateway Ping`,
           value: `\`${gatewayPing}ms\``,
           inline: true,
         },
         {
-          name: `${EMOJIS.API} API Ping`,
+          name: `${verifiedEmoji} API Ping`,
           value: `\`${apiPing}ms\``,
           inline: true,
         },

@@ -8,11 +8,12 @@ import {
   Collection,
   Message,
 } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
+import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { PermissionGuard } from '../../../../utils/permission-guard';
 import { CooldownManager } from '../../../../utils/cooldown-manager';
+import { getEmoji } from '../../../../utils/emoji-resolver';
 
 /**
  * Extrai o ID numérico do usuário aceitando menção (<@ID> / <@!ID>) ou ID bruto (123456789012345678).
@@ -67,8 +68,9 @@ export const command: CommandModule = {
     // 2. Enforce Rate Limit / Cooldown (5 seconds)
     const cooldownLeft = CooldownManager.checkCooldown('clear', ctx.user.id, 5);
     if (cooldownLeft > 0) {
+      const warningEmoji = await getEmoji(ctx.client, 'WARNING');
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.WARNING} Aguarde um momento`,
+        title: `${warningEmoji} Aguarde um momento`,
         description: `Aguarde \`${cooldownLeft}s\` para usar o comando de limpeza novamente.`,
         color: STATUS_COLORS.WARNING.number,
       };
@@ -86,8 +88,9 @@ export const command: CommandModule = {
         channel instanceof ThreadChannel
       )
     ) {
+      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Canal Inválido`,
+        title: `${errorEmoji} Canal Inválido`,
         description: 'Este comando só pode ser executado em canais de texto do servidor.',
         color: STATUS_COLORS.ERROR.number,
       };
@@ -104,8 +107,9 @@ export const command: CommandModule = {
         PermissionFlagsBits.ReadMessageHistory,
       ])
     ) {
+      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Permissão do Bot Ausente`,
+        title: `${errorEmoji} Permissão do Bot Ausente`,
         description:
           'Eu preciso das permissões de **Gerenciar Mensagens** e **Ver Histórico de Mensagens** neste canal para executar a limpeza.',
         color: STATUS_COLORS.ERROR.number,
@@ -125,8 +129,9 @@ export const command: CommandModule = {
     } else {
       amount = parseInt(ctx.args[0], 10);
       if (isNaN(amount) || amount < 1 || amount > 200) {
+        const warningEmoji = await getEmoji(ctx.client, 'WARNING');
         const errorEmbed: APIEmbed = {
-          title: `${EMOJIS.WARNING} Quantidade Inválida`,
+          title: `${warningEmoji} Quantidade Inválida`,
           description: 'Uso correto: `k!clear <1-200> [@usuario|ID]`. Escolha um número entre 1 e 200.',
           color: STATUS_COLORS.WARNING.number,
         };
@@ -207,6 +212,10 @@ export const command: CommandModule = {
         }
       }
 
+      // Resolve live animated cleaning & success emojis from Developer Portal
+      const cleaningEmoji = await getEmoji(ctx.client, 'CLEANING');
+      const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
+
       // Render success response
       const filterNotice = targetUserId ? ` do usuário <@${targetUserId}>` : '';
       const fields = [
@@ -232,8 +241,8 @@ export const command: CommandModule = {
       }
 
       const successEmbed: APIEmbed = {
-        title: `${EMOJIS.SUCCESS} Limpeza Concluída`,
-        description: `Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
+        title: `${cleaningEmoji} Limpeza Concluída`,
+        description: `${successEmoji} Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
         color: STATUS_COLORS.SUCCESS.number,
         fields,
         footer: {
@@ -247,8 +256,9 @@ export const command: CommandModule = {
     } catch (error: any) {
       console.error('❌ [Clear Command Error]:', error);
 
+      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Falha na Limpeza`,
+        title: `${errorEmoji} Falha na Limpeza`,
         description: `Ocorreu um erro ao tentar apagar as mensagens: \`${
           error.message || error
         }\``,

@@ -1,6 +1,7 @@
 import { CommandContext } from '../types/command-context';
-import { EMOJIS, STATUS_COLORS } from '@kuruttina/shared';
-import { APIEmbed, PermissionFlagsBits, PermissionsBitField } from 'discord.js';
+import { STATUS_COLORS } from '@kuruttina/shared';
+import { APIEmbed, PermissionFlagsBits } from 'discord.js';
+import { getEmoji } from './emoji-resolver';
 
 export class PermissionGuard {
   /**
@@ -11,10 +12,12 @@ export class PermissionGuard {
     const creatorId = process.env.CREATOR_ACCOUNT_ID;
     const devId = process.env.DEV_ACCOUNT_ID;
 
+    const angerEmoji = await getEmoji(ctx.client, 'ANGER');
+
     // 1. Dev Guild restriction
     if (!ctx.guild || (devGuildId && ctx.guild.id !== devGuildId)) {
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Acesso Negado`,
+        title: `${angerEmoji} Acesso Negado`,
         description: 'Este comando é restrito ao servidor de desenvolvimento oficial da Kuruttina.',
         color: STATUS_COLORS.ERROR.number,
       };
@@ -28,7 +31,7 @@ export class PermissionGuard {
 
     if (!isAuthorized) {
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Permissão Insuficiente`,
+        title: `${angerEmoji} Permissão Insuficiente`,
         description: 'Apenas os desenvolvedores autorizados ou o criador da Kuruttina podem executar este comando.',
         color: STATUS_COLORS.ERROR.number,
       };
@@ -47,9 +50,11 @@ export class PermissionGuard {
     permissionBit: bigint,
     permissionLabel: string
   ): Promise<boolean> {
+    const errorEmoji = await getEmoji(ctx.client, 'DISMISS');
+
     if (!ctx.guild) {
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Comando Restrito`,
+        title: `${errorEmoji} Comando Restrito`,
         description: 'Este comando só pode ser executado dentro de um servidor.',
         color: STATUS_COLORS.ERROR.number,
       };
@@ -67,7 +72,7 @@ export class PermissionGuard {
 
     if (!hasPerm) {
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Permissão Requerida`,
+        title: `${errorEmoji} Permissão Requerida`,
         description: `Você precisa da permissão de **${permissionLabel}** no servidor para executar este comando.`,
         color: STATUS_COLORS.ERROR.number,
       };

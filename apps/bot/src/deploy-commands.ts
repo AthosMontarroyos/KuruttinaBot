@@ -8,9 +8,75 @@ import { CommandModule } from './types/command-interface';
 // Load root .env file
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
+/**
+ * Smart Sync Diff Engine: Compares remote Discord API commands with local active commands.
+ */
+async function syncCommandGroup(
+  rest: REST,
+  route: string,
+  localCommands: any[],
+  scopeLabel: string,
+  forceFresh = false
+): Promise<void> {
+  if (forceFresh) {
+    console.log(
+      loggerColors.warn(`🧹 [Opção 1: Fresh-Deploy ${scopeLabel}] Limpando cache e realizando deploy do zero...`)
+    );
+    await rest.put(route as any, { body: [] });
+    await rest.put(route as any, { body: localCommands });
+    console.log(
+      loggerColors.success(`✅ [Fresh-Deploy ${scopeLabel}] ${localCommands.length} comando(s) implantados do zero!`)
+    );
+    return;
+  }
+
+  try {
+    // 1. Fetch currently registered commands on Discord API (Opção 2: Smart-Sync Diff)
+    const remoteCommands = (await rest.get(route as any)) as any[];
+
+    // 2. Compare Remote vs Local
+    let needsSync = remoteCommands.length !== localCommands.length;
+
+    if (!needsSync) {
+      const remoteMap = new Map(remoteCommands.map((c) => [c.name, c]));
+      for (const localCmd of localCommands) {
+        const remoteCmd = remoteMap.get(localCmd.name);
+        if (!remoteCmd || remoteCmd.description !== localCmd.description) {
+          needsSync = true;
+          break;
+        }
+      }
+    }
+
+    if (needsSync) {
+      console.log(
+        loggerColors.highlight(
+          `🔄 [Opção 2: Smart-Sync ${scopeLabel}] Alterações/diferenças detectadas. Sincronizando com Discord REST API...`
+        )
+      );
+      await rest.put(route as any, { body: localCommands });
+      console.log(
+        loggerColors.success(`✅ [Smart-Sync ${scopeLabel}] ${localCommands.length} comando(s) sincronizado(s)!`)
+      );
+    } else {
+      console.log(
+        loggerColors.muted(
+          `✨ [Opção 2: Smart-Sync ${scopeLabel}] Comandos já estão 100% em sintonia com a API do Discord (${localCommands.length} ativo(s)). Nenhuma requisição desnecessária efetuada.`
+        )
+      );
+    }
+  } catch {
+    // Fallback: If GET fails, perform direct sync
+    console.log(loggerColors.info(`📌 [Smart-Sync ${scopeLabel}] Sincronizando ${localCommands.length} comando(s)...`));
+    await rest.put(route as any, { body: localCommands });
+    console.log(loggerColors.success(`✅ [Smart-Sync ${scopeLabel}] ${localCommands.length} comando(s) sincronizado(s)!`));
+  }
+}
+
 export async function syncSlashCommands(
   targetScope: 'dev' | 'public' | 'affiliate' | 'all' = 'all',
-  isClear = false
+  isClear = false,
+  forceFresh = false
 ): Promise<void> {
   const token = process.env.DISCORD_TOKEN;
   const clientId = process.env.CLIENT_ID || process.env.DISCORD_CLIENT_ID;
@@ -49,49 +115,39 @@ export async function syncSlashCommands(
 
   const rest = new REST({ version: '10' }).setToken(token);
 
-  try {
-    if (isClear) {
-      console.log(loggerColors.warn(`🧹 [Deploy] Limpando comandos Slash (Escopo: ${targetScope.toUpperCase()})...`));
-
-      if ((targetScope === 'dev' || targetScope === 'all') && guildId) {
-        await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
-        console.log(loggerColors.success('✅ [Deploy] Cache do servidor DEV zerado!'));
-      }
-
-      if (targetScope === 'public' || targetScope === 'all') {
-        await rest.put(Routes.applicationCommands(clientId), { body: [] });
-        console.log(loggerColors.success('✅ [Deploy] Cache GLOBAL zerado!'));
-      }
-      return;
-    }
-
-    console.log(loggerColors.highlight(`🚀 [Deploy] Sincronizando comandos Slash...`));
-
-    // 1. Register Public Commands GLOBALLY (Available in ALL servers where Kuruttina is invited)
-    if (targetScope === 'public' || targetScope === 'all') {
-      console.log(
-        loggerColors.info(`🌐 [Deploy Public] Sincronizando ${publicCommands.length} comando(s) públicos GLOBALMENTE...`)
-      );
-      await rest.put(Routes.applicationCommands(clientId), { body: publicCommands });
-      console.log(
-        loggerColors.success(`✅ [Deploy Public] ${publicCommands.length} comando(s) públicos registrados GLOBALMENTE!`)
-      );
-    }
-
-    // 2. Register Developer Commands ONLY in DEV_GUILD_ID
+  if (isClear) {
+    console.log(loggerColors.warn(`🧹 [Deploy] Limpando comandos Slash (Escopo: ${targetScope.toUpperCase()})...`));
     if ((targetScope === 'dev' || targetScope === 'all') && guildId) {
-      console.log(
-        loggerColors.info(
-          `📌 [Deploy Dev] Sincronizando ${devCommands.length} comando(s) /developer na Dev Guild (${guildId})...`
-        )
-      );
-      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: devCommands });
-      console.log(
-        loggerColors.success(`✅ [Deploy Dev] ${devCommands.length} comando(s) /developer registrados na Dev Guild!`)
-      );
+      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
+      console.log(loggerColors.success('✅ [Deploy] Cache do servidor DEV zerado!'));
     }
-  } catch (error) {
-    console.error(loggerColors.error('❌ [Deploy] Erro na sincronização de comandos Slash:'), error);
+    if (targetScope === 'public' || targetScope === 'all') {
+      await rest.put(Routes.applicationCommands(clientId), { body: [] });
+      console.log(loggerColors.success('✅ [Deploy] Cache GLOBAL zerado!'));
+    }
+    return;
+  }
+
+  // 1. Sync Public Commands GLOBALLY (Smart-Sync Diff Engine)
+  if (targetScope === 'public' || targetScope === 'all') {
+    await syncCommandGroup(
+      rest,
+      Routes.applicationCommands(clientId),
+      publicCommands,
+      'GLOBAL',
+      forceFresh
+    );
+  }
+
+  // 2. Sync Developer Commands strictly in DEV_GUILD_ID
+  if ((targetScope === 'dev' || targetScope === 'all') && guildId) {
+    await syncCommandGroup(
+      rest,
+      Routes.applicationGuildCommands(clientId, guildId),
+      devCommands,
+      'DEV GUILD',
+      forceFresh
+    );
   }
 }
 
@@ -118,6 +174,7 @@ if (require.main === module) {
   }
 
   const isClear = process.argv.includes('--clear');
+  const forceFresh = process.argv.includes('--fresh') || process.argv.includes('--clean-deploy');
   const scope = getScopeFromArgs();
-  syncSlashCommands(scope, isClear);
+  syncSlashCommands(scope, isClear, forceFresh);
 }

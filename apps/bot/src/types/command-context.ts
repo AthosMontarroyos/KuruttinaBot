@@ -1,82 +1,90 @@
 import {
   ChatInputCommandInteraction,
   Message,
-  Client,
+  TextBasedChannel,
   Guild,
   User,
-  TextBasedChannel,
-  InteractionReplyOptions,
-  MessageReplyOptions,
-  EmbedBuilder,
   APIEmbed,
+  InteractionReplyOptions,
+  MessageCreateOptions,
   MessageFlags,
-  MessageMentionOptions,
 } from 'discord.js';
 
-export interface CommandReplyOptions {
+export interface ReplyPayload {
   content?: string;
-  embeds?: (APIEmbed | EmbedBuilder)[];
+  embeds?: APIEmbed[];
   ephemeral?: boolean;
-  allowedMentions?: MessageMentionOptions;
+  allowedMentions?: any;
 }
 
 export class CommandContext {
-  public readonly client: Client;
-  public readonly guild: Guild | null;
-  public readonly user: User;
-  public readonly channel: TextBasedChannel | null;
-  public readonly isSlash: boolean;
-  public readonly slashInteraction?: ChatInputCommandInteraction;
-  public readonly message?: Message;
-  public readonly args: string[];
+  public isSlash: boolean;
+  public slashInteraction?: ChatInputCommandInteraction;
+  public message?: Message;
+  public channel: TextBasedChannel;
+  public guild: Guild | null;
+  public user: User;
+  public args: string[];
 
   constructor(
-    trigger: ChatInputCommandInteraction | Message,
+    target:
+      | ChatInputCommandInteraction
+      | Message
+      | {
+          slashInteraction?: ChatInputCommandInteraction;
+          message?: Message;
+          args?: string[];
+        },
     args: string[] = []
   ) {
-    if (trigger instanceof ChatInputCommandInteraction) {
+    if (typeof target === 'object' && 'isChatInputCommand' in target && target.isChatInputCommand()) {
       this.isSlash = true;
-      this.slashInteraction = trigger;
-      this.client = trigger.client;
-      this.guild = trigger.guild;
-      this.user = trigger.user;
-      this.channel = trigger.channel;
-      this.args = args;
-    } else {
+      this.slashInteraction = target;
+      this.channel = target.channel!;
+      this.guild = target.guild;
+      this.user = target.user;
+      this.args = [];
+    } else if (typeof target === 'object' && 'author' in target) {
       this.isSlash = false;
-      this.message = trigger;
-      this.client = trigger.client;
-      this.guild = trigger.guild;
-      this.user = trigger.author;
-      this.channel = trigger.channel;
+      this.message = target;
+      this.channel = target.channel;
+      this.guild = target.guild;
+      this.user = target.author;
       this.args = args;
+    } else if (typeof target === 'object' && 'slashInteraction' in target && target.slashInteraction) {
+      this.isSlash = true;
+      this.slashInteraction = target.slashInteraction;
+      this.channel = target.slashInteraction.channel!;
+      this.guild = target.slashInteraction.guild;
+      this.user = target.slashInteraction.user;
+      this.args = [];
+    } else if (typeof target === 'object' && 'message' in target && target.message) {
+      this.isSlash = false;
+      this.message = target.message;
+      this.channel = target.message.channel;
+      this.guild = target.message.guild;
+      this.user = target.message.author;
+      this.args = target.args || args;
+    } else {
+      throw new Error('CommandContext requer um slashInteraction ou um message.');
     }
   }
 
-  /**
-   * Defer reply for async operations exceeding 3 seconds.
-   */
+  public get client() {
+    return this.isSlash ? this.slashInteraction!.client : this.message!.client;
+  }
+
   public async deferReply(ephemeral = false): Promise<void> {
-    if (this.isSlash && this.slashInteraction) {
-      if (!this.slashInteraction.deferred && !this.slashInteraction.replied) {
-        await this.slashInteraction.deferReply({
-          flags: ephemeral ? MessageFlags.Ephemeral : undefined,
-        });
-      }
-    } else if (this.message) {
-      if ('sendTyping' in this.message.channel) {
-        await this.message.channel.sendTyping();
-      }
+    if (this.isSlash && this.slashInteraction && !this.slashInteraction.deferred) {
+      await this.slashInteraction.deferReply({
+        flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+      });
     }
   }
 
-  /**
-   * Unified reply method for both Slash and Prefix commands.
-   * Enforces allowedMentions: { parse: [] } by default to prevent ping spams!
-   */
-  public async reply(options: CommandReplyOptions | string): Promise<void> {
-    const payload = typeof options === 'string' ? { content: options } : options;
-    const defaultAllowedMentions: MessageMentionOptions = payload.allowedMentions || { parse: [] };
+  public async reply(payload: ReplyPayload): Promise<void> {
+    // Default allowedMentions to prevent ping spams (Pillar 6)
+    const defaultAllowedMentions = payload.allowedMentions || { parse: [] };
 
     if (this.isSlash && this.slashInteraction) {
       const interactionOptions: InteractionReplyOptions = {
@@ -92,13 +100,20 @@ export class CommandContext {
         await this.slashInteraction.reply(interactionOptions);
       }
     } else if (this.message) {
-      const messageOptions: MessageReplyOptions = {
+      const messageOptions: MessageCreateOptions = {
         content: payload.content,
         embeds: payload.embeds,
         allowedMentions: defaultAllowedMentions,
       };
 
-      await this.message.reply(messageOptions);
+      try {
+        await this.message.reply(messageOptions);
+      } catch {
+        // Fallback: If target message was deleted or un-replyable, send directly in channel
+        if (this.channel && 'send' in this.channel) {
+          await (this.channel as any).send(messageOptions);
+        }
+      }
     }
   }
 }

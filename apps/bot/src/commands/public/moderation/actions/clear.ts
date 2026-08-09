@@ -141,11 +141,6 @@ export const command: CommandModule = {
       }
     }
 
-    // Immediately clean up prefix trigger message as a bonus if executed via prefix
-    if (!ctx.isSlash && ctx.message && ctx.message.deletable) {
-      ctx.message.delete().catch(() => {});
-    }
-
     // Defer response ephemerally (3-second rule)
     await ctx.deferReply(true);
 
@@ -247,7 +242,13 @@ export const command: CommandModule = {
         timestamp: new Date().toISOString(),
       };
 
+      // Send output response first
       await ctx.reply({ embeds: [successEmbed], ephemeral: true });
+
+      // AFTER responding, clean up prefix command trigger message safely
+      if (!ctx.isSlash && ctx.message && ctx.message.deletable) {
+        ctx.message.delete().catch(() => {});
+      }
     } catch (error: any) {
       console.error('❌ [Clear Command Error]:', error);
 

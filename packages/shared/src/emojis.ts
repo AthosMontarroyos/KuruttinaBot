@@ -3,18 +3,18 @@
  * Supports dynamic resolution to Discord Developer Portal Application Emojis (<:name:id> / <a:name:id>).
  */
 export const EMOJIS = {
-  // 1. Status & Respostas
+  // 1. Status & Responses
   SUCCESS: '✅',
   ERROR: '❌',
   WARNING: '⚠️',
   INFO: 'ℹ️',
   LOADING: '⏳',
   
-  // Expressões & Personalidade INFJ
-  OPS: '😳', // Reação tímida / sarcástica / irônica da Kuruttina
-  DANCING: '🥳', // Reação de comemoração / vitória / hype animado
+  // Expressions & INFJ Persona
+  OPS: '😳', // Sarcastic / shy / bashful INFJ reaction
+  DANCING: '🥳', // Celebration / victory / hype animation reaction
 
-  // 2. Categorias de Comandos
+  // 2. Command Categories
   MODERATION: '🛡️',
   UTILITY: '🧰',
   DEVELOPER: '⚙️',
@@ -22,7 +22,7 @@ export const EMOJIS = {
   FUN: '🎉',
   AFFILIATE: '💎',
 
-  // 3. Moderação & Ações
+  // 3. Actions & Moderation
   BAN: '🔨',
   KICK: '🥾',
   MUTE: '🔇',
@@ -32,14 +32,14 @@ export const EMOJIS = {
   ADD: '➕',
   TRASH: '🗑️',
 
-  // 4. Telemetria & Infraestrutura
+  // 4. Telemetry & Infrastructure
   PING: '🏓',
   GATEWAY: '🌐',
   API: '⚡',
   BOT_STATUS: '🤖',
   UPTIME: '🕒',
 
-  // 5. Sistema & Segurança
+  // 5. System & Security
   SHIELD: '🛡️',
   LOCK: '🔒',
   UNLOCK: '🔓',
@@ -49,7 +49,7 @@ export const EMOJIS = {
   GUILD: '🏰',
   CROWN: '👑',
 
-  // 6. Navegação & Branding
+  // 6. Navigation & Branding
   LINK: '🔗',
   DOCUMENTATION: '📚',
   STAR: '⭐',
@@ -64,31 +64,31 @@ export interface EmojiCategory {
 
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
-    name: 'Status & Respostas',
+    name: 'Status & Responses',
     keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING'],
   },
   {
-    name: 'Expressões & Personalidade INFJ',
+    name: 'Expressions & INFJ Persona',
     keys: ['OPS', 'DANCING'],
   },
   {
-    name: 'Categorias de Comandos',
+    name: 'Command Categories',
     keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE'],
   },
   {
-    name: 'Ações & Moderação',
+    name: 'Actions & Moderation',
     keys: ['BAN', 'KICK', 'MUTE', 'UNMUTE', 'CLEAR', 'SEARCH', 'ADD', 'TRASH'],
   },
   {
-    name: 'Telemetria & Infraestrutura',
+    name: 'Telemetry & Infrastructure',
     keys: ['PING', 'GATEWAY', 'API', 'BOT_STATUS', 'UPTIME'],
   },
   {
-    name: 'Sistema & Segurança',
+    name: 'System & Security',
     keys: ['SHIELD', 'LOCK', 'UNLOCK', 'SETTINGS', 'LOGS', 'USER', 'GUILD', 'CROWN'],
   },
   {
-    name: 'Navegação & Branding',
+    name: 'Navigation & Branding',
     keys: ['LINK', 'DOCUMENTATION', 'STAR'],
   },
 ];

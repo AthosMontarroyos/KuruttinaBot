@@ -204,37 +204,27 @@ export const command: CommandModule = {
 
       // Render success response
       const filterNotice = targetUserId ? ` do usuário <@${targetUserId}>` : '';
-      const fields = [
-        {
-          name: '📊 Solicitadas',
-          value: `\`${amount}\``,
-          inline: true,
-        },
-        {
-          name: '🗑️ Deletadas',
-          value: `\`${totalDeleted}\``,
-          inline: true,
-        },
-        {
-          name: '🕒 Trava de 14 Dias',
-          value: 'Mensagens com mais de 14 dias foram ignoradas automaticamente.',
-          inline: false,
-        },
-      ];
-
-      if (!ctx.isSlash) {
-        fields.push({
-          name: '🎁 Bônus de Limpeza',
-          value: 'A mensagem do comando por prefixo foi limpa automaticamente como bônus (sem descontar das solicitadas).',
-          inline: false,
-        });
-      }
-
       const successEmbed: APIEmbed = {
         title: `${EMOJIS.SUCCESS} Limpeza Concluída`,
         description: `Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
         color: STATUS_COLORS.SUCCESS.number,
-        fields,
+        fields: [
+          {
+            name: '📊 Solicitadas',
+            value: `\`${amount}\``,
+            inline: true,
+          },
+          {
+            name: '🗑️ Deletadas',
+            value: `\`${totalDeleted}\``,
+            inline: true,
+          },
+          {
+            name: '🕒 Trava de 14 Dias',
+            value: 'Mensagens com mais de 14 dias foram ignoradas automaticamente.',
+            inline: false,
+          },
+        ],
         footer: {
           text: DEFAULT_BOT_CONFIG.BOT_NAME,
           icon_url: ctx.client.user?.displayAvatarURL(),
@@ -242,13 +232,7 @@ export const command: CommandModule = {
         timestamp: new Date().toISOString(),
       };
 
-      // Send output response first
       await ctx.reply({ embeds: [successEmbed], ephemeral: true });
-
-      // AFTER responding, clean up prefix command trigger message safely
-      if (!ctx.isSlash && ctx.message && ctx.message.deletable) {
-        ctx.message.delete().catch(() => {});
-      }
     } catch (error: any) {
       console.error('❌ [Clear Command Error]:', error);
 

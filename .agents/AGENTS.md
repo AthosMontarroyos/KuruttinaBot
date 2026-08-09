@@ -141,9 +141,9 @@ Guidelines and rules for AI coding assistants working in this repository.
   - **Proper Names Preservation**: Proper names, brand names, and bot identity (`Kuruttina`) MUST NEVER be translated unless phonetically or orthographically impossible to comprehend in the target language.
 
 ### 14. Development Environment & Zero-Build Policy
-- **MANDATORY POLICY**: Production builds (`npm run build` / `tsc` disk emission) are strictly **unnecessary and prohibited** during active development.
+- **MANDATORY POLICY**: Production builds (`npm run build` / `tsc` disk emission creating `dist/`) are strictly **unnecessary and prohibited** during active development.
 - **Development Execution (`npm run dev`)**: All development testing and execution MUST run exclusively using `npm run dev` (`ts-node` in-memory execution for `@kuruttina/bot` and Vite/Next dev server for `@kuruttina/website`).
-- **Zero Compiled JS Files in `src/`**: Using `npm run dev` guarantees that no compiled `.js` files pollute `src/` source directories. Only build production bundles if explicitly requested by the user or when validating a final deployment build.
+- **Zero Compiled JS Files / No `dist/` Directory**: To check TypeScript compilation errors without emitting `dist/` files to disk, ALWAYS use `npx tsc --noEmit`. Only build production bundles if explicitly requested by the user or when validating a final deployment build.
 
 ### 15. Mandatory Command Usage Guide Metadata & Help Delegation Policy
 - **MANDATORY POLICY**: Every command module created MUST define a structured `guide` property (`CommandUsageGuide` containing `syntax`, `examples`, `detailedDescription`, `requiredPermissions`).

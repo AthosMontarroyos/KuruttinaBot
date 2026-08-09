@@ -2,6 +2,15 @@ import { Client } from 'discord.js';
 import { EMOJIS, EmojiKey } from '@kuruttina/shared';
 
 /**
+ * Common alias mappings for Application Emojis uploaded to Discord Developer Portal.
+ */
+const EMOJI_ALIASES: Record<string, string[]> = {
+  SUCCESS: ['success', 'sucess', 'verified'],
+  CLEAR: ['clear', 'cleaning'],
+  ERROR: ['error', 'dismiss', 'anger'],
+};
+
+/**
  * Resolves an emoji by key from central EMOJIS map OR dynamically fetches
  * custom Application Emojis uploaded to Discord Developer Portal.
  */
@@ -10,23 +19,22 @@ export async function getEmoji(client: Client, key: EmojiKey): Promise<string> {
 
   try {
     if (client.application) {
-      // Fetch or use cached Application Emojis from Discord Developer Portal
-      const cached = client.application.emojis.cache.find(
-        (e) => e.name?.toLowerCase() === key.toLowerCase()
-      );
+      const candidateNames = EMOJI_ALIASES[key]
+        ? EMOJI_ALIASES[key]
+        : [key.toLowerCase()];
 
-      if (cached) {
-        return cached.toString(); // Returns <a:name:id> or <:name:id>
-      }
+      const appEmojis =
+        client.application.emojis.cache.size > 0
+          ? client.application.emojis.cache
+          : await client.application.emojis.fetch();
 
-      // If not in cache, fetch from API
-      const appEmojis = await client.application.emojis.fetch();
-      const matched = appEmojis.find(
-        (e) => e.name?.toLowerCase() === key.toLowerCase()
-      );
-
-      if (matched) {
-        return matched.toString();
+      for (const candidateName of candidateNames) {
+        const matched = appEmojis.find(
+          (e) => e.name?.toLowerCase() === candidateName
+        );
+        if (matched) {
+          return matched.toString();
+        }
       }
     }
   } catch {

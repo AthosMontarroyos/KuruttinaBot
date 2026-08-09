@@ -9,10 +9,19 @@ export const EMOJIS = {
   WARNING: '⚠️',
   INFO: 'ℹ️',
   LOADING: '⏳',
-  
+  VERIFIED: '☑️',
+  DISMISS: '🚫',
+
   // Expressions & INFJ Persona
-  OPS: '😳', // Sarcastic / shy / bashful INFJ reaction
-  DANCING: '🥳', // Celebration / victory / hype animation reaction
+  OPS: '😳',
+  DANCING: '💃',
+  KISS: '😘',
+  CRY: '😭',
+  THINKING: '🤔',
+  APPEAR: '✨',
+  HEHE: '😏',
+  ANGER: '💢',
+  CLEANING: '🧹',
 
   // 2. Command Categories
   MODERATION: '🛡️',
@@ -65,11 +74,11 @@ export interface EmojiCategory {
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     name: 'Status & Responses',
-    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING'],
+    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'VERIFIED', 'DISMISS'],
   },
   {
     name: 'Expressions & INFJ Persona',
-    keys: ['OPS', 'DANCING'],
+    keys: ['OPS', 'DANCING', 'KISS', 'CRY', 'THINKING', 'APPEAR', 'HEHE', 'ANGER', 'CLEANING'],
   },
   {
     name: 'Command Categories',

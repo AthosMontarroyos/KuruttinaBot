@@ -5,6 +5,8 @@ import {
   TextChannel,
   NewsChannel,
   ThreadChannel,
+  Collection,
+  Message,
 } from 'discord.js';
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
@@ -35,10 +37,10 @@ export const command: CommandModule = {
         .setMaxValue(200)
         .setRequired(true)
     )
-    .addStringOption((option) =>
+    .addUserOption((option) =>
       option
         .setName('usuario')
-        .setDescription('Filtrar por usuário enviando uma menção <@membro> ou ID numérico')
+        .setDescription('Filtrar e apagar mensagens apenas deste usuário')
         .setRequired(false)
     ),
   prefixAliases: ['clear', 'limpar', 'purge', 'clean'],
@@ -48,8 +50,7 @@ export const command: CommandModule = {
     syntax: 'k!clear <1-200> [@usuario|ID]',
     examples: [
       '/clear quantidade:50',
-      '/clear quantidade:100 usuario:<@123456789012345678>',
-      '/clear quantidade:100 usuario:123456789012345678',
+      '/clear quantidade:100 usuario:@DevKurutta',
       'k!clear 100',
       'k!limpar 50 123456789012345678',
     ],
@@ -119,8 +120,8 @@ export const command: CommandModule = {
 
     if (ctx.isSlash && ctx.slashInteraction) {
       amount = ctx.slashInteraction.options.getInteger('quantidade', true);
-      const userParam = ctx.slashInteraction.options.getString('usuario');
-      targetUserId = extractUserId(userParam);
+      const userObj = ctx.slashInteraction.options.getUser('usuario');
+      targetUserId = userObj ? userObj.id : null;
     } else {
       amount = parseInt(ctx.args[0], 10);
       if (isNaN(amount) || amount < 1 || amount > 200) {
@@ -145,40 +146,66 @@ export const command: CommandModule = {
 
     try {
       let totalDeleted = 0;
-      let remainingToFetch = amount;
+      // Start fetching BEFORE the trigger message if it's a prefix command
+      let lastMessageId: string | undefined = !ctx.isSlash && ctx.message ? ctx.message.id : undefined;
+      const targetAmount = amount;
 
-      // Anti-Crash Discord API Batching Engine (Max 100 per bulkDelete call)
-      while (remainingToFetch > 0) {
-        const fetchLimit = Math.min(remainingToFetch, 100);
-        const fetchedMessages = await channel.messages.fetch({ limit: fetchLimit });
+      // Smart Fetch & Delete Engine (Searches history for target user's messages up to targetAmount)
+      while (totalDeleted < targetAmount) {
+        const needed = targetAmount - totalDeleted;
+        // Fetch up to 100 messages at a time to scan for user messages
+        const fetchLimit = targetUserId ? 100 : Math.min(needed, 100);
 
+        const fetchOptions: { limit: number; before?: string } = { limit: fetchLimit };
+        if (lastMessageId) {
+          fetchOptions.before = lastMessageId;
+        }
+
+        const fetchedMessages = await channel.messages.fetch(fetchOptions);
         if (fetchedMessages.size === 0) break;
 
-        // Filter by user ID if specified
-        let messagesToDelete = targetUserId
+        lastMessageId = fetchedMessages.last()?.id;
+
+        // Filter messages belonging to target user if specified
+        let messagesToDelete: Collection<string, Message> = targetUserId
           ? fetchedMessages.filter((m) => m.author.id === targetUserId)
           : fetchedMessages;
 
-        // Exclude original trigger message if prefix command to avoid deleting user command twice
+        // Exclude original trigger message if prefix command to avoid double deletion
         if (!ctx.isSlash && ctx.message) {
           messagesToDelete = messagesToDelete.filter((m) => m.id !== ctx.message!.id);
         }
 
         if (messagesToDelete.size === 0) {
-          remainingToFetch -= fetchedMessages.size;
+          if (fetchedMessages.size < fetchLimit) break;
           continue;
+        }
+
+        // Limit deletion batch to exact remaining needed amount
+        if (messagesToDelete.size > needed) {
+          const slicedCollection = new Collection<string, Message>();
+          let count = 0;
+          for (const [id, msg] of messagesToDelete.entries()) {
+            if (count >= needed) break;
+            slicedCollection.set(id, msg);
+            count++;
+          }
+          messagesToDelete = slicedCollection;
         }
 
         // CRITICAL ANTI-CRASH GUARANTEE: Pass filterOld = true to prevent DiscordAPIError[50034]
         const deletedBatch = await channel.bulkDelete(messagesToDelete, true);
         totalDeleted += deletedBatch.size;
 
-        remainingToFetch -= fetchedMessages.size;
-
-        // If fewer messages deleted than fetched, remaining messages are >14 days old
-        if (deletedBatch.size < messagesToDelete.size) {
+        // Stop if no messages deleted (remaining messages are >14 days old) or end of channel reached
+        if (deletedBatch.size === 0 || fetchedMessages.size < fetchLimit) {
           break;
         }
+      }
+
+      // Also clean up prefix command trigger message if executed via prefix
+      if (!ctx.isSlash && ctx.message && ctx.message.deletable) {
+        ctx.message.delete().catch(() => {});
       }
 
       // Render success response

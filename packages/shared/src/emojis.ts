@@ -3,24 +3,26 @@
  * Supports dynamic resolution to Discord Developer Portal Application Emojis (<:name:id> / <a:name:id>).
  */
 export const EMOJIS = {
-  // 1. Status & Responses
+  // 1. Status & Respostas
   SUCCESS: '✅',
   ERROR: '❌',
   WARNING: '⚠️',
   INFO: 'ℹ️',
   LOADING: '⏳',
-  OPS: '🙈',
+  
+  // Expressões & Personalidade INFJ
+  OPS: '😳', // Reação tímida / sarcástica / irônica da Kuruttina
+  DANCING: '🥳', // Reação de comemoração / vitória / hype animado
 
-  // 2. Command Categories
+  // 2. Categorias de Comandos
   MODERATION: '🛡️',
   UTILITY: '🧰',
   DEVELOPER: '⚙️',
   ADMIN: '👑',
   FUN: '🎉',
   AFFILIATE: '💎',
-  DANCING: '💃',
 
-  // 3. Moderation & Actions
+  // 3. Moderação & Ações
   BAN: '🔨',
   KICK: '🥾',
   MUTE: '🔇',
@@ -30,14 +32,14 @@ export const EMOJIS = {
   ADD: '➕',
   TRASH: '🗑️',
 
-  // 4. Telemetry & Infrastructure
+  // 4. Telemetria & Infraestrutura
   PING: '🏓',
   GATEWAY: '🌐',
   API: '⚡',
   BOT_STATUS: '🤖',
   UPTIME: '🕒',
 
-  // 5. System & Security
+  // 5. Sistema & Segurança
   SHIELD: '🛡️',
   LOCK: '🔒',
   UNLOCK: '🔓',
@@ -47,7 +49,7 @@ export const EMOJIS = {
   GUILD: '🏰',
   CROWN: '👑',
 
-  // 6. Navigation & Branding
+  // 6. Navegação & Branding
   LINK: '🔗',
   DOCUMENTATION: '📚',
   STAR: '⭐',
@@ -63,11 +65,15 @@ export interface EmojiCategory {
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     name: 'Status & Respostas',
-    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'OPS'],
+    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING'],
   },
   {
-    name: 'Categorias & Animações Interativas',
-    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'DANCING'],
+    name: 'Expressões & Personalidade INFJ',
+    keys: ['OPS', 'DANCING'],
+  },
+  {
+    name: 'Categorias de Comandos',
+    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE'],
   },
   {
     name: 'Ações & Moderação',

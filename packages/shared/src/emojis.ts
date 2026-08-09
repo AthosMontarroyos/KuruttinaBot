@@ -9,6 +9,7 @@ export const EMOJIS = {
   WARNING: '⚠️',
   INFO: 'ℹ️',
   LOADING: '⏳',
+  OPS: '🙈',
 
   // 2. Command Categories
   MODERATION: '🛡️',
@@ -17,6 +18,7 @@ export const EMOJIS = {
   ADMIN: '👑',
   FUN: '🎉',
   AFFILIATE: '💎',
+  DANCING: '💃',
 
   // 3. Moderation & Actions
   BAN: '🔨',
@@ -61,11 +63,11 @@ export interface EmojiCategory {
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     name: 'Status & Respostas',
-    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING'],
+    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'OPS'],
   },
   {
-    name: 'Categorias de Comandos',
-    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE'],
+    name: 'Categorias & Animações Interativas',
+    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'DANCING'],
   },
   {
     name: 'Ações & Moderação',

@@ -154,6 +154,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Engaging & Dynamic Message Formatting (No Plain Text)**: All bot messages, embeds, and responses MUST be visually polished, structured, and highly readable. Avoid plain or unformatted text blocks. Use rich Markdown elements (bold text, inline code blocks `` `value` ``, blockquotes, and lists) to create clean visual hierarchy.
 - **Discord Developer Portal Emojis Integration (`getEmoji`)**:
   - All visual designs and embeds MUST use `await getEmoji(client, 'NOME')` (`src/utils/emoji-resolver.ts`) or `EMOJIS.NOME` (`@kuruttina/shared`).
+  - **Interactive & Expressive Aesthetic (No Corporate Plain Icons)**: Custom Developer Portal emojis should be expressive, interactive, character-driven, animated GIF/APNG (`<a:name:id>`), or anime/chibi styled reflecting Kuruttina's INFJ personality rather than corporate static icons.
   - **Dynamic Resolution Engine**: When the developer uploads a custom emoji to the Discord Developer Portal with a name matching a system key (e.g. `success`, `error`, `moderation`, `shield`), `getEmoji()` automatically detects it from `client.application.emojis.cache` and renders the custom Developer Portal emoji (`<:name:id>` / `<a:name:id>`) in all bot embeds and UI designs without requiring code changes!
   - **Official Emoji Naming Matrix**:
     - Status: `success`, `error`, `warning`, `info`, `loading`

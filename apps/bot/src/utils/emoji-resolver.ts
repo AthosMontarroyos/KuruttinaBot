@@ -13,6 +13,8 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   UNLOCK: ['unlock'],
   FOLDER: ['folder'],
   DIAMOND_BLUE: ['diamond_blue', 'diamond', 'blue_diamond'],
+  IDEA: ['idea', 'inspired'],
+  INSPIRED: ['inspired', 'idea'],
 };
 
 /**

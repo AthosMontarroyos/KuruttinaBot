@@ -1,9 +1,11 @@
 name: Kuruttina Bot - Amazon AWS Auto Deploy
 
 on:
-  push:
-    branches:
-      - main
+  # Provisionally disabled automatic push trigger until AWS infrastructure is ready.
+  # To enable auto deploy on git push, uncomment the lines below:
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 jobs:
@@ -33,7 +35,6 @@ jobs:
 
   # ---------------------------------------------------------------
   # Job 2: Build & Push Docker Image to Amazon ECR + Deploy to ECS
-  # (Skips gracefully if AWS_ACCESS_KEY_ID is not configured in GitHub Secrets)
   # ---------------------------------------------------------------
   deploy-to-aws:
     name: 🚀 Build & Deploy to Amazon AWS (ECS/Fargate)

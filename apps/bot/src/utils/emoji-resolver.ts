@@ -28,6 +28,8 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   AFFILIATE: ['affiliate'],
   DIVIDER: ['pink_butterfly_divider', 'line'],
   LINE: ['line', 'pink_butterfly_divider'],
+  SHOOTING: ['shooting', 'star'],
+  STAR: ['star', 'shooting'],
 };
 
 /**

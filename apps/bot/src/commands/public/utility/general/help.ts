@@ -49,7 +49,8 @@ export const command: CommandModule = {
     const searchEmoji = await getEmoji(client, 'SEARCH');
     const thumbUpEmoji = await getEmoji(client, 'THUMBUP');
     const folderEmoji = await getEmoji(client, 'FOLDER');
-    const diamondBlueEmoji = await getEmoji(client, 'DIAMOND_BLUE');
+    const shootingEmoji = await getEmoji(client, 'SHOOTING');
+    const pinkDividerEmoji = await getEmoji(client, 'DIVIDER');
     const bookEmoji = await getEmoji(client, 'BOOK');
 
     // SCENARIO 1: Detailed Single Command View (/help <command>)
@@ -84,7 +85,7 @@ export const command: CommandModule = {
 
       const commandDetailEmbed: APIEmbed = {
         title: `${bookEmoji} Guia do Comando: /${foundCommand.data.name}`,
-        description: guide.detailedDescription || foundCommand.data.description,
+        description: `${guide.detailedDescription || foundCommand.data.description}\n\n${pinkDividerEmoji}`,
         color: STATUS_COLORS.INFO.number,
         fields: [
           {
@@ -94,7 +95,7 @@ export const command: CommandModule = {
           },
           {
             name: '💡 Exemplos de Uso',
-            value: guide.examples.map((ex) => `• \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
+            value: guide.examples.map((ex) => `${shootingEmoji} \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
             inline: false,
           },
           {
@@ -201,6 +202,7 @@ export const command: CommandModule = {
         title: `${dancingEmoji} Central de Ajuda da Kuruttina`,
         description:
           `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos ${thumbUpEmoji}.\n\n` +
+          `${pinkDividerEmoji}\n\n` +
           `Navegue pelas páginas usando os **botões de seta (◀ / ▶)** ou escolha uma categoria no menu abaixo.`,
         color: STATUS_COLORS.INFO.number,
         fields: homeFields,
@@ -231,13 +233,13 @@ export const command: CommandModule = {
       for (const [subKey, cmds] of subMap.entries()) {
         const subTitle = `${folderEmoji} Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
 
-        // Impeccable Spacing & Visual Hierarchy (Dynamic Diamond Bullets + Sleek Blockquotes)
+        // Impeccable Spacing & Visual Hierarchy (Custom Developer Portal Separators: shootingEmoji + pinkDividerEmoji)
         const cmdList = cmds
           .map((c) => {
             const alias = c.prefixAliases?.[0] ? ` \`(k!${c.prefixAliases[0]})\`` : '';
-            return `${diamondBlueEmoji} **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
+            return `${shootingEmoji} **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
           })
-          .join('\n\n');
+          .join(`\n${pinkDividerEmoji}\n`);
 
         subFields.push({
           name: subTitle,
@@ -250,7 +252,7 @@ export const command: CommandModule = {
         id: `cat:${catKey}`,
         embed: {
           title: `${catEmoji} Categoria: ${catLabel}`,
-          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.\n\u200b`,
+          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.\n${pinkDividerEmoji}`,
           color: STATUS_COLORS.INFO.number,
           fields: subFields,
           footer: {

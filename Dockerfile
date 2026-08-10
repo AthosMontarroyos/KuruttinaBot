@@ -6,11 +6,12 @@ WORKDIR /app
 COPY package*.json turbo.json ./
 COPY packages/shared/package*.json ./packages/shared/
 COPY apps/bot/package*.json ./apps/bot/
+COPY apps/website/package*.json ./apps/website/
 
 # Install dependencies
 RUN npm ci
 
-# Copy full source code & assets (including Pictures/emojis)
+# Copy full monorepo source code & assets (including Pictures/emojis)
 COPY . .
 
 # Typecheck validation
@@ -25,5 +26,5 @@ ENV NODE_ENV=production
 # Copy workspace assets and monorepo source
 COPY --from=builder /app ./
 
-# Run bot via Turborepo monorepo scope
+# Run bot via Turborepo monorepo scope from root
 CMD ["npx", "turbo", "run", "dev", "--filter=@kuruttina/bot"]

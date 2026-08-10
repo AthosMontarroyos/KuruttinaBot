@@ -8,6 +8,7 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   SUCCESS: ['success', 'sucess', 'verified'],
   CLEAR: ['clear', 'cleaning'],
   ERROR: ['error', 'dismiss', 'anger'],
+  THUMBUP: ['thumbup', 'thumbsup', 'like', 'thumb'],
 };
 
 /**

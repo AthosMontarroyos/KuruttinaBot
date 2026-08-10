@@ -22,6 +22,7 @@ export const EMOJIS = {
   HEHE: '😏',
   ANGER: '💢',
   CLEANING: '🧹',
+  THUMBUP: '👍',
 
   // 2. Command Categories
   MODERATION: '🛡️',
@@ -78,7 +79,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'Expressions & INFJ Persona',
-    keys: ['OPS', 'DANCING', 'KISS', 'CRY', 'THINKING', 'APPEAR', 'HEHE', 'ANGER', 'CLEANING'],
+    keys: ['OPS', 'DANCING', 'KISS', 'CRY', 'THINKING', 'APPEAR', 'HEHE', 'ANGER', 'CLEANING', 'THUMBUP'],
   },
   {
     name: 'Command Categories',

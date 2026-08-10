@@ -44,9 +44,10 @@ export const command: CommandModule = {
       targetCommandName = ctx.args[0].trim().toLowerCase();
     }
 
-    // Resolve Live Emojis
+    // Resolve Live Emojis from Developer Portal
     const dancingEmoji = await getEmoji(client, 'DANCING');
     const searchEmoji = await getEmoji(client, 'SEARCH');
+    const thumbUpEmoji = await getEmoji(client, 'THUMBUP');
 
     // SCENARIO 1: Detailed Single Command View (/help <command>)
     if (targetCommandName) {
@@ -196,7 +197,7 @@ export const command: CommandModule = {
       embed: {
         title: `${dancingEmoji} Central de Ajuda da Kuruttina`,
         description:
-          `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos 👍.\n\n` +
+          `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos ${thumbUpEmoji}.\n\n` +
           `Navegue pelas páginas usando os **botões de seta (◀ / ▶)** ou escolha uma categoria no menu abaixo.`,
         color: STATUS_COLORS.INFO.number,
         fields: homeFields,

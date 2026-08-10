@@ -11,6 +11,7 @@ export const EMOJIS = {
   LOADING: '⏳',
   VERIFIED: '☑️',
   DISMISS: '🚫',
+  OK: '👌',
 
   // 2. Expressions & INFJ Persona
   OPS: '😳',
@@ -29,6 +30,9 @@ export const EMOJIS = {
   INSPIRED: '💡',
   WAIT: '⏳',
   READING: '📖',
+  SHRUG: '🤷',
+  FACEPALM: '🤦',
+  COFFEE: '☕',
 
   // 3. Command Categories
   MODERATION: '🛡️',
@@ -37,6 +41,7 @@ export const EMOJIS = {
   ADMIN: '👑',
   FUN: '🎉',
   AFFILIATE: '💎',
+  STAFF: '👮',
 
   // 4. Actions & Moderation
   BAN: '🔨',
@@ -47,6 +52,8 @@ export const EMOJIS = {
   SEARCH: '🔍',
   ADD: '➕',
   TRASH: '🗑️',
+  SHARE: '📢',
+  SHARE_SCREEN: '🖥️',
 
   // 5. System & Security
   SHIELD: '🛡️',
@@ -66,12 +73,18 @@ export const EMOJIS = {
   HOME: '🏠',
   PREV: '◀',
   NEXT: '▶',
+  LEFT_ARROW: '⬅️',
+  RIGHT_ARROW: '➡️',
   PIN: '📌',
   IDEA: '💡',
+  LINE: '➖',
+  DIVIDER: '🌸',
 
   // 7. Navigation & Branding
   LINK: '🔗',
   DOCUMENTATION: '📚',
+  BOOK: '📖',
+  STACK_OF_BOOKS: '📚',
   STAR: '⭐',
 } as const;
 
@@ -85,7 +98,7 @@ export interface EmojiCategory {
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     name: 'Status & Responses',
-    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'VERIFIED', 'DISMISS'],
+    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'VERIFIED', 'DISMISS', 'OK'],
   },
   {
     name: 'Expressions & INFJ Persona',
@@ -106,15 +119,18 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
       'INSPIRED',
       'WAIT',
       'READING',
+      'SHRUG',
+      'FACEPALM',
+      'COFFEE',
     ],
   },
   {
     name: 'Command Categories',
-    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE'],
+    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'STAFF'],
   },
   {
     name: 'Actions & Moderation',
-    keys: ['BAN', 'KICK', 'MUTE', 'UNMUTE', 'CLEAR', 'SEARCH', 'ADD', 'TRASH'],
+    keys: ['BAN', 'KICK', 'MUTE', 'UNMUTE', 'CLEAR', 'SEARCH', 'ADD', 'TRASH', 'SHARE', 'SHARE_SCREEN'],
   },
   {
     name: 'System & Security',
@@ -122,10 +138,24 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'UI & Layout Decorations',
-    keys: ['FOLDER', 'DIAMOND_BLUE', 'DIAMOND_LARGE', 'BULLET', 'HOME', 'PREV', 'NEXT', 'PIN', 'IDEA'],
+    keys: [
+      'FOLDER',
+      'DIAMOND_BLUE',
+      'DIAMOND_LARGE',
+      'BULLET',
+      'HOME',
+      'PREV',
+      'NEXT',
+      'LEFT_ARROW',
+      'RIGHT_ARROW',
+      'PIN',
+      'IDEA',
+      'LINE',
+      'DIVIDER',
+    ],
   },
   {
     name: 'Navigation & Branding',
-    keys: ['LINK', 'DOCUMENTATION', 'STAR'],
+    keys: ['LINK', 'DOCUMENTATION', 'BOOK', 'STACK_OF_BOOKS', 'STAR'],
   },
 ];

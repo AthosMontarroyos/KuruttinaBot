@@ -1,5 +1,6 @@
 /**
- * Cores Utilitárias de Status para Embeds do Bot no Discord e UI do Dashboard Web.
+ * Clean Black & White Color Palette for Kuruttina Discord Embeds and Web Dashboard.
+ * Enforces strictly Black (#000000 / 0x000001) or White (#FFFFFF / 0xFFFFFF) minimalist themes.
  */
 export interface StatusColorDefinition {
   hex: string;
@@ -7,30 +8,25 @@ export interface StatusColorDefinition {
   description: string;
 }
 
+export const EMBED_COLORS = {
+  BLACK: {
+    hex: '#000000',
+    number: 0x000001, // 0x000001 displays solid black border in Discord
+    description: 'Minimalist Black Theme',
+  },
+  WHITE: {
+    hex: '#FFFFFF',
+    number: 0xFFFFFF,
+    description: 'Minimalist White Theme',
+  },
+} as const;
+
 export const STATUS_COLORS = {
-  SUCCESS: {
-    hex: '#2ED573',
-    number: 0x2ED573,
-    description: 'Sucesso, confirmações e ações concluídas com êxito',
-  },
-  WARNING: {
-    hex: '#FFA502',
-    number: 0xFFA502,
-    description: 'Alertas, avisos e confirmações pendentes',
-  },
-  ERROR: {
-    hex: '#FF4757',
-    number: 0xFF4757,
-    description: 'Erros, falhas de execução, punições e bloqueios',
-  },
-  INFO: {
-    hex: '#1E90FF',
-    number: 0x1E90FF,
-    description: 'Informações gerais, estatísticas de telemetria e guias',
-  },
-  NEUTRAL: {
-    hex: '#747D8C',
-    number: 0x747D8C,
-    description: 'Estados neutros, dados inativos e rodapés',
-  },
+  SUCCESS: EMBED_COLORS.BLACK,
+  WARNING: EMBED_COLORS.BLACK,
+  ERROR: EMBED_COLORS.BLACK,
+  INFO: EMBED_COLORS.BLACK,
+  NEUTRAL: EMBED_COLORS.BLACK,
+  BLACK: EMBED_COLORS.BLACK,
+  WHITE: EMBED_COLORS.WHITE,
 } as const;

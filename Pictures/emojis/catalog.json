@@ -1,0 +1,636 @@
+{
+  "total": 63,
+  "lastSyncedAt": "2026-08-10T13:50:16.638Z",
+  "emojis": {
+    "ops": {
+      "name": "ops",
+      "id": "1535768936749211660",
+      "format": "<:ops:1535768936749211660>",
+      "animated": false,
+      "filename": "ops.png",
+      "localPath": "Pictures/emojis/ops.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1535768936749211660.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "dancing": {
+      "name": "dancing",
+      "id": "1536081187502559344",
+      "format": "<a:dancing:1536081187502559344>",
+      "animated": true,
+      "filename": "dancing.gif",
+      "localPath": "Pictures/emojis/dancing.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536081187502559344.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "kiss": {
+      "name": "kiss",
+      "id": "1536082585204031558",
+      "format": "<a:kiss:1536082585204031558>",
+      "animated": true,
+      "filename": "kiss.gif",
+      "localPath": "Pictures/emojis/kiss.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536082585204031558.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "cry": {
+      "name": "cry",
+      "id": "1536083156225237004",
+      "format": "<a:cry:1536083156225237004>",
+      "animated": true,
+      "filename": "cry.gif",
+      "localPath": "Pictures/emojis/cry.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536083156225237004.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "thinking": {
+      "name": "thinking",
+      "id": "1536083288098349176",
+      "format": "<:thinking:1536083288098349176>",
+      "animated": false,
+      "filename": "thinking.png",
+      "localPath": "Pictures/emojis/thinking.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536083288098349176.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "search": {
+      "name": "search",
+      "id": "1536083484773318657",
+      "format": "<:search:1536083484773318657>",
+      "animated": false,
+      "filename": "search.png",
+      "localPath": "Pictures/emojis/search.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536083484773318657.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "warning": {
+      "name": "warning",
+      "id": "1536084498289000549",
+      "format": "<:warning:1536084498289000549>",
+      "animated": false,
+      "filename": "warning.png",
+      "localPath": "Pictures/emojis/warning.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536084498289000549.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "error": {
+      "name": "error",
+      "id": "1536085291503329441",
+      "format": "<:error:1536085291503329441>",
+      "animated": false,
+      "filename": "error.png",
+      "localPath": "Pictures/emojis/error.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536085291503329441.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "sucess": {
+      "name": "sucess",
+      "id": "1536088049396613201",
+      "format": "<:sucess:1536088049396613201>",
+      "animated": false,
+      "filename": "sucess.png",
+      "localPath": "Pictures/emojis/sucess.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536088049396613201.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "dismiss": {
+      "name": "dismiss",
+      "id": "1536088792555978973",
+      "format": "<:dismiss:1536088792555978973>",
+      "animated": false,
+      "filename": "dismiss.png",
+      "localPath": "Pictures/emojis/dismiss.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536088792555978973.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "appear": {
+      "name": "appear",
+      "id": "1536088997288222761",
+      "format": "<:appear:1536088997288222761>",
+      "animated": false,
+      "filename": "appear.png",
+      "localPath": "Pictures/emojis/appear.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536088997288222761.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.179Z"
+    },
+    "hehe": {
+      "name": "hehe",
+      "id": "1536091597270294558",
+      "format": "<:hehe:1536091597270294558>",
+      "animated": false,
+      "filename": "hehe.png",
+      "localPath": "Pictures/emojis/hehe.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536091597270294558.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "anger": {
+      "name": "Anger",
+      "id": "1536091721539129454",
+      "format": "<a:Anger:1536091721539129454>",
+      "animated": true,
+      "filename": "Anger.gif",
+      "localPath": "Pictures/emojis/Anger.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536091721539129454.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "cleaning": {
+      "name": "cleaning",
+      "id": "1536093081852706976",
+      "format": "<a:cleaning:1536093081852706976>",
+      "animated": true,
+      "filename": "cleaning.gif",
+      "localPath": "Pictures/emojis/cleaning.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536093081852706976.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "photo": {
+      "name": "photo",
+      "id": "1536162420232294490",
+      "format": "<:photo:1536162420232294490>",
+      "animated": false,
+      "filename": "photo.png",
+      "localPath": "Pictures/emojis/photo.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536162420232294490.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "shooting": {
+      "name": "shooting",
+      "id": "1536163607379968040",
+      "format": "<:shooting:1536163607379968040>",
+      "animated": false,
+      "filename": "shooting.png",
+      "localPath": "Pictures/emojis/shooting.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536163607379968040.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "pointup": {
+      "name": "pointup",
+      "id": "1536164755604246647",
+      "format": "<:pointup:1536164755604246647>",
+      "animated": false,
+      "filename": "pointup.png",
+      "localPath": "Pictures/emojis/pointup.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536164755604246647.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "inspired": {
+      "name": "inspired",
+      "id": "1536165361685368912",
+      "format": "<:inspired:1536165361685368912>",
+      "animated": false,
+      "filename": "inspired.png",
+      "localPath": "Pictures/emojis/inspired.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536165361685368912.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "wait": {
+      "name": "wait",
+      "id": "1536165567915098162",
+      "format": "<:wait:1536165567915098162>",
+      "animated": false,
+      "filename": "wait.png",
+      "localPath": "Pictures/emojis/wait.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536165567915098162.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "thumbup": {
+      "name": "thumbup",
+      "id": "1536165730523811940",
+      "format": "<:thumbup:1536165730523811940>",
+      "animated": false,
+      "filename": "thumbup.png",
+      "localPath": "Pictures/emojis/thumbup.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536165730523811940.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "reading": {
+      "name": "reading",
+      "id": "1536166264429351034",
+      "format": "<:reading:1536166264429351034>",
+      "animated": false,
+      "filename": "reading.png",
+      "localPath": "Pictures/emojis/reading.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536166264429351034.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "lock": {
+      "name": "lock",
+      "id": "1536186067022258308",
+      "format": "<:lock:1536186067022258308>",
+      "animated": false,
+      "filename": "lock.png",
+      "localPath": "Pictures/emojis/lock.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536186067022258308.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "unlock": {
+      "name": "unlock",
+      "id": "1536186133443117137",
+      "format": "<:unlock:1536186133443117137>",
+      "animated": false,
+      "filename": "unlock.png",
+      "localPath": "Pictures/emojis/unlock.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536186133443117137.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "left_arrow": {
+      "name": "left_arrow",
+      "id": "1536187713320001556",
+      "format": "<:left_arrow:1536187713320001556>",
+      "animated": false,
+      "filename": "left_arrow.png",
+      "localPath": "Pictures/emojis/left_arrow.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536187713320001556.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "right_arrow": {
+      "name": "right_arrow",
+      "id": "1536187817540059229",
+      "format": "<:right_arrow:1536187817540059229>",
+      "animated": false,
+      "filename": "right_arrow.png",
+      "localPath": "Pictures/emojis/right_arrow.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536187817540059229.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.180Z"
+    },
+    "loading": {
+      "name": "loading",
+      "id": "1536188312652619856",
+      "format": "<a:loading:1536188312652619856>",
+      "animated": true,
+      "filename": "loading.gif",
+      "localPath": "Pictures/emojis/loading.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536188312652619856.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "info": {
+      "name": "info",
+      "id": "1536188461051158659",
+      "format": "<:info:1536188461051158659>",
+      "animated": false,
+      "filename": "info.png",
+      "localPath": "Pictures/emojis/info.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536188461051158659.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "moderation": {
+      "name": "moderation",
+      "id": "1536188967639322793",
+      "format": "<a:moderation:1536188967639322793>",
+      "animated": true,
+      "filename": "moderation.gif",
+      "localPath": "Pictures/emojis/moderation.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536188967639322793.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "utility": {
+      "name": "utility",
+      "id": "1536189732026064926",
+      "format": "<:utility:1536189732026064926>",
+      "animated": false,
+      "filename": "utility.png",
+      "localPath": "Pictures/emojis/utility.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536189732026064926.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "fun": {
+      "name": "fun",
+      "id": "1536191157187383386",
+      "format": "<a:fun:1536191157187383386>",
+      "animated": true,
+      "filename": "fun.gif",
+      "localPath": "Pictures/emojis/fun.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536191157187383386.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "affiliate": {
+      "name": "AFFILIATE",
+      "id": "1536191407092666558",
+      "format": "<a:AFFILIATE:1536191407092666558>",
+      "animated": true,
+      "filename": "AFFILIATE.gif",
+      "localPath": "Pictures/emojis/AFFILIATE.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536191407092666558.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "kick": {
+      "name": "kick",
+      "id": "1536355743316443237",
+      "format": "<a:kick:1536355743316443237>",
+      "animated": true,
+      "filename": "kick.gif",
+      "localPath": "Pictures/emojis/kick.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536355743316443237.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "mute": {
+      "name": "mute",
+      "id": "1536355990486777886",
+      "format": "<a:mute:1536355990486777886>",
+      "animated": true,
+      "filename": "mute.gif",
+      "localPath": "Pictures/emojis/mute.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536355990486777886.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "unmute": {
+      "name": "unmute",
+      "id": "1536356994359754792",
+      "format": "<a:unmute:1536356994359754792>",
+      "animated": true,
+      "filename": "unmute.gif",
+      "localPath": "Pictures/emojis/unmute.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536356994359754792.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "user": {
+      "name": "user",
+      "id": "1536359441652523038",
+      "format": "<:user:1536359441652523038>",
+      "animated": false,
+      "filename": "user.png",
+      "localPath": "Pictures/emojis/user.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536359441652523038.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "crown": {
+      "name": "crown",
+      "id": "1536361008216408136",
+      "format": "<a:crown:1536361008216408136>",
+      "animated": true,
+      "filename": "crown.gif",
+      "localPath": "Pictures/emojis/crown.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536361008216408136.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "line": {
+      "name": "line",
+      "id": "1536361461117358110",
+      "format": "<:line:1536361461117358110>",
+      "animated": false,
+      "filename": "line.png",
+      "localPath": "Pictures/emojis/line.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536361461117358110.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "coffee": {
+      "name": "coffee",
+      "id": "1536361779343523930",
+      "format": "<:coffee:1536361779343523930>",
+      "animated": false,
+      "filename": "coffee.png",
+      "localPath": "Pictures/emojis/coffee.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536361779343523930.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "verified": {
+      "name": "verified",
+      "id": "1536362262695125073",
+      "format": "<a:verified:1536362262695125073>",
+      "animated": true,
+      "filename": "verified.gif",
+      "localPath": "Pictures/emojis/verified.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536362262695125073.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "star": {
+      "name": "star",
+      "id": "1536362450465722549",
+      "format": "<a:star:1536362450465722549>",
+      "animated": true,
+      "filename": "star.gif",
+      "localPath": "Pictures/emojis/star.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536362450465722549.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "pink_butterfly_divider": {
+      "name": "pink_butterfly_divider",
+      "id": "1536364419448176651",
+      "format": "<:pink_butterfly_divider:1536364419448176651>",
+      "animated": false,
+      "filename": "pink_butterfly_divider.png",
+      "localPath": "Pictures/emojis/pink_butterfly_divider.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536364419448176651.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "folder": {
+      "name": "folder",
+      "id": "1536364714345631837",
+      "format": "<:folder:1536364714345631837>",
+      "animated": false,
+      "filename": "folder.png",
+      "localPath": "Pictures/emojis/folder.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536364714345631837.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.181Z"
+    },
+    "guild": {
+      "name": "guild",
+      "id": "1536364777922764881",
+      "format": "<:guild:1536364777922764881>",
+      "animated": false,
+      "filename": "guild.png",
+      "localPath": "Pictures/emojis/guild.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536364777922764881.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "home": {
+      "name": "home",
+      "id": "1536364848101986355",
+      "format": "<:home:1536364848101986355>",
+      "animated": false,
+      "filename": "home.png",
+      "localPath": "Pictures/emojis/home.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536364848101986355.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "logs": {
+      "name": "logs",
+      "id": "1536364897657426051",
+      "format": "<:logs:1536364897657426051>",
+      "animated": false,
+      "filename": "logs.png",
+      "localPath": "Pictures/emojis/logs.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536364897657426051.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "settings": {
+      "name": "settings",
+      "id": "1536364945464234054",
+      "format": "<a:settings:1536364945464234054>",
+      "animated": true,
+      "filename": "settings.gif",
+      "localPath": "Pictures/emojis/settings.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536364945464234054.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "developer": {
+      "name": "developer",
+      "id": "1536365063563255928",
+      "format": "<:developer:1536365063563255928>",
+      "animated": false,
+      "filename": "developer.png",
+      "localPath": "Pictures/emojis/developer.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365063563255928.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "shield": {
+      "name": "shield",
+      "id": "1536365130911318036",
+      "format": "<:shield:1536365130911318036>",
+      "animated": false,
+      "filename": "shield.png",
+      "localPath": "Pictures/emojis/shield.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365130911318036.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "ban": {
+      "name": "ban",
+      "id": "1536365270548090991",
+      "format": "<a:ban:1536365270548090991>",
+      "animated": true,
+      "filename": "ban.gif",
+      "localPath": "Pictures/emojis/ban.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365270548090991.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "ok": {
+      "name": "ok",
+      "id": "1536365304559706212",
+      "format": "<:ok:1536365304559706212>",
+      "animated": false,
+      "filename": "ok.png",
+      "localPath": "Pictures/emojis/ok.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365304559706212.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "add": {
+      "name": "add",
+      "id": "1536365318018965575",
+      "format": "<:add:1536365318018965575>",
+      "animated": false,
+      "filename": "add.png",
+      "localPath": "Pictures/emojis/add.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365318018965575.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "trash": {
+      "name": "trash",
+      "id": "1536365338617184327",
+      "format": "<:trash:1536365338617184327>",
+      "animated": false,
+      "filename": "trash.png",
+      "localPath": "Pictures/emojis/trash.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365338617184327.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "pin": {
+      "name": "pin",
+      "id": "1536365585829597357",
+      "format": "<:pin:1536365585829597357>",
+      "animated": false,
+      "filename": "pin.png",
+      "localPath": "Pictures/emojis/pin.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536365585829597357.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "link": {
+      "name": "link",
+      "id": "1536366055906349181",
+      "format": "<:link:1536366055906349181>",
+      "animated": false,
+      "filename": "link.png",
+      "localPath": "Pictures/emojis/link.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536366055906349181.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "book": {
+      "name": "book",
+      "id": "1536366773606289498",
+      "format": "<a:book:1536366773606289498>",
+      "animated": true,
+      "filename": "book.gif",
+      "localPath": "Pictures/emojis/book.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536366773606289498.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "stackofbooks": {
+      "name": "Stackofbooks",
+      "id": "1536366963616522260",
+      "format": "<:Stackofbooks:1536366963616522260>",
+      "animated": false,
+      "filename": "Stackofbooks.png",
+      "localPath": "Pictures/emojis/Stackofbooks.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536366963616522260.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.182Z"
+    },
+    "documentation": {
+      "name": "Documentation",
+      "id": "1536367174413983844",
+      "format": "<:Documentation:1536367174413983844>",
+      "animated": false,
+      "filename": "Documentation.png",
+      "localPath": "Pictures/emojis/Documentation.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536367174413983844.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.183Z"
+    },
+    "share": {
+      "name": "share",
+      "id": "1536367665529225266",
+      "format": "<:share:1536367665529225266>",
+      "animated": false,
+      "filename": "share.png",
+      "localPath": "Pictures/emojis/share.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536367665529225266.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.183Z"
+    },
+    "share_screen": {
+      "name": "share_screen",
+      "id": "1536367925227687996",
+      "format": "<:share_screen:1536367925227687996>",
+      "animated": false,
+      "filename": "share_screen.png",
+      "localPath": "Pictures/emojis/share_screen.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536367925227687996.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.183Z"
+    },
+    "shrug": {
+      "name": "Shrug",
+      "id": "1536368230883393657",
+      "format": "<a:Shrug:1536368230883393657>",
+      "animated": true,
+      "filename": "Shrug.gif",
+      "localPath": "Pictures/emojis/Shrug.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536368230883393657.gif?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.183Z"
+    },
+    "facepalm": {
+      "name": "facepalm",
+      "id": "1536368376044060672",
+      "format": "<:facepalm:1536368376044060672>",
+      "animated": false,
+      "filename": "facepalm.png",
+      "localPath": "Pictures/emojis/facepalm.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536368376044060672.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.183Z"
+    },
+    "staff": {
+      "name": "staff",
+      "id": "1536370343638466630",
+      "format": "<:staff:1536370343638466630>",
+      "animated": false,
+      "filename": "staff.png",
+      "localPath": "Pictures/emojis/staff.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536370343638466630.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.430Z"
+    },
+    "admin": {
+      "name": "admin",
+      "id": "1536370907986133042",
+      "format": "<:admin:1536370907986133042>",
+      "animated": false,
+      "filename": "admin.png",
+      "localPath": "Pictures/emojis/admin.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536370907986133042.png?size=256&quality=lossless",
+      "updatedAt": "2026-08-10T13:50:16.638Z"
+    }
+  }
+}

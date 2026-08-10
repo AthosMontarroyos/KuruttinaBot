@@ -28,7 +28,12 @@ Guidelines and rules for AI coding assistants working in this repository.
   - `Pictures/dashboard/` (UI screenshots, dashboard media)
   - `Pictures/avatars/` (Bot & role avatars)
   - `Pictures/icons/` (Category & button icons)
-- **External Asset Access in Apps**: No images should be duplicated inside `apps/`. Web apps (`apps/website`) must access external assets outside `apps/` via API router handlers (e.g. Next.js image/asset router endpoints) or symbolic asset routes.
+  - `Pictures/emojis/` (Synced Discord Developer Portal Application Emojis & `catalog.json`)
+- **Developer Portal Emojis Sync CLI (`npm run sync:emojis`)**:
+  - Run `npm run sync:emojis` (or `npx ts-node src/scripts/sync-app-emojis.ts` inside `apps/bot/`) to synchronize all Application Emojis from Discord Developer Portal into `Pictures/emojis/`.
+  - **Clean Sync Logic**: Downloads newly added emojis, retains existing ones, prunes discarded ones, and writes `Pictures/emojis/catalog.json`.
+  - **Backend AI Vision & Tagging**: Bot reads `Pictures/emojis/catalog.json` or inspects local images to analyze visual content and assign tags/reactions dynamically.
+  - **Frontend Asset Routing**: Web app (`apps/website`) accesses synced emojis via `/assets/emojis/<filename>` (served directly from `Pictures/emojis/` via Vite middleware). No image assets duplicated inside `apps/`.
 - **Root Environment File (`.env`)**: All shared environment variables (`.env`, `.env.example`, `.env.local`) MUST reside strictly at the project root (`.env`). Both `apps/bot` and `apps/website` load environment settings directly from the root `.env` to prevent duplicating credentials across `apps/`.
 
 ## Available Workspace Skills

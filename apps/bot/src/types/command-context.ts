@@ -8,6 +8,7 @@ import {
   InteractionReplyOptions,
   MessageCreateOptions,
   MessageFlags,
+  PermissionsBitField,
 } from 'discord.js';
 
 export interface ReplyPayload {
@@ -73,6 +74,15 @@ export class CommandContext {
 
   public get client() {
     return this.isSlash ? this.slashInteraction!.client : this.message!.client;
+  }
+
+  public get memberPermissions(): Readonly<PermissionsBitField> | null {
+    if (this.isSlash && this.slashInteraction) {
+      return this.slashInteraction.memberPermissions;
+    } else if (this.message && this.message.member) {
+      return this.message.member.permissions;
+    }
+    return null;
   }
 
   public async deferReply(ephemeral = false): Promise<void> {

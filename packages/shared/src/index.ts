@@ -7,3 +7,4 @@ export * from './terminal';
 export * from './emojis';
 export * from './sanitizer';
 export * from './custom-id';
+export * from './cooldown';

@@ -6,7 +6,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG, createCustomId } from '@kuruttina/shared';
+import { EMBED_COLORS, DEFAULT_BOT_CONFIG, createCustomId } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { KuruttinaClient } from '../../../../types/kuruttina-client';
@@ -70,7 +70,7 @@ export const command: CommandModule = {
         const errorEmbed: APIEmbed = {
           title: `${searchEmoji} Comando Não Encontrado`,
           description: `Não foi possível localizar o comando \`${targetCommandName}\`. Verifique o nome ou navegue pelas páginas.`,
-          color: STATUS_COLORS.ERROR.number,
+          color: EMBED_COLORS.BLACK.number,
         };
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
         return;
@@ -85,7 +85,7 @@ export const command: CommandModule = {
       const commandDetailEmbed: APIEmbed = {
         title: `${bookEmoji} Guia do Comando: /${foundCommand.data.name}`,
         description: guide.detailedDescription || foundCommand.data.description,
-        color: STATUS_COLORS.INFO.number,
+        color: EMBED_COLORS.BLACK.number,
         fields: [
           {
             name: '📌 Sintaxe',
@@ -202,7 +202,7 @@ export const command: CommandModule = {
         description:
           `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos ${thumbUpEmoji}.\n\n` +
           `Navegue pelas páginas usando os **botões de seta (◀ / ▶)** ou escolha uma categoria no menu abaixo.`,
-        color: STATUS_COLORS.INFO.number,
+        color: EMBED_COLORS.BLACK.number,
         fields: homeFields,
         footer: {
           text: `Página 1/${categoryMap.size + 1} • ${DEFAULT_BOT_CONFIG.BOT_NAME}`,
@@ -251,7 +251,7 @@ export const command: CommandModule = {
         embed: {
           title: `${catEmoji} Categoria: ${catLabel}`,
           description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.`,
-          color: STATUS_COLORS.INFO.number,
+          color: EMBED_COLORS.BLACK.number,
           fields: subFields,
           footer: {
             text: `Página ${catPageIndex}/${catKeysArray.length + 1} • ${DEFAULT_BOT_CONFIG.BOT_NAME}`,

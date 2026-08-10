@@ -1,5 +1,5 @@
 import { Events, Interaction, APIEmbed } from 'discord.js';
-import { STATUS_COLORS } from '@kuruttina/shared';
+import { EMBED_COLORS } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { KuruttinaClient } from '../../../types/kuruttina-client';
 
@@ -26,7 +26,7 @@ export const event = {
       const errorEmbed: APIEmbed = {
         title: '❌ Ocorreu um Erro',
         description: 'Ocorreu uma falha interna ao processar este comando. Tente novamente mais tarde.',
-        color: STATUS_COLORS.ERROR.number,
+        color: EMBED_COLORS.BLACK.number,
       };
 
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });

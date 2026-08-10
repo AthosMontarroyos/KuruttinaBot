@@ -1,39 +1,28 @@
 import {
   SlashCommandBuilder,
-  APIEmbed,
   PermissionFlagsBits,
   TextChannel,
   NewsChannel,
   ThreadChannel,
-  Collection,
-  Message,
+  APIEmbed,
+  User,
 } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { EMBED_COLORS, DEFAULT_BOT_CONFIG, CooldownManager } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { PermissionGuard } from '../../../../utils/permission-guard';
-import { CooldownManager } from '../../../../utils/cooldown-manager';
 import { getEmoji } from '../../../../utils/emoji-resolver';
 
-/**
- * Extrai o ID numérico do usuário aceitando menção (<@ID> / <@!ID>) ou ID bruto (123456789012345678).
- */
-function extractUserId(input?: string | null): string | null {
-  if (!input) return null;
-  const trimmed = input.trim();
-  const match = trimmed.match(/^<@!?(\d+)>$/) || trimmed.match(/^(\d{17,20})$/);
-  return match ? match[1] : null;
-}
+// 10-second cooldown per user to prevent API flooding
+const clearCooldowns = new CooldownManager(10);
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('clear')
-    .setDescription('Limpa até 200 mensagens no canal com filtro opcional por usuário')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .setDescription('Apaga até 200 mensagens em lote do canal atual (Requer Gerenciar Mensagens)')
     .addIntegerOption((option) =>
       option
         .setName('quantidade')
-        .setDescription('Número de mensagens para apagar (1 a 200)')
+        .setDescription('Número de mensagens a serem apagadas (1 a 200)')
         .setMinValue(1)
         .setMaxValue(200)
         .setRequired(true)
@@ -41,38 +30,43 @@ export const command: CommandModule = {
     .addUserOption((option) =>
       option
         .setName('usuario')
-        .setDescription('Filtrar e apagar mensagens apenas deste usuário')
+        .setDescription('Filtrar limpeza e apagar apenas mensagens deste usuário específico')
         .setRequired(false)
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+
   prefixAliases: ['clear', 'limpar', 'purge', 'clean'],
   category: 'moderation',
   subCategory: 'actions',
   guide: {
-    syntax: 'k!clear <1-200> [@usuario|ID]',
-    examples: [
-      '/clear quantidade:50',
-      '/clear quantidade:100 usuario:@DevKurutta',
-      'k!clear 100',
-      'k!limpar 50 123456789012345678',
-    ],
+    syntax: 'k!clear <quantidade> [usuario] ou /clear <quantidade> [usuario]',
+    examples: ['/clear quantidade:50', '/clear quantidade:20 usuario:@Membro', 'k!clear 10', 'k!limpar 100'],
     detailedDescription:
-      'Limpa mensagens em massa no canal atual (máximo 200 mensagens). Aceita menção <@usuario> ou ID numérico direto na mesma opção, ignorando mensagens mais antigas que 14 dias para evitar falhas.',
+      'Apaga mensagens em massa do canal de texto atual. Permite apagar até 200 mensagens por execução e filtrar mensagens de um usuário específico. Respeita a limitação da API do Discord (mensagens com mais de 14 dias não podem ser apagadas em lote).',
     requiredPermissions: ['ManageMessages'],
   },
 
   async execute(ctx: CommandContext): Promise<void> {
-    // 1. Enforce Server-Side Permission Guard (ManageMessages)
-    const hasPerm = await PermissionGuard.enforceManageMessages(ctx);
-    if (!hasPerm) return;
+    // 1. Authorization Guard (User must have Manage Messages permission)
+    if (!ctx.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
+      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
+      const errorEmbed: APIEmbed = {
+        title: `${errorEmoji} Permissão Insuficiente`,
+        description: 'Você precisa da permissão de **Gerenciar Mensagens** para utilizar este comando.',
+        color: EMBED_COLORS.BLACK.number,
+      };
+      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      return;
+    }
 
-    // 2. Enforce Rate Limit / Cooldown (5 seconds)
-    const cooldownLeft = CooldownManager.checkCooldown('clear', ctx.user.id, 5);
+    // 2. Cooldown Guard (10s)
+    const cooldownLeft = clearCooldowns.check(ctx.user.id);
     if (cooldownLeft > 0) {
       const warningEmoji = await getEmoji(ctx.client, 'WARNING');
       const errorEmbed: APIEmbed = {
         title: `${warningEmoji} Aguarde um momento`,
         description: `Aguarde \`${cooldownLeft}s\` para usar o comando de limpeza novamente.`,
-        color: STATUS_COLORS.WARNING.number,
+        color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
       return;
@@ -92,7 +86,7 @@ export const command: CommandModule = {
       const errorEmbed: APIEmbed = {
         title: `${errorEmoji} Canal Inválido`,
         description: 'Este comando só pode ser executado em canais de texto do servidor.',
-        color: STATUS_COLORS.ERROR.number,
+        color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
       return;
@@ -112,126 +106,102 @@ export const command: CommandModule = {
         title: `${errorEmoji} Permissão do Bot Ausente`,
         description:
           'Eu preciso das permissões de **Gerenciar Mensagens** e **Ver Histórico de Mensagens** neste canal para executar a limpeza.',
-        color: STATUS_COLORS.ERROR.number,
+        color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
       return;
     }
 
-    // Parse options
-    let amount = 0;
-    let targetUserId: string | null = null;
+    // 5. Parse Options (Quantity & Target User)
+    let amountToClear = 0;
+    let targetUser: User | null = null;
 
     if (ctx.isSlash && ctx.slashInteraction) {
-      amount = ctx.slashInteraction.options.getInteger('quantidade', true);
-      const userObj = ctx.slashInteraction.options.getUser('usuario');
-      targetUserId = userObj ? userObj.id : null;
+      amountToClear = ctx.slashInteraction.options.getInteger('quantidade', true);
+      targetUser = ctx.slashInteraction.options.getUser('usuario');
     } else {
-      amount = parseInt(ctx.args[0], 10);
-      if (isNaN(amount) || amount < 1 || amount > 200) {
+      // Prefix Command Parsing: k!clear <amount> [@user|userID]
+      const rawAmount = parseInt(ctx.args[0], 10);
+      if (isNaN(rawAmount) || rawAmount < 1 || rawAmount > 200) {
         const warningEmoji = await getEmoji(ctx.client, 'WARNING');
         const errorEmbed: APIEmbed = {
           title: `${warningEmoji} Quantidade Inválida`,
-          description: 'Uso correto: `k!clear <1-200> [@usuario|ID]`. Escolha um número entre 1 e 200.',
-          color: STATUS_COLORS.WARNING.number,
+          description:
+            'Por favor, informe uma quantidade válida de mensagens entre **1** e **200**.\n\n*Exemplo:* `k!clear 50`',
+          color: EMBED_COLORS.BLACK.number,
         };
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
         return;
       }
+      amountToClear = rawAmount;
 
-      if (ctx.message && ctx.message.mentions.users.size > 0) {
-        targetUserId = ctx.message.mentions.users.first()!.id;
-      } else if (ctx.args[1]) {
-        targetUserId = extractUserId(ctx.args[1]);
+      if (ctx.args[1]) {
+        const userMentionMatch = ctx.args[1].match(/^<@!?(\d+)>$/);
+        const userId = userMentionMatch ? userMentionMatch[1] : ctx.args[1];
+        try {
+          targetUser = await ctx.client.users.fetch(userId);
+        } catch {
+          // User not found, ignore filter
+        }
       }
     }
 
-    // Defer response ephemerally (3-second rule)
+    // Apply Cooldown after passing validation
+    clearCooldowns.apply(ctx.user.id);
+
+    // Acknowledge interaction (3-second rule)
     await ctx.deferReply(true);
 
     try {
       let totalDeleted = 0;
       let skippedOldMessages = false;
-      let lastMessageId: string | undefined = !ctx.isSlash && ctx.message ? ctx.message.id : undefined;
-      const targetAmount = amount;
 
-      // Smart Fetch & Delete Engine (Searches history for target user's messages up to targetAmount)
-      while (totalDeleted < targetAmount) {
-        const needed = targetAmount - totalDeleted;
-        // Fetch up to 100 messages at a time to scan for user messages
-        const fetchLimit = targetUserId ? 100 : Math.min(needed, 100);
+      // 6. Batch Processing (Discord API limits bulkDelete to max 100 messages per call)
+      const batches = amountToClear > 100 ? [100, amountToClear - 100] : [amountToClear];
 
-        const fetchOptions: { limit: number; before?: string } = { limit: fetchLimit };
-        if (lastMessageId) {
-          fetchOptions.before = lastMessageId;
+      for (const batchSize of batches) {
+        let fetchedMessages = await channel.messages.fetch({ limit: batchSize });
+
+        // Filter by user if target specified
+        if (targetUser) {
+          fetchedMessages = fetchedMessages.filter((msg) => msg.author.id === targetUser!.id);
         }
 
-        const fetchedMessages = await channel.messages.fetch(fetchOptions);
-        if (fetchedMessages.size === 0) break;
+        if (fetchedMessages.size === 0) continue;
 
-        lastMessageId = fetchedMessages.last()?.id;
-
-        // Filter messages belonging to target user if specified
-        let messagesToDelete: Collection<string, Message> = targetUserId
-          ? fetchedMessages.filter((m) => m.author.id === targetUserId)
-          : fetchedMessages;
-
-        // Exclude original trigger message if prefix command to avoid double deletion
-        if (!ctx.isSlash && ctx.message) {
-          messagesToDelete = messagesToDelete.filter((m) => m.id !== ctx.message!.id);
-        }
-
-        if (messagesToDelete.size === 0) {
-          if (fetchedMessages.size < fetchLimit) break;
-          continue;
-        }
-
-        // Limit deletion batch to exact remaining needed amount
-        if (messagesToDelete.size > needed) {
-          const slicedCollection = new Collection<string, Message>();
-          let count = 0;
-          for (const [id, msg] of messagesToDelete.entries()) {
-            if (count >= needed) break;
-            slicedCollection.set(id, msg);
-            count++;
-          }
-          messagesToDelete = slicedCollection;
-        }
-
-        // CRITICAL ANTI-CRASH GUARANTEE: Pass filterOld = true to prevent DiscordAPIError[50034]
-        const deletedBatch = await channel.bulkDelete(messagesToDelete, true);
+        // Perform bulk deletion (filterOld = true automatically ignores messages > 14 days)
+        const deletedBatch = await channel.bulkDelete(fetchedMessages, true);
         totalDeleted += deletedBatch.size;
 
-        if (deletedBatch.size < messagesToDelete.size) {
+        if (deletedBatch.size < fetchedMessages.size) {
           skippedOldMessages = true;
         }
 
-        // Stop if no messages deleted (remaining messages are >14 days old) or end of channel reached
-        if (deletedBatch.size === 0 || fetchedMessages.size < fetchLimit) {
-          break;
+        // Small pause between batches to prevent REST rate-limits
+        if (batches.length > 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
-      // Resolve live animated cleaning & success emojis from Developer Portal
+      // Resolve live Developer Portal emojis
       const cleaningEmoji = await getEmoji(ctx.client, 'CLEANING');
       const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
 
-      // Render success response
-      const filterNotice = targetUserId ? ` do usuário <@${targetUserId}>` : '';
+      const filterNotice = targetUser ? ` do usuário **${targetUser.tag}**` : '';
+
       const fields = [
         {
-          name: '📊 Solicitadas',
-          value: `\`${amount}\``,
+          name: '🧹 Mensagens Solicitadas',
+          value: `\`${amountToClear}\``,
           inline: true,
         },
         {
-          name: '🗑️ Deletadas',
+          name: '✅ Apagadas com Sucesso',
           value: `\`${totalDeleted}\``,
           inline: true,
         },
       ];
 
-      // Conditionally show 14-day limit warning ONLY if older messages were actually skipped
       if (skippedOldMessages) {
         fields.push({
           name: '🕒 Trava de 14 Dias',
@@ -243,7 +213,7 @@ export const command: CommandModule = {
       const successEmbed: APIEmbed = {
         title: `${cleaningEmoji} Limpeza Concluída`,
         description: `${successEmoji} Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
-        color: STATUS_COLORS.SUCCESS.number,
+        color: EMBED_COLORS.BLACK.number,
         fields,
         footer: {
           text: DEFAULT_BOT_CONFIG.BOT_NAME,
@@ -262,7 +232,7 @@ export const command: CommandModule = {
         description: `Ocorreu um erro ao tentar apagar as mensagens: \`${
           error.message || error
         }\``,
-        color: STATUS_COLORS.ERROR.number,
+        color: EMBED_COLORS.BLACK.number,
       };
 
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });

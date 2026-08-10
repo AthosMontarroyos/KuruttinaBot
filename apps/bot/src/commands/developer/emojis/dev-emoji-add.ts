@@ -1,128 +1,112 @@
-import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { SlashCommandBuilder, APIEmbed, Attachment } from 'discord.js';
+import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
 import { getEmoji } from '../../../utils/emoji-resolver';
 
 /**
- * Downloads image from URL or Discord Emoji ID with fallback format support (.gif -> .png -> .webp).
- * Returns a valid Data URI string (data:image/png;base64,...) or throws a descriptive error.
+ * Downloads image buffer from HTTP/CDN URL with candidate extension fallback
+ * (.gif -> .png -> .webp) to prevent Discord CDN HTML/JSON error text from being sent to Discord API.
  */
-async function fetchValidImageDataUri(rawInput: string): Promise<string> {
-  const customEmojiMatch = rawInput.match(/<(a)?:(\w+):(\d+)>/);
-  const candidateUrls: string[] = [];
-
+async function fetchValidImageDataUri(sourceUrl: string): Promise<string | null> {
+  // If user passed formatted custom emoji string: e.g. <a:name:id> or <:name:id>
+  const customEmojiMatch = sourceUrl.match(/<a?:(\w+):(\d+)>/);
   if (customEmojiMatch) {
-    const isAnimated = Boolean(customEmojiMatch[1]);
-    const emojiId = customEmojiMatch[3];
-    if (isAnimated) {
-      candidateUrls.push(`https://cdn.discordapp.com/emojis/${emojiId}.gif?size=128&quality=lossless`);
-      candidateUrls.push(`https://cdn.discordapp.com/emojis/${emojiId}.png?size=128&quality=lossless`);
-    } else {
-      candidateUrls.push(`https://cdn.discordapp.com/emojis/${emojiId}.png?size=128&quality=lossless`);
-      candidateUrls.push(`https://cdn.discordapp.com/emojis/${emojiId}.gif?size=128&quality=lossless`);
+    const isAnimated = sourceUrl.startsWith('<a:');
+    const emojiId = customEmojiMatch[2];
+    const candidateExts = isAnimated ? ['gif', 'png', 'webp'] : ['png', 'gif', 'webp'];
+
+    for (const ext of candidateExts) {
+      const cdnUrl = `https://cdn.discordapp.com/emojis/${emojiId}.${ext}?size=256&quality=lossless`;
+      try {
+        const res = await fetch(cdnUrl);
+        if (res.ok) {
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.startsWith('image/')) {
+            const arrayBuffer = await res.arrayBuffer();
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+            return `data:${contentType};base64,${base64}`;
+          }
+        }
+      } catch {
+        // Try next candidate extension
+      }
     }
-  } else if (rawInput.startsWith('http://') || rawInput.startsWith('https://')) {
-    candidateUrls.push(rawInput);
-  } else {
-    throw new Error('Formato de emoji ou URL de imagem inválido.');
+    return null;
   }
 
-  let lastError: Error | null = null;
+  // Normal Direct Image URL
+  try {
+    const res = await fetch(sourceUrl);
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || 'image/png';
+    if (!contentType.startsWith('image/')) return null;
 
-  for (const url of candidateUrls) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status}`);
-      }
-
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.startsWith('image/')) {
-        throw new Error(`Content-Type inválido: ${contentType}`);
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      // Verify header is not JSON or HTML error response
-      const snippet = buffer.toString('utf8', 0, 50);
-      if (snippet.trim().startsWith('{') || snippet.trim().startsWith('<html')) {
-        throw new Error('Servidor retornou um erro em JSON/HTML em vez de imagem.');
-      }
-
-      const base64Data = buffer.toString('base64');
-      const cleanMime = contentType.split(';')[0].trim();
-      return `data:${cleanMime};base64,${base64Data}`;
-    } catch (err: any) {
-      lastError = err;
-    }
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    return `data:${contentType};base64,${base64}`;
+  } catch {
+    return null;
   }
-
-  throw new Error(
-    lastError?.message ||
-      'Não foi possível baixar a imagem. Verifique se o emoji existe no Discord CDN.'
-  );
 }
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('dev-emoji-add')
-    .setDescription('[Dev Only] Importa um emoji para o Discord Developer Portal da Kuruttina')
+    .setDescription('[Dev Only] Importa e cria um Application Emoji diretamente no Developer Portal da Kuruttina')
     .addStringOption((option) =>
       option
         .setName('nome')
-        .setDescription('Nome de registro do emoji no Developer Portal')
+        .setDescription('Nome do emoji no Developer Portal (ex: shooting, star, verified)')
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName('emoji')
-        .setDescription('Emoji customizado do Discord (ex: <:nome:id> ou <a:nome:id>) ou URL')
+        .setDescription('Emoji customizado do Discord (ex: <a:shooting:1492107771510919300>) ou URL da imagem')
         .setRequired(false)
     )
     .addAttachmentOption((option) =>
       option
         .setName('arquivo')
-        .setDescription('Arquivo de imagem ou GIF para criar o emoji')
+        .setDescription('Arquivo de imagem (PNG, GIF, WEBP) para enviar')
         .setRequired(false)
     ),
-  prefixAliases: ['dev-emoji-add', 'devemojiadd', 'addappemoji'],
+
+  prefixAliases: ['dev-emoji-add', 'add-emoji', 'import-emoji'],
   category: 'developer',
   subCategory: 'emojis',
   guide: {
-    syntax: 'k!dev-emoji-add <nome> [emoji_customizado|arquivo|URL]',
+    syntax: 'k!dev-emoji-add <nome> <emoji_ou_url> ou /dev-emoji-add nome:<nome> [emoji:<url_ou_emoji>]',
     examples: [
       '/dev-emoji-add nome:shooting emoji:<a:shooting:1492107771510919300>',
-      'k!dev-emoji-add shooting <a:shooting:1492107771510919300>',
+      'k!dev-emoji-add verified https://cdn.discordapp.com/...',
     ],
     detailedDescription:
-      'Comando exclusivo de desenvolvedor para fazer o upload de novos Emojis de Aplicação diretamente no Discord Developer Portal da Kuruttina com validação de buffer contra erros de asset inválido.',
+      'Baixa a imagem de um emoji customizado ou URL e cadastra diretamente no Discord Developer Portal da Kuruttina como um Application Emoji oficial.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
-    // 1. Enforce Dev Only Permission & Dev Guild Security Guard
-    const isAuthorized = await PermissionGuard.enforceDevOnly(ctx);
-    if (!isAuthorized) return;
+    // Restrito a Desenvolvedores / Servidor Dev
+    const isAllowed = await PermissionGuard.enforceDevOnly(ctx);
+    if (!isAllowed) return;
 
     await ctx.deferReply(true);
 
-    // Get parameters
     let emojiName = '';
-    let rawEmojiInput: string | undefined;
-    let fileAttachment: any | undefined;
+    let rawEmojiInput: string | null = null;
+    let fileAttachment: Attachment | null = null;
 
     if (ctx.isSlash && ctx.slashInteraction) {
-      emojiName = ctx.slashInteraction.options.getString('nome', true).trim();
-      rawEmojiInput = ctx.slashInteraction.options.getString('emoji') || undefined;
-      fileAttachment = ctx.slashInteraction.options.getAttachment('arquivo') || undefined;
+      emojiName = ctx.slashInteraction.options.getString('nome', true).trim().toLowerCase();
+      rawEmojiInput = ctx.slashInteraction.options.getString('emoji');
+      fileAttachment = ctx.slashInteraction.options.getAttachment('arquivo');
     } else {
-      emojiName = ctx.args[0];
-      rawEmojiInput = ctx.args[1];
-      if (ctx.message && ctx.message.attachments.size > 0) {
-        fileAttachment = ctx.message.attachments.first();
-      }
+      // Prefix Parsing: k!dev-emoji-add <nome> <emoji_ou_url>
+      emojiName = ctx.args[0]?.trim().toLowerCase();
+      rawEmojiInput = ctx.args[1] || null;
+      fileAttachment = ctx.message?.attachments.first() || null;
     }
 
     if (!emojiName) {
@@ -130,7 +114,7 @@ export const command: CommandModule = {
       const errorEmbed: APIEmbed = {
         title: `${warningEmoji} Parâmetro Ausente`,
         description: 'Forneça o nome do emoji a ser registrado. Ex: `/dev-emoji-add nome:shooting`',
-        color: STATUS_COLORS.WARNING.number,
+        color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
       return;
@@ -151,7 +135,7 @@ export const command: CommandModule = {
           title: `${errorEmoji} Imagem Não Encontrada`,
           description:
             'Forneça um emoji customizado do Discord (ex: `<a:shooting:1492107771510919300>`), uma URL de imagem válida ou um arquivo anexado.',
-          color: STATUS_COLORS.ERROR.number,
+          color: EMBED_COLORS.BLACK.number,
         };
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
         return;
@@ -176,7 +160,7 @@ export const command: CommandModule = {
       const successEmbed: APIEmbed = {
         title: `${successEmoji} Application Emoji Criado!`,
         description: `O emoji **${createdAppEmoji.name}** foi importado e registrado com sucesso no **Discord Developer Portal**!`,
-        color: STATUS_COLORS.SUCCESS.number,
+        color: EMBED_COLORS.BLACK.number,
         fields: [
           {
             name: '✨ Emoji Renderizado',
@@ -211,7 +195,7 @@ export const command: CommandModule = {
         description: `Ocorreu uma falha ao importar o emoji para o Developer Portal: \`${
           error.message || error
         }\``,
-        color: STATUS_COLORS.ERROR.number,
+        color: EMBED_COLORS.BLACK.number,
       };
 
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });

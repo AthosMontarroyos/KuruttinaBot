@@ -1,49 +1,53 @@
 import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG, EMOJIS, EMOJI_CATEGORIES } from '@kuruttina/shared';
+import { EMOJIS, EMOJI_CATEGORIES, EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
+import { KuruttinaClient } from '../../../types/kuruttina-client';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('dev-emoji-list')
-    .setDescription('Exibe a lista, utilidade e status de sincronização dos Emojis do Developer Portal'),
-  prefixAliases: ['dev-emoji-list', 'devemojilist', 'emojilist'],
+    .setDescription('[Dev Only] Lista todos os emojis do Developer Portal e status de mapeamento'),
+  prefixAliases: ['dev-emoji-list', 'emojis-list'],
   category: 'developer',
   subCategory: 'emojis',
   guide: {
-    syntax: 'k!dev-emoji-list',
+    syntax: 'k!dev-emoji-list ou /dev-emoji-list',
     examples: ['/dev-emoji-list', 'k!dev-emoji-list'],
     detailedDescription:
-      'Exibe o catálogo completo de Emojis de Aplicação cadastrados no Discord Developer Portal, agrupados por utilidade e categoria.',
-    requiredPermissions: ['DeveloperOnly'],
+      'Exibe o catálogo completo de emojis ativos no Discord Developer Portal, mapeamento com as chaves do bot e fallbacks Unicode.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
-    const isDev = await PermissionGuard.enforceDevOnly(ctx);
-    if (!isDev) return;
+    // Restrito a Desenvolvedores / Servidor Dev
+    const isAllowed = await PermissionGuard.enforceDevOnly(ctx);
+    if (!isAllowed) return;
 
     await ctx.deferReply(true);
 
+    const client = ctx.client as KuruttinaClient;
+
     try {
-      const client = ctx.client;
       if (!client.application) {
-        throw new Error('Aplicação do Discord não inicializada.');
+        throw new Error('client.application não está acessível no cliente.');
       }
 
-      // Fetch Application Emojis from Discord Developer Portal
+      // Fetch all live custom Application Emojis uploaded to Discord Developer Portal
       const appEmojis = await client.application.emojis.fetch();
-      const appEmojisMap = new Map(appEmojis.map((e) => [e.name?.toLowerCase(), e]));
 
-      let totalMapped = 0;
       const categoryFields: { name: string; value: string; inline: boolean }[] = [];
+      let totalMapped = 0;
 
       for (const category of EMOJI_CATEGORIES) {
         const lines: string[] = [];
 
         for (const key of category.keys) {
           const defaultUnicode = EMOJIS[key];
-          const matchedAppEmoji = appEmojisMap.get(key.toLowerCase());
+
+          const matchedAppEmoji = appEmojis.find(
+            (e) => e.name?.toLowerCase() === key.toLowerCase()
+          );
 
           if (matchedAppEmoji) {
             totalMapped++;
@@ -64,7 +68,7 @@ export const command: CommandModule = {
       const embed: APIEmbed = {
         title: `🎨 Catálogo de Emojis do Developer Portal`,
         description: `Exibindo a utilidade e o status dos Emojis de Aplicação da **Kuruttina**.\n**Customizados no Portal:** \`${totalMapped}/${totalDefined}\` registrado(s).`,
-        color: STATUS_COLORS.INFO.number,
+        color: EMBED_COLORS.BLACK.number,
         fields: categoryFields,
         footer: {
           text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Use /dev-emoji-add para importar novos emojis`,
@@ -81,7 +85,7 @@ export const command: CommandModule = {
         description: `Ocorreu uma falha ao buscar os emojis no Developer Portal: \`${
           error.message || error
         }\``,
-        color: STATUS_COLORS.ERROR.number,
+        color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
     }

@@ -164,6 +164,7 @@ Guidelines and rules for AI coding assistants working in this repository.
     - Security: `shield`, `lock`, `unlock`, `settings`, `logs`, `user`, `guild`, `crown`
     - Branding: `link`, `documentation`, `star`
   - **Application Emoji Scope Optimization**: Developer Portal Application Emojis are reserved strictly for core system tokens (`STATUS`, `CATEGORIES`, `ACTIONS`, `TELEMETRY`, `SECURITY`, `BRANDING`). Custom decoration or third-party emojis can be referenced via formatted strings (`<:name:id>`) without consuming application emoji quota.
+  - **Pre-Inspection Application Emoji Requirement**: BEFORE creating or modifying any bot command or embed involving emojis, AI agents MUST execute `npx ts-node src/scripts/fetch-app-emojis.ts` (inside `apps/bot/`) to inspect all live custom Application Emojis uploaded to the Discord Developer Portal.
 - **Standardized Status Colors & Highlights**: Always use predefined `STATUS_COLORS` (`SUCCESS`, `WARNING`, `ERROR`, `INFO`, `NEUTRAL`) for embed borders, status indicators, and badges to ensure visual consistency across the Bot and Web Dashboard.
 
 ### 17. Multi-Scope Deployment & AWS Resource Efficiency for Affiliate/Custom Commands

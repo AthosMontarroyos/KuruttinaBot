@@ -5,7 +5,6 @@ import {
   StringSelectMenuBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType,
 } from 'discord.js';
 import { STATUS_COLORS, DEFAULT_BOT_CONFIG, createCustomId } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
@@ -16,7 +15,7 @@ import { getEmoji } from '../../../../utils/emoji-resolver';
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('help')
-    .setDescription('Central de Ajuda e Diretório de Comandos da Kuruttina')
+    .setDescription('Central de Ajuda e Diretório Paginado de Comandos da Kuruttina')
     .addStringOption((option) =>
       option
         .setName('comando')
@@ -30,7 +29,7 @@ export const command: CommandModule = {
     syntax: 'k!help [comando] ou /help [comando]',
     examples: ['/help', '/help comando:clear', 'k!help ping', 'k!ajuda'],
     detailedDescription:
-      'Exibe o menu interativo e automatizado de comandos agrupados por categorias e subcategorias dinâmicas.',
+      'Exibe o menu interativo e paginado de comandos com botões de navegação lateral (◀ / ▶) e seletor de categorias.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -45,7 +44,7 @@ export const command: CommandModule = {
       targetCommandName = ctx.args[0].trim().toLowerCase();
     }
 
-    // Resolve Live Emojis for Header & Categories
+    // Resolve Live Emojis
     const dancingEmoji = await getEmoji(client, 'DANCING');
     const searchEmoji = await getEmoji(client, 'SEARCH');
 
@@ -66,7 +65,7 @@ export const command: CommandModule = {
       if (!foundCommand || (foundCommand.category === 'developer' && !canSeeDevCommands)) {
         const errorEmbed: APIEmbed = {
           title: `${searchEmoji} Comando Não Encontrado`,
-          description: `Não foi possível localizar o comando \`${targetCommandName}\`. Verifique o nome ou selecione uma categoria no menu principal.`,
+          description: `Não foi possível localizar o comando \`${targetCommandName}\`. Verifique o nome ou navegue pelas páginas.`,
           color: STATUS_COLORS.ERROR.number,
         };
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
@@ -127,28 +126,21 @@ export const command: CommandModule = {
       return;
     }
 
-    // SCENARIO 2: Automated Dynamic Category & Subcategory Scanning
+    // SCENARIO 2: Interactive Paginated Help Menu (◀ / ▶ Side Navigation)
     await ctx.deferReply(false);
 
-    // Context-Aware Scope Authorization Checks
+    // Authorization checks for Dev & Affiliate scopes
     const isDevGuild = ctx.guild?.id === process.env.DEV_GUILD_ID;
     const isDevUser =
       ctx.user.id === process.env.CREATOR_ACCOUNT_ID || ctx.user.id === process.env.DEV_ACCOUNT_ID;
     const canSeeDevCommands = isDevGuild || isDevUser;
 
-    // Automated Category & Sub-Category Map: Map<categoryName, Map<subCategoryName, CommandModule[]>>
+    // Build Automated Category Map: Map<categoryKey, Map<subCategoryKey, CommandModule[]>>
     const categoryMap = new Map<string, Map<string, CommandModule[]>>();
 
     client.commands.forEach((cmd) => {
-      // 1. Gatekeep Developer category commands if not in Dev Guild or not Dev user
-      if (cmd.category === 'developer' && !canSeeDevCommands) {
-        return;
-      }
-
-      // 2. Gatekeep Affiliate category commands if not in an authorized affiliate server
-      if (cmd.category === 'affiliate' && !isDevGuild) {
-        return;
-      }
+      if (cmd.category === 'developer' && !canSeeDevCommands) return;
+      if (cmd.category === 'affiliate' && !isDevGuild) return;
 
       const catKey = cmd.category.toLowerCase();
       const subKey = (cmd.subCategory || 'geral').toLowerCase();
@@ -165,7 +157,15 @@ export const command: CommandModule = {
       subMap.get(subKey)!.push(cmd);
     });
 
-    // Build Main Home Summary Fields
+    // Build Help Pages Array (Page 0 = Home, Page 1..N = Categories)
+    interface HelpPage {
+      id: string;
+      embed: APIEmbed;
+    }
+
+    const pages: HelpPage[] = [];
+
+    // --- PAGE 0: Home / Summary ---
     const homeFields: { name: string; value: string; inline: boolean }[] = [];
 
     for (const [catKey, subMap] of categoryMap.entries()) {
@@ -191,136 +191,212 @@ export const command: CommandModule = {
       });
     }
 
-    // Build Main Home Embed
-    const mainHelpEmbed: APIEmbed = {
-      title: `${dancingEmoji} Central de Ajuda da Kuruttina`,
-      description:
-        `Olá! Sou a **Kuruttina**, sua assistente de alta performance para o Discord.\n\n` +
-        `Use o **Menu de Seleção abaixo** para navegar pelas categorias e subcategorias dinâmicas ou digite \`/help <comando>\` para detalhes.`,
-      color: STATUS_COLORS.INFO.number,
-      fields: homeFields,
-      footer: {
-        text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Prefixo Padrão: ${DEFAULT_BOT_CONFIG.DEFAULT_PREFIX}`,
-        icon_url: client.user?.displayAvatarURL(),
+    pages.push({
+      id: 'home',
+      embed: {
+        title: `${dancingEmoji} Central de Ajuda da Kuruttina`,
+        description:
+          `Olá! Sou a **Kuruttina**, sua assistente de alta performance para o Discord.\n\n` +
+          `Navegue pelas páginas usando os **botões de seta (◀ / ▶)** ou escolha uma categoria no menu abaixo.`,
+        color: STATUS_COLORS.INFO.number,
+        fields: homeFields,
+        footer: {
+          text: `Página 1/${categoryMap.size + 1} • ${DEFAULT_BOT_CONFIG.BOT_NAME}`,
+          icon_url: client.user?.displayAvatarURL(),
+        },
+        timestamp: new Date().toISOString(),
       },
-      timestamp: new Date().toISOString(),
-    };
-
-    // Build Automated Select Menu Options
-    const selectOptions: { label: string; description: string; value: string; emoji?: string }[] = [
-      {
-        label: 'Início & Resumo',
-        description: 'Retorna ao menu principal da Central de Ajuda',
-        value: 'home',
-        emoji: '🏠',
-      },
-    ];
-
-    for (const catKey of categoryMap.keys()) {
-      let catLabel = catKey.charAt(0).toUpperCase() + catKey.slice(1);
-      let catDesc = `Comandos automatizados da categoria ${catLabel}`;
-
-      if (catKey === 'utility') {
-        catLabel = 'Utilidades';
-        catDesc = 'Comandos gerais de informação e utilidades';
-      } else if (catKey === 'moderation') {
-        catLabel = 'Moderação';
-        catDesc = 'Ferramentas de moderação e purga de membros';
-      } else if (catKey === 'developer') {
-        catLabel = 'Desenvolvedor';
-        catDesc = 'Comandos restritos de gestão de aplicação e emojis';
-      } else if (catKey === 'affiliate') {
-        catLabel = 'Afiliados / Apoiadores';
-        catDesc = 'Comandos exclusivos ativados para servidores parceiros';
-      }
-
-      selectOptions.push({
-        label: catLabel,
-        description: catDesc,
-        value: `cat:${catKey}`,
-      });
-    }
-
-    const selectCustomId = createCustomId('system', guildId, 'help', 'select_category');
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId(selectCustomId)
-      .setPlaceholder('📂 Escolha uma Categoria de Comandos...')
-      .addOptions(selectOptions);
-
-    // Build Web Directory Link Button
-    const webButton = new ButtonBuilder()
-      .setLabel('Diretório Web Oficial')
-      .setStyle(ButtonStyle.Link)
-      .setURL('https://kuruttinabot.athosmontarroyos.com/commands');
-
-    const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
-    const rowButtons = new ActionRowBuilder<ButtonBuilder>().addComponents(webButton);
-
-    await ctx.reply({
-      embeds: [mainHelpEmbed],
-      components: [rowSelect, rowButtons],
     });
 
-    // Handle Component Collector for Interactive Dynamic Menu
-    if (ctx.isSlash && ctx.slashInteraction) {
-      const collector = ctx.slashInteraction.channel?.createMessageComponentCollector({
-        componentType: ComponentType.StringSelect,
-        time: 60000,
+    // --- PAGES 1..N: Category Pages with Sub-Category Breakdown ---
+    let catPageIndex = 2;
+    const catKeysArray = Array.from(categoryMap.keys());
+
+    for (const catKey of catKeysArray) {
+      const subMap = categoryMap.get(catKey)!;
+      const catEmoji = await getEmoji(client, catKey.toUpperCase() as any);
+
+      let catLabel = catKey.charAt(0).toUpperCase() + catKey.slice(1);
+      if (catKey === 'utility') catLabel = 'Utilidades';
+      if (catKey === 'moderation') catLabel = 'Moderação';
+      if (catKey === 'developer') catLabel = 'Desenvolvedor';
+      if (catKey === 'affiliate') catLabel = 'Afiliados / Apoiadores';
+
+      const subFields: { name: string; value: string; inline: boolean }[] = [];
+
+      for (const [subKey, cmds] of subMap.entries()) {
+        const subTitle = `📁 Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
+        const cmdList = cmds
+          .map(
+            (c) =>
+              `• **/${c.data.name}** (Atalho: \`k!${c.prefixAliases?.[0] || c.data.name}\`)\n  _${c.data.description}_`
+          )
+          .join('\n');
+
+        subFields.push({
+          name: subTitle,
+          value: cmdList || 'Nenhum comando.',
+          inline: false,
+        });
+      }
+
+      pages.push({
+        id: `cat:${catKey}`,
+        embed: {
+          title: `${catEmoji} Categoria: ${catLabel}`,
+          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.`,
+          color: STATUS_COLORS.INFO.number,
+          fields: subFields,
+          footer: {
+            text: `Página ${catPageIndex}/${catKeysArray.length + 1} • ${DEFAULT_BOT_CONFIG.BOT_NAME}`,
+            icon_url: client.user?.displayAvatarURL(),
+          },
+          timestamp: new Date().toISOString(),
+        },
       });
 
-      collector?.on('collect', async (interaction) => {
-        if (interaction.customId !== selectCustomId) return;
-
-        const selectedValue = interaction.values[0];
-        let updatedEmbed: APIEmbed;
-
-        if (selectedValue === 'home') {
-          updatedEmbed = mainHelpEmbed;
-        } else if (selectedValue.startsWith('cat:')) {
-          const catKey = selectedValue.replace('cat:', '');
-          const subMap = categoryMap.get(catKey);
-          const catEmoji = await getEmoji(client, catKey.toUpperCase() as any);
-
-          let catLabel = catKey.charAt(0).toUpperCase() + catKey.slice(1);
-          if (catKey === 'utility') catLabel = 'Utilidades';
-          if (catKey === 'moderation') catLabel = 'Moderação';
-          if (catKey === 'developer') catLabel = 'Desenvolvedor';
-          if (catKey === 'affiliate') catLabel = 'Afiliados';
-
-          const subFields: { name: string; value: string; inline: boolean }[] = [];
-
-          if (subMap) {
-            for (const [subKey, cmds] of subMap.entries()) {
-              const subTitle = `📁 Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
-              const cmdList = cmds
-                .map((c) => `• **/${c.data.name}** (Atalho: \`k!${c.prefixAliases?.[0] || c.data.name}\`)\n  _${c.data.description}_`)
-                .join('\n');
-
-              subFields.push({
-                name: subTitle,
-                value: cmdList || 'Nenhum comando.',
-                inline: false,
-              });
-            }
-          }
-
-          updatedEmbed = {
-            title: `${catEmoji} Categoria: ${catLabel}`,
-            description: `Exibindo todas as subcategorias e comandos automatizados da categoria **${catLabel}**.`,
-            color: STATUS_COLORS.INFO.number,
-            fields: subFields,
-            footer: {
-              text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Use /help <comando> para detalhes`,
-              icon_url: client.user?.displayAvatarURL(),
-            },
-            timestamp: new Date().toISOString(),
-          };
-        } else {
-          updatedEmbed = mainHelpEmbed;
-        }
-
-        await interaction.update({ embeds: [updatedEmbed] });
-      });
+      catPageIndex++;
     }
+
+    // Build Component Action Rows Function
+    let currentPageIndex = 0;
+
+    const buildActionRows = (pageIdx: number) => {
+      const prevCustomId = createCustomId('system', guildId, 'help', 'prev_page');
+      const nextCustomId = createCustomId('system', guildId, 'help', 'next_page');
+      const selectCustomId = createCustomId('system', guildId, 'help', 'select_category');
+
+      // Buttons Action Row (◀ Anterior | ▶ Próximo | Diretório Web)
+      const btnPrev = new ButtonBuilder()
+        .setCustomId(prevCustomId)
+        .setLabel('◀ Anterior')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(pageIdx === 0);
+
+      const btnNext = new ButtonBuilder()
+        .setCustomId(nextCustomId)
+        .setLabel('Próximo ▶')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(pageIdx === pages.length - 1);
+
+      const btnWeb = new ButtonBuilder()
+        .setLabel('Diretório Web Oficial')
+        .setStyle(ButtonStyle.Link)
+        .setURL('https://kuruttinabot.athosmontarroyos.com/commands');
+
+      // Select Menu Action Row
+      const selectOptions: { label: string; description: string; value: string; emoji?: string }[] = [
+        {
+          label: 'Início & Resumo (Página 1)',
+          description: 'Retorna à página principal da Central de Ajuda',
+          value: '0',
+          emoji: '🏠',
+        },
+      ];
+
+      catKeysArray.forEach((cKey, idx) => {
+        let label = cKey.charAt(0).toUpperCase() + cKey.slice(1);
+        if (cKey === 'utility') label = 'Utilidades';
+        if (cKey === 'moderation') label = 'Moderação';
+        if (cKey === 'developer') label = 'Desenvolvedor';
+        if (cKey === 'affiliate') label = 'Afiliados';
+
+        selectOptions.push({
+          label: `${label} (Página ${idx + 2})`,
+          description: `Navega para a categoria ${label}`,
+          value: String(idx + 1),
+        });
+      });
+
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId(selectCustomId)
+        .setPlaceholder('📂 Ir direto para uma Categoria...')
+        .addOptions(selectOptions);
+
+      const rowButtons = new ActionRowBuilder<ButtonBuilder>().addComponents(btnPrev, btnNext, btnWeb);
+      const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+      return { rowButtons, rowSelect, prevCustomId, nextCustomId, selectCustomId };
+    };
+
+    const initialRows = buildActionRows(currentPageIndex);
+
+    const sentMessage = await ctx.reply({
+      embeds: [pages[currentPageIndex].embed],
+      components: [initialRows.rowButtons, initialRows.rowSelect],
+    });
+
+    if (!sentMessage) return;
+
+    // Create Component Collector (Works universally for Slash AND Prefix commands!)
+    const collector = sentMessage.createMessageComponentCollector({
+      time: 120000, // 2 minutes
+    });
+
+    collector.on('collect', async (interaction) => {
+      // Security check: Only allow command invoker to paginate
+      if (interaction.user.id !== ctx.user.id) {
+        const errEmoji = await getEmoji(client, 'WARNING');
+        await interaction.reply({
+          content: `${errEmoji} Apenas o usuário que usou o comando pode navegar nas páginas.`,
+          flags: 64, // Ephemeral
+        });
+        return;
+      }
+
+      const { prevCustomId, nextCustomId, selectCustomId } = buildActionRows(currentPageIndex);
+
+      if (interaction.customId === prevCustomId) {
+        if (currentPageIndex > 0) currentPageIndex--;
+      } else if (interaction.customId === nextCustomId) {
+        if (currentPageIndex < pages.length - 1) currentPageIndex++;
+      } else if (interaction.customId === selectCustomId && interaction.isStringSelectMenu()) {
+        const targetPage = parseInt(interaction.values[0], 10);
+        if (!isNaN(targetPage) && targetPage >= 0 && targetPage < pages.length) {
+          currentPageIndex = targetPage;
+        }
+      }
+
+      const updatedRows = buildActionRows(currentPageIndex);
+
+      await interaction.update({
+        embeds: [pages[currentPageIndex].embed],
+        components: [updatedRows.rowButtons, updatedRows.rowSelect],
+      });
+    });
+
+    collector.on('end', async () => {
+      try {
+        const { prevCustomId, nextCustomId } = buildActionRows(currentPageIndex);
+        const disabledPrev = new ButtonBuilder()
+          .setCustomId(prevCustomId)
+          .setLabel('◀ Anterior')
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true);
+
+        const disabledNext = new ButtonBuilder()
+          .setCustomId(nextCustomId)
+          .setLabel('Próximo ▶')
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true);
+
+        const disabledWeb = new ButtonBuilder()
+          .setLabel('Diretório Web Oficial')
+          .setStyle(ButtonStyle.Link)
+          .setURL('https://kuruttinabot.athosmontarroyos.com/commands');
+
+        const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          disabledPrev,
+          disabledNext,
+          disabledWeb
+        );
+
+        await sentMessage.edit({
+          components: [disabledRow],
+        });
+      } catch {
+        // Ignore if message deleted
+      }
+    });
   },
 };

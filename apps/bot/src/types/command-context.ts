@@ -13,6 +13,7 @@ import {
 export interface ReplyPayload {
   content?: string;
   embeds?: APIEmbed[];
+  components?: any[];
   ephemeral?: boolean;
   allowedMentions?: any;
 }
@@ -82,7 +83,7 @@ export class CommandContext {
     }
   }
 
-  public async reply(payload: ReplyPayload): Promise<void> {
+  public async reply(payload: ReplyPayload): Promise<Message | null> {
     // Default allowedMentions to prevent ping spams (Pillar 6)
     const defaultAllowedMentions = payload.allowedMentions || { parse: [] };
 
@@ -90,6 +91,7 @@ export class CommandContext {
       const interactionOptions: InteractionReplyOptions = {
         content: payload.content,
         embeds: payload.embeds,
+        components: payload.components,
         flags: payload.ephemeral ? MessageFlags.Ephemeral : undefined,
         allowedMentions: defaultAllowedMentions,
       };
@@ -99,21 +101,31 @@ export class CommandContext {
       } else {
         await this.slashInteraction.reply(interactionOptions);
       }
+
+      try {
+        return await this.slashInteraction.fetchReply();
+      } catch {
+        return null;
+      }
     } else if (this.message) {
       const messageOptions: MessageCreateOptions = {
         content: payload.content,
         embeds: payload.embeds,
+        components: payload.components,
         allowedMentions: defaultAllowedMentions,
       };
 
       try {
-        await this.message.reply(messageOptions);
+        return await this.message.reply(messageOptions);
       } catch {
         // Fallback: If target message was deleted or un-replyable, send directly in channel
         if (this.channel && 'send' in this.channel) {
-          await (this.channel as any).send(messageOptions);
+          return await (this.channel as any).send(messageOptions);
         }
+        return null;
       }
     }
+
+    return null;
   }
 }

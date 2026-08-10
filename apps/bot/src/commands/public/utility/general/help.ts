@@ -44,12 +44,13 @@ export const command: CommandModule = {
       targetCommandName = ctx.args[0].trim().toLowerCase();
     }
 
-    // Resolve Live Emojis from Developer Portal
+    // Resolve Live Application Emojis from Developer Portal
     const dancingEmoji = await getEmoji(client, 'DANCING');
     const searchEmoji = await getEmoji(client, 'SEARCH');
     const thumbUpEmoji = await getEmoji(client, 'THUMBUP');
     const folderEmoji = await getEmoji(client, 'FOLDER');
     const diamondBlueEmoji = await getEmoji(client, 'DIAMOND_BLUE');
+    const bookEmoji = await getEmoji(client, 'BOOK');
 
     // SCENARIO 1: Detailed Single Command View (/help <command>)
     if (targetCommandName) {
@@ -82,7 +83,7 @@ export const command: CommandModule = {
       };
 
       const commandDetailEmbed: APIEmbed = {
-        title: `📖 Guia do Comando: /${foundCommand.data.name}`,
+        title: `${bookEmoji} Guia do Comando: /${foundCommand.data.name}`,
         description: guide.detailedDescription || foundCommand.data.description,
         color: STATUS_COLORS.INFO.number,
         fields: [
@@ -274,13 +275,13 @@ export const command: CommandModule = {
       // Buttons Action Row (◀ Anterior | ▶ Próximo | Diretório Web)
       const btnPrev = new ButtonBuilder()
         .setCustomId(prevCustomId)
-        .setLabel('◀ Anterior')
+        .setLabel('Anterior')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(pageIdx === 0);
 
       const btnNext = new ButtonBuilder()
         .setCustomId(nextCustomId)
-        .setLabel('Próximo ▶')
+        .setLabel('Próximo')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(pageIdx === pages.length - 1);
 
@@ -375,13 +376,13 @@ export const command: CommandModule = {
         const { prevCustomId, nextCustomId } = buildActionRows(currentPageIndex);
         const disabledPrev = new ButtonBuilder()
           .setCustomId(prevCustomId)
-          .setLabel('◀ Anterior')
+          .setLabel('Anterior')
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true);
 
         const disabledNext = new ButtonBuilder()
           .setCustomId(nextCustomId)
-          .setLabel('Próximo ▶')
+          .setLabel('Próximo')
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true);
 

@@ -1,0 +1,77 @@
+name: Kuruttina Bot - Amazon AWS Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------
+  # Job 1: Automated Typecheck & Code Validation
+  # ---------------------------------------------------------------
+  typecheck-and-lint:
+    name: ⚡ Validate & Typecheck Codebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Workspace Dependencies
+        run: npm ci
+
+      - name: 🧪 Run TypeScript Compilation Check (Zero-Build Policy)
+        run: |
+          npx tsc --noEmit
+
+  # ---------------------------------------------------------------
+  # Job 2: Build & Push Docker Image to Amazon ECR + Deploy to ECS
+  # ---------------------------------------------------------------
+  deploy-to-aws:
+    name: 🚀 Build & Deploy to Amazon AWS (ECS/Fargate)
+    needs: typecheck-and-lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: 🔓 Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🐳 Build, Tag, and Push Docker Image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY || 'kuruttinabot-repo' }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build Docker image
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f apps/bot/Dockerfile .
+          
+          # Push both commit SHA tag and latest tag to Amazon ECR
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: 🚀 Update Amazon ECS Service (Auto Deploy Refresh)
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          ECS_CLUSTER: ${{ secrets.AWS_ECS_CLUSTER || 'kuruttinabot-cluster' }}
+          ECS_SERVICE: ${{ secrets.AWS_ECS_SERVICE || 'kuruttinabot-service' }}
+        run: |
+          echo "🔄 Updating AWS ECS Service to deploy new container version..."
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --region $AWS_REGION || echo "⚠️ ECS Service update skipped (Configure AWS_ECS_CLUSTER and AWS_ECS_SERVICE in GitHub Secrets)."

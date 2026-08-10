@@ -48,6 +48,8 @@ export const command: CommandModule = {
     const dancingEmoji = await getEmoji(client, 'DANCING');
     const searchEmoji = await getEmoji(client, 'SEARCH');
     const thumbUpEmoji = await getEmoji(client, 'THUMBUP');
+    const folderEmoji = await getEmoji(client, 'FOLDER');
+    const diamondBlueEmoji = await getEmoji(client, 'DIAMOND_BLUE');
 
     // SCENARIO 1: Detailed Single Command View (/help <command>)
     if (targetCommandName) {
@@ -226,13 +228,13 @@ export const command: CommandModule = {
       const subFields: { name: string; value: string; inline: boolean }[] = [];
 
       for (const [subKey, cmds] of subMap.entries()) {
-        const subTitle = `📂 Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
+        const subTitle = `${folderEmoji} Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
 
-        // Impeccable Spacing & Visual Hierarchy (Sleek Blockquotes + Double Line Breaks)
+        // Impeccable Spacing & Visual Hierarchy (Dynamic Diamond Bullets + Sleek Blockquotes)
         const cmdList = cmds
           .map((c) => {
             const alias = c.prefixAliases?.[0] ? ` \`(k!${c.prefixAliases[0]})\`` : '';
-            return `🔹 **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
+            return `${diamondBlueEmoji} **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
           })
           .join('\n\n');
 

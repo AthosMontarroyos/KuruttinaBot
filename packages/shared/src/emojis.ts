@@ -12,7 +12,7 @@ export const EMOJIS = {
   VERIFIED: '☑️',
   DISMISS: '🚫',
 
-  // Expressions & INFJ Persona
+  // 2. Expressions & INFJ Persona
   OPS: '😳',
   DANCING: '💃',
   KISS: '😘',
@@ -23,8 +23,14 @@ export const EMOJIS = {
   ANGER: '💢',
   CLEANING: '🧹',
   THUMBUP: '👍',
+  PHOTO: '🖼️',
+  SHOOTING: '💫',
+  POINTUP: '☝️',
+  INSPIRED: '💡',
+  WAIT: '⏳',
+  READING: '📖',
 
-  // 2. Command Categories
+  // 3. Command Categories
   MODERATION: '🛡️',
   UTILITY: '🧰',
   DEVELOPER: '⚙️',
@@ -32,7 +38,7 @@ export const EMOJIS = {
   FUN: '🎉',
   AFFILIATE: '💎',
 
-  // 3. Actions & Moderation
+  // 4. Actions & Moderation
   BAN: '🔨',
   KICK: '🥾',
   MUTE: '🔇',
@@ -41,13 +47,6 @@ export const EMOJIS = {
   SEARCH: '🔍',
   ADD: '➕',
   TRASH: '🗑️',
-
-  // 4. Telemetry & Infrastructure
-  PING: '🏓',
-  GATEWAY: '🌐',
-  API: '⚡',
-  BOT_STATUS: '🤖',
-  UPTIME: '🕒',
 
   // 5. System & Security
   SHIELD: '🛡️',
@@ -59,7 +58,18 @@ export const EMOJIS = {
   GUILD: '🏰',
   CROWN: '👑',
 
-  // 6. Navigation & Branding
+  // 6. UI & Layout Decorations
+  FOLDER: '📂',
+  DIAMOND_BLUE: '🔹',
+  DIAMOND_LARGE: '🔷',
+  BULLET: '•',
+  HOME: '🏠',
+  PREV: '◀',
+  NEXT: '▶',
+  PIN: '📌',
+  IDEA: '💡',
+
+  // 7. Navigation & Branding
   LINK: '🔗',
   DOCUMENTATION: '📚',
   STAR: '⭐',
@@ -79,7 +89,24 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'Expressions & INFJ Persona',
-    keys: ['OPS', 'DANCING', 'KISS', 'CRY', 'THINKING', 'APPEAR', 'HEHE', 'ANGER', 'CLEANING', 'THUMBUP'],
+    keys: [
+      'OPS',
+      'DANCING',
+      'KISS',
+      'CRY',
+      'THINKING',
+      'APPEAR',
+      'HEHE',
+      'ANGER',
+      'CLEANING',
+      'THUMBUP',
+      'PHOTO',
+      'SHOOTING',
+      'POINTUP',
+      'INSPIRED',
+      'WAIT',
+      'READING',
+    ],
   },
   {
     name: 'Command Categories',
@@ -90,12 +117,12 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
     keys: ['BAN', 'KICK', 'MUTE', 'UNMUTE', 'CLEAR', 'SEARCH', 'ADD', 'TRASH'],
   },
   {
-    name: 'Telemetry & Infrastructure',
-    keys: ['PING', 'GATEWAY', 'API', 'BOT_STATUS', 'UPTIME'],
-  },
-  {
     name: 'System & Security',
     keys: ['SHIELD', 'LOCK', 'UNLOCK', 'SETTINGS', 'LOGS', 'USER', 'GUILD', 'CROWN'],
+  },
+  {
+    name: 'UI & Layout Decorations',
+    keys: ['FOLDER', 'DIAMOND_BLUE', 'DIAMOND_LARGE', 'BULLET', 'HOME', 'PREV', 'NEXT', 'PIN', 'IDEA'],
   },
   {
     name: 'Navigation & Branding',

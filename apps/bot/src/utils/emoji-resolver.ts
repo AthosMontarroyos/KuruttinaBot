@@ -9,6 +9,10 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   CLEAR: ['clear', 'cleaning'],
   ERROR: ['error', 'dismiss', 'anger'],
   THUMBUP: ['thumbup', 'thumbsup', 'like', 'thumb'],
+  LOCK: ['lock'],
+  UNLOCK: ['unlock'],
+  FOLDER: ['folder'],
+  DIAMOND_BLUE: ['diamond_blue', 'diamond', 'blue_diamond'],
 };
 
 /**

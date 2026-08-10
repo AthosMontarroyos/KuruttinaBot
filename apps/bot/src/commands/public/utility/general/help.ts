@@ -187,7 +187,7 @@ export const command: CommandModule = {
 
       homeFields.push({
         name: `${catEmoji} ${catLabel} (${totalCmdsCount})`,
-        value: cmdNames.join(', ') || 'Nenhum comando.',
+        value: cmdNames.join(' • ') || 'Nenhum comando.',
         inline: false,
       });
     }
@@ -209,7 +209,7 @@ export const command: CommandModule = {
       },
     });
 
-    // --- PAGES 1..N: Category Pages with Sub-Category Breakdown ---
+    // --- PAGES 1..N: Category Pages with Sub-Category Breakdown & Impeccable Visual Hierarchy ---
     let catPageIndex = 2;
     const catKeysArray = Array.from(categoryMap.keys());
 
@@ -226,13 +226,15 @@ export const command: CommandModule = {
       const subFields: { name: string; value: string; inline: boolean }[] = [];
 
       for (const [subKey, cmds] of subMap.entries()) {
-        const subTitle = `📁 Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
+        const subTitle = `📂 Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
+
+        // Impeccable Spacing & Visual Hierarchy (Sleek Blockquotes + Double Line Breaks)
         const cmdList = cmds
-          .map(
-            (c) =>
-              `• **/${c.data.name}** (Atalho: \`k!${c.prefixAliases?.[0] || c.data.name}\`)\n  _${c.data.description}_`
-          )
-          .join('\n');
+          .map((c) => {
+            const alias = c.prefixAliases?.[0] ? ` \`(k!${c.prefixAliases[0]})\`` : '';
+            return `🔹 **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
+          })
+          .join('\n\n');
 
         subFields.push({
           name: subTitle,
@@ -245,7 +247,7 @@ export const command: CommandModule = {
         id: `cat:${catKey}`,
         embed: {
           title: `${catEmoji} Categoria: ${catLabel}`,
-          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.`,
+          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.\n\u200b`,
           color: STATUS_COLORS.INFO.number,
           fields: subFields,
           footer: {

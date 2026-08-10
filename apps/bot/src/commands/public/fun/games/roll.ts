@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { STATUS_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { KuruttinaClient } from '../../../../types/kuruttina-client';
@@ -145,11 +145,11 @@ export const command: CommandModule = {
       })
       .join('\n');
 
-    // Build Embed with 1st Emoji (DiceRoll - Lançando o Dado) in Title
+    // Build Embed with 1st Emoji (DiceRoll - Lançando o Dado) in Title & Minimalist Black Border
     const resultEmbed: APIEmbed = {
       title: `${diceRollEmoji} Lançamento de Dados: ${numDice}d${numSides}`,
       description: commentary,
-      color: hasNat20 ? STATUS_COLORS.SUCCESS.number : hasNat1 ? STATUS_COLORS.ERROR.number : STATUS_COLORS.INFO.number,
+      color: EMBED_COLORS.BLACK.number,
       fields: [
         {
           name: '🎯 Resultados Individuais',

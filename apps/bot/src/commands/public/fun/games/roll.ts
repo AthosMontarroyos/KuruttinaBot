@@ -118,30 +118,36 @@ export const command: CommandModule = {
       if (numSides === 20 && rollValue === 1) hasNat1 = true;
     }
 
-    // Resolve Live Application Emojis from Developer Portal
-    const diceAnimatedEmoji = await getEmoji(client, 'DICE_ANIMATED');
+    // Resolve Live Application Emojis from Developer Portal:
+    // 1. diceRollEmoji (DiceRoll) = Lançando o dado (Título)
+    // 2. diceRollingEmoji (DiceRooling) = O dado girando em GIF (Descrição)
+    // 3. diceStoppedEmoji (Dice) = O dado parado (Resultados Individuais)
+    const diceRollEmoji = await getEmoji(client, 'DICE_ROLL');
+    const diceRollingEmoji = await getEmoji(client, 'DICE_ANIMATED');
+    const diceStoppedEmoji = await getEmoji(client, 'DICE');
     const starEmoji = await getEmoji(client, 'STAR');
 
-    // INFJ Persona Wittiness & Commentary
-    let commentary = `${diceAnimatedEmoji} A sorte foi lançada sobre a mesa!`;
+    // INFJ Persona Wittiness & Commentary with 2nd Emoji (DiceRooling GIF)
+    let commentary = `${diceRollingEmoji} A sorte foi lançada sobre a mesa!`;
     if (hasNat20) {
       commentary = `${starEmoji} **Vinte Natural!** Um resultado extraordinário guiado pela mais pura intuição!`;
     } else if (hasNat1) {
       commentary = `⚠️ **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
     }
 
-    // Clean, elegant roll list formatting without floating isolated lines or avatar boxes
+    // Format individual rolls list with 3rd Emoji (Dice - Dado Parado)
     const formattedRolls = rolls
       .map((val, idx) => {
         let highlight = `\`${val}\``;
         if (numSides === 20 && val === 20) highlight = `**\`20\`** ${starEmoji} (Crítico!)`;
         if (numSides === 20 && val === 1) highlight = `**\`1\`** (Falha Crítica!)`;
-        return `• Giro ${idx + 1}: ${highlight}`;
+        return `${diceStoppedEmoji} Giro ${idx + 1}: ${highlight}`;
       })
       .join('\n');
 
+    // Build Embed with 1st Emoji (DiceRoll - Lançando o Dado) in Title
     const resultEmbed: APIEmbed = {
-      title: `${diceAnimatedEmoji} Lançamento de Dados: ${numDice}d${numSides}`,
+      title: `${diceRollEmoji} Lançamento de Dados: ${numDice}d${numSides}`,
       description: commentary,
       color: hasNat20 ? STATUS_COLORS.SUCCESS.number : hasNat1 ? STATUS_COLORS.ERROR.number : STATUS_COLORS.INFO.number,
       fields: [

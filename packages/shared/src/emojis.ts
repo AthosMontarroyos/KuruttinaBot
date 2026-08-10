@@ -1,9 +1,99 @@
 /**
- * Centralized Emoji Mapping & Category Architecture for Kuruttina.
- * Supports dynamic resolution to Discord Developer Portal Application Emojis (<:name:id> / <a:name:id>).
+ * Centralized Emoji Keys Registry for Kuruttina.
+ * Dynamically resolved to Discord Developer Portal Application Emojis (<:name:id> / <a:name:id>).
  */
-export const EMOJIS = {
-  // 1. Status & Responses
+export const EMOJI_KEYS = [
+  // Status & Responses
+  'SUCCESS',
+  'ERROR',
+  'WARNING',
+  'INFO',
+  'LOADING',
+  'VERIFIED',
+  'DISMISS',
+  'OK',
+
+  // Expressions & INFJ Persona
+  'OPS',
+  'DANCING',
+  'KISS',
+  'CRY',
+  'THINKING',
+  'APPEAR',
+  'HEHE',
+  'ANGER',
+  'CLEANING',
+  'THUMBUP',
+  'PHOTO',
+  'SHOOTING',
+  'POINTUP',
+  'INSPIRED',
+  'WAIT',
+  'READING',
+  'SHRUG',
+  'FACEPALM',
+  'COFFEE',
+
+  // Command Categories
+  'MODERATION',
+  'UTILITY',
+  'DEVELOPER',
+  'ADMIN',
+  'FUN',
+  'AFFILIATE',
+  'STAFF',
+
+  // Actions & Moderation
+  'BAN',
+  'KICK',
+  'MUTE',
+  'UNMUTE',
+  'CLEAR',
+  'SEARCH',
+  'ADD',
+  'TRASH',
+  'SHARE',
+  'SHARE_SCREEN',
+
+  // System & Security
+  'SHIELD',
+  'LOCK',
+  'UNLOCK',
+  'SETTINGS',
+  'LOGS',
+  'USER',
+  'GUILD',
+  'CROWN',
+
+  // UI & Layout Decorations
+  'FOLDER',
+  'DIAMOND_BLUE',
+  'DIAMOND_LARGE',
+  'BULLET',
+  'HOME',
+  'PREV',
+  'NEXT',
+  'LEFT_ARROW',
+  'RIGHT_ARROW',
+  'PIN',
+  'IDEA',
+  'LINE',
+  'DIVIDER',
+
+  // Navigation & Branding
+  'LINK',
+  'DOCUMENTATION',
+  'BOOK',
+  'STACK_OF_BOOKS',
+  'STAR',
+] as const;
+
+export type EmojiKey = (typeof EMOJI_KEYS)[number];
+
+/**
+ * Default Unicode Emergency Fallback Map.
+ */
+export const EMOJIS: Record<EmojiKey, string> = {
   SUCCESS: '✅',
   ERROR: '❌',
   WARNING: '⚠️',
@@ -12,8 +102,6 @@ export const EMOJIS = {
   VERIFIED: '☑️',
   DISMISS: '🚫',
   OK: '👌',
-
-  // 2. Expressions & INFJ Persona
   OPS: '😳',
   DANCING: '💃',
   KISS: '😘',
@@ -33,8 +121,6 @@ export const EMOJIS = {
   SHRUG: '🤷',
   FACEPALM: '🤦',
   COFFEE: '☕',
-
-  // 3. Command Categories
   MODERATION: '🛡️',
   UTILITY: '🧰',
   DEVELOPER: '⚙️',
@@ -42,8 +128,6 @@ export const EMOJIS = {
   FUN: '🎉',
   AFFILIATE: '💎',
   STAFF: '👮',
-
-  // 4. Actions & Moderation
   BAN: '🔨',
   KICK: '🥾',
   MUTE: '🔇',
@@ -54,8 +138,6 @@ export const EMOJIS = {
   TRASH: '🗑️',
   SHARE: '📢',
   SHARE_SCREEN: '🖥️',
-
-  // 5. System & Security
   SHIELD: '🛡️',
   LOCK: '🔒',
   UNLOCK: '🔓',
@@ -64,8 +146,6 @@ export const EMOJIS = {
   USER: '👤',
   GUILD: '🏰',
   CROWN: '👑',
-
-  // 6. UI & Layout Decorations
   FOLDER: '📂',
   DIAMOND_BLUE: '🔹',
   DIAMOND_LARGE: '🔷',
@@ -79,16 +159,12 @@ export const EMOJIS = {
   IDEA: '💡',
   LINE: '➖',
   DIVIDER: '🌸',
-
-  // 7. Navigation & Branding
   LINK: '🔗',
   DOCUMENTATION: '📚',
   BOOK: '📖',
   STACK_OF_BOOKS: '📚',
   STAR: '⭐',
-} as const;
-
-export type EmojiKey = keyof typeof EMOJIS;
+};
 
 export interface EmojiCategory {
   name: string;

@@ -84,7 +84,7 @@ export const command: CommandModule = {
 
       const commandDetailEmbed: APIEmbed = {
         title: `${bookEmoji} Guia do Comando: /${foundCommand.data.name}`,
-        description: `${guide.detailedDescription || foundCommand.data.description}\n\n${pinkDividerEmoji}`,
+        description: guide.detailedDescription || foundCommand.data.description,
         color: STATUS_COLORS.INFO.number,
         fields: [
           {
@@ -94,7 +94,7 @@ export const command: CommandModule = {
           },
           {
             name: '💡 Exemplos de Uso',
-            value: guide.examples.map((ex) => `• \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
+            value: guide.examples.map((ex) => `${pinkDividerEmoji} \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
             inline: false,
           },
           {
@@ -201,7 +201,6 @@ export const command: CommandModule = {
         title: `${dancingEmoji} Central de Ajuda da Kuruttina`,
         description:
           `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos ${thumbUpEmoji}.\n\n` +
-          `${pinkDividerEmoji}\n\n` +
           `Navegue pelas páginas usando os **botões de seta (◀ / ▶)** ou escolha uma categoria no menu abaixo.`,
         color: STATUS_COLORS.INFO.number,
         fields: homeFields,
@@ -232,11 +231,11 @@ export const command: CommandModule = {
       for (const [subKey, cmds] of subMap.entries()) {
         const subTitle = `${folderEmoji} Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
 
-        // Clean, elegant blockquote layout with zero Markdown quote-bar collisions
+        // Proper Text Prefix Usage: {pinkDividerEmoji} {Texto} (e.g. 🦋| /comando)
         const cmdList = cmds
           .map((c) => {
             const alias = c.prefixAliases?.[0] ? ` \`(k!${c.prefixAliases[0]})\`` : '';
-            return `**\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
+            return `${pinkDividerEmoji} **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
           })
           .join('\n\n');
 
@@ -251,7 +250,7 @@ export const command: CommandModule = {
         id: `cat:${catKey}`,
         embed: {
           title: `${catEmoji} Categoria: ${catLabel}`,
-          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.\n\n${pinkDividerEmoji}`,
+          description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.`,
           color: STATUS_COLORS.INFO.number,
           fields: subFields,
           footer: {

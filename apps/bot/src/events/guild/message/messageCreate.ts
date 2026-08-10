@@ -20,16 +20,23 @@ export const event = {
 
     const client = message.client as KuruttinaClient;
 
-    // Find command by Slash name or Prefix Aliases
+    // Check if the command trigger is a dynamic dice expression (e.g. k!1d20, k!2d6, k!5d10, k!d20)
+    const isDicePattern = /^(\d*)d(\d+)$/i.test(commandTrigger);
+
+    // Find command by Slash name, Prefix Aliases, or dynamic dice pattern
     const command = client.commands.find((cmd) => {
       if (cmd.data.name === commandTrigger) return true;
       if (cmd.prefixAliases && cmd.prefixAliases.includes(commandTrigger)) return true;
+      if (isDicePattern && (cmd.data.name === 'roll' || cmd.prefixAliases?.includes('roll'))) return true;
       return false;
     });
 
     if (!command) return;
 
-    const ctx = new CommandContext(message, args);
+    // Pass the command trigger as first argument if it's a dynamic dice pattern
+    const commandArgs = isDicePattern ? [commandTrigger, ...args] : args;
+
+    const ctx = new CommandContext(message, commandArgs);
 
     try {
       await command.execute(ctx);

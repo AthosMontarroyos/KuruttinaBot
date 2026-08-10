@@ -33,10 +33,12 @@ jobs:
 
   # ---------------------------------------------------------------
   # Job 2: Build & Push Docker Image to Amazon ECR + Deploy to ECS
+  # (Skips gracefully if AWS_ACCESS_KEY_ID is not configured in GitHub Secrets)
   # ---------------------------------------------------------------
   deploy-to-aws:
     name: 🚀 Build & Deploy to Amazon AWS (ECS/Fargate)
     needs: typecheck-and-lint
+    if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
     runs-on: ubuntu-latest
 
     steps:

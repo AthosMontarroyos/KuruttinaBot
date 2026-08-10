@@ -118,11 +118,9 @@ export const command: CommandModule = {
       if (numSides === 20 && rollValue === 1) hasNat1 = true;
     }
 
-    // Resolve Live Application Emojis from Developer Portal (Including your 3 new custom dice emojis!)
+    // Resolve Live Application Emojis from Developer Portal
     const diceAnimatedEmoji = await getEmoji(client, 'DICE_ANIMATED');
-    const diceRollEmoji = await getEmoji(client, 'DICE_ROLL');
     const starEmoji = await getEmoji(client, 'STAR');
-    const pinkDividerEmoji = await getEmoji(client, 'DIVIDER');
 
     // INFJ Persona Wittiness & Commentary
     let commentary = `${diceAnimatedEmoji} A sorte foi lançada sobre a mesa!`;
@@ -132,19 +130,19 @@ export const command: CommandModule = {
       commentary = `⚠️ **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
     }
 
-    // Format individual rolls list with your custom diceRollEmoji
+    // Clean, elegant roll list formatting without floating isolated lines or avatar boxes
     const formattedRolls = rolls
       .map((val, idx) => {
         let highlight = `\`${val}\``;
         if (numSides === 20 && val === 20) highlight = `**\`20\`** ${starEmoji} (Crítico!)`;
         if (numSides === 20 && val === 1) highlight = `**\`1\`** (Falha Crítica!)`;
-        return `${diceRollEmoji} Giro ${idx + 1}: ${highlight}`;
+        return `• Giro ${idx + 1}: ${highlight}`;
       })
       .join('\n');
 
     const resultEmbed: APIEmbed = {
       title: `${diceAnimatedEmoji} Lançamento de Dados: ${numDice}d${numSides}`,
-      description: `${commentary}\n\n${pinkDividerEmoji}`,
+      description: commentary,
       color: hasNat20 ? STATUS_COLORS.SUCCESS.number : hasNat1 ? STATUS_COLORS.ERROR.number : STATUS_COLORS.INFO.number,
       fields: [
         {

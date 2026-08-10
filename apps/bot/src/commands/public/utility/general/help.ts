@@ -94,7 +94,7 @@ export const command: CommandModule = {
           },
           {
             name: '💡 Exemplos de Uso',
-            value: guide.examples.map((ex) => `${pinkDividerEmoji} \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
+            value: guide.examples.map((ex) => `• \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
             inline: false,
           },
           {

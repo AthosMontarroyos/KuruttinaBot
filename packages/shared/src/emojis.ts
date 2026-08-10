@@ -34,7 +34,7 @@ export const EMOJI_KEYS = [
   'FACEPALM',
   'COFFEE',
 
-  // Command Categories
+  // Command Categories & Games
   'MODERATION',
   'UTILITY',
   'DEVELOPER',
@@ -42,6 +42,9 @@ export const EMOJI_KEYS = [
   'FUN',
   'AFFILIATE',
   'STAFF',
+  'DICE',
+  'DICE_ROLL',
+  'DICE_ANIMATED',
 
   // Actions & Moderation
   'BAN',
@@ -128,6 +131,9 @@ export const EMOJIS: Record<EmojiKey, string> = {
   FUN: '🎉',
   AFFILIATE: '💎',
   STAFF: '👮',
+  DICE: '🎲',
+  DICE_ROLL: '🎲',
+  DICE_ANIMATED: '🎲',
   BAN: '🔨',
   KICK: '🥾',
   MUTE: '🔇',
@@ -201,8 +207,8 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
     ],
   },
   {
-    name: 'Command Categories',
-    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'STAFF'],
+    name: 'Command Categories & Games',
+    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'STAFF', 'DICE', 'DICE_ROLL', 'DICE_ANIMATED'],
   },
   {
     name: 'Actions & Moderation',

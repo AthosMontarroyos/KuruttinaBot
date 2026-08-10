@@ -30,6 +30,9 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   LINE: ['line', 'pink_butterfly_divider'],
   SHOOTING: ['shooting', 'star'],
   STAR: ['star', 'shooting'],
+  DICE: ['dice'],
+  DICE_ROLL: ['diceroll', 'dice'],
+  DICE_ANIMATED: ['dicerooling', 'diceroll', 'dice'],
 };
 
 /**

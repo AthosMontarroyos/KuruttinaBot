@@ -1,9 +1,9 @@
-# Stage 1: Build & Typecheck Validation
+# Stage 1: Build & Typecheck Validation via Turborepo Monorepo
 FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy root workspace manifests
-COPY package*.json ./
+COPY package*.json turbo.json ./
 COPY packages/shared/package*.json ./packages/shared/
 COPY apps/bot/package*.json ./apps/bot/
 
@@ -22,9 +22,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy workspace assets and source
+# Copy workspace assets and monorepo source
 COPY --from=builder /app ./
 
-WORKDIR /app/apps/bot
-
-CMD ["npx", "ts-node", "src/index.ts"]
+# Run bot via Turborepo monorepo scope
+CMD ["npx", "turbo", "run", "dev", "--filter=@kuruttina/bot"]

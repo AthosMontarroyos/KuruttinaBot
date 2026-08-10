@@ -2,9 +2,15 @@
   "name": "kuruttina-monorepo",
   "private": true,
   "scripts": {
+    "dev": "turbo run dev --filter=@kuruttina/bot",
+    "dev:all": "turbo run dev",
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "sync:emojis": "npm --prefix apps/bot run sync:emojis",
+    "fetch:emojis": "npm --prefix apps/bot run fetch:emojis",
+    "deploy": "npm --prefix apps/bot run deploy",
+    "deploy:dev": "npm --prefix apps/bot run deploy:dev",
+    "deploy:public": "npm --prefix apps/bot run deploy:public"
   },
   "workspaces": [
     "apps/*",

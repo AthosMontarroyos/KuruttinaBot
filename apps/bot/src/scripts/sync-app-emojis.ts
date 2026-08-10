@@ -50,6 +50,21 @@ async function downloadFile(url: string, destPath: string): Promise<void> {
 }
 
 /**
+ * Reads existing catalog.json if available.
+ */
+function loadExistingCatalog(): EmojiCatalogFile | null {
+  try {
+    if (fs.existsSync(CATALOG_PATH)) {
+      const content = fs.readFileSync(CATALOG_PATH, 'utf8');
+      return JSON.parse(content);
+    }
+  } catch {
+    // Ignore invalid JSON
+  }
+  return null;
+}
+
+/**
  * Synchronizes Discord Developer Portal Application Emojis into Pictures/emojis/
  */
 async function syncApplicationEmojis(): Promise<void> {
@@ -60,6 +75,7 @@ async function syncApplicationEmojis(): Promise<void> {
   }
 
   ensureDirExists(EMOJIS_DIR);
+  const previousCatalog = loadExistingCatalog();
 
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -93,15 +109,27 @@ async function syncApplicationEmojis(): Promise<void> {
 
         downloadedFilenames.add(filename);
 
-        // Download if file does not exist locally
-        if (!fs.existsSync(localFilePath)) {
-          console.log(`⬇️ Downloading new emoji: "${emoji.name}" (${ext.toUpperCase()}) -> ${filename}`);
+        const key = emoji.name.toLowerCase();
+        const prevEntry = previousCatalog?.emojis?.[key];
+        const isReplaced = prevEntry && (prevEntry.id !== emoji.id || prevEntry.animated !== emoji.animated);
+
+        // Download if file does not exist locally OR if emoji was re-uploaded (new ID/format)
+        if (!fs.existsSync(localFilePath) || isReplaced) {
+          if (isReplaced) {
+            console.log(`🔄 Replaced emoji detected: "${emoji.name}" (ID changed: ${prevEntry.id} -> ${emoji.id})`);
+            // Clean old file if format changed (.png -> .gif or vice-versa)
+            if (prevEntry.filename !== filename) {
+              const oldFile = path.join(EMOJIS_DIR, prevEntry.filename);
+              if (fs.existsSync(oldFile)) fs.unlinkSync(oldFile);
+            }
+          }
+          console.log(`⬇️ Downloading emoji: "${emoji.name}" (${ext.toUpperCase()}) -> ${filename}`);
           await downloadFile(cdnUrl, localFilePath);
         } else {
-          console.log(`✅ Emoji synced: "${emoji.name}" -> ${filename}`);
+          console.log(`✅ Emoji up-to-date: "${emoji.name}" -> ${filename}`);
         }
 
-        activeEmojiMap.set(emoji.name.toLowerCase(), {
+        activeEmojiMap.set(key, {
           name: emoji.name,
           id: emoji.id,
           format: formatStr,

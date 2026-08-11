@@ -78,20 +78,20 @@ export async function discoverAppConfig(
     });
 
     client.login(token).catch((err) => {
-      reject(new Error(`Falha ao conectar token da App #${appIndex}: ${err.message || err}`));
+      reject(new Error(`Failed to connect token for App #${appIndex}: ${err.message || err}`));
     });
   });
 }
 
 /**
  * Array Pipeline:
- * 1. Primary Bot (KuruttinaBot)
+ * 1. Primary Bot (Kuruttina)
  * 2. Array of Secondary Bots (EMOJI_BOT_TOKENS) displaying each bot's name
  */
 export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
   const primaryToken = process.env.DISCORD_TOKEN;
   if (!primaryToken || isPlaceholderToken(primaryToken)) {
-    console.error('❌ DISCORD_TOKEN não encontrado no arquivo .env da raiz.');
+    console.error('❌ DISCORD_TOKEN not found in root .env file.');
     process.exit(1);
   }
 
@@ -110,7 +110,7 @@ export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
       const cfg = await discoverAppConfig(secondaryTokens[i], false, i + 2);
       secondaryApps.push(cfg);
     } catch (err: any) {
-      console.warn(`⚠️ Warning: Erro ao carregar bot secundário #${i + 1}: ${err.message}`);
+      console.warn(`⚠️ Warning: Failed to load secondary bot #${i + 1}: ${err.message}`);
     }
   }
 

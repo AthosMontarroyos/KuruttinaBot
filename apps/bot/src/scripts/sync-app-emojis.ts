@@ -86,7 +86,7 @@ async function syncEmojisForApp(
 
       try {
         if (!client.application) {
-          throw new Error('client.application não está acessível no cliente.');
+          throw new Error('client.application is not accessible on the client.');
         }
 
         console.log(`🔄 Fetching Application Emojis from Discord Developer Portal...`);

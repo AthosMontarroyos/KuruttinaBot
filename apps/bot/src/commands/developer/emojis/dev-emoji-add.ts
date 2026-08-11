@@ -252,7 +252,7 @@ export const command: CommandModule = {
 
       const allApps = await getEmojiAppConfigs();
       if (allApps.length === 0) {
-        throw new Error('Nenhuma aplicação de emoji configurada no sistema.');
+        throw new Error('No emoji applications configured in the system.');
       }
 
       let selectedApp: EmojiAppConfig | null = null;

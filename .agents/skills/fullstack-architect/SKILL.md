@@ -13,7 +13,7 @@ Master architecture skill connecting **`discord-bot-architect`** (Discord.js v14
 
 - **`discord-bot-architect`**: Handles bot gateway events, slash commands, interactive components, rate limiting, and sharding in TypeScript.
 - **`frontend-architect`**: Handles React dashboard views, UI craft, Impeccable integration, accessibility, and visual polish.
-- **`copywriting`**: Handles persuasive web copy, marketing copy, CTAs, headlines, value propositions, and ENTP voice consistency.
+- **`copywriting`**: Handles persuasive web copy, marketing copy, CTAs, headlines, value propositions, and INFJ voice consistency.
 
 ## Principles
 

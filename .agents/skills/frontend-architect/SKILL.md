@@ -24,7 +24,7 @@ When building or refining user-facing interfaces, landing pages, and dashboard v
 - **Hero & Landing Copy**: Craft punchy, benefit-driven main headlines, subheadlines, and value propositions.
 - **CTAs (Call to Actions)**: Write compelling, action-oriented button text (e.g., "Adicionar Kuruttina", "Configurar Servidor").
 - **Feature Copy & Onboarding**: Use clear signposting and natural transitions (referencing `references/natural-transitions.md`) to guide users seamlessly through setup flows.
-- **ENTP Tone & Voice**: Infuse Kuruttina's ENTP personality (sharp, witty, analytical, confident) into UI messages, toast notifications, empty states, and error callouts.
+- **INFJ Tone & Voice**: Infuse Kuruttina's INFJ personality (empathetic, insightful, principled, protective, sagaciously witty) into UI messages, toast notifications, empty states, and error callouts.
 
 ## Context Artifacts: PRODUCT.md & DESIGN.md
 

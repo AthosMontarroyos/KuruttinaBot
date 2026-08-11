@@ -36,31 +36,41 @@ Guidelines and rules for AI coding assistants working in this repository.
   - **Frontend Asset Routing**: Web app (`apps/website`) accesses synced emojis via `/assets/emojis/<filename>` (served directly from `Pictures/emojis/` via Vite middleware). No image assets duplicated inside `apps/`.
 - **Root Environment File (`.env`)**: All shared environment variables (`.env`, `.env.example`, `.env.local`) MUST reside strictly at the project root (`.env`). Both `apps/bot` and `apps/website` load environment settings directly from the root `.env` to prevent duplicating credentials across `apps/`.
 
-## Available Workspace Skills
+## Global Security Overlay & Skill Integration
 
-- **`fullstack-architect`**: Master skill linking `discord-bot-architect`, `frontend-architect`, and `copywriting`. Enforces full-stack DRY principles, shared TypeScript types, folder separation by utility, and persuasive UX copy.
-- **`discord-bot-architect`**: Specialized skill for building production-ready Discord bots in TypeScript (Slash commands, intents, rate limiting, sharding).
-- **`frontend-architect`**: Specialized skill for building React + TypeScript dashboards, incorporating **Impeccable** for UI polish and **Copywriting** for headlines, CTAs, and onboarding text.
-- **`copywriting`**: Specialized skill for persuasive headlines, CTAs, landing page copy, value propositions, and ENTP voice alignment.
-- **`commit-architect`**: Specialized skill for executing atomic Conventional Commits with pre-commit security checks (.env shielding) and GitHub synchronization.
-- **`impeccable`**: Design framework and audit tool for frontend UI craft.
-- **`security-architect`**: Specialized skill for project security checklist, zero-leak credential shielding, GDPR/LGPD compliance, Supabase RLS, and zero-eval custom command validation.
+> 🛡️ **GLOBAL MANDATORY SECURITY BARRIER**:
+> The policies defined in [security-architect SKILL.md](skills/security-architect/SKILL.md) apply **automatically and unconditionally across ALL skills** (`discord-bot-architect`, `frontend-architect`, `fullstack-architect`, `commit-architect`, `impeccable`, `copywriting`, `agent-browser`). Whenever any AI assistant or developer executes ANY skill or task, zero-leak credential shielding, Supabase RLS, zero-eval custom commands, server-side Zod validation, and Anti-IDOR identity proofing MUST be enforced.
+
+## Available Workspace Skills & Cross-Referencing
+
+- **[`fullstack-architect`](skills/fullstack-architect/SKILL.md)**: Master architecture skill connecting `discord-bot-architect`, `frontend-architect`, `copywriting`, and `security-architect`. Enforces full-stack DRY principles, `@kuruttina/shared` package contracts, and INFJ voice consistency.
+- **[`discord-bot-architect`](skills/discord-bot-architect/SKILL.md)**: Production-ready Discord.js v14 bot architecture in TypeScript (Slash + Prefix `k!`, gateway intents, 3s acknowledgment, Developer Portal emojis, JSON embeds V2).
+- **[`frontend-architect`](skills/frontend-architect/SKILL.md)**: Modern React + TypeScript dashboards, incorporating **Impeccable** for UI craft and **Copywriting** for INFJ UX messaging.
+- **[`security-architect`](skills/security-architect/SKILL.md)**: Sovereign security checklist, zero-leak credential shield, LGPD/GDPR compliance, Supabase RLS, zero-eval declarative commands, and anti-IDOR session verification.
+- **[`commit-architect`](skills/commit-architect/SKILL.md)**: Atomic Conventional Commits with pre-commit security checks (Gitleaks + `.env` shielding). NO automatic `git push`.
+- **[`copywriting`](skills/copywriting/SKILL.md)**: High-converting marketing copy, CTAs, landing page copy, value propositions, and INFJ voice alignment.
+- **[`impeccable`](skills/impeccable/SKILL.md)**: Design framework and visual craft audit tool for React UI components.
+- **[`agent-browser`](skills/agent-browser/SKILL.md)**: Fast browser automation CLI for exploratory testing, QA, and website interactions.
 
 
 ## Core Rules & Principles
 
-### 1. DRY Principle (Don't Repeat Yourself)
+### 1. Relative Paths Policy (Zero Hardcoded Machine Paths)
+- **MANDATORY POLICY (ZERO EXCEPTION)**: ALWAYS use **relative file paths** (e.g. `.agents/skills/...`, `src/utils/`, `skills/security-architect/SKILL.md`) in code imports, documentation, Markdown links, and scripts.
+- **Cross-Platform & Team Portability**: Hardcoded machine paths (e.g. `C:\Users\...` or `file:///c:/Users/...`) are STRICTLY PROHIBITED. All links and paths must resolve dynamically relative to the project root or current directory.
+
+### 2. DRY Principle (Don't Repeat Yourself)
 - **Mandatory Policy**: Always adhere strictly to the **DRY (Don't Repeat Yourself)** principle (*The Pragmatic Programmer* by Andy Hunt & Dave Thomas).
 - **Zero Code Duplication**: Avoid duplicating logic, types, query snippets, UI components, or validation rules across files.
 - **Abstraction & Reuse**: Extract reusable logic into helper utilities (`src/utils/`), custom React hooks (`src/hooks/`), shared TypeScript interfaces (`src/types/`), or base service classes.
 
-### 2. Frequent & Proactive Local Git Commits (NO Automatic `git push`)
+### 3. Frequent & Proactive Local Git Commits (NO Automatic `git push`)
 - **Mandatory Policy**: Always commit changes locally (`git commit`) as soon as a feature, fix, or code refactoring step is completed.
 - **NO Automatic `git push`**: NEVER execute `git push` automatically. Keep all commits strictly local (`git commit`). Only push to remote (`git push origin main`) when explicitly requested by the user.
 - **Granular Commits**: Do not accumulate massive uncommitted changes. Perform clean, atomic commits after code edits pass basic checks.
 - **Conventional Commits**: Format commit messages clearly using conventional conventions (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `style:`).
 
-### 3. Extreme Optimization & AWS Resource Efficiency
+### 4. Extreme Optimization & AWS Resource Efficiency
 - **Mandatory Policy**: Since Kuruttina targets production deployment on **Amazon AWS** (ECS/Fargate/EC2), all code must be **extremely optimized** for low memory overhead, CPU efficiency, and minimal database/network latency.
 - **Zero Memory Leaks**: Always clean up message component collectors, unbind event listeners, and set TTL limits on in-memory caches.
 - **Database Query Optimization (Supabase)**: Select explicit required columns (`select('id, guild_id')` instead of `select('*')`), use indexed queries, pagination, and connection pooling.
@@ -68,66 +78,40 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Non-blocking Event Loop**: Never execute heavy synchronous operations (`readFileSync`, heavy calculation loops) on the main Node.js event loop.
 - **Bundle & Asset Efficiency**: Optimize frontend bundles (tree-shaking, lazy loading) and serve compressed visual assets.
 
-### 4. Dynamic API & Database Fetching (No Hardcoded State)
+### 5. Dynamic API & Database Fetching (No Hardcoded State)
 - **Mandatory Policy**: Never hardcode values or state variables that may change over time (e.g., bot avatar URL, server icon, user nicknames, role IDs, guild settings).
 - **Dynamic Fetching**: Always request dynamic data live from APIs (e.g. Discord API `client.user?.displayAvatarURL()`, `guild.iconURL()`) or query Supabase database.
 - **Data Resilience**: Guarantee that if a bot avatar, guild setting, or user profile changes, the application reflects it dynamically without requiring code edits or redeployments.
 
-### 5. Discord.js & API Documentation Research
+### 6. Discord.js & API Documentation Research
 - Always refer to official Discord.js v14 documentation (`discord.js.org` / `discordjs.dev`).
 - When encountering unfamiliar Discord API features, deprecations, or version changes, perform deep research on `discord.js.org`.
 
-### 6. Interaction Guidelines (3-Second Rule)
+### 7. Interaction Guidelines (3-Second Rule)
 - All Discord interaction triggers (Slash Commands, Buttons, Select Menus, Modals) **must be acknowledged within 3 seconds**.
 - For async operations exceeding 3 seconds (DB queries with Supabase, external API calls, LLM processing), call `interaction.deferReply()` or `interaction.deferUpdate()` immediately.
 
-### 7. Absolute Zero-Leak Security & Environment Protection Policy
+### 8. Absolute Zero-Leak Security & Environment Protection Policy
 - **MANDATORY POLICY (ZERO EXCEPTION)**: Under NO CIRCUMSTANCES should any Discord Bot Token, Supabase API key, Database Connection String (`DATABASE_URL`), secret key, or credential string EVER be hardcoded directly into source code, sample scripts, commit messages, or public documentation files.
-- **Root `.env` Strict Containment**: Secrets live exclusively in the untracked `.env` file at the root of the project.
-- **Git Shield**: Always verify `.gitignore` contains `.env`, `.env.local`, `.env.*.local` before staging or committing any files.
-- **`.env.example` Template**: Public templates (`.env.example`) must contain placeholder text only (`your_token_here`).
-- **Console & Error Log Sanitization**: Never log sensitive credential values or environment strings to stdout, stderr, or external crash reports.
-- **Gateway Intents**: Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
-- **Mandatory Gitleaks Repository Link**: **Gitleaks** MUST remain active, linked, and enforced across the repository (via pre-commit hooks and GitHub Actions workflows). Gitleaks automated secret scanning MUST run on every commit and pull request to detect and block credentials before pushing to remote.
+- **Secrets & Git Shield**: Secrets live exclusively in root `.env`. Verify `.gitignore` contains `.env`, `.env.local`, `.env.*.local`. Sanitize console/error logs.
+- **Mandatory Gitleaks Scanning**: Gitleaks scanner MUST remain active in pre-commit hooks and GitHub Actions workflows (`gitleaks detect --staged`).
+- **Complete Security Framework**: For full checklist and security audit protocol, refer to [security-architect SKILL.md](skills/security-architect/SKILL.md).
 
+### 9. User & Guild Data Privacy & Protection Policy (100% Care)
+- **100% Data Care Policy**: All user personal data and guild server data must be handled with total privacy, confidentiality, and security. Minimization rule applies.
+- **Database Access Security (Supabase RLS)**: Enforce Supabase Row Level Security (RLS) on 100% of tables (`ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;`). No wildcard policies (`FOR ALL USING (true)`).
+- **Data Removal (LGPD/GDPR)**: Support data deletion/anonymization upon server bot removal or user request.
 
-### 8. Strict User & Guild Data Privacy & Protection Policy (100% Care)
-- **100% Data Care Policy**: All user personal data (user IDs, avatars, preferences) and guild server data (server IDs, roles, moderation logs, settings) must be handled with total privacy, confidentiality, and security.
-- **Data Minimization**: Collect and store only the minimal data strictly required for bot operations and dashboard features. Never store private DMs, message content outside command scope, or sensitive user information.
-- **Database Access Security (Supabase RLS)**: Enforce Supabase Row Level Security (RLS) policies so guild data can only be accessed or modified by authorized server administrators/moderators.
-- **Sanitization & Anonymization**: Never expose raw user IDs or internal guild data in public telemetry, error messages, or logs.
-- **Data Removal (LGPD/GDPR)**: Ensure bot architecture supports data deletion/anonymization if a server removes Kuruttina or a user requests data erasure.
+### 10. Never Trust Frontend & Zero-Eval Command Security Policy
+- 🚨 **ZERO FRONTEND TRUST & ZERO DIRECT DB ON FRONTEND**: Never expose database credentials, DB queries, or `SUPABASE_SERVICE_ROLE_KEY` to browser/frontend code (`apps/website`). ALL database actions MUST run strictly server-side (Node backend / Next.js Server Actions).
+- **Zero-Eval Custom Commands**: Custom commands MUST be Declarative Data Structures (JSON templates) validated by Zod (`customCommandPayloadSchema`) — NEVER `eval()` or dynamic code execution.
+- **Key Pillars Summary**: SQL Injection Immunity (SDK queries only), Server Authorization (`PermissionGuard`), REST Mutation Scope Protection (`DEV_ACCOUNT_ID` gatekeeping), Ping Spam Immunity (`allowedMentions: { parse: [] }`), In-Memory Rate Limiting (`CooldownManager`), Component Namespacing (`createCustomId`), Anti-IDOR identity proofing.
+- **Detailed Security Rules**: See [security-architect SKILL.md](skills/security-architect/SKILL.md).
 
-### 9. Never Trust the Frontend & Zero-Eval Command Security Policy
-- **MANDATORY SECURITY PRINCIPLE**: Never rely on client-side / frontend validation, checks, or state. All inputs and custom command definitions are considered untrusted.
-> 🚨 **ZERO FRONTEND TRUST & ZERO DIRECT DB ON FRONTEND (ABSOLUTE POLICY)**:
-> Under NO CIRCUMSTANCES should any database credentials, direct DB connection strings, table queries, or `SUPABASE_SERVICE_ROLE_KEY` exist in or execute from client-side browser/frontend code (`apps/website`). NEVER trust frontend state or validation. ALL database operations MUST run strictly server-side (Node.js bot backend or Next.js Server Actions / API Routes). Client checks are visual UX hints only, NEVER security.
-
-- **Pillar 1: Absolute Zero-Eval Policy (No Dynamic Code Execution)**: NEVER use `eval()`, `new Function()`, or dynamic script execution for custom/affiliate commands. All custom/affiliate commands stored in Supabase MUST be **Declarative Data Structures (JSON templates)** rendered by a fixed, type-safe execution engine (`customCommandPayloadSchema` in `packages/shared/src/sanitizer.ts`).
-
-- **Pillar 2: Server-Side Schema Validation & Input Sanitization (Zod)**: Validate all command options, text payloads, and inputs using strict Zod schemas and `sanitizeText()` (`@kuruttina/shared`) to strip control characters, dangerous tags, and malicious script tokens.
-- **Pillar 3: Database Parameterized Queries (Supabase SDK Only)**: NEVER concatenate raw SQL strings. Always use parameterized `@supabase/supabase-js` SDK queries to guarantee 100% SQL injection immunity.
-- **Pillar 4: Server-Side Authorization Enforcement (`PermissionGuard`)**: Every API route, command execution, or bot action must re-verify user identity (Discord OAuth2 / User ID) and server permissions (Dev Guild / Manage Guild) on the server before executing (`PermissionGuard.enforceDevOnly`, `PermissionGuard.enforceAdminOnly`). Client checks are UX only, never security.
-- **Pillar 5: Discord API Resource Mutation Scope Protection**: Any command or endpoint that performs mutations on Discord API resources (e.g. creating/modifying Application Emojis, guild roles, webhooks, or channels) MUST be strictly gatekept by hardcoded identity checks (`CREATOR_ACCOUNT_ID` / `DEV_ACCOUNT_ID` or verified Guild Administrator permissions). Custom/affiliate commands are strictly DECLARATIVE and CANNOT trigger arbitrary Discord REST API calls or external HTTP fetches.
-- **Pillar 6: Ping Spam Immunity (`allowedMentions: { parse: [] }`)**: `CommandContext.reply()` enforces `{ allowedMentions: { parse: [] } }` by default for all bot and custom command responses to prevent users/affiliates from triggering mass `@everyone`, `@here`, or role mentions.
-- **Pillar 7: In-Memory Rate Limiting & Cooldown Engine (`CooldownManager`)**: Enforce per-user and per-guild command cooldowns in memory (`CooldownManager`) to prevent spam, API rate limiting, and database flooding.
-- **Pillar 8: Component V2 Namespacing (`createCustomId` / `parseCustomId`)**: All Component V2 buttons and select menus MUST use namespaced custom IDs (`scope:guildId:commandId:action`) to prevent ID collisions or cross-guild button hijacking.
-- **Pillar 9: Zero-Trust Input & File Rejection Policy**: Treat ALL user inputs, typed text, and uploaded files as untrusted ("guilty until proven innocent"). Never accept, parse, process, or execute unverified user input or untrusted files without strict server-side Zod validation, MIME-type checks, and sanitization.
-- **Pillar 10: Anti-IDOR & Mandatory Identity Proofing Policy**: EVERY HTTP request, API route, and server action MUST cryptographically verify session tokens (Discord OAuth2 / Supabase session) on the server. NEVER trust or accept user IDs sent in client requests, localStorage, or frontend state to determine user identity — identity MUST be extracted strictly from the server-side session token. Users CANNOT swap, alter, or spoof their `userId` on the frontend. The server MUST prove `authenticatedSession.user.id` matches the target resource owner before reading or mutating data. Zero random ID access allowed.
-
-
-
-
-### 10. Supabase Security & RLS Hardening Policy (Zero AI Fragility)
-> 🚨 **100% MANDATORY ROW LEVEL SECURITY (RLS) POLICY**:
-> EVERY Supabase table MUST have Row Level Security enabled (`ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;`) BEFORE deployment. NEVER leave any table unshielded or without active RLS policies. Permissive policies (`FOR ALL USING (true)`) are STRICTLY FORBIDDEN.
-
-- **Mandatory Row Level Security (RLS)**: EVERY Supabase table MUST have Row Level Security enabled (`ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;`). NEVER leave tables unshielded.
-
-- **Strict Anti-Wildcard Policies**: NEVER create permissive policies like `FOR ALL USING (true)`. Scopes MUST explicitly verify `auth.uid()` or checked server permissions.
-- **Service Role Key Shield**: `SUPABASE_SERVICE_ROLE_KEY` and `DATABASE_URL` must ONLY exist in Node.js server environments or Next.js server actions. NEVER expose them to the browser or `NEXT_PUBLIC_` variables.
-- **Type-Safe SDK Queries**: Use parameterized `@supabase/supabase-js` SDK queries with auto-generated TypeScript schema types. Avoid raw SQL string concatenation.
-- **Zero Destructive Drops**: AI assistants must NEVER execute `DROP TABLE`, `TRUNCATE`, or destructive migrations. All DB changes must be non-destructive, version-controlled migrations.
+### 10. Supabase Security & RLS Hardening Policy
+- **Mandatory Row Level Security (RLS)**: `ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;` BEFORE deployment. Zero unshielded tables permitted.
+- **Service Role Key Shield**: `SUPABASE_SERVICE_ROLE_KEY` exists ONLY in server environments.
+- **Zero Destructive Drops**: Never execute `DROP TABLE`, `TRUNCATE`, or destructive migrations. Use version-controlled migrations.
 
 ### 11. Code Architecture & Style
 

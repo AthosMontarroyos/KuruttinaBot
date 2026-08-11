@@ -60,7 +60,21 @@ src/
 │   │   │   └── messageCreate.ts
 │   │   └── interactions/          # Sub-category: Interactions (Slash Command Dispatcher)
 │   │       └── interactionCreate.ts
+├── utils/                         # Categorized Utility Modules
+│   ├── embeds/                    # Embed Builders & Reply Helpers (embed-builder.ts)
+│   ├── emojis/                    # Emoji Resolvers & Multi-App Vault Helpers (emoji-resolver.ts, multi-app-helper.ts)
+│   ├── loaders/                   # Recursive File Loaders (recursive-loader.ts)
+│   ├── security/                  # Permission Guards & Custom Command Executors (permission-guard.ts, custom-command-executor.ts)
+│   └── index.ts                   # Mandatory Barrel Export (Re-exports all utilities)
+└── scripts/                       # Categorized CLI Scripts
+    └── emojis/                    # Emoji CLI Operations (sync-app-emojis.ts, fetch-app-emojis.ts, etc.)
 ```
+
+## Modular Utility Architecture & Barrel Export Rule
+
+- **Categorized Subfolders in `src/utils/`**: Utility files MUST be organized into domain-specific subfolders (`embeds/`, `emojis/`, `loaders/`, `security/`) rather than placed directly as loose files in `src/utils/`.
+- **Mandatory Barrel Export (`src/utils/index.ts`)**: `src/utils/index.ts` re-exports all utilities, allowing external modules to import cleanly from `utils` without coupling to internal directory nesting (e.g. `import { getEmoji, createKuruttinaEmbed } from '../../utils';`).
+- **Categorized CLI Scripts in `src/scripts/`**: CLI automation scripts MUST be grouped into domain subfolders (e.g. `src/scripts/emojis/`), and `package.json` script commands MUST reference the exact subfolder path (`ts-node src/scripts/emojis/sync-app-emojis.ts`).
 
 ## Dual Command Pattern (Slash + Prefix `k!`)
 

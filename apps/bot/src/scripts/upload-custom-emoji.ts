@@ -3,6 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
+import { sanitizeEmojiName } from '@kuruttina/shared';
 
 // Load root .env file
 const rootDir = path.resolve(__dirname, '../../../../');
@@ -17,9 +18,10 @@ function fileToDataUri(filePath: string): string {
 
 async function uploadToApp(
   appConfig: EmojiAppConfig,
-  emojiName: string,
+  rawEmojiName: string,
   imagePath: string
 ): Promise<boolean> {
+  const emojiName = sanitizeEmojiName(rawEmojiName);
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
   return new Promise<boolean>((resolve, reject) => {

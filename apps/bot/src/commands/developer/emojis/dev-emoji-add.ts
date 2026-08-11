@@ -1,6 +1,6 @@
 import path from 'path';
 import { SlashCommandBuilder, APIEmbed, Attachment, Events } from 'discord.js';
-import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { EMBED_COLORS, DEFAULT_BOT_CONFIG, sanitizeEmojiName } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
@@ -53,46 +53,45 @@ async function fetchValidImageDataUri(sourceUrl: string): Promise<string | null>
 
 /**
  * Extracts emoji name automatically from custom emoji tag (<a:name:id>), URL, attachment filename, or explicit string.
+ * Uses sanitizeEmojiName to automatically convert hyphens (-) to underscores (_).
  */
 function extractEmojiName(
   explicitName: string | null,
   rawEmojiInput: string | null,
   attachment: Attachment | null
 ): string | null {
+  let candidate: string | null = null;
+
   if (explicitName && explicitName.trim().length > 0) {
-    return explicitName.trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
-  }
-
-  if (rawEmojiInput) {
-    // Discord custom emoji tag <a:shooting:123456789> or <:verified:987654321>
-    const match = rawEmojiInput.match(/<a?:([a-zA-Z0-9_]+):\d+>/);
+    candidate = explicitName;
+  } else if (rawEmojiInput) {
+    // Discord custom emoji tag <a:shooting-star:123456789> or <:verified_icon:987654321>
+    const match = rawEmojiInput.match(/<a?:([a-zA-Z0-9_-]+):\d+>/);
     if (match && match[1]) {
-      return match[1].toLowerCase();
-    }
-
-    // Direct Image URL: https://cdn.discordapp.com/emojis/.../banana_divider.png
-    try {
-      const urlObj = new URL(rawEmojiInput);
-      const basename = path.basename(urlObj.pathname);
-      const ext = path.extname(basename);
-      const nameWithoutExt = basename.substring(0, basename.length - ext.length);
-      if (nameWithoutExt && !/^\d+$/.test(nameWithoutExt)) {
-        return nameWithoutExt.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      candidate = match[1];
+    } else {
+      // Direct Image URL: https://cdn.discordapp.com/emojis/.../banana-divider.png
+      try {
+        const urlObj = new URL(rawEmojiInput);
+        const basename = path.basename(urlObj.pathname);
+        const ext = path.extname(basename);
+        const nameWithoutExt = basename.substring(0, basename.length - ext.length);
+        if (nameWithoutExt && !/^\d+$/.test(nameWithoutExt)) {
+          candidate = nameWithoutExt;
+        }
+      } catch {
+        // Not a URL
       }
-    } catch {
-      // Not a URL
     }
-  }
-
-  if (attachment && attachment.name) {
+  } else if (attachment && attachment.name) {
     const ext = path.extname(attachment.name);
     const nameWithoutExt = attachment.name.substring(0, attachment.name.length - ext.length);
     if (nameWithoutExt) {
-      return nameWithoutExt.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      candidate = nameWithoutExt;
     }
   }
 
-  return null;
+  return candidate ? sanitizeEmojiName(candidate) : null;
 }
 
 /**

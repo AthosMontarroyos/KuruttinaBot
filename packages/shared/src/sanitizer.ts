@@ -12,6 +12,32 @@ export const commandNameSchema = z
   });
 
 /**
+ * Validator for Discord Application Emoji names (Alphanumeric + Underscores ONLY).
+ */
+export const emojiNameSchema = z
+  .string()
+  .min(2)
+  .max(32)
+  .regex(/^[a-zA-Z0-9_]+$/, {
+    message: 'Emoji name must contain only alphanumeric characters and underscores (no hyphens or spaces).',
+  });
+
+/**
+ * Sanitizes and formats Discord Application Emoji names.
+ * Discord Application Emojis require alphanumeric characters and underscores ONLY ([a-zA-Z0-9_]).
+ * Automatically converts hyphens (-) to underscores (_) and removes invalid characters.
+ */
+export function sanitizeEmojiName(rawName: string): string {
+  if (!rawName) return '';
+  return rawName
+    .trim()
+    .replace(/-/g, '_')
+    .replace(/[^a-zA-Z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+/**
  * Sanitiza entradas de texto de usuários/comandos para prevenir injeções de script ou caracteres de controle perigosos.
  */
 export function sanitizeText(input: string, maxLength = 2000): string {

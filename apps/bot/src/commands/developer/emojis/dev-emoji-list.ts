@@ -9,19 +9,18 @@ import { getEmoji } from '../../../utils/emoji-resolver';
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('dev-emoji-list')
-    .setDescription('[Dev Only] Lista todos os emojis das aplicações vinculadas e suas marcações'),
-  prefixAliases: ['dev-emoji-list', 'emojis-list'],
+    .setDescription('[Dev Only] Lista o catálogo de emojis de todas as aplicações vinculadas com tags formatadas'),
+  prefixAliases: ['dev-emoji-list', 'emojis', 'dev-emojis', 'catalog-emojis'],
   category: 'developer',
   subCategory: 'emojis',
   guide: {
     syntax: 'k!dev-emoji-list ou /dev-emoji-list',
-    examples: ['/dev-emoji-list', 'k!dev-emoji-list'],
+    examples: ['/dev-emoji-list', 'k!dev-emoji-list', 'k!emojis'],
     detailedDescription:
-      'Exibe o catálogo completo de emojis ativos em todas as aplicações vinculadas no Developer Portal, suas marcações formatadas (<:nome:id>) e o app de origem.',
+      'Exibe todas as aplicações vinculadas, a lista completa de Application Emojis cadastrados em cada uma delas e a notação formatada para copiar e usar em embeds.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
-    // Restrito a Desenvolvedores / Servidor Dev
     const isAllowed = await PermissionGuard.enforceDevOnly(ctx);
     if (!isAllowed) return;
 
@@ -31,6 +30,13 @@ export const command: CommandModule = {
       const appConfigs = await getEmojiAppConfigs();
       const fields: { name: string; value: string; inline: boolean }[] = [];
       let totalGlobalEmojis = 0;
+
+      const vaultEmoji = await getEmoji(ctx.client, 'VAULT');
+      const folderEmoji = await getEmoji(ctx.client, 'FOLDER');
+      const photoEmoji = await getEmoji(ctx.client, 'PHOTO');
+      const starEmoji = await getEmoji(ctx.client, 'STAR');
+      const labelEmoji = await getEmoji(ctx.client, 'LABEL');
+      const infoEmoji = await getEmoji(ctx.client, 'INFO');
 
       const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
 
@@ -50,7 +56,7 @@ export const command: CommandModule = {
 
               if (appEmojis.size === 0) {
                 fields.push({
-                  name: `📦 App #${appConfig.id}: ${appConfig.name} (0/2000)`,
+                  name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (0/2000)`,
                   value: `*Nenhum emoji cadastrado nesta aplicação (Pasta: \`Pictures/emojis/${appConfig.sanitizedFolderName}\`)*`,
                   inline: false,
                 });
@@ -68,8 +74,8 @@ export const command: CommandModule = {
                 const safeValue = chunkedValue.length > 1000 ? chunkedValue.substring(0, 990) + '\n... (demais omitidos)' : chunkedValue;
 
                 fields.push({
-                  name: `📦 App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - Estáticos: ${staticCount} | Animados: ${animCount})`,
-                  value: `**Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
+                  name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - ${photoEmoji} Estáticos: ${staticCount} | ${starEmoji} Animados: ${animCount})`,
+                  value: `**${folderEmoji} Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
                   inline: false,
                 });
               }
@@ -85,10 +91,9 @@ export const command: CommandModule = {
         });
       }
 
-      const infoEmoji = await getEmoji(ctx.client, 'INFO');
       const embed: APIEmbed = {
         title: `${infoEmoji} Catálogo Multi-App de Emojis do Developer Portal`,
-        description: `Exibindo todas as **${appConfigs.length}** aplicações vinculadas e a marcação formatada de cada emoji (\`<:nome:id>\` ou \`<a:nome:id>\`).\n**Total Global de Emojis:** \`${totalGlobalEmojis}\` registrado(s).`,
+        description: `Exibindo todas as **${appConfigs.length}** aplicações vinculadas e a marcação formatada de cada emoji (\`<:nome:id>\` ou \`<a:nome:id>\`).\n**${labelEmoji} Total Global de Emojis:** \`${totalGlobalEmojis}\` registrado(s).`,
         color: EMBED_COLORS.BLACK.number,
         fields,
         footer: {

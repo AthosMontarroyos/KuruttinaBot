@@ -28,7 +28,8 @@ export const command: CommandModule = {
 
     // Resolve live emojis from Developer Portal
     const dancingEmoji = await getEmoji(ctx.client, 'DANCING');
-    const verifiedEmoji = await getEmoji(ctx.client, 'VERIFIED');
+    const statsEmoji = await getEmoji(ctx.client, 'STATS');
+    const boostEmoji = await getEmoji(ctx.client, 'BOOST');
 
     // JS Object Notation (JSON format) embed for DB serializability & bot/dashboard sharing
     const pingEmbed: APIEmbed = {
@@ -36,12 +37,12 @@ export const command: CommandModule = {
       color: EMBED_COLORS.BLACK.number,
       fields: [
         {
-          name: `${verifiedEmoji} Gateway Ping`,
+          name: `${statsEmoji} Gateway Ping`,
           value: `\`${gatewayPing}ms\``,
           inline: true,
         },
         {
-          name: `${verifiedEmoji} API Ping`,
+          name: `${boostEmoji} API Ping`,
           value: `\`${apiPing}ms\``,
           inline: true,
         },

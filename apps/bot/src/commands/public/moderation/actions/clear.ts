@@ -186,17 +186,20 @@ export const command: CommandModule = {
       // Resolve live Developer Portal emojis
       const cleaningEmoji = await getEmoji(ctx.client, 'CLEANING');
       const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
+      const trashEmoji = await getEmoji(ctx.client, 'TRASH');
+      const yesEmoji = await getEmoji(ctx.client, 'YES');
+      const waitEmoji = await getEmoji(ctx.client, 'WAIT');
 
       const filterNotice = targetUser ? ` do usuário **${targetUser.tag}**` : '';
 
       const fields = [
         {
-          name: '🧹 Mensagens Solicitadas',
+          name: `${trashEmoji} Mensagens Solicitadas`,
           value: `\`${amountToClear}\``,
           inline: true,
         },
         {
-          name: '✅ Apagadas com Sucesso',
+          name: `${yesEmoji} Apagadas com Sucesso`,
           value: `\`${totalDeleted}\``,
           inline: true,
         },
@@ -204,7 +207,7 @@ export const command: CommandModule = {
 
       if (skippedOldMessages) {
         fields.push({
-          name: '🕒 Trava de 14 Dias',
+          name: `${waitEmoji} Trava de 14 Dias`,
           value: 'Algumas mensagens com mais de 14 dias não puderam ser apagadas e foram ignoradas automaticamente.',
           inline: false,
         });

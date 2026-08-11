@@ -126,13 +126,15 @@ export const command: CommandModule = {
     const diceRollingEmoji = await getEmoji(client, 'DICE_ANIMATED');
     const diceStoppedEmoji = await getEmoji(client, 'DICE');
     const starEmoji = await getEmoji(client, 'STAR');
+    const warningEmoji = await getEmoji(client, 'WARNING');
+    const statsEmoji = await getEmoji(client, 'STATS');
 
     // INFJ Persona Wittiness & Commentary with 2nd Emoji (DiceRooling GIF)
     let commentary = `${diceRollingEmoji} A sorte foi lançada sobre a mesa!`;
     if (hasNat20) {
       commentary = `${starEmoji} **Vinte Natural!** Um resultado extraordinário guiado pela mais pura intuição!`;
     } else if (hasNat1) {
-      commentary = `⚠️ **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
+      commentary = `${warningEmoji} **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
     }
 
     // Format individual rolls list with 3rd Emoji (Dice - Dado Parado)
@@ -152,17 +154,17 @@ export const command: CommandModule = {
       color: EMBED_COLORS.BLACK.number,
       fields: [
         {
-          name: '🎯 Resultados Individuais',
+          name: `${diceStoppedEmoji} Resultados Individuais`,
           value: formattedRolls || 'Nenhum resultado.',
           inline: false,
         },
         {
-          name: '📊 Soma Total',
+          name: `${statsEmoji} Soma Total`,
           value: `\`${totalSum}\``,
           inline: true,
         },
         {
-          name: '📈 Média',
+          name: `${statsEmoji} Média`,
           value: `\`${(totalSum / numDice).toFixed(1)}\``,
           inline: true,
         },

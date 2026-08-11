@@ -51,6 +51,10 @@ export const command: CommandModule = {
     const folderEmoji = await getEmoji(client, 'FOLDER');
     const pinkDividerEmoji = await getEmoji(client, 'DIVIDER');
     const bookEmoji = await getEmoji(client, 'BOOK');
+    const pinEmoji = await getEmoji(client, 'PIN');
+    const ideaEmoji = await getEmoji(client, 'IDEA');
+    const labelEmoji = await getEmoji(client, 'LABEL');
+    const securityEmoji = await getEmoji(client, 'SECURITY');
 
     // SCENARIO 1: Detailed Single Command View (/help <command>)
     if (targetCommandName) {
@@ -88,17 +92,17 @@ export const command: CommandModule = {
         color: EMBED_COLORS.BLACK.number,
         fields: [
           {
-            name: '📌 Sintaxe',
+            name: `${pinEmoji} Sintaxe`,
             value: `\`${guide.syntax}\``,
             inline: false,
           },
           {
-            name: '💡 Exemplos de Uso',
+            name: `${ideaEmoji} Exemplos de Uso`,
             value: guide.examples.map((ex) => `• \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
             inline: false,
           },
           {
-            name: '🏷️ Categoria & Subcategoria',
+            name: `${labelEmoji} Categoria & Subcategoria`,
             value: `\`${foundCommand.category.toUpperCase()}\` • Sub: \`${foundCommand.subCategory || 'geral'}\``,
             inline: true,
           },
@@ -112,7 +116,7 @@ export const command: CommandModule = {
 
       if (foundCommand.prefixAliases && foundCommand.prefixAliases.length > 0) {
         commandDetailEmbed.fields!.push({
-          name: '🔄 Atalhos de Prefixo',
+          name: `${labelEmoji} Atalhos de Prefixo`,
           value: foundCommand.prefixAliases.map((a) => `\`k!${a}\``).join(', '),
           inline: true,
         });
@@ -120,7 +124,7 @@ export const command: CommandModule = {
 
       if (guide.requiredPermissions && guide.requiredPermissions.length > 0) {
         commandDetailEmbed.fields!.push({
-          name: '🔐 Permissões Requeridas',
+          name: `${securityEmoji} Permissões Requeridas`,
           value: guide.requiredPermissions.map((p) => `\`${p}\``).join(', '),
           inline: true,
         });

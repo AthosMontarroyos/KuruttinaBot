@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
@@ -23,7 +23,7 @@ async function uploadToApp(
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
   return new Promise<boolean>((resolve, reject) => {
-    client.on('ready', async () => {
+    client.on(Events.ClientReady, async () => {
       try {
         if (!client.application) {
           throw new Error('client.application não está acessível no cliente.');
@@ -38,11 +38,8 @@ async function uploadToApp(
           return;
         }
 
-        const isAnimated = path.extname(imagePath).toLowerCase() === '.gif';
-        const currentCount = existingEmojis.filter((e) => e.animated === isAnimated).size;
-
-        if (currentCount >= 50) {
-          console.log(`⚠️ App #${appConfig.id} (${appConfig.name}) atingiu o limite de 50 emojis ${isAnimated ? 'animados' : 'estáticos'}. Checando próxima app...`);
+        if (existingEmojis.size >= 2000) {
+          console.log(`⚠️ App #${appConfig.id} (${appConfig.name}) atingiu a cota máxima de 2.000 emojis da aplicação. Checando próxima app...`);
           resolve(false);
           return;
         }

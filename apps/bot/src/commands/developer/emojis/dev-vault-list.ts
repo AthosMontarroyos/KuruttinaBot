@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, APIEmbed } from 'discord.js';
+import { SlashCommandBuilder, APIEmbed, Events } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
@@ -17,7 +17,7 @@ export const command: CommandModule = {
     syntax: 'k!dev-vault-list ou /dev-vault-list',
     examples: ['/dev-vault-list', 'k!dev-vault-list', 'k!vaults'],
     detailedDescription:
-      'Exibe todas as aplicações vinculadas de armazenamento de emojis (App Vaults), seus IDs de app, estatísticas de cota (estáticos/animados), pastas de armazenamento local e status de disponibilidade.',
+      'Exibe todas as aplicações vinculadas de armazenamento de emojis (App Vaults), seus IDs de app, cota oficial do Discord (2.000 emojis por app), pastas de armazenamento local e status de disponibilidade.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -31,7 +31,8 @@ export const command: CommandModule = {
       const fields: { name: string; value: string; inline: boolean }[] = [];
       let totalStaticEmojis = 0;
       let totalAnimatedEmojis = 0;
-      let totalCapacity = appConfigs.length * 100;
+      const MAX_PER_APP = 2000;
+      const totalCapacity = appConfigs.length * MAX_PER_APP;
 
       const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
 
@@ -39,7 +40,7 @@ export const command: CommandModule = {
         const fetchClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
 
         await new Promise<void>((resolve) => {
-          fetchClient.on('ready', async () => {
+          fetchClient.on(Events.ClientReady, async () => {
             try {
               if (!fetchClient.application) {
                 resolve();
@@ -53,9 +54,8 @@ export const command: CommandModule = {
               totalStaticEmojis += staticCount;
               totalAnimatedEmojis += animCount;
 
-              const staticRem = 50 - staticCount;
-              const animRem = 50 - animCount;
-              const totalUsed = staticCount + animCount;
+              const totalUsed = appEmojis.size;
+              const remaining = MAX_PER_APP - totalUsed;
 
               const statusBadge = appConfig.isPrimary
                 ? '👑 **Bot Principal**'
@@ -67,9 +67,8 @@ export const command: CommandModule = {
                   `• **Bot User:** \`${appConfig.botTag || appConfig.name}\``,
                   `• **Application ID:** \`${appConfig.appId || 'N/A'}\``,
                   `• **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
-                  `• **Emojis Estáticos:** \`${staticCount}/50\` (Sobra: \`${staticRem}\`)`,
-                  `• **Emojis Animados:** \`${animCount}/50\` (Sobra: \`${animRem}\`)`,
-                  `• **Capacidade Total Usada:** \`${totalUsed}/100\` (${100 - totalUsed} vagas)`,
+                  `• **Emojis Estáticos:** \`${staticCount}\` | **Animados:** \`${animCount}\``,
+                  `• **Uso de Cota:** \`${totalUsed}/${MAX_PER_APP}\` (${remaining} vagas restantes nesta app)`,
                 ].join('\n'),
                 inline: false,
               });
@@ -105,9 +104,9 @@ export const command: CommandModule = {
         title: `${shieldEmoji} Gerenciador de App Vaults de Emojis`,
         description: [
           `Visualizando **${appConfigs.length}** aplicação(ões) de emojis configurada(s) no ecossistema da **Kuruttina**.\n`,
-          `📊 **Cota Global Registrada:**`,
-          `${folderEmoji} **Total de Emojis:** \`${totalGlobal}/${totalCapacity}\` (${totalCapacity - totalGlobal} vagas disponíveis)`,
-          `🖼️ **Estáticos:** \`${totalStaticEmojis}/${appConfigs.length * 50}\` | 🎬 **Animados:** \`${totalAnimatedEmojis}/${appConfigs.length * 50}\``,
+          `📊 **Cota Global Registrada (2.000 emojis por app):**`,
+          `${folderEmoji} **Total de Emojis:** \`${totalGlobal}/${totalCapacity}\` (${totalCapacity - totalGlobal} vagas disponíveis globalmente)`,
+          `🖼️ **Estáticos Total:** \`${totalStaticEmojis}\` | 🎬 **Animados Total:** \`${totalAnimatedEmojis}\``,
         ].join('\n'),
         color: EMBED_COLORS.BLACK.number,
         fields,

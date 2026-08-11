@@ -1,5 +1,5 @@
 import path from 'path';
-import { SlashCommandBuilder, APIEmbed, Attachment } from 'discord.js';
+import { SlashCommandBuilder, APIEmbed, Attachment, Events } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
@@ -279,7 +279,7 @@ export const command: CommandModule = {
       const uploadClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
 
       await new Promise<void>((resolve, reject) => {
-        uploadClient.on('ready', async () => {
+        uploadClient.on(Events.ClientReady, async () => {
           try {
             if (!uploadClient.application) {
               throw new Error('client.application não está acessível na aplicação selecionada.');

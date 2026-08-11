@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
@@ -78,7 +78,7 @@ async function syncEmojisForApp(
   const folderDownloadedFiles = downloadedFilenamesPerFolder.get(appDir)!;
 
   await new Promise<void>((resolve, reject) => {
-    client.on('ready', async () => {
+    client.on(Events.ClientReady, async () => {
       console.log(`\n======================================================`);
       console.log(`⚡ App #${appConfig.id} ("${appConfig.name}") connected as: ${client.user?.tag}`);
       console.log(`📂 Destination Folder: Pictures/emojis/${appConfig.sanitizedFolderName}/`);

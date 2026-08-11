@@ -1,6 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
@@ -10,7 +10,7 @@ async function inspectAppEmojis(appConfig: EmojiAppConfig): Promise<void> {
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
   await new Promise<void>((resolve, reject) => {
-    client.on('ready', async () => {
+    client.on(Events.ClientReady, async () => {
       console.log(`\n======================================================`);
       console.log(`⚡ App #${appConfig.id} (${appConfig.name}) | Bot: ${client.user?.tag}`);
       console.log(`======================================================`);
@@ -24,7 +24,7 @@ async function inspectAppEmojis(appConfig: EmojiAppConfig): Promise<void> {
         const staticCount = appEmojis.filter((e) => !e.animated).size;
         const animCount = appEmojis.filter((e) => e.animated).size;
 
-        console.log(`📦 Emojis in App #${appConfig.id}: Total ${appEmojis.size} (Static: ${staticCount}/50 | Animated: ${animCount}/50)\n`);
+        console.log(`📦 Emojis in App #${appConfig.id}: Total ${appEmojis.size}/2000 (Static: ${staticCount} | Animated: ${animCount})\n`);
 
         if (appEmojis.size === 0) {
           console.log('⚠️ Nenhum Application Emoji cadastrado nesta aplicação.');

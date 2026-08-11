@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, APIEmbed } from 'discord.js';
+import { SlashCommandBuilder, APIEmbed, Events } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
@@ -38,7 +38,7 @@ export const command: CommandModule = {
         const fetchClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
 
         await new Promise<void>((resolve) => {
-          fetchClient.on('ready', async () => {
+          fetchClient.on(Events.ClientReady, async () => {
             try {
               if (!fetchClient.application) {
                 resolve();
@@ -50,7 +50,7 @@ export const command: CommandModule = {
 
               if (appEmojis.size === 0) {
                 fields.push({
-                  name: `📦 App #${appConfig.id}: ${appConfig.name} (0/100)`,
+                  name: `📦 App #${appConfig.id}: ${appConfig.name} (0/2000)`,
                   value: `*Nenhum emoji cadastrado nesta aplicação (Pasta: \`Pictures/emojis/${appConfig.sanitizedFolderName}\`)*`,
                   inline: false,
                 });
@@ -64,12 +64,11 @@ export const command: CommandModule = {
                   lines.push(`${tag} \`${tag}\` | \`${e.name}\``);
                 });
 
-                // Chunk lines into max 1024 char field limits
                 const chunkedValue = lines.join('\n');
                 const safeValue = chunkedValue.length > 1000 ? chunkedValue.substring(0, 990) + '\n... (demais omitidos)' : chunkedValue;
 
                 fields.push({
-                  name: `📦 App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/100 - Estáticos: ${staticCount}/50 | Animados: ${animCount}/50)`,
+                  name: `📦 App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - Estáticos: ${staticCount} | Animados: ${animCount})`,
                   value: `**Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
                   inline: false,
                 });

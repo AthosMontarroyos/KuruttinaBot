@@ -1,6 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 
 // Load root .env file
 const rootDir = path.resolve(__dirname, '../../../../');
@@ -42,7 +42,7 @@ export async function discoverAppConfig(
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
   return new Promise<EmojiAppConfig>((resolve, reject) => {
-    client.on('ready', async () => {
+    client.on(Events.ClientReady, async () => {
       try {
         if (client.application) {
           try {

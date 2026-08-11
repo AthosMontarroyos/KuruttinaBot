@@ -1,6 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
@@ -11,7 +11,7 @@ async function deleteFromApp(appConfig: EmojiAppConfig, emojiName: string): Prom
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
   return new Promise<boolean>((resolve, reject) => {
-    client.on('ready', async () => {
+    client.on(Events.ClientReady, async () => {
       try {
         if (!client.application) {
           throw new Error('client.application não está acessível no cliente.');

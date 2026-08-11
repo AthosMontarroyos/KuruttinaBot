@@ -12,6 +12,8 @@
     "deploy:clear": "ts-node src/deploy-commands.ts --clear",
     "sync:emojis": "ts-node src/scripts/sync-app-emojis.ts",
     "fetch:emojis": "ts-node src/scripts/fetch-app-emojis.ts",
+    "upload:emoji": "ts-node src/scripts/upload-custom-emoji.ts",
+    "delete:emoji": "ts-node src/scripts/delete-app-emoji.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {

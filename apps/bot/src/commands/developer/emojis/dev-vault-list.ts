@@ -1,9 +1,9 @@
-import { SlashCommandBuilder, APIEmbed, Events } from 'discord.js';
+import { SlashCommandBuilder, APIEmbed } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
-import { getEmojiAppConfigs, EmojiAppConfig } from '../../../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient } from '../../../utils/multi-app-helper';
 import { getEmoji } from '../../../utils/emoji-resolver';
 
 export const command: CommandModule = {
@@ -48,66 +48,44 @@ export const command: CommandModule = {
       const idEmoji = await getEmoji(ctx.client, 'ID');
       const userEmoji = await getEmoji(ctx.client, 'USER');
 
-      const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
-
       for (const appConfig of appConfigs) {
-        const fetchClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
+        try {
+          await withAppClient(appConfig.token, async (fetchClient) => {
+            if (!fetchClient.application) return;
 
-        await new Promise<void>((resolve) => {
-          fetchClient.on(Events.ClientReady, async () => {
-            try {
-              if (!fetchClient.application) {
-                resolve();
-                return;
-              }
+            const appEmojis = await fetchClient.application.emojis.fetch();
+            const staticCount = appEmojis.filter((e) => !e.animated).size;
+            const animCount = appEmojis.filter((e) => e.animated).size;
 
-              const appEmojis = await fetchClient.application.emojis.fetch();
-              const staticCount = appEmojis.filter((e) => !e.animated).size;
-              const animCount = appEmojis.filter((e) => e.animated).size;
+            totalStaticEmojis += staticCount;
+            totalAnimatedEmojis += animCount;
 
-              totalStaticEmojis += staticCount;
-              totalAnimatedEmojis += animCount;
+            const totalUsed = appEmojis.size;
+            const remaining = MAX_PER_APP - totalUsed;
 
-              const totalUsed = appEmojis.size;
-              const remaining = MAX_PER_APP - totalUsed;
+            const statusBadge = appConfig.isPrimary
+              ? `${crownEmoji} **Bot Principal**`
+              : `${vaultEmoji} **Vault Secundário (REST)**`;
 
-              const statusBadge = appConfig.isPrimary
-                ? `${crownEmoji} **Bot Principal**`
-                : `${vaultEmoji} **Vault Secundário (REST)**`;
-
-              fields.push({
-                name: `App #${appConfig.id}: ${appConfig.name} (${statusBadge})`,
-                value: [
-                  `${bulletEmoji} ${userEmoji} **Bot User:** \`${appConfig.botTag || appConfig.name}\``,
-                  `${bulletEmoji} ${idEmoji} **Application ID:** \`${appConfig.appId || 'N/A'}\``,
-                  `${bulletEmoji} ${folderEmoji} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
-                  `${bulletEmoji} ${photoEmoji} **Emojis Estáticos:** \`${staticCount}\` | ${starEmoji} **Animados:** \`${animCount}\``,
-                  `${bulletEmoji} ${labelEmoji} **Uso de Cota:** \`${totalUsed}/${MAX_PER_APP}\` (${remaining} vagas restantes)`,
-                ].join('\n'),
-                inline: false,
-              });
-              resolve();
-            } catch {
-              fields.push({
-                name: `App #${appConfig.id}: ${appConfig.name} (${warningEmoji} Erro de Conexão)`,
-                value: `${bulletEmoji} **Status:** Não foi possível autenticar o token da aplicação.\n${bulletEmoji} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
-                inline: false,
-              });
-              resolve();
-            } finally {
-              fetchClient.destroy();
-            }
-          });
-
-          fetchClient.login(appConfig.token).catch(() => {
             fields.push({
-              name: `App #${appConfig.id}: ${appConfig.name} (${warningEmoji} Token Inválido)`,
-              value: `${bulletEmoji} **Status:** Falha no login REST API. Verifique as credenciais no \`.env\`.`,
+              name: `App #${appConfig.id}: ${appConfig.name} (${statusBadge})`,
+              value: [
+                `${bulletEmoji} ${userEmoji} **Bot User:** \`${appConfig.botTag || appConfig.name}\``,
+                `${bulletEmoji} ${idEmoji} **Application ID:** \`${appConfig.appId || 'N/A'}\``,
+                `${bulletEmoji} ${folderEmoji} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
+                `${bulletEmoji} ${photoEmoji} **Emojis Estáticos:** \`${staticCount}\` | ${starEmoji} **Animados:** \`${animCount}\``,
+                `${bulletEmoji} ${labelEmoji} **Uso de Cota:** \`${totalUsed}/${MAX_PER_APP}\` (${remaining} vagas restantes)`,
+              ].join('\n'),
               inline: false,
             });
-            resolve();
           });
-        });
+        } catch {
+          fields.push({
+            name: `App #${appConfig.id}: ${appConfig.name} (${warningEmoji} Erro de Conexão)`,
+            value: `${bulletEmoji} **Status:** Não foi possível autenticar o token da aplicação.\n${bulletEmoji} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
+            inline: false,
+          });
+        }
       }
 
       const totalGlobal = totalStaticEmojis + totalAnimatedEmojis;

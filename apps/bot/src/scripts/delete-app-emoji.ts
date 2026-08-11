@@ -1,45 +1,39 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits, Events } from 'discord.js';
-import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
 const rootDir = path.resolve(__dirname, '../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
 async function deleteFromApp(appConfig: EmojiAppConfig, emojiName: string): Promise<boolean> {
-  const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+  return withAppClient(appConfig.token, async (client) => {
+    if (!client.application) {
+      throw new Error('client.application não está acessível no cliente.');
+    }
 
-  return new Promise<boolean>((resolve, reject) => {
-    client.on(Events.ClientReady, async () => {
-      try {
-        if (!client.application) {
-          throw new Error('client.application não está acessível no cliente.');
-        }
+    const appEmojis = await client.application.emojis.fetch();
+    const target = appEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
 
-        const appEmojis = await client.application.emojis.fetch();
-        const target = appEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
-
-        if (target) {
-          console.log(`🗑️ Deleting Application Emoji "${target.name}" (ID: ${target.id}) na App #${appConfig.id} (${appConfig.name})...`);
-          await client.application.emojis.delete(target.id);
-          console.log(`✅ Emoji "${emojiName}" deletado com sucesso da App #${appConfig.id}.`);
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      } catch (err) {
-        reject(err);
-      } finally {
-        client.destroy();
-      }
-    });
-
-    client.login(appConfig.token).catch(reject);
+    if (target) {
+      console.log(`🗑️ Deleting Application Emoji "${target.name}" (ID: ${target.id}) na App #${appConfig.id} (${appConfig.name})...`);
+      await client.application.emojis.delete(target.id);
+      console.log(`✅ Emoji "${emojiName}" deletado com sucesso da App #${appConfig.id}.`);
+      return true;
+    }
+    return false;
   });
 }
 
-async function deleteEmojiByName(emojiName: string): Promise<void> {
+async function main(): Promise<void> {
+  const emojiName = process.argv[2]?.trim();
+
+  if (!emojiName) {
+    console.log('📌 Uso: npx ts-node src/scripts/delete-app-emoji.ts <nome_do_emoji>');
+    console.log('Exemplo: npx ts-node src/scripts/delete-app-emoji.ts banana_divider');
+    process.exit(1);
+  }
+
   const appConfigs = await getEmojiAppConfigs();
   let deleted = false;
 
@@ -62,4 +56,8 @@ async function deleteEmojiByName(emojiName: string): Promise<void> {
   process.exit(0);
 }
 
-deleteEmojiByName('banana_divider');
+main().catch((err) => {
+  console.error('❌ Erro inesperado ao deletar emoji:', err);
+  process.exit(1);
+});
+

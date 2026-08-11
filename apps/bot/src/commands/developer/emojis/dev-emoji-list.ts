@@ -1,9 +1,9 @@
-import { SlashCommandBuilder, APIEmbed, Events } from 'discord.js';
+import { SlashCommandBuilder, APIEmbed } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
-import { getEmojiAppConfigs, EmojiAppConfig } from '../../../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient } from '../../../utils/multi-app-helper';
 import { getEmoji } from '../../../utils/emoji-resolver';
 
 export const command: CommandModule = {
@@ -38,57 +38,46 @@ export const command: CommandModule = {
       const labelEmoji = await getEmoji(ctx.client, 'LABEL');
       const infoEmoji = await getEmoji(ctx.client, 'INFO');
 
-      const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
-
       for (const appConfig of appConfigs) {
-        const fetchClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
+        try {
+          await withAppClient(appConfig.token, async (fetchClient) => {
+            if (!fetchClient.application) return;
 
-        await new Promise<void>((resolve) => {
-          fetchClient.on(Events.ClientReady, async () => {
-            try {
-              if (!fetchClient.application) {
-                resolve();
-                return;
-              }
+            const appEmojis = await fetchClient.application.emojis.fetch();
+            totalGlobalEmojis += appEmojis.size;
 
-              const appEmojis = await fetchClient.application.emojis.fetch();
-              totalGlobalEmojis += appEmojis.size;
+            if (appEmojis.size === 0) {
+              fields.push({
+                name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (0/2000)`,
+                value: `*Nenhum emoji cadastrado nesta aplicação (Pasta: \`Pictures/emojis/${appConfig.sanitizedFolderName}\`)*`,
+                inline: false,
+              });
+            } else {
+              const staticCount = appEmojis.filter((e) => !e.animated).size;
+              const animCount = appEmojis.filter((e) => e.animated).size;
+              const lines: string[] = [];
 
-              if (appEmojis.size === 0) {
-                fields.push({
-                  name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (0/2000)`,
-                  value: `*Nenhum emoji cadastrado nesta aplicação (Pasta: \`Pictures/emojis/${appConfig.sanitizedFolderName}\`)*`,
-                  inline: false,
-                });
-              } else {
-                const staticCount = appEmojis.filter((e) => !e.animated).size;
-                const animCount = appEmojis.filter((e) => e.animated).size;
-                const lines: string[] = [];
+              appEmojis.forEach((e) => {
+                const tag = e.toString();
+                lines.push(`${tag} \`${tag}\` | \`${e.name}\``);
+              });
 
-                appEmojis.forEach((e) => {
-                  const tag = e.toString();
-                  lines.push(`${tag} \`${tag}\` | \`${e.name}\``);
-                });
+              const chunkedValue = lines.join('\n');
+              const safeValue =
+                chunkedValue.length > 1000
+                  ? chunkedValue.substring(0, 990) + '\n... (demais omitidos)'
+                  : chunkedValue;
 
-                const chunkedValue = lines.join('\n');
-                const safeValue = chunkedValue.length > 1000 ? chunkedValue.substring(0, 990) + '\n... (demais omitidos)' : chunkedValue;
-
-                fields.push({
-                  name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - ${photoEmoji} Estáticos: ${staticCount} | ${starEmoji} Animados: ${animCount})`,
-                  value: `**${folderEmoji} Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
-                  inline: false,
-                });
-              }
-              resolve();
-            } catch {
-              resolve();
-            } finally {
-              fetchClient.destroy();
+              fields.push({
+                name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - ${photoEmoji} Estáticos: ${staticCount} | ${starEmoji} Animados: ${animCount})`,
+                value: `**${folderEmoji} Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
+                inline: false,
+              });
             }
           });
-
-          fetchClient.login(appConfig.token).catch(() => resolve());
-        });
+        } catch {
+          // Ignore app fetch failures silently
+        }
       }
 
       const embed: APIEmbed = {

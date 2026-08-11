@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits, Events } from 'discord.js';
-import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../utils/multi-app-helper';
 import { sanitizeEmojiName } from '@kuruttina/shared';
 
 // Load root .env file
@@ -22,57 +21,55 @@ async function uploadToApp(
   imagePath: string
 ): Promise<boolean> {
   const emojiName = sanitizeEmojiName(rawEmojiName);
-  const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+  return withAppClient(appConfig.token, async (client) => {
+    if (!client.application) {
+      throw new Error('client.application não está acessível no cliente.');
+    }
 
-  return new Promise<boolean>((resolve, reject) => {
-    client.on(Events.ClientReady, async () => {
-      try {
-        if (!client.application) {
-          throw new Error('client.application não está acessível no cliente.');
-        }
+    const existingEmojis = await client.application.emojis.fetch();
+    const existing = existingEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
 
-        const existingEmojis = await client.application.emojis.fetch();
-        const existing = existingEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
+    if (existing) {
+      console.log(`⚠️ Emoji "${emojiName}" já existe na App #${appConfig.id} (${appConfig.name}) (ID: ${existing.id}).`);
+      return true;
+    }
 
-        if (existing) {
-          console.log(`⚠️ Emoji "${emojiName}" já existe na App #${appConfig.id} (${appConfig.name}) (ID: ${existing.id}).`);
-          resolve(true);
-          return;
-        }
+    if (existingEmojis.size >= 2000) {
+      console.log(`⚠️ App #${appConfig.id} (${appConfig.name}) atingiu a cota máxima de 2.000 emojis da aplicação. Checando próxima app...`);
+      return false;
+    }
 
-        if (existingEmojis.size >= 2000) {
-          console.log(`⚠️ App #${appConfig.id} (${appConfig.name}) atingiu a cota máxima de 2.000 emojis da aplicação. Checando próxima app...`);
-          resolve(false);
-          return;
-        }
+    console.log(`🚀 Uploading new emoji "${emojiName}" para App #${appConfig.id} (${appConfig.name})...`);
+    const dataUri = fileToDataUri(imagePath);
 
-        console.log(`🚀 Uploading new emoji "${emojiName}" para App #${appConfig.id} (${appConfig.name})...`);
-        const dataUri = fileToDataUri(imagePath);
-
-        const createdEmoji = await client.application.emojis.create({
-          name: emojiName,
-          attachment: dataUri,
-        });
-
-        console.log(`✅ Application Emoji "${createdEmoji.name}" criado com sucesso na App #${appConfig.id}!`);
-        console.log(`   ID: ${createdEmoji.id}`);
-        console.log(`   Format: ${createdEmoji.toString()}`);
-        resolve(true);
-      } catch (err) {
-        reject(err);
-      } finally {
-        client.destroy();
-      }
+    const createdEmoji = await client.application.emojis.create({
+      name: emojiName,
+      attachment: dataUri,
     });
 
-    client.login(appConfig.token).catch(reject);
+    console.log(`✅ Application Emoji "${createdEmoji.name}" criado com sucesso na App #${appConfig.id}!`);
+    console.log(`   ID: ${createdEmoji.id}`);
+    console.log(`   Format: ${createdEmoji.toString()}`);
+    return true;
   });
 }
 
 /**
  * Uploads a local image file as a new Application Emoji across configured bot applications.
  */
-async function uploadApplicationEmoji(emojiName: string, imagePath: string, targetAppId?: number): Promise<void> {
+async function main(): Promise<void> {
+  const emojiName = process.argv[2]?.trim();
+  const rawImagePath = process.argv[3]?.trim();
+  const targetAppId = process.argv[4] ? parseInt(process.argv[4], 10) : undefined;
+
+  if (!emojiName || !rawImagePath) {
+    console.log('📌 Uso: npx ts-node src/scripts/upload-custom-emoji.ts <nome_do_emoji> <caminho_imagem> [app_id]');
+    console.log('Exemplo: npx ts-node src/scripts/upload-custom-emoji.ts banana_divider Pictures/branding/banana_divider.png');
+    process.exit(1);
+  }
+
+  const imagePath = path.isAbsolute(rawImagePath) ? rawImagePath : path.join(rootDir, rawImagePath);
+
   if (!fs.existsSync(imagePath)) {
     console.error(`❌ Arquivo de imagem não encontrado em: ${imagePath}`);
     process.exit(1);
@@ -105,6 +102,8 @@ async function uploadApplicationEmoji(emojiName: string, imagePath: string, targ
   process.exit(0);
 }
 
-// Target: Upload banana_divider emoji from Pictures/branding/banana_divider.png
-const imageFile = path.join(rootDir, 'Pictures', 'branding', 'banana_divider.png');
-uploadApplicationEmoji('banana_divider', imageFile);
+main().catch((err) => {
+  console.error('❌ Erro inesperado ao fazer upload de emoji:', err);
+  process.exit(1);
+});
+

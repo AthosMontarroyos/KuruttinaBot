@@ -5,7 +5,7 @@ import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
 import { getEmoji } from '../../../utils/emoji-resolver';
-import { getEmojiAppConfigs, EmojiAppConfig } from '../../../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../../../utils/multi-app-helper';
 
 /**
  * Downloads image buffer from HTTP/CDN URL with candidate extension fallback
@@ -273,111 +273,96 @@ export const command: CommandModule = {
         selectedApp = allApps[0];
       }
 
-      // Upload to chosen app client REST
-      const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
-      const uploadClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
+      // Upload to chosen app client REST via withAppClient helper
+      await withAppClient(selectedApp.token, async (uploadClient) => {
+        if (!uploadClient.application) {
+          throw new Error('client.application não está acessível na aplicação selecionada.');
+        }
 
-      await new Promise<void>((resolve, reject) => {
-        uploadClient.on(Events.ClientReady, async () => {
-          try {
-            if (!uploadClient.application) {
-              throw new Error('client.application não está acessível na aplicação selecionada.');
-            }
+        const existingEmojis = await uploadClient.application.emojis.fetch();
+        const existingByName = existingEmojis.find(
+          (e) => e.name?.toLowerCase() === emojiName.toLowerCase()
+        );
 
-            const existingEmojis = await uploadClient.application.emojis.fetch();
-            const existingByName = existingEmojis.find(
-              (e) => e.name?.toLowerCase() === emojiName.toLowerCase()
-            );
-
-            if (existingByName) {
-              const warningEmoji = await getEmoji(ctx.client, 'WARNING');
-              const warningEmbed: APIEmbed = {
-                title: `${warningEmoji} Emoji Já Existente na Vault`,
-                description: `O emoji **${existingByName.name}** (\`${existingByName.name}\`) já existe no **Discord Developer Portal** da App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
-                color: EMBED_COLORS.BLACK.number,
-                fields: [
-                  {
-                    name: '✨ Emoji Existente',
-                    value: `${existingByName.toString()}`,
-                    inline: true,
-                  },
-                  {
-                    name: '🏷️ Marcação Copiável',
-                    value: `\`${existingByName.toString()}\``,
-                    inline: true,
-                  },
-                  {
-                    name: '🆔 ID do Emoji',
-                    value: `\`${existingByName.id}\``,
-                    inline: true,
-                  },
-                  {
-                    name: '💡 Dica de Nome',
-                    value: `Para salvar outro emoji parecido nesta mesma Vault, especifique um nome diferente no final: \`k!dev-emoji-add <emoji> ${selectedApp!.id} ${emojiName}_2\``,
-                    inline: false,
-                  },
-                ],
-                footer: {
-                  text: DEFAULT_BOT_CONFIG.BOT_NAME,
-                  icon_url: ctx.client.user?.displayAvatarURL(),
-                },
-                timestamp: new Date().toISOString(),
-              };
-
-              await ctx.reply({ embeds: [warningEmbed], ephemeral: true });
-              resolve();
-              return;
-            }
-
-            const createdAppEmoji = await uploadClient.application.emojis.create({
-              attachment: dataUri!,
-              name: emojiName,
-            });
-
-            const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
-            const successEmbed: APIEmbed = {
-              title: `${successEmoji} Application Emoji Criado!`,
-              description: `O emoji **${createdAppEmoji.name}** foi importado com sucesso na App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
-              color: EMBED_COLORS.BLACK.number,
-              fields: [
-                {
-                  name: '✨ Emoji Renderizado',
-                  value: `${createdAppEmoji.toString()}`,
-                  inline: true,
-                },
-                {
-                  name: '🏷️ Marcação / Formato Copiável',
-                  value: `\`${createdAppEmoji.toString()}\``,
-                  inline: true,
-                },
-                {
-                  name: '🆔 ID do Emoji',
-                  value: `\`${createdAppEmoji.id}\``,
-                  inline: true,
-                },
-                {
-                  name: '📦 App Vault Destino',
-                  value: `\`#${selectedApp!.id}: ${selectedApp!.name}\` (\`${selectedApp!.sanitizedFolderName}\`)`,
-                  inline: false,
-                },
-              ],
-              footer: {
-                text: DEFAULT_BOT_CONFIG.BOT_NAME,
-                icon_url: ctx.client.user?.displayAvatarURL(),
+        if (existingByName) {
+          const warningEmoji = await getEmoji(ctx.client, 'WARNING');
+          const warningEmbed: APIEmbed = {
+            title: `${warningEmoji} Emoji Já Existente na Vault`,
+            description: `O emoji **${existingByName.name}** (\`${existingByName.name}\`) já existe no **Discord Developer Portal** da App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
+            color: EMBED_COLORS.BLACK.number,
+            fields: [
+              {
+                name: '✨ Emoji Existente',
+                value: `${existingByName.toString()}`,
+                inline: true,
               },
-              timestamp: new Date().toISOString(),
-            };
+              {
+                name: '🏷️ Marcação Copiável',
+                value: `\`${existingByName.toString()}\``,
+                inline: true,
+              },
+              {
+                name: '🆔 ID do Emoji',
+                value: `\`${existingByName.id}\``,
+                inline: true,
+              },
+              {
+                name: '💡 Dica de Nome',
+                value: `Para salvar outro emoji parecido nesta mesma Vault, especifique um nome diferente no final: \`k!dev-emoji-add <emoji> ${selectedApp!.id} ${emojiName}_2\``,
+                inline: false,
+              },
+            ],
+            footer: {
+              text: DEFAULT_BOT_CONFIG.BOT_NAME,
+              icon_url: ctx.client.user?.displayAvatarURL(),
+            },
+            timestamp: new Date().toISOString(),
+          };
 
-            await ctx.reply({ embeds: [successEmbed], ephemeral: true });
-            resolve();
-          } catch (err) {
-            reject(err);
-          } finally {
-            uploadClient.destroy();
-          }
+          await ctx.reply({ embeds: [warningEmbed], ephemeral: true });
+          return;
+        }
+
+        const createdAppEmoji = await uploadClient.application.emojis.create({
+          attachment: dataUri!,
+          name: emojiName,
         });
 
-        uploadClient.login(selectedApp.token).catch(reject);
+        const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
+        const successEmbed: APIEmbed = {
+          title: `${successEmoji} Application Emoji Criado!`,
+          description: `O emoji **${createdAppEmoji.name}** foi importado com sucesso na App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
+          color: EMBED_COLORS.BLACK.number,
+          fields: [
+            {
+              name: '✨ Emoji Renderizado',
+              value: `${createdAppEmoji.toString()}`,
+              inline: true,
+            },
+            {
+              name: '🏷️ Marcação / Formato Copiável',
+              value: `\`${createdAppEmoji.toString()}\``,
+              inline: true,
+            },
+            {
+              name: '🆔 ID do Emoji',
+              value: `\`${createdAppEmoji.id}\``,
+              inline: true,
+            },
+            {
+              name: '📦 App Vault Destino',
+              value: `\`#${selectedApp!.id}: ${selectedApp!.name}\` (\`${selectedApp!.sanitizedFolderName}\`)`,
+              inline: false,
+            },
+          ],
+          footer: {
+            text: DEFAULT_BOT_CONFIG.BOT_NAME,
+            icon_url: ctx.client.user?.displayAvatarURL(),
+          },
+          timestamp: new Date().toISOString(),
+        };
+
+        await ctx.reply({ embeds: [successEmbed], ephemeral: true });
       });
     } catch (error: any) {
       console.error('❌ Erro ao registrar Application Emoji no Developer Portal:', error);

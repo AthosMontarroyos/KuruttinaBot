@@ -9,8 +9,8 @@ export default defineConfig({
     react(),
     {
       name: 'serve-pictures-assets',
-      configureServer(server) {
-        server.middlewares.use('/assets/emojis', (req, res, next) => {
+      configureServer(server: any) {
+        server.middlewares.use('/assets/emojis', (req: any, res: any, next: () => void) => {
           const filename = req.url?.replace(/^\//, '') || '';
           let filePath = path.resolve(__dirname, '../../Pictures/emojis/KuruttinaBotEmojis', filename);
           if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {

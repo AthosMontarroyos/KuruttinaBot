@@ -8,9 +8,14 @@ import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 const rootDir = path.resolve(__dirname, '../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
-const ROOT_EMOJIS_DIR = path.join(rootDir, 'Pictures', 'emojis');
+const ROOT_EMOJIS_DIR = path.join(rootDir, 'Pictures/emojis');
 const PRIMARY_EMOJIS_DIR = path.join(ROOT_EMOJIS_DIR, 'KuruttinaBotEmojis');
 const CATALOG_PATH = path.join(PRIMARY_EMOJIS_DIR, 'catalog.json');
+
+const isForceDownload =
+  process.argv.includes('--force') ||
+  process.argv.includes('--fresh') ||
+  process.argv.includes('-f');
 
 export interface LocalEmojiCatalogEntry {
   name: string;
@@ -101,7 +106,8 @@ async function syncEmojisForApp(
           const ext = emoji.animated ? 'gif' : 'png';
           const filename = `${emoji.name}.${ext}`;
           const localFilePath = path.join(appDir, filename);
-          const cdnUrl = `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=256&quality=lossless`;
+          // Add cache buster timestamp to prevent HTTP caching of updated image assets
+          const cdnUrl = `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=256&quality=lossless&t=${Date.now()}`;
           const formatStr = emoji.toString();
 
           folderDownloadedFiles.add(filename);
@@ -110,7 +116,7 @@ async function syncEmojisForApp(
           const prevEntry = previousCatalog?.emojis?.[key];
           const isReplaced = prevEntry && (prevEntry.id !== emoji.id || prevEntry.animated !== emoji.animated);
 
-          if (!fs.existsSync(localFilePath) || isReplaced) {
+          if (isForceDownload || !fs.existsSync(localFilePath) || isReplaced) {
             if (isReplaced) {
               console.log(`🔄 Replaced emoji detected: "${emoji.name}" (ID changed: ${prevEntry.id} -> ${emoji.id})`);
               if (prevEntry.filename !== filename) {
@@ -131,7 +137,7 @@ async function syncEmojisForApp(
             animated: emoji.animated || false,
             filename,
             localPath: `Pictures/emojis/${appConfig.sanitizedFolderName}/${filename}`,
-            cdnUrl,
+            cdnUrl: `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=256&quality=lossless`,
             appIndex: appConfig.id,
             appName: appConfig.name,
             appFolder: appConfig.sanitizedFolderName,
@@ -161,6 +167,9 @@ async function syncApplicationEmojis(): Promise<void> {
   const appConfigs = await getEmojiAppConfigs();
 
   console.log(`\n🚀 Starting Multi-App Emoji Synchronization across ${appConfigs.length} Application(s)...`);
+  if (isForceDownload) {
+    console.log(`⚡ Force download mode enabled (--force). Re-downloading all images from Discord CDN...\n`);
+  }
 
   const activeEmojiMap = new Map<string, LocalEmojiCatalogEntry>();
   const downloadedFilenamesPerFolder = new Map<string, Set<string>>();
@@ -178,35 +187,21 @@ async function syncApplicationEmojis(): Promise<void> {
   let totalDeletedCount = 0;
 
   for (const [folderPath, downloadedSet] of downloadedFilenamesPerFolder.entries()) {
-    if (!fs.existsSync(folderPath)) continue;
-    const currentFiles = fs.readdirSync(folderPath);
-
-    for (const file of currentFiles) {
-      if (file === 'catalog.json' || file.startsWith('.')) continue;
-
-      if (!downloadedSet.has(file)) {
-        const fileToDelete = path.join(folderPath, file);
-        console.log(`🗑️ Removing discarded local emoji asset: ${path.relative(ROOT_EMOJIS_DIR, fileToDelete)}`);
-        fs.unlinkSync(fileToDelete);
-        totalDeletedCount++;
-      }
-    }
-  }
-
-  // Prune orphaned/renamed app folders inside Pictures/emojis/
-  const activeFolders = new Set(appConfigs.map((c) => c.sanitizedFolderName));
-  if (fs.existsSync(ROOT_EMOJIS_DIR)) {
-    const existingDirs = fs.readdirSync(ROOT_EMOJIS_DIR).filter((f) => {
-      const p = path.join(ROOT_EMOJIS_DIR, f);
-      return fs.statSync(p).isDirectory();
-    });
-
-    for (const dirName of existingDirs) {
-      if (!activeFolders.has(dirName)) {
-        const obsoleteFolder = path.join(ROOT_EMOJIS_DIR, dirName);
-        console.log(`🗑️ Removing obsolete/renamed application emoji folder: Pictures/emojis/${dirName}/`);
-        fs.rmSync(obsoleteFolder, { recursive: true, force: true });
-        totalDeletedCount++;
+    if (fs.existsSync(folderPath)) {
+      const filesOnDisk = fs.readdirSync(folderPath);
+      for (const file of filesOnDisk) {
+        if (file === 'catalog.json') continue;
+        if (!downloadedSet.has(file)) {
+          const obsoletePath = path.join(folderPath, file);
+          try {
+            fs.unlinkSync(obsoletePath);
+            const relativePath = path.relative(rootDir, obsoletePath);
+            console.log(`🗑️ Removing discarded local emoji asset: ${relativePath}`);
+            totalDeletedCount++;
+          } catch {
+            // Ignore deletion errors
+          }
+        }
       }
     }
   }
@@ -215,7 +210,7 @@ async function syncApplicationEmojis(): Promise<void> {
     console.log('✨ No discarded local emojis or obsolete folders to remove.');
   }
 
-  // Write catalog.json Metadata Index inside Primary folder (Pictures/emojis/KuruttinaBotEmojis/catalog.json)
+  // Save catalog.json to primary folder
   const catalogData: EmojiCatalogFile = {
     total: activeEmojiMap.size,
     totalApps: appConfigs.length,
@@ -225,11 +220,12 @@ async function syncApplicationEmojis(): Promise<void> {
 
   fs.writeFileSync(CATALOG_PATH, JSON.stringify(catalogData, null, 2), 'utf8');
   console.log(`\n📄 Catalog updated: ${CATALOG_PATH}`);
-
   console.log(`\n======================================================`);
   console.log(`🎉 Multi-App Sync Complete! (${activeEmojiMap.size} active emojis across ${appConfigs.length} apps, ${totalDeletedCount} pruned)`);
   console.log(`======================================================\n`);
-  process.exit(0);
 }
 
-syncApplicationEmojis();
+syncApplicationEmojis().catch((err) => {
+  console.error('❌ Fatal error during emoji synchronization:', err);
+  process.exit(1);
+});

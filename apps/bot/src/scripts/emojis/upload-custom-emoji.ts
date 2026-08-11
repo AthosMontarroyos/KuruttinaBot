@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../../utils';
 import { sanitizeEmojiName } from '@kuruttina/shared';
 
 // Load root .env file
-const rootDir = path.resolve(__dirname, '../../../../');
+const rootDir = path.resolve(__dirname, '../../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
 function fileToDataUri(filePath: string): string {
@@ -21,13 +21,13 @@ async function uploadToApp(
   imagePath: string
 ): Promise<boolean> {
   const emojiName = sanitizeEmojiName(rawEmojiName);
-  return withAppClient(appConfig.token, async (client) => {
+  return withAppClient(appConfig.token, async (client: any) => {
     if (!client.application) {
       throw new Error('client.application não está acessível no cliente.');
     }
 
     const existingEmojis = await client.application.emojis.fetch();
-    const existing = existingEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
+    const existing = existingEmojis.find((e: any) => e.name?.toLowerCase() === emojiName.toLowerCase());
 
     if (existing) {
       console.log(`⚠️ Emoji "${emojiName}" já existe na App #${appConfig.id} (${appConfig.name}) (ID: ${existing.id}).`);

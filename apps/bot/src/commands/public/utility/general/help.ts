@@ -10,7 +10,7 @@ import { EMBED_COLORS, DEFAULT_BOT_CONFIG, createCustomId } from '@kuruttina/sha
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { KuruttinaClient } from '../../../../types/kuruttina-client';
-import { getEmoji } from '../../../../utils/emoji-resolver';
+import { getEmoji } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()

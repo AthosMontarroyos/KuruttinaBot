@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
-import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
+import { getEmojiAppConfigs, EmojiAppConfig } from '../../utils';
 
 // Load root .env file
-const rootDir = path.resolve(__dirname, '../../../../');
+const rootDir = path.resolve(__dirname, '../../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
 const ROOT_EMOJIS_DIR = path.join(rootDir, 'Pictures/emojis');

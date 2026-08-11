@@ -1,8 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmojis } from '../../../../utils/emoji-resolver';
-import { createKuruttinaEmbed } from '../../../../utils/embed-builder';
+import { getEmojis, createKuruttinaEmbed } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()

@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
 
 // Load root .env file
-const rootDir = path.resolve(__dirname, '../../../../');
+const rootDir = path.resolve(__dirname, '../../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
 export interface EmojiAppConfig {

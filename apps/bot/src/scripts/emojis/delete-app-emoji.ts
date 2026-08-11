@@ -1,19 +1,19 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../utils/multi-app-helper';
+import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../../utils';
 
 // Load root .env file
-const rootDir = path.resolve(__dirname, '../../../../');
+const rootDir = path.resolve(__dirname, '../../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
 async function deleteFromApp(appConfig: EmojiAppConfig, emojiName: string): Promise<boolean> {
-  return withAppClient(appConfig.token, async (client) => {
+  return withAppClient(appConfig.token, async (client: any) => {
     if (!client.application) {
       throw new Error('client.application não está acessível no cliente.');
     }
 
     const appEmojis = await client.application.emojis.fetch();
-    const target = appEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
+    const target = appEmojis.find((e: any) => e.name?.toLowerCase() === emojiName.toLowerCase());
 
     if (target) {
       console.log(`🗑️ Deleting Application Emoji "${target.name}" (ID: ${target.id}) na App #${appConfig.id} (${appConfig.name})...`);

@@ -1,7 +1,7 @@
-import { CommandContext } from '../types/command-context';
+import { CommandContext } from '../../types/command-context';
 import { PermissionFlagsBits } from 'discord.js';
-import { getEmoji } from './emoji-resolver';
-import { sendErrorReply } from './embed-builder';
+import { getEmoji } from '../emojis/emoji-resolver';
+import { sendErrorReply } from '../embeds/embed-builder';
 
 export class PermissionGuard {
   /**

@@ -3,9 +3,13 @@ import { SlashCommandBuilder, APIEmbed, Attachment, Events } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG, sanitizeEmojiName } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
-import { PermissionGuard } from '../../../utils/permission-guard';
-import { getEmoji } from '../../../utils/emoji-resolver';
-import { getEmojiAppConfigs, withAppClient, EmojiAppConfig } from '../../../utils/multi-app-helper';
+import {
+  PermissionGuard,
+  getEmoji,
+  getEmojiAppConfigs,
+  withAppClient,
+  EmojiAppConfig,
+} from '../../../utils';
 
 /**
  * Downloads image buffer from HTTP/CDN URL with candidate extension fallback
@@ -242,7 +246,7 @@ export const command: CommandModule = {
         const errorEmbed: APIEmbed = {
           title: `${errorEmoji} Imagem Não Encontrada`,
           description:
-            'Forneça um emoji customizado do Discord (ex: `<a:shooting:1492107771510919300>`), uma URL de imagem válida ou um arquivo anexado.',
+            'Forneça um emoji customizado do Discord, uma URL de imagem válida ou um arquivo anexado.',
           color: EMBED_COLORS.BLACK.number,
         };
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
@@ -251,18 +255,25 @@ export const command: CommandModule = {
 
       const allApps = await getEmojiAppConfigs();
       if (allApps.length === 0) {
-        throw new Error('No emoji applications configured in the system.');
+        const errorEmoji = await getEmoji(ctx.client, 'ERROR');
+        const errorEmbed: APIEmbed = {
+          title: `${errorEmoji} Nenhuma App Vault Configurada`,
+          description: 'Nenhum token de aplicação foi encontrado na configuração `.env`.',
+          color: EMBED_COLORS.BLACK.number,
+        };
+        await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+        return;
       }
 
       let selectedApp: EmojiAppConfig | null = null;
       if (targetAppIndex) {
-        selectedApp = allApps.find((a) => a.id === targetAppIndex) || null;
+        selectedApp = allApps.find((a: EmojiAppConfig) => a.id === targetAppIndex) || null;
         if (!selectedApp) {
           const warningEmoji = await getEmoji(ctx.client, 'WARNING');
           const errorEmbed: APIEmbed = {
             title: `${warningEmoji} App Não Encontrada`,
             description: `App ID **#${targetAppIndex}** não existe. Aplicações disponíveis: ${allApps
-              .map((a) => `\`#${a.id}: ${a.name}\``)
+              .map((a: EmojiAppConfig) => `\`#${a.id}: ${a.name}\``)
               .join(', ')}`,
             color: EMBED_COLORS.BLACK.number,
           };
@@ -273,15 +284,14 @@ export const command: CommandModule = {
         selectedApp = allApps[0];
       }
 
-      // Upload to chosen app client REST via withAppClient helper
-      await withAppClient(selectedApp.token, async (uploadClient) => {
+      await withAppClient(selectedApp.token, async (uploadClient: any) => {
         if (!uploadClient.application) {
           throw new Error('client.application não está acessível na aplicação selecionada.');
         }
 
         const existingEmojis = await uploadClient.application.emojis.fetch();
         const existingByName = existingEmojis.find(
-          (e) => e.name?.toLowerCase() === emojiName.toLowerCase()
+          (e: any) => e.name?.toLowerCase() === emojiName.toLowerCase()
         );
 
         if (existingByName) {

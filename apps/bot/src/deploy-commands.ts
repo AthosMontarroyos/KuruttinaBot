@@ -2,7 +2,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { REST, Routes } from 'discord.js';
 import { loggerColors } from '@kuruttina/shared';
-import { getFilesRecursively } from './utils/recursive-loader';
+import { getFilesRecursively } from './utils';
 import { CommandModule } from './types/command-interface';
 
 // Load root .env file

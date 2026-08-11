@@ -3,7 +3,7 @@ import path from 'path';
 import { Client } from 'discord.js';
 import { EMOJIS, EmojiKey } from '@kuruttina/shared';
 
-const CATALOG_PATH = path.resolve(__dirname, '../../../../Pictures/emojis/KuruttinaBotEmojis/catalog.json');
+const CATALOG_PATH = path.resolve(__dirname, '../../../../../Pictures/emojis/KuruttinaBotEmojis/catalog.json');
 
 interface CatalogEntry {
   name: string;

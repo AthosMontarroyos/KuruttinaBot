@@ -1,6 +1,6 @@
 import { Client, APIEmbed } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
-import { CommandContext } from '../types/command-context';
+import { CommandContext } from '../../types/command-context';
 
 export interface KuruttinaEmbedOptions {
   title?: string;

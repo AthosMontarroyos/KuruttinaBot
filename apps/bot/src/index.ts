@@ -2,7 +2,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { GatewayIntentBits } from 'discord.js';
 import { loggerColors } from '@kuruttina/shared';
-import { getFilesRecursively } from './utils/recursive-loader';
+import { getFilesRecursively } from './utils';
 import { CommandModule } from './types/command-interface';
 import { KuruttinaClient } from './types/kuruttina-client';
 

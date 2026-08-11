@@ -1,4 +1,4 @@
-import { CommandContext } from '../types/command-context';
+import { CommandContext } from '../../types/command-context';
 import {
   CustomCommandPayload,
   customCommandPayloadSchema,

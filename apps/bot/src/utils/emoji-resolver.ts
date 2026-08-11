@@ -1,12 +1,51 @@
+import fs from 'fs';
+import path from 'path';
 import { Client } from 'discord.js';
 import { EMOJIS, EmojiKey } from '@kuruttina/shared';
+
+const CATALOG_PATH = path.resolve(__dirname, '../../../../Pictures/emojis/KuruttinaBotEmojis/catalog.json');
+
+interface CatalogEntry {
+  name: string;
+  id: string;
+  format: string;
+  animated: boolean;
+}
+
+interface CatalogFile {
+  emojis: Record<string, CatalogEntry>;
+}
+
+let cachedCatalog: Record<string, CatalogEntry> | null = null;
+let lastCatalogMtime = 0;
+
+/**
+ * Loads or refreshes catalog.json in memory.
+ */
+function getCatalogEmojis(): Record<string, CatalogEntry> | null {
+  try {
+    if (fs.existsSync(CATALOG_PATH)) {
+      const stats = fs.statSync(CATALOG_PATH);
+      if (!cachedCatalog || stats.mtimeMs > lastCatalogMtime) {
+        const content = fs.readFileSync(CATALOG_PATH, 'utf8');
+        const parsed: CatalogFile = JSON.parse(content);
+        cachedCatalog = parsed.emojis || {};
+        lastCatalogMtime = stats.mtimeMs;
+      }
+      return cachedCatalog;
+    }
+  } catch {
+    // Fallback if catalog unreadable
+  }
+  return cachedCatalog;
+}
 
 /**
  * Common alias mappings for Application Emojis uploaded to Discord Developer Portal.
  */
 const EMOJI_ALIASES: Record<string, string[]> = {
-  SUCCESS: ['success', 'sucess', 'verified', 'ok'],
-  CLEAR: ['clear', 'cleaning'],
+  SUCCESS: ['success', 'sucess', 'verified', 'ok', 'yes'],
+  CLEAR: ['clear', 'cleaning', 'trash'],
   ERROR: ['error', 'dismiss', 'anger'],
   THUMBUP: ['thumbup', 'thumbsup', 'like', 'thumb'],
   LOCK: ['lock'],
@@ -33,20 +72,43 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   DICE: ['dice'],
   DICE_ROLL: ['diceroll', 'dice'],
   DICE_ANIMATED: ['dicerooling', 'diceroll', 'dice'],
+  SERVER_BOOST: ['server_boost', 'boost', 'nitro'],
+  BOOST: ['server_boost', 'boost', 'nitro'],
+  TAKING_PHOTO: ['taking_photo', 'photo'],
+  PHOTO: ['photo', 'taking_photo'],
 };
 
 /**
  * Resolves an emoji by key from central EMOJIS map OR dynamically fetches
- * custom Application Emojis uploaded to Discord Developer Portal.
+ * custom Application Emojis uploaded to Discord Developer Portal across ALL linked App Vaults.
  */
-export async function getEmoji(client: Client, key: EmojiKey): Promise<string> {
-  const defaultEmoji = EMOJIS[key];
+export async function getEmoji(client: Client, key: EmojiKey | string): Promise<string> {
+  const normalizedKey = key.toString().toUpperCase();
+  const defaultEmoji = (EMOJIS as any)[normalizedKey] || '✨';
 
+  // 1. Try resolving from multi-app catalog.json
+  const catalog = getCatalogEmojis();
+  if (catalog) {
+    const candidateNames = EMOJI_ALIASES[normalizedKey]
+      ? EMOJI_ALIASES[normalizedKey]
+      : [
+          key.toString().toLowerCase(),
+          key.toString().toLowerCase().replace(/_/g, ''),
+        ];
+
+    for (const candidate of candidateNames) {
+      if (catalog[candidate]) {
+        return catalog[candidate].format;
+      }
+    }
+  }
+
+  // 2. Fallback to live primary client application cache
   try {
-    if (client.application) {
-      const candidateNames = EMOJI_ALIASES[key]
-        ? EMOJI_ALIASES[key]
-        : [key.toLowerCase()];
+    if (client?.application) {
+      const candidateNames = EMOJI_ALIASES[normalizedKey]
+        ? EMOJI_ALIASES[normalizedKey]
+        : [key.toString().toLowerCase()];
 
       const appEmojis =
         client.application.emojis.cache.size > 0
@@ -63,7 +125,7 @@ export async function getEmoji(client: Client, key: EmojiKey): Promise<string> {
       }
     }
   } catch {
-    // Fallback gracefully to default Unicode emoji if app emojis fetch fails
+    // Fallback gracefully to default Unicode emoji
   }
 
   return defaultEmoji;

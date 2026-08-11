@@ -64,7 +64,7 @@ async function main(): Promise<void> {
 
   if (!emojiName || !rawImagePath) {
     console.log('📌 Uso: npx ts-node src/scripts/upload-custom-emoji.ts <nome_do_emoji> <caminho_imagem> [app_id]');
-    console.log('Exemplo: npx ts-node src/scripts/upload-custom-emoji.ts banana_divider Pictures/branding/banana_divider.png');
+    console.log('Exemplo: npx ts-node src/scripts/upload-custom-emoji.ts pink_butterfly_divider Pictures/branding/pink_butterfly_divider.png');
     process.exit(1);
   }
 

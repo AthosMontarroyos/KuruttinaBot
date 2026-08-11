@@ -30,7 +30,7 @@ async function main(): Promise<void> {
 
   if (!emojiName) {
     console.log('📌 Uso: npx ts-node src/scripts/delete-app-emoji.ts <nome_do_emoji>');
-    console.log('Exemplo: npx ts-node src/scripts/delete-app-emoji.ts banana_divider');
+    console.log('Exemplo: npx ts-node src/scripts/delete-app-emoji.ts pink_butterfly_divider');
     process.exit(1);
   }
 

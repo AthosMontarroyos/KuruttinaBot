@@ -70,7 +70,7 @@ function extractEmojiName(
     if (match && match[1]) {
       candidate = match[1];
     } else {
-      // Direct Image URL: https://cdn.discordapp.com/emojis/.../banana-divider.png
+      // Direct Image URL: https://cdn.discordapp.com/emojis/.../pink-butterfly-divider.png
       try {
         const urlObj = new URL(rawEmojiInput);
         const basename = path.basename(urlObj.pathname);

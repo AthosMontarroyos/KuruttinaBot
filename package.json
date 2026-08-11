@@ -10,7 +10,8 @@
     "fetch:emojis": "npm --prefix apps/bot run fetch:emojis",
     "deploy": "npm --prefix apps/bot run deploy",
     "deploy:dev": "npm --prefix apps/bot run deploy:dev",
-    "deploy:public": "npm --prefix apps/bot run deploy:public"
+    "deploy:public": "npm --prefix apps/bot run deploy:public",
+    "security:scan": "gitleaks detect --source . --config .gitleaks.toml --verbose"
   },
   "workspaces": [
     "apps/*",

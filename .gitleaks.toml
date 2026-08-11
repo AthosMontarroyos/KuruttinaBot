@@ -1,0 +1,46 @@
+# Gitleaks Configuration for KuruttinaBot
+# Enforces Zero-Leak Credential Shielding across all commits, PRs, and files.
+
+title = "KuruttinaBot Gitleaks Configuration"
+
+[allowlist]
+description = "Global Allowlist for Safe Files and Templates"
+paths = [
+  '''\.env\.example$''',
+  '''package-lock\.json$''',
+  '''Pictures/emojis/catalog\.json$'''
+]
+regexes = [
+  '''your_discord_bot_token_here''',
+  '''your_supabase_url_here''',
+  '''your_supabase_anon_key_here''',
+  '''your_supabase_service_role_key_here'''
+]
+
+# Custom Rule 1: Discord Bot Token Detector
+[[rules]]
+id = "discord-bot-token"
+description = "Detects exposed Discord Bot API Tokens"
+regex = '''(?i)(M|N|O)[A-Za-z0-9_-]{23,25}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,38}'''
+keywords = ["discord", "bot_token", "DISCORD_TOKEN"]
+
+# Custom Rule 2: Supabase Service Role & Anon Key Detector
+[[rules]]
+id = "supabase-api-key"
+description = "Detects exposed Supabase API Keys and Service Role JWTs"
+regex = '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'''
+keywords = ["supabase", "service_role", "anon_key", "SUPABASE"]
+
+# Custom Rule 3: Database Connection String Detector
+[[rules]]
+id = "database-connection-url"
+description = "Detects exposed PostgreSQL or Supabase Connection Strings"
+regex = '''postgres(ql)?://[a-zA-Z0-9_.-]+:[^@\s]+@[a-zA-Z0-9_.-]+:\d+/[a-zA-Z0-9_.-]+'''
+keywords = ["postgres", "postgresql", "DATABASE_URL"]
+
+# Custom Rule 4: Generic Secret Key Assignment Detector
+[[rules]]
+id = "generic-secret-key"
+description = "Detects hardcoded secret keys or tokens in source code"
+regex = '''(?i)(secret|token|api_key|password)\s*[:=]\s*["'][A-Za-z0-9_-]{16,}["']'''
+keywords = ["secret", "token", "api_key", "password"]

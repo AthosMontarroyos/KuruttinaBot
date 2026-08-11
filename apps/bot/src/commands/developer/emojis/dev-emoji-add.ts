@@ -285,6 +285,51 @@ export const command: CommandModule = {
               throw new Error('client.application não está acessível na aplicação selecionada.');
             }
 
+            const existingEmojis = await uploadClient.application.emojis.fetch();
+            const existingByName = existingEmojis.find(
+              (e) => e.name?.toLowerCase() === emojiName.toLowerCase()
+            );
+
+            if (existingByName) {
+              const warningEmoji = await getEmoji(ctx.client, 'WARNING');
+              const warningEmbed: APIEmbed = {
+                title: `${warningEmoji} Emoji Já Existente na Vault`,
+                description: `O emoji **${existingByName.name}** (\`${existingByName.name}\`) já existe no **Discord Developer Portal** da App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
+                color: EMBED_COLORS.BLACK.number,
+                fields: [
+                  {
+                    name: '✨ Emoji Existente',
+                    value: `${existingByName.toString()}`,
+                    inline: true,
+                  },
+                  {
+                    name: '🏷️ Marcação Copiável',
+                    value: `\`${existingByName.toString()}\``,
+                    inline: true,
+                  },
+                  {
+                    name: '🆔 ID do Emoji',
+                    value: `\`${existingByName.id}\``,
+                    inline: true,
+                  },
+                  {
+                    name: '💡 Dica de Nome',
+                    value: `Para salvar outro emoji parecido nesta mesma Vault, especifique um nome diferente no final: \`k!dev-emoji-add <emoji> ${selectedApp!.id} ${emojiName}_2\``,
+                    inline: false,
+                  },
+                ],
+                footer: {
+                  text: DEFAULT_BOT_CONFIG.BOT_NAME,
+                  icon_url: ctx.client.user?.displayAvatarURL(),
+                },
+                timestamp: new Date().toISOString(),
+              };
+
+              await ctx.reply({ embeds: [warningEmbed], ephemeral: true });
+              resolve();
+              return;
+            }
+
             const createdAppEmoji = await uploadClient.application.emojis.create({
               attachment: dataUri!,
               name: emojiName,

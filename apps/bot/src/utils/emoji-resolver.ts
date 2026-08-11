@@ -130,3 +130,18 @@ export async function getEmoji(client: Client, key: EmojiKey | string): Promise<
 
   return defaultEmoji;
 }
+
+/**
+ * Resolves multiple emojis concurrently by key, returning a Record mapping each key to its resolved emoji string.
+ * Reduces 10+ sequential await getEmoji(...) lines into a single destructurable call.
+ */
+export async function getEmojis<K extends string>(
+  client: Client,
+  keys: readonly K[]
+): Promise<Record<K, string>> {
+  const entries = await Promise.all(
+    keys.map(async (key) => [key, await getEmoji(client, key)] as const)
+  );
+  return Object.fromEntries(entries) as Record<K, string>;
+}
+

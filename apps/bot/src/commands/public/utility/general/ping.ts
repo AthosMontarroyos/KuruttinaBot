@@ -1,8 +1,8 @@
-import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { SlashCommandBuilder } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmoji } from '../../../../utils/emoji-resolver';
+import { getEmojis } from '../../../../utils/emoji-resolver';
+import { createKuruttinaEmbed } from '../../../../utils/embed-builder';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -26,34 +26,26 @@ export const command: CommandModule = {
 
     const apiPing = Date.now() - startMsgTime;
 
-    // Resolve live emojis from Developer Portal
-    const dancingEmoji = await getEmoji(ctx.client, 'DANCING');
-    const gatewayEmoji = await getEmoji(ctx.client, 'GATEWAY');
-    const apiEmoji = await getEmoji(ctx.client, 'API');
+    // Resolve live emojis from Developer Portal concurrently
+    const { DANCING, GATEWAY, API } = await getEmojis(ctx.client, ['DANCING', 'GATEWAY', 'API']);
 
-    // JS Object Notation (JSON format) embed for DB serializability & bot/dashboard sharing
-    const pingEmbed: APIEmbed = {
-      title: `${dancingEmoji} Pong!`,
-      color: EMBED_COLORS.BLACK.number,
+    const pingEmbed = createKuruttinaEmbed(ctx.client, {
+      title: `${DANCING} Pong!`,
       fields: [
         {
-          name: `${gatewayEmoji} Gateway Ping`,
+          name: `${GATEWAY} Gateway Ping`,
           value: `\`${gatewayPing}ms\``,
           inline: true,
         },
         {
-          name: `${apiEmoji} API Ping`,
+          name: `${API} API Ping`,
           value: `\`${apiPing}ms\``,
           inline: true,
         },
       ],
-      footer: {
-        text: DEFAULT_BOT_CONFIG.BOT_NAME,
-        icon_url: ctx.client.user?.displayAvatarURL(),
-      },
-      timestamp: new Date().toISOString(),
-    };
+    });
 
     await ctx.reply({ embeds: [pingEmbed] });
   },
 };
+

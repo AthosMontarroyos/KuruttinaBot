@@ -1,7 +1,7 @@
 import { CommandContext } from '../types/command-context';
-import { EMBED_COLORS } from '@kuruttina/shared';
-import { APIEmbed, PermissionFlagsBits } from 'discord.js';
+import { PermissionFlagsBits } from 'discord.js';
 import { getEmoji } from './emoji-resolver';
+import { sendErrorReply } from './embed-builder';
 
 export class PermissionGuard {
   /**
@@ -16,12 +16,11 @@ export class PermissionGuard {
 
     // 1. Dev Guild restriction
     if (!ctx.guild || (devGuildId && ctx.guild.id !== devGuildId)) {
-      const errorEmbed: APIEmbed = {
-        title: `${angerEmoji} Acesso Negado`,
-        description: 'Este comando é restrito ao servidor de desenvolvimento oficial da Kuruttina.',
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${angerEmoji} Acesso Negado`,
+        'Este comando é restrito ao servidor de desenvolvimento oficial da Kuruttina.'
+      );
       return false;
     }
 
@@ -30,12 +29,11 @@ export class PermissionGuard {
     const isAuthorized = (creatorId && userId === creatorId) || (devId && userId === devId);
 
     if (!isAuthorized) {
-      const errorEmbed: APIEmbed = {
-        title: `${angerEmoji} Permissão Insuficiente`,
-        description: 'Apenas os desenvolvedores autorizados ou o criador da Kuruttina podem executar este comando.',
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${angerEmoji} Permissão Insuficiente`,
+        'Apenas os desenvolvedores autorizados ou o criador da Kuruttina podem executar este comando.'
+      );
       return false;
     }
 
@@ -53,12 +51,11 @@ export class PermissionGuard {
     const errorEmoji = await getEmoji(ctx.client, 'DISMISS');
 
     if (!ctx.guild) {
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Comando Restrito`,
-        description: 'Este comando só pode ser executado dentro de um servidor.',
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Comando Restrito`,
+        'Este comando só pode ser executado dentro de um servidor.'
+      );
       return false;
     }
 
@@ -71,12 +68,11 @@ export class PermissionGuard {
     }
 
     if (!hasPerm) {
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Permissão Requerida`,
-        description: `Você precisa da permissão de **${permissionLabel}** no servidor para executar este comando.`,
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Permissão Requerida`,
+        `Você precisa da permissão de **${permissionLabel}** no servidor para executar este comando.`
+      );
       return false;
     }
 
@@ -97,3 +93,4 @@ export class PermissionGuard {
     return this.enforcePermission(ctx, PermissionFlagsBits.ManageMessages, 'Gerenciar Mensagens');
   }
 }
+

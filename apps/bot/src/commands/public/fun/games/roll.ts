@@ -1,9 +1,9 @@
-import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { SlashCommandBuilder } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { KuruttinaClient } from '../../../../types/kuruttina-client';
-import { getEmoji } from '../../../../utils/emoji-resolver';
+import { getEmojis } from '../../../../utils/emoji-resolver';
+import { createKuruttinaEmbed } from '../../../../utils/embed-builder';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -118,64 +118,54 @@ export const command: CommandModule = {
       if (numSides === 20 && rollValue === 1) hasNat1 = true;
     }
 
-    // Resolve Live Application Emojis from Developer Portal:
-    // 1. diceRollEmoji (DiceRoll) = Lançando o dado (Título)
-    // 2. diceRollingEmoji (DiceRooling) = O dado girando em GIF (Descrição)
-    // 3. diceStoppedEmoji (Dice) = O dado parado (Resultados Individuais)
-    const diceRollEmoji = await getEmoji(client, 'DICE_ROLL');
-    const diceRollingEmoji = await getEmoji(client, 'DICE_ANIMATED');
-    const diceStoppedEmoji = await getEmoji(client, 'DICE');
-    const starEmoji = await getEmoji(client, 'STAR');
-    const warningEmoji = await getEmoji(client, 'WARNING');
-    const statsEmoji = await getEmoji(client, 'STATS');
+    // Batch resolve Application Emojis concurrently
+    const { DICE_ROLL, DICE_ANIMATED, DICE, STAR, WARNING, STATS } = await getEmojis(client, [
+      'DICE_ROLL', 'DICE_ANIMATED', 'DICE', 'STAR', 'WARNING', 'STATS',
+    ]);
 
-    // INFJ Persona Wittiness & Commentary with 2nd Emoji (DiceRooling GIF)
-    let commentary = `${diceRollingEmoji} A sorte foi lançada sobre a mesa!`;
+    // INFJ Persona Wittiness & Commentary
+    let commentary = `${DICE_ANIMATED} A sorte foi lançada sobre a mesa!`;
     if (hasNat20) {
-      commentary = `${starEmoji} **Vinte Natural!** Um resultado extraordinário guiado pela mais pura intuição!`;
+      commentary = `${STAR} **Vinte Natural!** Um resultado extraordinário guiado pela mais pura intuição!`;
     } else if (hasNat1) {
-      commentary = `${warningEmoji} **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
+      commentary = `${WARNING} **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
     }
 
-    // Format individual rolls list with 3rd Emoji (Dice - Dado Parado)
+    // Format individual rolls list
     const formattedRolls = rolls
       .map((val, idx) => {
         let highlight = `\`${val}\``;
-        if (numSides === 20 && val === 20) highlight = `**\`20\`** ${starEmoji} (Crítico!)`;
+        if (numSides === 20 && val === 20) highlight = `**\`20\`** ${STAR} (Crítico!)`;
         if (numSides === 20 && val === 1) highlight = `**\`1\`** (Falha Crítica!)`;
-        return `${diceStoppedEmoji} Giro ${idx + 1}: ${highlight}`;
+        return `${DICE} Giro ${idx + 1}: ${highlight}`;
       })
       .join('\n');
 
-    // Build Embed with 1st Emoji (DiceRoll - Lançando o Dado) in Title & Minimalist Black Border
-    const resultEmbed: APIEmbed = {
-      title: `${diceRollEmoji} Lançamento de Dados: ${numDice}d${numSides}`,
+    // Build Embed using factory
+    const resultEmbed = createKuruttinaEmbed(client, {
+      title: `${DICE_ROLL} Lançamento de Dados: ${numDice}d${numSides}`,
       description: commentary,
-      color: EMBED_COLORS.BLACK.number,
       fields: [
         {
-          name: `${diceStoppedEmoji} Resultados Individuais`,
+          name: `${DICE} Resultados Individuais`,
           value: formattedRolls || 'Nenhum resultado.',
           inline: false,
         },
         {
-          name: `${statsEmoji} Soma Total`,
+          name: `${STATS} Soma Total`,
           value: `\`${totalSum}\``,
           inline: true,
         },
         {
-          name: `${statsEmoji} Média`,
+          name: `${STATS} Média`,
           value: `\`${(totalSum / numDice).toFixed(1)}\``,
           inline: true,
         },
       ],
-      footer: {
-        text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Giros: ${numDice} | Lados: ${numSides}`,
-        icon_url: client.user?.displayAvatarURL(),
-      },
-      timestamp: new Date().toISOString(),
-    };
+      footerText: `Giros: ${numDice} | Lados: ${numSides}`,
+    });
 
     await ctx.reply({ embeds: [resultEmbed] });
   },
 };
+

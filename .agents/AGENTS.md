@@ -159,8 +159,9 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ### 16. Message Writing Philosophy, Emojis & Visual Highlights Policy
 - **Engaging & Dynamic Message Formatting (No Plain Text)**: All bot messages, embeds, and responses MUST be visually polished, structured, and highly readable. Avoid plain or unformatted text blocks. Use rich Markdown elements (bold text, inline code blocks `` `value` ``, blockquotes, and lists) to create clean visual hierarchy.
-- **Discord Developer Portal Emojis Integration (`getEmoji`)**:
-  - All visual designs and embeds MUST use `await getEmoji(client, 'NOME')` (`src/utils/emoji-resolver.ts`) or `EMOJIS.NOME` (`@kuruttina/shared`).
+- **Discord Developer Portal Emojis Integration (`getEmoji` / `getEmojis`)**:
+  - All visual designs and embeds MUST use `await getEmoji(client, 'NOME')` or `await getEmojis(client, ['KEY1', 'KEY2'])` (`src/utils/emoji-resolver.ts`) or `EMOJIS.NOME` (`@kuruttina/shared`).
+  - **Batch Emoji Resolution (`getEmojis`)**: When resolving multiple emojis in a command or handler, use `await getEmojis(client, ['KEY1', 'KEY2', ...])` to fetch all keys concurrently via `Promise.all` in a single destructurable call.
   - **Interactive & Expressive Aesthetic (No Corporate Plain Icons)**: Custom Developer Portal emojis should be expressive, interactive, character-driven, animated GIF/APNG (`<a:name:id>`), or anime/chibi styled reflecting Kuruttina's INFJ personality rather than corporate static icons.
   - **Dynamic Resolution Engine**: When the developer uploads a custom emoji to the Discord Developer Portal with a name matching a system key (e.g. `success`, `error`, `moderation`, `shield`), `getEmoji()` automatically detects it from `client.application.emojis.cache` and renders the custom Developer Portal emoji (`<:name:id>` / `<a:name:id>`) in all bot embeds and UI designs without requiring code changes!
   - **Official Emoji Naming Matrix**:
@@ -173,7 +174,7 @@ Guidelines and rules for AI coding assistants working in this repository.
   - **Application Emoji Scope Optimization**: Developer Portal Application Emojis are reserved strictly for core system tokens (`STATUS`, `CATEGORIES`, `ACTIONS`, `TELEMETRY`, `SECURITY`, `BRANDING`). Custom decoration or third-party emojis can be referenced via formatted strings (`<:name:id>`) without consuming application emoji quota.
 - **Manual Image & Asset Authoring Policy (Zero AI Image Generation)**: AI assistants MUST NEVER generate image assets or emojis via AI image tools. All image assets, banners, icons, dividers, and custom emojis are created and uploaded manually by the developer. AI assistants strictly consume, inspect, and synchronize the developer's custom Application Emojis via `npm run sync:emojis` (`npx ts-node src/scripts/sync-app-emojis.ts`).
 - **Pre-Inspection Application Emoji Requirement**: BEFORE creating or modifying any bot command or embed involving emojis, AI agents MUST execute `npx ts-node src/scripts/fetch-app-emojis.ts` (inside `apps/bot/`) to inspect all live custom Application Emojis uploaded to the Discord Developer Portal.
-- **Strict Black or White Embed Color Theme Policy**: All Discord Embeds must use strictly **Black** (`0x000001` / `#000000`) or **White** (`0xFFFFFF` / `#FFFFFF`) color themes for embed side borders. Colored borders (red, green, blue, yellow) are strictly prohibited to preserve Kuruttina's clean, minimalist INFJ aesthetic.
+- **Strict Black or White Embed Color Theme Policy & `createKuruttinaEmbed` Factory**: All Discord Embeds must use strictly **Black** (`0x000001` / `#000000`) or **White** (`0xFFFFFF` / `#FFFFFF`) color themes for embed side borders. Construct embeds using `createKuruttinaEmbed(client, options)` (`src/utils/embed-builder.ts`) to automatically enforce border styling, dynamic bot avatar URLs, and ISO timestamps. Use `sendErrorReply` and `sendSuccessReply` for standardized command feedback.
 
 ### 17. Multi-Scope Deployment & AWS Resource Efficiency for Affiliate/Custom Commands
 - **Multi-Scope Deployment Scopes**:

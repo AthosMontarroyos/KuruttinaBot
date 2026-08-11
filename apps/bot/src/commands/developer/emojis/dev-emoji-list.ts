@@ -1,10 +1,10 @@
-import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { SlashCommandBuilder } from 'discord.js';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
 import { getEmojiAppConfigs, withAppClient } from '../../../utils/multi-app-helper';
-import { getEmoji } from '../../../utils/emoji-resolver';
+import { getEmoji, getEmojis } from '../../../utils/emoji-resolver';
+import { createKuruttinaEmbed, sendErrorReply } from '../../../utils/embed-builder';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -31,12 +31,7 @@ export const command: CommandModule = {
       const fields: { name: string; value: string; inline: boolean }[] = [];
       let totalGlobalEmojis = 0;
 
-      const vaultEmoji = await getEmoji(ctx.client, 'VAULT');
-      const folderEmoji = await getEmoji(ctx.client, 'FOLDER');
-      const photoEmoji = await getEmoji(ctx.client, 'PHOTO');
-      const starEmoji = await getEmoji(ctx.client, 'STAR');
-      const labelEmoji = await getEmoji(ctx.client, 'LABEL');
-      const infoEmoji = await getEmoji(ctx.client, 'INFO');
+      const e = await getEmojis(ctx.client, ['VAULT', 'FOLDER', 'PHOTO', 'STAR', 'LABEL', 'INFO']);
 
       for (const appConfig of appConfigs) {
         try {
@@ -48,18 +43,18 @@ export const command: CommandModule = {
 
             if (appEmojis.size === 0) {
               fields.push({
-                name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (0/2000)`,
+                name: `${e.VAULT} App #${appConfig.id}: ${appConfig.name} (0/2000)`,
                 value: `*Nenhum emoji cadastrado nesta aplicação (Pasta: \`Pictures/emojis/${appConfig.sanitizedFolderName}\`)*`,
                 inline: false,
               });
             } else {
-              const staticCount = appEmojis.filter((e) => !e.animated).size;
-              const animCount = appEmojis.filter((e) => e.animated).size;
+              const staticCount = appEmojis.filter((emoji) => !emoji.animated).size;
+              const animCount = appEmojis.filter((emoji) => emoji.animated).size;
               const lines: string[] = [];
 
-              appEmojis.forEach((e) => {
-                const tag = e.toString();
-                lines.push(`${tag} \`${tag}\` | \`${e.name}\``);
+              appEmojis.forEach((emoji) => {
+                const tag = emoji.toString();
+                lines.push(`${tag} \`${tag}\` | \`${emoji.name}\``);
               });
 
               const chunkedValue = lines.join('\n');
@@ -69,8 +64,8 @@ export const command: CommandModule = {
                   : chunkedValue;
 
               fields.push({
-                name: `${vaultEmoji} App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - ${photoEmoji} Estáticos: ${staticCount} | ${starEmoji} Animados: ${animCount})`,
-                value: `**${folderEmoji} Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
+                name: `${e.VAULT} App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/2000 - ${e.PHOTO} Estáticos: ${staticCount} | ${e.STAR} Animados: ${animCount})`,
+                value: `**${e.FOLDER} Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
                 inline: false,
               });
             }
@@ -80,30 +75,23 @@ export const command: CommandModule = {
         }
       }
 
-      const embed: APIEmbed = {
-        title: `${infoEmoji} Catálogo Multi-App de Emojis do Developer Portal`,
-        description: `Exibindo todas as **${appConfigs.length}** aplicações vinculadas e a marcação formatada de cada emoji (\`<:nome:id>\` ou \`<a:nome:id>\`).\n**${labelEmoji} Total Global de Emojis:** \`${totalGlobalEmojis}\` registrado(s).`,
-        color: EMBED_COLORS.BLACK.number,
+      const embed = createKuruttinaEmbed(ctx.client, {
+        title: `${e.INFO} Catálogo Multi-App de Emojis do Developer Portal`,
+        description: `Exibindo todas as **${appConfigs.length}** aplicações vinculadas e a marcação formatada de cada emoji (\`<:nome:id>\` ou \`<a:nome:id>\`).\n**${e.LABEL} Total Global de Emojis:** \`${totalGlobalEmojis}\` registrado(s).`,
         fields,
-        footer: {
-          text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Use /dev-emoji-add para importar novos emojis`,
-          icon_url: ctx.client.user?.displayAvatarURL(),
-        },
-        timestamp: new Date().toISOString(),
-      };
+        footerText: 'Use /dev-emoji-add para importar novos emojis',
+      });
 
       await ctx.reply({ embeds: [embed], ephemeral: true });
     } catch (error: any) {
       console.error('❌ Erro ao listar emojis multi-app:', error);
       const errorEmoji = await getEmoji(ctx.client, 'ERROR');
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Erro ao Listar Emojis`,
-        description: `Ocorreu uma falha ao buscar os emojis das aplicações: \`${
-          error.message || error
-        }\``,
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Erro ao Listar Emojis`,
+        `Ocorreu uma falha ao buscar os emojis das aplicações: \`${error.message || error}\``
+      );
     }
   },
 };
+

@@ -4,13 +4,13 @@ import {
   TextChannel,
   NewsChannel,
   ThreadChannel,
-  APIEmbed,
   User,
 } from 'discord.js';
-import { EMBED_COLORS, DEFAULT_BOT_CONFIG, CooldownManager } from '@kuruttina/shared';
+import { CooldownManager } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmoji } from '../../../../utils/emoji-resolver';
+import { getEmoji, getEmojis } from '../../../../utils/emoji-resolver';
+import { createKuruttinaEmbed, sendErrorReply } from '../../../../utils/embed-builder';
 
 // 10-second cooldown per user to prevent API flooding
 const clearCooldowns = new CooldownManager(10);
@@ -50,12 +50,11 @@ export const command: CommandModule = {
     // 1. Authorization Guard (User must have Manage Messages permission)
     if (!ctx.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
       const errorEmoji = await getEmoji(ctx.client, 'ERROR');
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Permissão Insuficiente`,
-        description: 'Você precisa da permissão de **Gerenciar Mensagens** para utilizar este comando.',
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Permissão Insuficiente`,
+        'Você precisa da permissão de **Gerenciar Mensagens** para utilizar este comando.'
+      );
       return;
     }
 
@@ -63,12 +62,11 @@ export const command: CommandModule = {
     const cooldownLeft = clearCooldowns.check(ctx.user.id);
     if (cooldownLeft > 0) {
       const warningEmoji = await getEmoji(ctx.client, 'WARNING');
-      const errorEmbed: APIEmbed = {
-        title: `${warningEmoji} Aguarde um momento`,
-        description: `Aguarde \`${cooldownLeft}s\` para usar o comando de limpeza novamente.`,
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${warningEmoji} Aguarde um momento`,
+        `Aguarde \`${cooldownLeft}s\` para usar o comando de limpeza novamente.`
+      );
       return;
     }
 
@@ -83,12 +81,11 @@ export const command: CommandModule = {
       )
     ) {
       const errorEmoji = await getEmoji(ctx.client, 'ERROR');
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Canal Inválido`,
-        description: 'Este comando só pode ser executado em canais de texto do servidor.',
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Canal Inválido`,
+        'Este comando só pode ser executado em canais de texto do servidor.'
+      );
       return;
     }
 
@@ -102,13 +99,11 @@ export const command: CommandModule = {
       ])
     ) {
       const errorEmoji = await getEmoji(ctx.client, 'ERROR');
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Permissão do Bot Ausente`,
-        description:
-          'Eu preciso das permissões de **Gerenciar Mensagens** e **Ver Histórico de Mensagens** neste canal para executar a limpeza.',
-        color: EMBED_COLORS.BLACK.number,
-      };
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Permissão do Bot Ausente`,
+        'Eu preciso das permissões de **Gerenciar Mensagens** e **Ver Histórico de Mensagens** neste canal para executar a limpeza.'
+      );
       return;
     }
 
@@ -124,13 +119,11 @@ export const command: CommandModule = {
       const rawAmount = parseInt(ctx.args[0], 10);
       if (isNaN(rawAmount) || rawAmount < 1 || rawAmount > 200) {
         const warningEmoji = await getEmoji(ctx.client, 'WARNING');
-        const errorEmbed: APIEmbed = {
-          title: `${warningEmoji} Quantidade Inválida`,
-          description:
-            'Por favor, informe uma quantidade válida de mensagens entre **1** e **200**.\n\n*Exemplo:* `k!clear 50`',
-          color: EMBED_COLORS.BLACK.number,
-        };
-        await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+        await sendErrorReply(
+          ctx,
+          `${warningEmoji} Quantidade Inválida`,
+          'Por favor, informe uma quantidade válida de mensagens entre **1** e **200**.\n\n*Exemplo:* `k!clear 50`'
+        );
         return;
       }
       amountToClear = rawAmount;
@@ -183,23 +176,19 @@ export const command: CommandModule = {
         }
       }
 
-      // Resolve live Developer Portal emojis
-      const cleaningEmoji = await getEmoji(ctx.client, 'CLEANING');
-      const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
-      const trashEmoji = await getEmoji(ctx.client, 'TRASH');
-      const yesEmoji = await getEmoji(ctx.client, 'YES');
-      const waitEmoji = await getEmoji(ctx.client, 'WAIT');
+      // Batch resolve Developer Portal emojis concurrently
+      const e = await getEmojis(ctx.client, ['CLEANING', 'SUCCESS', 'TRASH', 'YES', 'WAIT']);
 
       const filterNotice = targetUser ? ` do usuário **${targetUser.tag}**` : '';
 
       const fields = [
         {
-          name: `${trashEmoji} Mensagens Solicitadas`,
+          name: `${e.TRASH} Mensagens Solicitadas`,
           value: `\`${amountToClear}\``,
           inline: true,
         },
         {
-          name: `${yesEmoji} Apagadas com Sucesso`,
+          name: `${e.YES} Apagadas com Sucesso`,
           value: `\`${totalDeleted}\``,
           inline: true,
         },
@@ -207,38 +196,29 @@ export const command: CommandModule = {
 
       if (skippedOldMessages) {
         fields.push({
-          name: `${waitEmoji} Trava de 14 Dias`,
+          name: `${e.WAIT} Trava de 14 Dias`,
           value: 'Algumas mensagens com mais de 14 dias não puderam ser apagadas e foram ignoradas automaticamente.',
           inline: false,
         });
       }
 
-      const successEmbed: APIEmbed = {
-        title: `${cleaningEmoji} Limpeza Concluída`,
-        description: `${successEmoji} Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
-        color: EMBED_COLORS.BLACK.number,
+      const successEmbed = createKuruttinaEmbed(ctx.client, {
+        title: `${e.CLEANING} Limpeza Concluída`,
+        description: `${e.SUCCESS} Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
         fields,
-        footer: {
-          text: DEFAULT_BOT_CONFIG.BOT_NAME,
-          icon_url: ctx.client.user?.displayAvatarURL(),
-        },
-        timestamp: new Date().toISOString(),
-      };
+      });
 
       await ctx.reply({ embeds: [successEmbed], ephemeral: true });
     } catch (error: any) {
       console.error('❌ [Clear Command Error]:', error);
 
       const errorEmoji = await getEmoji(ctx.client, 'ERROR');
-      const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Falha na Limpeza`,
-        description: `Ocorreu um erro ao tentar apagar as mensagens: \`${
-          error.message || error
-        }\``,
-        color: EMBED_COLORS.BLACK.number,
-      };
-
-      await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+      await sendErrorReply(
+        ctx,
+        `${errorEmoji} Falha na Limpeza`,
+        `Ocorreu um erro ao tentar apagar as mensagens: \`${error.message || error}\``
+      );
     }
   },
 };
+

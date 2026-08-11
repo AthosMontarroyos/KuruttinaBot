@@ -26,6 +26,8 @@ Master architecture skill connecting **`discord-bot-architect`** (Discord.js v14
    - Organize components into dedicated directories grouped strictly by utility, domain, and reusable layer.
 4. **Unified Full-Stack State**:
    - PostgreSQL serves as the single source of truth for dynamic bot runtime configurations and server settings.
+5. **Unified Rate-Limiting & Cooldowns (`CooldownManager`)**:
+   - Use `@kuruttina/shared` `CooldownManager` for both instance-based and static command/user rate-limiting across full-stack applications with automatic memory leak prevention.
 
 ## Shared Package (`packages/shared`) Structure
 

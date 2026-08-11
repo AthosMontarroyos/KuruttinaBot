@@ -51,6 +51,7 @@ export const EMOJI_KEYS = [
   'DICE',
   'DICE_ROLL',
   'DICE_ANIMATED',
+  'ROBOT',
 
   // Actions & Moderation
   'BAN',
@@ -78,6 +79,9 @@ export const EMOJI_KEYS = [
   'STATS',
   'VAULT',
   'ID',
+  'PING',
+  'GATEWAY',
+  'API',
 
   // UI & Layout Decorations
   'FOLDER',
@@ -101,6 +105,7 @@ export const EMOJI_KEYS = [
   'BOOK',
   'STACK_OF_BOOKS',
   'STAR',
+  'SERVER_BOOST',
   'BOOST',
   'NITRO',
 ] as const;
@@ -154,6 +159,7 @@ export const EMOJIS: Record<EmojiKey, string> = {
   DICE: '🎲',
   DICE_ROLL: '🎲',
   DICE_ANIMATED: '🎲',
+  ROBOT: '🤖',
   BAN: '🔨',
   KICK: '🥾',
   MUTE: '🔇',
@@ -177,6 +183,9 @@ export const EMOJIS: Record<EmojiKey, string> = {
   STATS: '📊',
   VAULT: '📦',
   ID: '🆔',
+  PING: '⚡',
+  GATEWAY: '📡',
+  API: '⚡',
   FOLDER: '📂',
   LABEL: '🏷️',
   DIAMOND_BLUE: '🔹',
@@ -196,6 +205,7 @@ export const EMOJIS: Record<EmojiKey, string> = {
   BOOK: '📖',
   STACK_OF_BOOKS: '📚',
   STAR: '⭐',
+  SERVER_BOOST: '🚀',
   BOOST: '🚀',
   NITRO: '⚡',
 };
@@ -240,7 +250,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'Command Categories & Games',
-    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'STAFF', 'DICE', 'DICE_ROLL', 'DICE_ANIMATED'],
+    keys: ['MODERATION', 'UTILITY', 'DEVELOPER', 'ADMIN', 'FUN', 'AFFILIATE', 'STAFF', 'DICE', 'DICE_ROLL', 'DICE_ANIMATED', 'ROBOT'],
   },
   {
     name: 'Actions & Moderation',
@@ -248,7 +258,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'System & Security',
-    keys: ['SHIELD', 'SECURITY', 'LOCK', 'UNLOCK', 'SETTINGS', 'LOGS', 'USER', 'GUILD', 'CROWN', 'STATS', 'VAULT', 'ID'],
+    keys: ['SHIELD', 'SECURITY', 'LOCK', 'UNLOCK', 'SETTINGS', 'LOGS', 'USER', 'GUILD', 'CROWN', 'STATS', 'VAULT', 'ID', 'PING', 'GATEWAY', 'API'],
   },
   {
     name: 'UI & Layout Decorations',
@@ -271,6 +281,6 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'Navigation & Branding',
-    keys: ['LINK', 'DOCUMENTATION', 'BOOK', 'STACK_OF_BOOKS', 'STAR', 'BOOST', 'NITRO'],
+    keys: ['LINK', 'DOCUMENTATION', 'BOOK', 'STACK_OF_BOOKS', 'STAR', 'SERVER_BOOST', 'BOOST', 'NITRO'],
   },
 ];

@@ -42,6 +42,11 @@ export const command: CommandModule = {
       const starEmoji = await getEmoji(ctx.client, 'STAR');
       const bulletEmoji = await getEmoji(ctx.client, 'BULLET');
       const warningEmoji = await getEmoji(ctx.client, 'WARNING');
+      const statsEmoji = await getEmoji(ctx.client, 'STATS');
+      const vaultEmoji = await getEmoji(ctx.client, 'VAULT');
+      const labelEmoji = await getEmoji(ctx.client, 'LABEL');
+      const idEmoji = await getEmoji(ctx.client, 'ID');
+      const userEmoji = await getEmoji(ctx.client, 'USER');
 
       const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
 
@@ -68,16 +73,16 @@ export const command: CommandModule = {
 
               const statusBadge = appConfig.isPrimary
                 ? `${crownEmoji} **Bot Principal**`
-                : `${folderEmoji} **Vault Secundário (REST)**`;
+                : `${vaultEmoji} **Vault Secundário (REST)**`;
 
               fields.push({
                 name: `App #${appConfig.id}: ${appConfig.name} (${statusBadge})`,
                 value: [
-                  `${bulletEmoji} **Bot User:** \`${appConfig.botTag || appConfig.name}\``,
-                  `${bulletEmoji} **Application ID:** \`${appConfig.appId || 'N/A'}\``,
-                  `${bulletEmoji} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
+                  `${bulletEmoji} ${userEmoji} **Bot User:** \`${appConfig.botTag || appConfig.name}\``,
+                  `${bulletEmoji} ${idEmoji} **Application ID:** \`${appConfig.appId || 'N/A'}\``,
+                  `${bulletEmoji} ${folderEmoji} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
                   `${bulletEmoji} ${photoEmoji} **Emojis Estáticos:** \`${staticCount}\` | ${starEmoji} **Animados:** \`${animCount}\``,
-                  `${bulletEmoji} **Uso de Cota:** \`${totalUsed}/${MAX_PER_APP}\` (${remaining} vagas restantes nesta app)`,
+                  `${bulletEmoji} ${labelEmoji} **Uso de Cota:** \`${totalUsed}/${MAX_PER_APP}\` (${remaining} vagas restantes)`,
                 ].join('\n'),
                 inline: false,
               });
@@ -111,7 +116,7 @@ export const command: CommandModule = {
         title: `${shieldEmoji} Gerenciador de App Vaults de Emojis`,
         description: [
           `Visualizando **${appConfigs.length}** aplicação(ões) de emojis configurada(s) no ecossistema da **Kuruttina**.\n`,
-          `📊 **Cota Global Registrada (2.000 emojis por app):**`,
+          `${statsEmoji} **Cota Global Registrada (2.000 emojis por app):**`,
           `${folderEmoji} **Total de Emojis:** \`${totalGlobal}/${totalCapacity}\` (${totalCapacity - totalGlobal} vagas disponíveis globalmente)`,
           `${photoEmoji} **Estáticos Total:** \`${totalStaticEmojis}\` | ${starEmoji} **Animados Total:** \`${totalAnimatedEmojis}\``,
         ].join('\n'),

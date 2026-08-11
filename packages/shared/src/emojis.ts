@@ -12,6 +12,8 @@ export const EMOJI_KEYS = [
   'VERIFIED',
   'DISMISS',
   'OK',
+  'YES',
+  'WHAT',
 
   // Expressions & INFJ Persona
   'OPS',
@@ -25,6 +27,7 @@ export const EMOJI_KEYS = [
   'CLEANING',
   'THUMBUP',
   'PHOTO',
+  'TAKING_PHOTO',
   'SHOOTING',
   'POINTUP',
   'INSPIRED',
@@ -33,6 +36,9 @@ export const EMOJI_KEYS = [
   'SHRUG',
   'FACEPALM',
   'COFFEE',
+  'HEART',
+  'LOVE',
+  'LISTENING_MUSIC',
 
   // Command Categories & Games
   'MODERATION',
@@ -57,9 +63,11 @@ export const EMOJI_KEYS = [
   'TRASH',
   'SHARE',
   'SHARE_SCREEN',
+  'RENDER',
 
   // System & Security
   'SHIELD',
+  'SECURITY',
   'LOCK',
   'UNLOCK',
   'SETTINGS',
@@ -67,9 +75,13 @@ export const EMOJI_KEYS = [
   'USER',
   'GUILD',
   'CROWN',
+  'STATS',
+  'VAULT',
+  'ID',
 
   // UI & Layout Decorations
   'FOLDER',
+  'LABEL',
   'DIAMOND_BLUE',
   'DIAMOND_LARGE',
   'BULLET',
@@ -89,6 +101,8 @@ export const EMOJI_KEYS = [
   'BOOK',
   'STACK_OF_BOOKS',
   'STAR',
+  'BOOST',
+  'NITRO',
 ] as const;
 
 export type EmojiKey = (typeof EMOJI_KEYS)[number];
@@ -105,6 +119,8 @@ export const EMOJIS: Record<EmojiKey, string> = {
   VERIFIED: '☑️',
   DISMISS: '🚫',
   OK: '👌',
+  YES: '✅',
+  WHAT: '❓',
   OPS: '😳',
   DANCING: '💃',
   KISS: '😘',
@@ -116,6 +132,7 @@ export const EMOJIS: Record<EmojiKey, string> = {
   CLEANING: '🧹',
   THUMBUP: '👍',
   PHOTO: '🖼️',
+  TAKING_PHOTO: '📸',
   SHOOTING: '💫',
   POINTUP: '☝️',
   INSPIRED: '💡',
@@ -124,6 +141,9 @@ export const EMOJIS: Record<EmojiKey, string> = {
   SHRUG: '🤷',
   FACEPALM: '🤦',
   COFFEE: '☕',
+  HEART: '❤️',
+  LOVE: '💖',
+  LISTENING_MUSIC: '🎧',
   MODERATION: '🛡️',
   UTILITY: '🧰',
   DEVELOPER: '⚙️',
@@ -144,7 +164,9 @@ export const EMOJIS: Record<EmojiKey, string> = {
   TRASH: '🗑️',
   SHARE: '📢',
   SHARE_SCREEN: '🖥️',
+  RENDER: '🎬',
   SHIELD: '🛡️',
+  SECURITY: '🛡️',
   LOCK: '🔒',
   UNLOCK: '🔓',
   SETTINGS: '⚙️',
@@ -152,7 +174,11 @@ export const EMOJIS: Record<EmojiKey, string> = {
   USER: '👤',
   GUILD: '🏰',
   CROWN: '👑',
+  STATS: '📊',
+  VAULT: '📦',
+  ID: '🆔',
   FOLDER: '📂',
+  LABEL: '🏷️',
   DIAMOND_BLUE: '🔹',
   DIAMOND_LARGE: '🔷',
   BULLET: '•',
@@ -170,6 +196,8 @@ export const EMOJIS: Record<EmojiKey, string> = {
   BOOK: '📖',
   STACK_OF_BOOKS: '📚',
   STAR: '⭐',
+  BOOST: '🚀',
+  NITRO: '⚡',
 };
 
 export interface EmojiCategory {
@@ -180,7 +208,7 @@ export interface EmojiCategory {
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     name: 'Status & Responses',
-    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'VERIFIED', 'DISMISS', 'OK'],
+    keys: ['SUCCESS', 'ERROR', 'WARNING', 'INFO', 'LOADING', 'VERIFIED', 'DISMISS', 'OK', 'YES', 'WHAT'],
   },
   {
     name: 'Expressions & INFJ Persona',
@@ -196,6 +224,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
       'CLEANING',
       'THUMBUP',
       'PHOTO',
+      'TAKING_PHOTO',
       'SHOOTING',
       'POINTUP',
       'INSPIRED',
@@ -204,6 +233,9 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
       'SHRUG',
       'FACEPALM',
       'COFFEE',
+      'HEART',
+      'LOVE',
+      'LISTENING_MUSIC',
     ],
   },
   {
@@ -212,16 +244,17 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'Actions & Moderation',
-    keys: ['BAN', 'KICK', 'MUTE', 'UNMUTE', 'CLEAR', 'SEARCH', 'ADD', 'TRASH', 'SHARE', 'SHARE_SCREEN'],
+    keys: ['BAN', 'KICK', 'MUTE', 'UNMUTE', 'CLEAR', 'SEARCH', 'ADD', 'TRASH', 'SHARE', 'SHARE_SCREEN', 'RENDER'],
   },
   {
     name: 'System & Security',
-    keys: ['SHIELD', 'LOCK', 'UNLOCK', 'SETTINGS', 'LOGS', 'USER', 'GUILD', 'CROWN'],
+    keys: ['SHIELD', 'SECURITY', 'LOCK', 'UNLOCK', 'SETTINGS', 'LOGS', 'USER', 'GUILD', 'CROWN', 'STATS', 'VAULT', 'ID'],
   },
   {
     name: 'UI & Layout Decorations',
     keys: [
       'FOLDER',
+      'LABEL',
       'DIAMOND_BLUE',
       'DIAMOND_LARGE',
       'BULLET',
@@ -238,6 +271,6 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     name: 'Navigation & Branding',
-    keys: ['LINK', 'DOCUMENTATION', 'BOOK', 'STACK_OF_BOOKS', 'STAR'],
+    keys: ['LINK', 'DOCUMENTATION', 'BOOK', 'STACK_OF_BOOKS', 'STAR', 'BOOST', 'NITRO'],
   },
 ];

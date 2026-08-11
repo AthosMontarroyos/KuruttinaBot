@@ -1,7 +1,7 @@
 {
-  "total": 68,
+  "total": 82,
   "totalApps": 2,
-  "lastSyncedAt": "2026-08-11T14:55:51.960Z",
+  "lastSyncedAt": "2026-08-11T15:34:42.408Z",
   "emojis": {
     "ops": {
       "name": "ops",
@@ -15,7 +15,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.592Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "dancing": {
       "name": "dancing",
@@ -29,7 +29,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.593Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "kiss": {
       "name": "kiss",
@@ -43,7 +43,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.593Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "cry": {
       "name": "cry",
@@ -57,7 +57,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.593Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "thinking": {
       "name": "thinking",
@@ -71,7 +71,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.593Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "search": {
       "name": "search",
@@ -85,7 +85,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.593Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "warning": {
       "name": "warning",
@@ -99,7 +99,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.868Z"
     },
     "error": {
       "name": "error",
@@ -113,7 +113,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
     "sucess": {
       "name": "sucess",
@@ -127,7 +127,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
     "dismiss": {
       "name": "dismiss",
@@ -141,7 +141,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
     "appear": {
       "name": "appear",
@@ -155,7 +155,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
     "hehe": {
       "name": "hehe",
@@ -169,7 +169,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
     "anger": {
       "name": "Anger",
@@ -183,7 +183,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.594Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
     "cleaning": {
       "name": "cleaning",
@@ -197,21 +197,21 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.869Z"
     },
-    "photo": {
-      "name": "photo",
+    "taking_photo": {
+      "name": "taking_photo",
       "id": "1536162420232294490",
-      "format": "<:photo:1536162420232294490>",
+      "format": "<:taking_photo:1536162420232294490>",
       "animated": false,
-      "filename": "photo.png",
-      "localPath": "Pictures/emojis/KuruttinaBotEmojis/photo.png",
+      "filename": "taking_photo.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/taking_photo.png",
       "cdnUrl": "https://cdn.discordapp.com/emojis/1536162420232294490.png?size=256&quality=lossless",
       "appIndex": 1,
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.959Z"
     },
     "shooting": {
       "name": "shooting",
@@ -225,7 +225,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.959Z"
     },
     "pointup": {
       "name": "pointup",
@@ -239,7 +239,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "inspired": {
       "name": "inspired",
@@ -253,7 +253,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "wait": {
       "name": "wait",
@@ -267,7 +267,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "thumbup": {
       "name": "thumbup",
@@ -281,7 +281,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "reading": {
       "name": "reading",
@@ -295,7 +295,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.595Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "lock": {
       "name": "lock",
@@ -309,7 +309,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "unlock": {
       "name": "unlock",
@@ -323,7 +323,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "left_arrow": {
       "name": "left_arrow",
@@ -337,7 +337,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.960Z"
     },
     "right_arrow": {
       "name": "right_arrow",
@@ -351,7 +351,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.961Z"
     },
     "loading": {
       "name": "loading",
@@ -365,7 +365,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.961Z"
     },
     "info": {
       "name": "info",
@@ -379,7 +379,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.961Z"
     },
     "moderation": {
       "name": "moderation",
@@ -393,7 +393,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "utility": {
       "name": "utility",
@@ -407,7 +407,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.596Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "fun": {
       "name": "fun",
@@ -421,7 +421,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "affiliate": {
       "name": "AFFILIATE",
@@ -435,7 +435,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "kick": {
       "name": "kick",
@@ -449,7 +449,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "mute": {
       "name": "mute",
@@ -463,7 +463,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "unmute": {
       "name": "unmute",
@@ -477,7 +477,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "user": {
       "name": "user",
@@ -491,7 +491,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.962Z"
     },
     "crown": {
       "name": "crown",
@@ -505,7 +505,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.963Z"
     },
     "line": {
       "name": "line",
@@ -519,7 +519,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.963Z"
     },
     "coffee": {
       "name": "coffee",
@@ -533,7 +533,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.597Z"
+      "updatedAt": "2026-08-11T15:34:36.963Z"
     },
     "verified": {
       "name": "verified",
@@ -547,21 +547,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
-    },
-    "star": {
-      "name": "star",
-      "id": "1536362450465722549",
-      "format": "<a:star:1536362450465722549>",
-      "animated": true,
-      "filename": "star.gif",
-      "localPath": "Pictures/emojis/KuruttinaBotEmojis/star.gif",
-      "cdnUrl": "https://cdn.discordapp.com/emojis/1536362450465722549.gif?size=256&quality=lossless",
-      "appIndex": 1,
-      "appName": "Kuruttina",
-      "appFolder": "KuruttinaBotEmojis",
-      "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.963Z"
     },
     "pink_butterfly_divider": {
       "name": "pink_butterfly_divider",
@@ -575,7 +561,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.963Z"
     },
     "folder": {
       "name": "folder",
@@ -589,7 +575,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.963Z"
     },
     "guild": {
       "name": "guild",
@@ -603,7 +589,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "home": {
       "name": "home",
@@ -617,7 +603,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "logs": {
       "name": "logs",
@@ -631,7 +617,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "settings": {
       "name": "settings",
@@ -645,7 +631,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "developer": {
       "name": "developer",
@@ -659,7 +645,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.598Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "shield": {
       "name": "shield",
@@ -673,7 +659,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "ban": {
       "name": "ban",
@@ -687,7 +673,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "ok": {
       "name": "ok",
@@ -701,7 +687,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "add": {
       "name": "add",
@@ -715,7 +701,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "trash": {
       "name": "trash",
@@ -729,7 +715,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "pin": {
       "name": "pin",
@@ -743,7 +729,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.964Z"
     },
     "link": {
       "name": "link",
@@ -757,7 +743,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "book": {
       "name": "book",
@@ -771,7 +757,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "stackofbooks": {
       "name": "Stackofbooks",
@@ -785,7 +771,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "documentation": {
       "name": "Documentation",
@@ -799,7 +785,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.599Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "share": {
       "name": "share",
@@ -813,7 +799,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.600Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "share_screen": {
       "name": "share_screen",
@@ -827,7 +813,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.600Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "shrug": {
       "name": "Shrug",
@@ -841,7 +827,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.600Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "facepalm": {
       "name": "facepalm",
@@ -855,7 +841,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.600Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "staff": {
       "name": "staff",
@@ -869,7 +855,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.600Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "admin": {
       "name": "admin",
@@ -883,7 +869,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.601Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "diceroll": {
       "name": "DiceRoll",
@@ -897,7 +883,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.601Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "dice": {
       "name": "Dice",
@@ -911,7 +897,7 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.601Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
     },
     "dicerooling": {
       "name": "DiceRooling",
@@ -925,7 +911,217 @@
       "appName": "Kuruttina",
       "appFolder": "KuruttinaBotEmojis",
       "appId": "1517278594576027799",
-      "updatedAt": "2026-08-11T14:55:48.601Z"
+      "updatedAt": "2026-08-11T15:34:36.965Z"
+    },
+    "photo": {
+      "name": "photo",
+      "id": "1536752204583538718",
+      "format": "<:photo:1536752204583538718>",
+      "animated": false,
+      "filename": "photo.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/photo.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536752204583538718.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:37.174Z"
+    },
+    "stats": {
+      "name": "stats",
+      "id": "1536752312339669032",
+      "format": "<:stats:1536752312339669032>",
+      "animated": false,
+      "filename": "stats.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/stats.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536752312339669032.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:37.385Z"
+    },
+    "star": {
+      "name": "star",
+      "id": "1536753102940803073",
+      "format": "<:star:1536753102940803073>",
+      "animated": false,
+      "filename": "star.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/star.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536753102940803073.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:37.610Z"
+    },
+    "boost": {
+      "name": "boost",
+      "id": "1536753347611336786",
+      "format": "<a:boost:1536753347611336786>",
+      "animated": true,
+      "filename": "boost.gif",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/boost.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536753347611336786.gif?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:37.819Z"
+    },
+    "nitro": {
+      "name": "nitro",
+      "id": "1536753484467011706",
+      "format": "<:nitro:1536753484467011706>",
+      "animated": false,
+      "filename": "nitro.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/nitro.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536753484467011706.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:38.015Z"
+    },
+    "vault": {
+      "name": "vault",
+      "id": "1536754350070964285",
+      "format": "<:vault:1536754350070964285>",
+      "animated": false,
+      "filename": "vault.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/vault.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536754350070964285.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:38.227Z"
+    },
+    "label": {
+      "name": "label",
+      "id": "1536754597081645147",
+      "format": "<:label:1536754597081645147>",
+      "animated": false,
+      "filename": "label.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/label.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536754597081645147.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:38.473Z"
+    },
+    "id": {
+      "name": "ID",
+      "id": "1536755190412218388",
+      "format": "<:ID:1536755190412218388>",
+      "animated": false,
+      "filename": "ID.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/ID.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536755190412218388.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:38.700Z"
+    },
+    "security": {
+      "name": "Security",
+      "id": "1536755617266401490",
+      "format": "<:Security:1536755617266401490>",
+      "animated": false,
+      "filename": "Security.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/Security.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536755617266401490.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:38.907Z"
+    },
+    "yes": {
+      "name": "Yes",
+      "id": "1536755674225311744",
+      "format": "<:Yes:1536755674225311744>",
+      "animated": false,
+      "filename": "Yes.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/Yes.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536755674225311744.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:39.127Z"
+    },
+    "heart": {
+      "name": "Heart",
+      "id": "1536755725466861729",
+      "format": "<a:Heart:1536755725466861729>",
+      "animated": true,
+      "filename": "Heart.gif",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/Heart.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536755725466861729.gif?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:39.353Z"
+    },
+    "listening_music": {
+      "name": "listening_music",
+      "id": "1536756198727229622",
+      "format": "<:listening_music:1536756198727229622>",
+      "animated": false,
+      "filename": "listening_music.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/listening_music.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536756198727229622.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:39.579Z"
+    },
+    "what": {
+      "name": "What",
+      "id": "1536757193120940082",
+      "format": "<:What:1536757193120940082>",
+      "animated": false,
+      "filename": "What.png",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/What.png",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536757193120940082.png?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:39.788Z"
+    },
+    "render": {
+      "name": "Render",
+      "id": "1536758049241301073",
+      "format": "<a:Render:1536758049241301073>",
+      "animated": true,
+      "filename": "Render.gif",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/Render.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536758049241301073.gif?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:39.992Z"
+    },
+    "love": {
+      "name": "Love",
+      "id": "1536758443203887104",
+      "format": "<a:Love:1536758443203887104>",
+      "animated": true,
+      "filename": "Love.gif",
+      "localPath": "Pictures/emojis/KuruttinaBotEmojis/Love.gif",
+      "cdnUrl": "https://cdn.discordapp.com/emojis/1536758443203887104.gif?size=256&quality=lossless",
+      "appIndex": 1,
+      "appName": "Kuruttina",
+      "appFolder": "KuruttinaBotEmojis",
+      "appId": "1517278594576027799",
+      "updatedAt": "2026-08-11T15:34:40.203Z"
     },
     "anan_hmm": {
       "name": "anan_hmm",
@@ -939,7 +1135,7 @@
       "appName": "Manosaba Girls Emojis",
       "appFolder": "ManosabaGirlsEmojis",
       "appId": "1536078020597653515",
-      "updatedAt": "2026-08-11T14:55:51.745Z"
+      "updatedAt": "2026-08-11T15:34:42.406Z"
     },
     "anan_laugh": {
       "name": "anan_laugh",
@@ -953,7 +1149,7 @@
       "appName": "Manosaba Girls Emojis",
       "appFolder": "ManosabaGirlsEmojis",
       "appId": "1536078020597653515",
-      "updatedAt": "2026-08-11T14:55:51.958Z"
+      "updatedAt": "2026-08-11T15:34:42.407Z"
     }
   }
 }

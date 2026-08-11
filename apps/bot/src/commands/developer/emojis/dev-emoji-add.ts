@@ -97,7 +97,7 @@ function extractEmojiName(
 
 /**
  * Smart Prefix Argument Parser:
- * Intelligently classifies prefix tokens into explicitName, rawEmojiInput (URL/emoji tag), and targetAppIndex.
+ * Token order: k!dev-emoji-add <emoji_ou_url> [app_id] [nome]
  */
 function parsePrefixEmojiAddArgs(args: string[], attachment: Attachment | null) {
   let explicitName: string | null = null;
@@ -108,7 +108,7 @@ function parsePrefixEmojiAddArgs(args: string[], attachment: Attachment | null) 
     const token = args[i].trim();
     if (!token) continue;
 
-    // Check flag syntax: app:2 or --app=2 or app=2
+    // Flag syntax: app:2 or --app=2
     const flagMatch = token.match(/^(?:--)?app[:=]?(\d+)$/i);
     if (flagMatch) {
       targetAppIndex = parseInt(flagMatch[1], 10);
@@ -121,7 +121,7 @@ function parsePrefixEmojiAddArgs(args: string[], attachment: Attachment | null) 
       continue;
     }
 
-    // Check custom emoji tag (<a:name:id> or <:name:id>) or HTTP URL
+    // Custom emoji tag (<a:name:id> or <:name:id>) or HTTP URL
     if (token.startsWith('<a:') || token.startsWith('<:') || token.startsWith('http://') || token.startsWith('https://')) {
       if (!rawEmojiInput) {
         rawEmojiInput = token;
@@ -129,7 +129,7 @@ function parsePrefixEmojiAddArgs(args: string[], attachment: Attachment | null) 
       continue;
     }
 
-    // Check standalone number (App ID like "2" or "#2")
+    // Standalone number (App ID like "2" or "#2")
     const numberMatch = token.match(/^#?(\d+)$/);
     if (numberMatch) {
       const val = parseInt(numberMatch[1], 10);
@@ -139,7 +139,7 @@ function parsePrefixEmojiAddArgs(args: string[], attachment: Attachment | null) 
       }
     }
 
-    // Otherwise token is explicit name!
+    // Otherwise token is explicit name override!
     if (!explicitName && !/^\d+$/.test(token)) {
       explicitName = token;
     }
@@ -164,16 +164,16 @@ export const command: CommandModule = {
         .setDescription('Arquivo de imagem (PNG, GIF, WEBP) para enviar')
         .setRequired(false)
     )
-    .addStringOption((option) =>
-      option
-        .setName('nome')
-        .setDescription('Nome customizado do emoji (opcional - extraído automaticamente se omitido)')
-        .setRequired(false)
-    )
     .addIntegerOption((option) =>
       option
         .setName('app')
         .setDescription('ID da App Vault de destino (ex: 1 para Kuruttina, 2 para Emojis)')
+        .setRequired(false)
+    )
+    .addStringOption((option) =>
+      option
+        .setName('nome')
+        .setDescription('Nome customizado do emoji (opcional - extraído automaticamente se omitido)')
         .setRequired(false)
     ),
 
@@ -181,19 +181,17 @@ export const command: CommandModule = {
   category: 'developer',
   subCategory: 'emojis',
   guide: {
-    syntax: 'k!dev-emoji-add <emoji_ou_url> [nome] [app_id] ou /dev-emoji-add emoji:<emoji> [nome:<nome>] [app:<id>]',
+    syntax: 'k!dev-emoji-add <emoji_ou_url> [app_id] [nome] ou /dev-emoji-add emoji:<emoji> [app:<id>] [nome:<nome>]',
     examples: [
-      '/dev-emoji-add emoji:<a:shooting:1492107771510919300> app:2',
       'k!dev-emoji-add <a:kiss:1492107771510919300> 2',
-      'k!dev-emoji-add <a:kiss:1492107771510919300> meu_nome 2',
-      'k!dev-emoji-add https://example.com/image.png app:2',
+      'k!dev-emoji-add <a:kiss:1492107771510919300> 2 meu_nome_customizado',
+      '/dev-emoji-add emoji:<a:shooting:1492107771510919300> app:2',
     ],
     detailedDescription:
-      'Baixa a imagem de um emoji customizado ou URL e cadastra diretamente no Discord Developer Portal de uma das aplicações vinculadas. O nome é extraído automaticamente caso omitido.',
+      'Baixa a imagem de um emoji customizado ou URL e cadastra diretamente no Discord Developer Portal de uma das aplicações vinculadas. O nome é opcional e extraído automaticamente.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
-    // Restrito a Desenvolvedores / Servidor Dev
     const isAllowed = await PermissionGuard.enforceDevOnly(ctx);
     if (!isAllowed) return;
 
@@ -207,8 +205,8 @@ export const command: CommandModule = {
     if (ctx.isSlash && ctx.slashInteraction) {
       rawEmojiInput = ctx.slashInteraction.options.getString('emoji');
       fileAttachment = ctx.slashInteraction.options.getAttachment('arquivo');
-      explicitName = ctx.slashInteraction.options.getString('nome');
       targetAppIndex = ctx.slashInteraction.options.getInteger('app');
+      explicitName = ctx.slashInteraction.options.getString('nome');
     } else {
       fileAttachment = ctx.message?.attachments.first() || null;
       const parsed = parsePrefixEmojiAddArgs(ctx.args, fileAttachment);
@@ -224,7 +222,7 @@ export const command: CommandModule = {
       const errorEmbed: APIEmbed = {
         title: `${warningEmoji} Nome do Emoji Não Identificado`,
         description:
-          'Não foi possível extrair o nome do emoji automaticamente. Forneça o nome explicitamente: `/dev-emoji-add emoji:<emoji> nome:meu_emoji` ou `k!dev-emoji-add <emoji> meu_nome 2`',
+          'Não foi possível extrair o nome do emoji automaticamente. Forneça o nome no final: `k!dev-emoji-add <emoji> 2 meu_nome` ou `/dev-emoji-add emoji:<emoji> app:2 nome:meu_nome`',
         color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });

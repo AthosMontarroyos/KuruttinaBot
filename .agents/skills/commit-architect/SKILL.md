@@ -17,8 +17,11 @@ Before running `git add` or `git commit`, ALWAYS execute the following security 
    Ensure `.env`, `.env.local`, and sensitive credential files are explicitly ignored in `.gitignore`.
 2. **Check Staged & Untracked Files**:
    Run `git status` and inspect the list of changed files.
-3. **ZERO-LEAK GUARANTEE**:
+3. **Run Gitleaks Secret Scanner**:
+   Execute `gitleaks detect --staged --verbose` to verify zero credentials exist in staged changes.
+4. **ZERO-LEAK GUARANTEE**:
    Under NO CIRCUMSTANCES should `.env` files, API keys, Discord Bot Tokens, or database password strings ever be staged or committed.
+
 
 ---
 
@@ -74,11 +77,8 @@ When this skill is triggered:
    git commit -m "<type>: <description>"
    ```
 
-5. **Synchronize with Remote (GitHub)**:
-   Push committed changes to `origin main` to keep the GitHub repository in sync:
-   ```bash
-   git push origin main
-   ```
+5. **NO Automatic `git push` (Local Commit Only)**:
+   Do NOT execute `git push` automatically. Keep all commits strictly local (`git commit`). Only push to remote (`git push origin main`) when the user explicitly requests a push!
 
 6. **Report to User**:
-   Provide a brief summary of the committed files and the commit hash/link.
+   Provide a brief summary of the committed files and the commit hash.

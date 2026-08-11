@@ -44,6 +44,8 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **`copywriting`**: Specialized skill for persuasive headlines, CTAs, landing page copy, value propositions, and ENTP voice alignment.
 - **`commit-architect`**: Specialized skill for executing atomic Conventional Commits with pre-commit security checks (.env shielding) and GitHub synchronization.
 - **`impeccable`**: Design framework and audit tool for frontend UI craft.
+- **`security-architect`**: Specialized skill for project security checklist, zero-leak credential shielding, GDPR/LGPD compliance, Supabase RLS, and zero-eval custom command validation.
+
 
 ## Core Rules & Principles
 
@@ -52,8 +54,9 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Zero Code Duplication**: Avoid duplicating logic, types, query snippets, UI components, or validation rules across files.
 - **Abstraction & Reuse**: Extract reusable logic into helper utilities (`src/utils/`), custom React hooks (`src/hooks/`), shared TypeScript interfaces (`src/types/`), or base service classes.
 
-### 2. Frequent & Proactive Git Commits
-- **Mandatory Policy**: Always commit changes as soon as a feature, fix, or code refactoring step is completed.
+### 2. Frequent & Proactive Local Git Commits (NO Automatic `git push`)
+- **Mandatory Policy**: Always commit changes locally (`git commit`) as soon as a feature, fix, or code refactoring step is completed.
+- **NO Automatic `git push`**: NEVER execute `git push` automatically. Keep all commits strictly local (`git commit`). Only push to remote (`git push origin main`) when explicitly requested by the user.
 - **Granular Commits**: Do not accumulate massive uncommitted changes. Perform clean, atomic commits after code edits pass basic checks.
 - **Conventional Commits**: Format commit messages clearly using conventional conventions (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `style:`).
 
@@ -85,6 +88,8 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **`.env.example` Template**: Public templates (`.env.example`) must contain placeholder text only (`your_token_here`).
 - **Console & Error Log Sanitization**: Never log sensitive credential values or environment strings to stdout, stderr, or external crash reports.
 - **Gateway Intents**: Minimize privileged intents (avoid `MessageContent` or `GuildMembers` unless strictly required).
+- **Mandatory Gitleaks Repository Link**: **Gitleaks** MUST remain active, linked, and enforced across the repository (via pre-commit hooks and GitHub Actions workflows). Gitleaks automated secret scanning MUST run on every commit and pull request to detect and block credentials before pushing to remote.
+
 
 ### 8. Strict User & Guild Data Privacy & Protection Policy (100% Care)
 - **100% Data Care Policy**: All user personal data (user IDs, avatars, preferences) and guild server data (server IDs, roles, moderation logs, settings) must be handled with total privacy, confidentiality, and security.
@@ -95,7 +100,11 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ### 9. Never Trust the Frontend & Zero-Eval Command Security Policy
 - **MANDATORY SECURITY PRINCIPLE**: Never rely on client-side / frontend validation, checks, or state. All inputs and custom command definitions are considered untrusted.
+> 🚨 **ZERO FRONTEND TRUST & ZERO DIRECT DB ON FRONTEND (ABSOLUTE POLICY)**:
+> Under NO CIRCUMSTANCES should any database credentials, direct DB connection strings, table queries, or `SUPABASE_SERVICE_ROLE_KEY` exist in or execute from client-side browser/frontend code (`apps/website`). NEVER trust frontend state or validation. ALL database operations MUST run strictly server-side (Node.js bot backend or Next.js Server Actions / API Routes). Client checks are visual UX hints only, NEVER security.
+
 - **Pillar 1: Absolute Zero-Eval Policy (No Dynamic Code Execution)**: NEVER use `eval()`, `new Function()`, or dynamic script execution for custom/affiliate commands. All custom/affiliate commands stored in Supabase MUST be **Declarative Data Structures (JSON templates)** rendered by a fixed, type-safe execution engine (`customCommandPayloadSchema` in `packages/shared/src/sanitizer.ts`).
+
 - **Pillar 2: Server-Side Schema Validation & Input Sanitization (Zod)**: Validate all command options, text payloads, and inputs using strict Zod schemas and `sanitizeText()` (`@kuruttina/shared`) to strip control characters, dangerous tags, and malicious script tokens.
 - **Pillar 3: Database Parameterized Queries (Supabase SDK Only)**: NEVER concatenate raw SQL strings. Always use parameterized `@supabase/supabase-js` SDK queries to guarantee 100% SQL injection immunity.
 - **Pillar 4: Server-Side Authorization Enforcement (`PermissionGuard`)**: Every API route, command execution, or bot action must re-verify user identity (Discord OAuth2 / User ID) and server permissions (Dev Guild / Manage Guild) on the server before executing (`PermissionGuard.enforceDevOnly`, `PermissionGuard.enforceAdminOnly`). Client checks are UX only, never security.
@@ -103,9 +112,18 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Pillar 6: Ping Spam Immunity (`allowedMentions: { parse: [] }`)**: `CommandContext.reply()` enforces `{ allowedMentions: { parse: [] } }` by default for all bot and custom command responses to prevent users/affiliates from triggering mass `@everyone`, `@here`, or role mentions.
 - **Pillar 7: In-Memory Rate Limiting & Cooldown Engine (`CooldownManager`)**: Enforce per-user and per-guild command cooldowns in memory (`CooldownManager`) to prevent spam, API rate limiting, and database flooding.
 - **Pillar 8: Component V2 Namespacing (`createCustomId` / `parseCustomId`)**: All Component V2 buttons and select menus MUST use namespaced custom IDs (`scope:guildId:commandId:action`) to prevent ID collisions or cross-guild button hijacking.
+- **Pillar 9: Zero-Trust Input & File Rejection Policy**: Treat ALL user inputs, typed text, and uploaded files as untrusted ("guilty until proven innocent"). Never accept, parse, process, or execute unverified user input or untrusted files without strict server-side Zod validation, MIME-type checks, and sanitization.
+- **Pillar 10: Anti-IDOR & Mandatory Identity Proofing Policy**: EVERY HTTP request, API route, and server action MUST cryptographically verify session tokens (Discord OAuth2 / Supabase session) on the server. NEVER trust or accept user IDs sent in client requests, localStorage, or frontend state to determine user identity — identity MUST be extracted strictly from the server-side session token. Users CANNOT swap, alter, or spoof their `userId` on the frontend. The server MUST prove `authenticatedSession.user.id` matches the target resource owner before reading or mutating data. Zero random ID access allowed.
+
+
+
 
 ### 10. Supabase Security & RLS Hardening Policy (Zero AI Fragility)
+> 🚨 **100% MANDATORY ROW LEVEL SECURITY (RLS) POLICY**:
+> EVERY Supabase table MUST have Row Level Security enabled (`ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;`) BEFORE deployment. NEVER leave any table unshielded or without active RLS policies. Permissive policies (`FOR ALL USING (true)`) are STRICTLY FORBIDDEN.
+
 - **Mandatory Row Level Security (RLS)**: EVERY Supabase table MUST have Row Level Security enabled (`ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;`). NEVER leave tables unshielded.
+
 - **Strict Anti-Wildcard Policies**: NEVER create permissive policies like `FOR ALL USING (true)`. Scopes MUST explicitly verify `auth.uid()` or checked server permissions.
 - **Service Role Key Shield**: `SUPABASE_SERVICE_ROLE_KEY` and `DATABASE_URL` must ONLY exist in Node.js server environments or Next.js server actions. NEVER expose them to the browser or `NEXT_PUBLIC_` variables.
 - **Type-Safe SDK Queries**: Use parameterized `@supabase/supabase-js` SDK queries with auto-generated TypeScript schema types. Avoid raw SQL string concatenation.

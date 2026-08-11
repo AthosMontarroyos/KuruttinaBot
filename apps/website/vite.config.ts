@@ -12,7 +12,10 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use('/assets/emojis', (req, res, next) => {
           const filename = req.url?.replace(/^\//, '') || '';
-          const filePath = path.resolve(__dirname, '../../Pictures/emojis', filename);
+          let filePath = path.resolve(__dirname, '../../Pictures/emojis/KuruttinaBotEmojis', filename);
+          if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+            filePath = path.resolve(__dirname, '../../Pictures/emojis', filename);
+          }
 
           if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
             const ext = path.extname(filePath).toLowerCase();

@@ -2,14 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { Client, GatewayIntentBits } from 'discord.js';
+import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
 const rootDir = path.resolve(__dirname, '../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
-/**
- * Converts a local image file to a base64 Data URI string.
- */
 function fileToDataUri(filePath: string): string {
   const fileBuffer = fs.readFileSync(filePath);
   const ext = path.extname(filePath).replace('.', '').toLowerCase();
@@ -17,41 +15,39 @@ function fileToDataUri(filePath: string): string {
   return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
 }
 
-/**
- * Uploads a local image file as a new Application Emoji to the Discord Developer Portal.
- */
-async function uploadApplicationEmoji(emojiName: string, imagePath: string): Promise<void> {
-  const token = process.env.DISCORD_TOKEN;
-  if (!token) {
-    console.error('❌ DISCORD_TOKEN não encontrado no arquivo .env da raiz.');
-    process.exit(1);
-  }
-
-  if (!fs.existsSync(imagePath)) {
-    console.error(`❌ Arquivo de imagem não encontrado em: ${imagePath}`);
-    process.exit(1);
-  }
-
+async function uploadToApp(
+  appConfig: EmojiAppConfig,
+  emojiName: string,
+  imagePath: string
+): Promise<boolean> {
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-  client.on('ready', async () => {
-    console.log(`\n======================================================`);
-    console.log(`⚡ Connected to Discord API as: ${client.user?.tag}`);
-    console.log(`======================================================\n`);
+  return new Promise<boolean>((resolve, reject) => {
+    client.on('ready', async () => {
+      try {
+        if (!client.application) {
+          throw new Error('client.application não está acessível no cliente.');
+        }
 
-    try {
-      if (!client.application) {
-        throw new Error('client.application não está acessível no cliente.');
-      }
+        const existingEmojis = await client.application.emojis.fetch();
+        const existing = existingEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
 
-      console.log(`🔄 Checking existing Application Emojis...`);
-      const existingEmojis = await client.application.emojis.fetch();
-      const existing = existingEmojis.find((e) => e.name?.toLowerCase() === emojiName.toLowerCase());
+        if (existing) {
+          console.log(`⚠️ Emoji "${emojiName}" já existe na App #${appConfig.id} (${appConfig.name}) (ID: ${existing.id}).`);
+          resolve(true);
+          return;
+        }
 
-      if (existing) {
-        console.log(`⚠️ Application Emoji "${emojiName}" já existe no Developer Portal (ID: ${existing.id}).`);
-      } else {
-        console.log(`🚀 Uploading new Application Emoji "${emojiName}" to Discord Developer Portal...`);
+        const isAnimated = path.extname(imagePath).toLowerCase() === '.gif';
+        const currentCount = existingEmojis.filter((e) => e.animated === isAnimated).size;
+
+        if (currentCount >= 50) {
+          console.log(`⚠️ App #${appConfig.id} (${appConfig.name}) atingiu o limite de 50 emojis ${isAnimated ? 'animados' : 'estáticos'}. Checando próxima app...`);
+          resolve(false);
+          return;
+        }
+
+        console.log(`🚀 Uploading new emoji "${emojiName}" para App #${appConfig.id} (${appConfig.name})...`);
         const dataUri = fileToDataUri(imagePath);
 
         const createdEmoji = await client.application.emojis.create({
@@ -59,19 +55,55 @@ async function uploadApplicationEmoji(emojiName: string, imagePath: string): Pro
           attachment: dataUri,
         });
 
-        console.log(`✅ Application Emoji "${createdEmoji.name}" criado com sucesso!`);
+        console.log(`✅ Application Emoji "${createdEmoji.name}" criado com sucesso na App #${appConfig.id}!`);
         console.log(`   ID: ${createdEmoji.id}`);
         console.log(`   Format: ${createdEmoji.toString()}`);
+        resolve(true);
+      } catch (err) {
+        reject(err);
+      } finally {
+        client.destroy();
       }
-    } catch (err: any) {
-      console.error('❌ Erro ao enviar Application Emoji:', err.message || err);
-    } finally {
-      client.destroy();
-      process.exit(0);
-    }
-  });
+    });
 
-  await client.login(token);
+    client.login(appConfig.token).catch(reject);
+  });
+}
+
+/**
+ * Uploads a local image file as a new Application Emoji across configured bot applications.
+ */
+async function uploadApplicationEmoji(emojiName: string, imagePath: string, targetAppId?: number): Promise<void> {
+  if (!fs.existsSync(imagePath)) {
+    console.error(`❌ Arquivo de imagem não encontrado em: ${imagePath}`);
+    process.exit(1);
+  }
+
+  const appConfigs = await getEmojiAppConfigs();
+  const targetConfigs = targetAppId
+    ? appConfigs.filter((c) => c.id === targetAppId)
+    : appConfigs;
+
+  if (targetConfigs.length === 0) {
+    console.error(`❌ Nenhuma aplicação configurada para ID #${targetAppId}.`);
+    process.exit(1);
+  }
+
+  let uploaded = false;
+  for (const config of targetConfigs) {
+    try {
+      uploaded = await uploadToApp(config, emojiName, imagePath);
+      if (uploaded) break;
+    } catch (err: any) {
+      console.error(`❌ Erro no upload para App #${config.id}:`, err.message || err);
+    }
+  }
+
+  if (!uploaded) {
+    console.error(`❌ Não foi possível fazer upload do emoji "${emojiName}". Todas as apps configuradas estão cheias.`);
+  }
+
+  process.exit(0);
 }
 
 // Target: Upload banana_divider emoji from Pictures/branding/banana_divider.png

@@ -28,12 +28,12 @@ Guidelines and rules for AI coding assistants working in this repository.
   - `Pictures/dashboard/` (UI screenshots, dashboard media)
   - `Pictures/avatars/` (Bot & role avatars)
   - `Pictures/icons/` (Category & button icons)
-  - `Pictures/emojis/` (Synced Discord Developer Portal Application Emojis & `catalog.json`)
-- **Developer Portal Emojis Sync CLI (`npm run sync:emojis`)**:
-  - Run `npm run sync:emojis` (or `npx ts-node src/scripts/sync-app-emojis.ts` inside `apps/bot/`) to synchronize all Application Emojis from Discord Developer Portal into `Pictures/emojis/`.
-  - **Clean Sync Logic**: Downloads newly added emojis, retains existing ones, prunes discarded ones, and writes `Pictures/emojis/catalog.json`.
-  - **Backend AI Vision & Tagging**: Bot reads `Pictures/emojis/catalog.json` or inspects local images to analyze visual content and assign tags/reactions dynamically.
-  - **Frontend Asset Routing**: Web app (`apps/website`) accesses synced emojis via `/assets/emojis/<filename>` (served directly from `Pictures/emojis/` via Vite middleware). No image assets duplicated inside `apps/`.
+  - `Pictures/emojis/KuruttinaBotEmojis/` (Synced Discord Developer Portal Application Emojis & `catalog.json`)
+- **Developer Portal Emojis Sync CLI (`npm run sync:emojis`) & Multi-App Vault Architecture**:
+  - **Multi-App Storage System**: Supports scaling emojis beyond Discord's 50 static / 50 animated per-app quota by configuring auxiliary Developer Portal apps in `EMOJI_BOT_TOKENS` (comma-separated tokens in `.env`). Auxiliary apps act strictly as REST emoji vaults without gateway connections or AWS memory overhead.
+  - **Clean Sync Logic**: Run `npm run sync:emojis` (or `npx ts-node src/scripts/sync-app-emojis.ts` inside `apps/bot/`) to iterate over primary (`DISCORD_TOKEN`) and auxiliary apps (`EMOJI_BOT_TOKENS`), downloading missing emojis into `Pictures/emojis/KuruttinaBotEmojis/`, pruning discarded ones, and generating metadata in `Pictures/emojis/KuruttinaBotEmojis/catalog.json`.
+  - **Backend AI Vision & Tagging**: Bot reads `Pictures/emojis/KuruttinaBotEmojis/catalog.json` or inspects local images to analyze visual content and assign tags/reactions dynamically.
+  - **Frontend Asset Routing**: Web app (`apps/website`) accesses synced emojis via `/assets/emojis/<filename>` (served directly from `Pictures/emojis/KuruttinaBotEmojis/` via Vite middleware). No image assets duplicated inside `apps/`.
 - **Root Environment File (`.env`)**: All shared environment variables (`.env`, `.env.example`, `.env.local`) MUST reside strictly at the project root (`.env`). Both `apps/bot` and `apps/website` load environment settings directly from the root `.env` to prevent duplicating credentials across `apps/`.
 
 ## Global Security Overlay & Skill Integration

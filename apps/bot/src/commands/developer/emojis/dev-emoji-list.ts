@@ -1,14 +1,15 @@
 import { SlashCommandBuilder, APIEmbed } from 'discord.js';
-import { EMOJIS, EMOJI_CATEGORIES, EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
+import { EMBED_COLORS, DEFAULT_BOT_CONFIG } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import { PermissionGuard } from '../../../utils/permission-guard';
-import { KuruttinaClient } from '../../../types/kuruttina-client';
+import { getEmojiAppConfigs, EmojiAppConfig } from '../../../utils/multi-app-helper';
+import { getEmoji } from '../../../utils/emoji-resolver';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('dev-emoji-list')
-    .setDescription('[Dev Only] Lista todos os emojis do Developer Portal e status de mapeamento'),
+    .setDescription('[Dev Only] Lista todos os emojis das aplicações vinculadas e suas marcações'),
   prefixAliases: ['dev-emoji-list', 'emojis-list'],
   category: 'developer',
   subCategory: 'emojis',
@@ -16,7 +17,7 @@ export const command: CommandModule = {
     syntax: 'k!dev-emoji-list ou /dev-emoji-list',
     examples: ['/dev-emoji-list', 'k!dev-emoji-list'],
     detailedDescription:
-      'Exibe o catálogo completo de emojis ativos no Discord Developer Portal, mapeamento com as chaves do bot e fallbacks Unicode.',
+      'Exibe o catálogo completo de emojis ativos em todas as aplicações vinculadas no Developer Portal, suas marcações formatadas (<:nome:id>) e o app de origem.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -26,63 +27,85 @@ export const command: CommandModule = {
 
     await ctx.deferReply(true);
 
-    const client = ctx.client as KuruttinaClient;
-
     try {
-      if (!client.application) {
-        throw new Error('client.application não está acessível no cliente.');
-      }
+      const appConfigs = await getEmojiAppConfigs();
+      const fields: { name: string; value: string; inline: boolean }[] = [];
+      let totalGlobalEmojis = 0;
 
-      // Fetch all live custom Application Emojis uploaded to Discord Developer Portal
-      const appEmojis = await client.application.emojis.fetch();
+      const { Client: DiscordClient, GatewayIntentBits } = await import('discord.js');
 
-      const categoryFields: { name: string; value: string; inline: boolean }[] = [];
-      let totalMapped = 0;
+      for (const appConfig of appConfigs) {
+        const fetchClient = new DiscordClient({ intents: [GatewayIntentBits.Guilds] });
 
-      for (const category of EMOJI_CATEGORIES) {
-        const lines: string[] = [];
+        await new Promise<void>((resolve) => {
+          fetchClient.on('ready', async () => {
+            try {
+              if (!fetchClient.application) {
+                resolve();
+                return;
+              }
 
-        for (const key of category.keys) {
-          const defaultUnicode = EMOJIS[key];
+              const appEmojis = await fetchClient.application.emojis.fetch();
+              totalGlobalEmojis += appEmojis.size;
 
-          const matchedAppEmoji = appEmojis.find(
-            (e) => e.name?.toLowerCase() === key.toLowerCase()
-          );
+              if (appEmojis.size === 0) {
+                fields.push({
+                  name: `📦 App #${appConfig.id}: ${appConfig.name} (0/100)`,
+                  value: `*Nenhum emoji cadastrado nesta aplicação (Pasta: \`Pictures/emojis/${appConfig.sanitizedFolderName}\`)*`,
+                  inline: false,
+                });
+              } else {
+                const staticCount = appEmojis.filter((e) => !e.animated).size;
+                const animCount = appEmojis.filter((e) => e.animated).size;
+                const lines: string[] = [];
 
-          if (matchedAppEmoji) {
-            totalMapped++;
-            lines.push(`• \`${key}\`: ${matchedAppEmoji.toString()} *(Customizado)*`);
-          } else {
-            lines.push(`• \`${key}\`: ${defaultUnicode} *(Unicode Padrão)*`);
-          }
-        }
+                appEmojis.forEach((e) => {
+                  const tag = e.toString();
+                  lines.push(`${tag} \`${tag}\` | \`${e.name}\``);
+                });
 
-        categoryFields.push({
-          name: `📁 ${category.name}`,
-          value: lines.join('\n'),
-          inline: false,
+                // Chunk lines into max 1024 char field limits
+                const chunkedValue = lines.join('\n');
+                const safeValue = chunkedValue.length > 1000 ? chunkedValue.substring(0, 990) + '\n... (demais omitidos)' : chunkedValue;
+
+                fields.push({
+                  name: `📦 App #${appConfig.id}: ${appConfig.name} (${appEmojis.size}/100 - Estáticos: ${staticCount}/50 | Animados: ${animCount}/50)`,
+                  value: `**Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}\`\n${safeValue}`,
+                  inline: false,
+                });
+              }
+              resolve();
+            } catch {
+              resolve();
+            } finally {
+              fetchClient.destroy();
+            }
+          });
+
+          fetchClient.login(appConfig.token).catch(() => resolve());
         });
       }
 
-      const totalDefined = Object.keys(EMOJIS).length;
+      const infoEmoji = await getEmoji(ctx.client, 'INFO');
       const embed: APIEmbed = {
-        title: `🎨 Catálogo de Emojis do Developer Portal`,
-        description: `Exibindo a utilidade e o status dos Emojis de Aplicação da **Kuruttina**.\n**Customizados no Portal:** \`${totalMapped}/${totalDefined}\` registrado(s).`,
+        title: `${infoEmoji} Catálogo Multi-App de Emojis do Developer Portal`,
+        description: `Exibindo todas as **${appConfigs.length}** aplicações vinculadas e a marcação formatada de cada emoji (\`<:nome:id>\` ou \`<a:nome:id>\`).\n**Total Global de Emojis:** \`${totalGlobalEmojis}\` registrado(s).`,
         color: EMBED_COLORS.BLACK.number,
-        fields: categoryFields,
+        fields,
         footer: {
           text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Use /dev-emoji-add para importar novos emojis`,
-          icon_url: client.user?.displayAvatarURL(),
+          icon_url: ctx.client.user?.displayAvatarURL(),
         },
         timestamp: new Date().toISOString(),
       };
 
       await ctx.reply({ embeds: [embed], ephemeral: true });
     } catch (error: any) {
-      console.error('❌ Erro ao listar emojis do Developer Portal:', error);
+      console.error('❌ Erro ao listar emojis multi-app:', error);
+      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       const errorEmbed: APIEmbed = {
-        title: `${EMOJIS.ERROR} Erro ao Listar Emojis`,
-        description: `Ocorreu uma falha ao buscar os emojis no Developer Portal: \`${
+        title: `${errorEmoji} Erro ao Listar Emojis`,
+        description: `Ocorreu uma falha ao buscar os emojis das aplicações: \`${
           error.message || error
         }\``,
         color: EMBED_COLORS.BLACK.number,

@@ -1,63 +1,76 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import { Client, GatewayIntentBits } from 'discord.js';
+import { getEmojiAppConfigs, EmojiAppConfig } from '../utils/multi-app-helper';
 
 // Load root .env file
 dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 
-/**
- * Standardized Application Emoji Inspection Tool for Kuruttina.
- * Fetches and audits all custom emojis uploaded to Discord Developer Portal.
- */
-async function inspectApplicationEmojis(): Promise<void> {
-  const token = process.env.DISCORD_TOKEN;
-  if (!token) {
-    console.error('❌ DISCORD_TOKEN não encontrado no .env da raiz.');
-    process.exit(1);
-  }
-
+async function inspectAppEmojis(appConfig: EmojiAppConfig): Promise<void> {
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-  client.on('ready', async () => {
-    console.log(`\n======================================================`);
-    console.log(`⚡ Connected to Discord API as: ${client.user?.tag}`);
-    console.log(`======================================================\n`);
-
-    try {
-      if (!client.application) {
-        throw new Error('client.application não está disponível no cliente.');
-      }
-
-      const appEmojis = await client.application.emojis.fetch();
-      console.log(`📦 Total Application Emojis in Developer Portal: ${appEmojis.size}\n`);
-
-      if (appEmojis.size === 0) {
-        console.log('⚠️ Nenhum Application Emoji cadastrado no Developer Portal.');
-      } else {
-        const sortedEmojis = Array.from(appEmojis.values()).sort((a, b) =>
-          (a.name || '').localeCompare(b.name || '')
-        );
-
-        sortedEmojis.forEach((e, idx) => {
-          const typeLabel = e.animated ? 'ANIMATED (GIF/APNG)' : 'STATIC (PNG/WEBP)';
-          console.log(
-            `  ${String(idx + 1).padStart(2, ' ')}. Name: "${e.name?.padEnd(14, ' ')}" | ID: "${e.id}" | Format: ${e.toString().padEnd(35, ' ')} | Type: ${typeLabel}`
-          );
-        });
-      }
-
+  await new Promise<void>((resolve, reject) => {
+    client.on('ready', async () => {
       console.log(`\n======================================================`);
-      console.log(`✅ Inspeção de Emojis do Developer Portal concluída!`);
-      console.log(`======================================================\n`);
-    } catch (err: any) {
-      console.error('❌ Erro ao buscar emojis do Developer Portal:', err.message || err);
-    } finally {
-      client.destroy();
-      process.exit(0);
-    }
-  });
+      console.log(`⚡ App #${appConfig.id} (${appConfig.name}) | Bot: ${client.user?.tag}`);
+      console.log(`======================================================`);
 
-  await client.login(token);
+      try {
+        if (!client.application) {
+          throw new Error('client.application não está disponível no cliente.');
+        }
+
+        const appEmojis = await client.application.emojis.fetch();
+        const staticCount = appEmojis.filter((e) => !e.animated).size;
+        const animCount = appEmojis.filter((e) => e.animated).size;
+
+        console.log(`📦 Emojis in App #${appConfig.id}: Total ${appEmojis.size} (Static: ${staticCount}/50 | Animated: ${animCount}/50)\n`);
+
+        if (appEmojis.size === 0) {
+          console.log('⚠️ Nenhum Application Emoji cadastrado nesta aplicação.');
+        } else {
+          const sortedEmojis = Array.from(appEmojis.values()).sort((a, b) =>
+            (a.name || '').localeCompare(b.name || '')
+          );
+
+          sortedEmojis.forEach((e, idx) => {
+            const typeLabel = e.animated ? 'ANIMATED (GIF/APNG)' : 'STATIC (PNG/WEBP)';
+            console.log(
+              `  ${String(idx + 1).padStart(2, ' ')}. Name: "${e.name?.padEnd(14, ' ')}" | ID: "${e.id}" | Format: ${e.toString().padEnd(35, ' ')} | Type: ${typeLabel}`
+            );
+          });
+        }
+        resolve();
+      } catch (err) {
+        reject(err);
+      } finally {
+        client.destroy();
+      }
+    });
+
+    client.login(appConfig.token).catch(reject);
+  });
 }
 
-inspectApplicationEmojis();
+/**
+ * Standardized Multi-App Application Emoji Inspection Tool for Kuruttina.
+ */
+async function inspectAllApplicationEmojis(): Promise<void> {
+  const appConfigs = await getEmojiAppConfigs();
+  console.log(`\n🔍 Inspecting Application Emojis across ${appConfigs.length} configured bot app(s)...`);
+
+  for (const config of appConfigs) {
+    try {
+      await inspectAppEmojis(config);
+    } catch (err: any) {
+      console.error(`❌ Erro ao inspecionar App #${config.id} (${config.name}):`, err.message || err);
+    }
+  }
+
+  console.log(`\n======================================================`);
+  console.log(`✅ Inspeção Multi-App de Emojis concluída!`);
+  console.log(`======================================================\n`);
+  process.exit(0);
+}
+
+inspectAllApplicationEmojis();

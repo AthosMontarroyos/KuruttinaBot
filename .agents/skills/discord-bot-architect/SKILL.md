@@ -26,6 +26,7 @@ Covers Discord.js with TypeScript, PostgreSQL/Supabase database integrations, Re
 - **Dynamic Single-Object Emoji Resolution (`const e = await getEmojis(client)`)**: Call `const e = await getEmojis(client)` (`src/utils/emoji-resolver.ts`) to resolve all registered Application Emojis dynamically into a single object `e`. Access properties directly on `e` (`e.SEARCH`, `e.DANCING`, `e.SUCCESS`, `e.ERROR`, `e.RENDER`, `e.WARNING`, `e.STAR`), completely eliminating destructuring arrays and variable exports.
 - **Standardized Embed Factory (`createKuruttinaEmbed`) & Ephemeral Reply Helpers**: All Discord embeds MUST be constructed via `createKuruttinaEmbed(client, options)` (`src/utils/embed-builder.ts`), enforcing Rule 16 minimalist side borders (strictly Black `#000001` or White `#FFFFFF`), dynamic bot avatar, and ISO timestamp. For command replies, use `sendErrorReply(ctx, title, description)` and `sendSuccessReply(ctx, title, description, fields)` to eliminate duplicate embed building boilerplate.
 - **Ephemeral Multi-App Client Lifecycle Helper (`withAppClient`)**: Multi-App REST client operations across secondary emoji vaults MUST use `withAppClient(token, async (client) => { ... })` (`src/utils/multi-app-helper.ts`), ensuring automatic login, `ClientReady` handling, and deterministic `client.destroy()` in a `finally` block to prevent memory leaks.
+- **Single Option User Resolution & `resolveUser` Component**: Commands accepting user targets MUST define a single Slash String Option `usuario` (accepting both `@Mention` and raw snowflake ID `123456789...`), resolved via `resolveUser(ctx, input?, options?)` (`src/utils/users/user-resolver.ts`). Uses `options.get()` to safely handle both String (type 3) and User (type 6) option structures without type mismatch errors.
 - **Dynamic CLI Script Argument Parsing**: All CLI scripts in `src/scripts/` MUST parse CLI arguments dynamically via `process.argv` and log clear usage instructions (`📌 Uso: npx ts-node ...`) when arguments are missing. CLI scripts MUST NOT contain hardcoded test targets or target filenames.
 - **Deep Research & Documentation**: Whenever encountering unfamiliar Discord.js features, methods, or version-specific details, perform web searches against official Discord.js documentation (`discord.js.org` / `discordjs.dev`).
 
@@ -65,6 +66,7 @@ src/
 │   ├── emojis/                    # Emoji Resolvers & Multi-App Vault Helpers (emoji-resolver.ts, multi-app-helper.ts)
 │   ├── loaders/                   # Recursive File Loaders (recursive-loader.ts)
 │   ├── security/                  # Permission Guards & Custom Command Executors (permission-guard.ts, custom-command-executor.ts)
+│   ├── users/                     # User Resolvers & Mention/ID Parsing (user-resolver.ts)
 │   └── index.ts                   # Mandatory Barrel Export (Re-exports all utilities)
 └── scripts/                       # Categorized CLI Scripts
     └── emojis/                    # Emoji CLI Operations (sync-app-emojis.ts, fetch-app-emojis.ts, etc.)

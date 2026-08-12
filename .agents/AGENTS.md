@@ -124,10 +124,16 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Dual Slash & Prefix Commands**: Slash Commands (`/command`) are the default primary interface. Every Slash Command **MUST ALSO have an equivalent Prefix Command counterpart** (e.g. `k!command` or custom guild prefix). Core execution logic must be shared via a unified `CommandContext` (DRY principle).
 - **Commands, Events, Utils & Scripts Structure**:
   - Command handlers MUST reside in `src/commands/` and event handlers in `src/events/` by category/sub-category.
-  - Utility modules MUST reside in domain subfolders (`src/utils/embeds/`, `src/utils/emojis/`, `src/utils/loaders/`, `src/utils/security/`) and be re-exported via `src/utils/index.ts` (Barrel Export) so callers import cleanly from `utils`.
+  - Utility modules MUST reside in domain subfolders (`src/utils/embeds/`, `src/utils/emojis/`, `src/utils/loaders/`, `src/utils/security/`, `src/utils/users/`) and be re-exported via `src/utils/index.ts` (Barrel Export) so callers import cleanly from `utils`.
   - CLI automation scripts MUST reside in domain subfolders (e.g. `src/scripts/emojis/`).
 - **Command Deployment**: Keep command registration in a separate deployment script (`src/deploy-commands.ts`). Do not sync commands automatically on every bot startup.
 - **Error Handling**: Wrap interaction execution in `try / catch` blocks to gracefully handle errors and notify users.
+
+#### Single Option User Resolution & `resolveUser` Utility Component Policy
+- **Single Unified Option `usuario`**: Any command requiring user targeting (e.g. avatar, banner, moderation, profile, clear) MUST define a single Slash Command String Option named `usuario` (e.g. `.addStringOption(opt => opt.setName('usuario').setDescription('Usuário por menção (@usuario) ou ID numérico'))`) rather than separate `usuario` and `id` options.
+- **Unified Parsing (`resolveUser`)**: All user resolution MUST be handled via `resolveUser(ctx, input?, options?)` (`src/utils/users/user-resolver.ts`, re-exported via `src/utils/index.ts`).
+- **Mentions & Snowflake IDs**: Automatically extracts snowflake IDs from mentions (`<@123...>`, `<@!123...>`), raw numeric IDs (`123456789...`), or User objects across both Slash interactions and Prefix args (`k!cmd @user` / `k!cmd 123...`).
+- **Safe Option Resolution**: Uses type-agnostic `options.get()` inside `resolveUser` to safely extract String values or User objects without throwing `DiscordjsTypeError`.
 
 #### Database (Supabase / PostgreSQL)
 - Use `@supabase/supabase-js` or type-safe query builders with auto-generated Supabase TypeScript definitions.

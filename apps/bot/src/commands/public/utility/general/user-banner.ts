@@ -98,7 +98,6 @@ export const command: CommandModule = {
       return;
     }
 
-    const isSelf = fetchedUser.id === ctx.user.id;
     const isAnimated = fetchedUser.banner.startsWith('a_');
 
     // Discord CDN URLs using ?animated=true parameter for live animation rendering
@@ -111,7 +110,6 @@ export const command: CommandModule = {
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} ${fetchedUser.username}`,
-      description: isSelf ? 'Apesar de tudo, ainda é o seu banner.' : undefined,
       image: { url: embedImageUrl },
       color: fetchedUser.accentColor ?? undefined,
     });

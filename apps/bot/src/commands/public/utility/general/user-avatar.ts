@@ -94,12 +94,10 @@ export const command: CommandModule = {
       targetUser = ctx.user;
     }
 
-    const isSelf = targetUser.id === ctx.user.id;
     const avatarUrl = targetUser.displayAvatarURL({ size: 1024 });
 
     const avatarEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} ${targetUser.username}`,
-      description: isSelf ? 'Apesar de tudo, ainda é o seu avatar.' : undefined,
       image: { url: avatarUrl },
     });
 

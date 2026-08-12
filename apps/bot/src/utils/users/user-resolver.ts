@@ -87,29 +87,20 @@ export async function resolveUser(
   // 2. Automatic context resolution (Slash or Prefix) if explicit input was not provided
   if (!targetUser && !targetId) {
     if (ctx.isSlash && ctx.slashInteraction) {
-      // Check Slash User Option (e.g. option 'usuario', 'user', 'alvo', 'target')
-      const optionUser =
-        ctx.slashInteraction.options.getUser(userOptionName) ??
-        ctx.slashInteraction.options.getUser('user') ??
-        ctx.slashInteraction.options.getUser('target') ??
-        ctx.slashInteraction.options.getUser('membro');
+      const rawOption =
+        ctx.slashInteraction.options.get(userOptionName) ??
+        ctx.slashInteraction.options.get(idOptionName) ??
+        ctx.slashInteraction.options.get('usuario') ??
+        ctx.slashInteraction.options.get('user') ??
+        ctx.slashInteraction.options.get('target') ??
+        ctx.slashInteraction.options.get('membro');
 
-      if (optionUser) {
-        targetUser = optionUser;
-        targetId = optionUser.id;
-      }
-
-      // Check Slash String Option if User option was not set
-      if (!targetId) {
-        const optionString =
-          ctx.slashInteraction.options.getString(idOptionName) ??
-          ctx.slashInteraction.options.getString('input') ??
-          ctx.slashInteraction.options.getString('usuario') ??
-          ctx.slashInteraction.options.getString('target') ??
-          ctx.slashInteraction.options.getString('membro');
-
-        if (optionString) {
-          targetId = extractUserId(optionString);
+      if (rawOption) {
+        if (rawOption.user) {
+          targetUser = rawOption.user;
+          targetId = rawOption.user.id;
+        } else if (typeof rawOption.value === 'string') {
+          targetId = extractUserId(rawOption.value);
         }
       }
     } else {

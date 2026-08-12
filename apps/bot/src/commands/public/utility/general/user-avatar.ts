@@ -41,7 +41,7 @@ export const command: CommandModule = {
       'k!pfp 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta. Disponibiliza links de download em PNG, JPG, WEBP e GIF.',
+      'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta. Layout limpo e minimalista no estilo Loritta.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -96,28 +96,14 @@ export const command: CommandModule = {
 
     const isSelf = targetUser.id === ctx.user.id;
     const avatarUrl = targetUser.displayAvatarURL({ size: 1024 });
-    const pngUrl = targetUser.displayAvatarURL({ extension: 'png', size: 1024 });
-    const jpgUrl = targetUser.displayAvatarURL({ extension: 'jpg', size: 1024 });
-    const webpUrl = targetUser.displayAvatarURL({ extension: 'webp', size: 1024 });
-    const isAnimated = targetUser.avatar?.startsWith('a_') ?? false;
-    const gifUrl = isAnimated ? targetUser.displayAvatarURL({ extension: 'gif', size: 1024 }) : null;
-
-    const linksList = [
-      `[PNG](${pngUrl})`,
-      `[JPG](${jpgUrl})`,
-      `[WEBP](${webpUrl})`,
-    ];
-    if (gifUrl) {
-      linksList.unshift(`[GIF](${gifUrl})`);
-    }
 
     const infjQuote = isSelf
-      ? '*A imagem escolhida para representar a sua jornada.*'
-      : `*O olhar e a imagem de **${targetUser.username}**.*`;
+      ? '*Apesar de tudo, a sua imagem reflete a sua essência.*'
+      : `*Um olhar atento sobre a imagem de **${targetUser.username}**.*`;
 
     const avatarEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} ${targetUser.username}`,
-      description: `${infjQuote}\n\n📥 **Downloads:** ${linksList.join(' • ')}`,
+      description: infjQuote,
       image: { url: avatarUrl },
     });
 

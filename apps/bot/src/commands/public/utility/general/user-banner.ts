@@ -14,16 +14,10 @@ export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('user-banner')
     .setDescription('Exibe e disponibiliza para download o banner de perfil de um usuário por menção ou ID')
-    .addUserOption((option) =>
-      option
-        .setName('usuario')
-        .setDescription('Usuário do Discord para visualizar o banner')
-        .setRequired(false)
-    )
     .addStringOption((option) =>
       option
-        .setName('id')
-        .setDescription('ID numérico do usuário do Discord (ex: 123456789012345678)')
+        .setName('usuario')
+        .setDescription('Usuário por menção (@usuario) ou ID numérico do Discord')
         .setRequired(false)
     ),
 
@@ -31,11 +25,11 @@ export const command: CommandModule = {
   category: 'utility',
   subCategory: 'general',
   guide: {
-    syntax: 'k!user-banner [usuario_ou_id] ou /user-banner [usuario:<usuario>] [id:<id>]',
+    syntax: 'k!user-banner [usuario_ou_id] ou /user-banner [usuario:<menção_ou_id>]',
     examples: [
       '/user-banner',
       '/user-banner usuario:@Membro',
-      '/user-banner id:123456789012345678',
+      '/user-banner usuario:123456789012345678',
       'k!user-banner',
       'k!banner @Membro',
       'k!banner 123456789012345678',

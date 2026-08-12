@@ -14,16 +14,10 @@ export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('user-avatar')
     .setDescription('Exibe e disponibiliza para download a foto de perfil de um usuário por menção ou ID')
-    .addUserOption((option) =>
-      option
-        .setName('usuario')
-        .setDescription('Usuário do Discord para visualizar o avatar')
-        .setRequired(false)
-    )
     .addStringOption((option) =>
       option
-        .setName('id')
-        .setDescription('ID numérico do usuário do Discord (ex: 123456789012345678)')
+        .setName('usuario')
+        .setDescription('Usuário por menção (@usuario) ou ID numérico do Discord')
         .setRequired(false)
     ),
 
@@ -31,11 +25,11 @@ export const command: CommandModule = {
   category: 'utility',
   subCategory: 'general',
   guide: {
-    syntax: 'k!user-avatar [usuario_ou_id] ou /user-avatar [usuario:<usuario>] [id:<id>]',
+    syntax: 'k!user-avatar [usuario_ou_id] ou /user-avatar [usuario:<menção_ou_id>]',
     examples: [
       '/user-avatar',
       '/user-avatar usuario:@Membro',
-      '/user-avatar id:123456789012345678',
+      '/user-avatar usuario:123456789012345678',
       'k!user-avatar',
       'k!avatar @Membro',
       'k!pfp 123456789012345678',

@@ -41,7 +41,7 @@ export const command: CommandModule = {
       'k!pfp 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta. Layout limpo e minimalista no estilo Loritta.',
+      'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord por menção ou ID.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -94,16 +94,10 @@ export const command: CommandModule = {
       targetUser = ctx.user;
     }
 
-    const isSelf = targetUser.id === ctx.user.id;
     const avatarUrl = targetUser.displayAvatarURL({ size: 1024 });
-
-    const infjQuote = isSelf
-      ? '*Apesar de tudo, a sua imagem reflete a sua essência.*'
-      : `*Um olhar atento sobre a imagem de **${targetUser.username}**.*`;
 
     const avatarEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} ${targetUser.username}`,
-      description: infjQuote,
       image: { url: avatarUrl },
     });
 

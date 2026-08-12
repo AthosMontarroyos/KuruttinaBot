@@ -41,7 +41,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID com o estilo característico da Kuruttina.',
+      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -98,29 +98,18 @@ export const command: CommandModule = {
       return;
     }
 
-    const isSelf = fetchedUser.id === ctx.user.id;
     const isAnimated = fetchedUser.banner.startsWith('a_');
 
-    // Discord CDN URLs
+    // Discord CDN URLs using ?animated=true parameter for live animation rendering
     const animatedWebpEmbedUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?animated=true&size=512`;
     const animatedWebpDownloadUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?animated=true&size=1024`;
     const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
-    const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
 
     const embedImageUrl = isAnimated ? animatedWebpEmbedUrl : pngUrl;
     const primaryBrowserUrl = isAnimated ? animatedWebpDownloadUrl : pngUrl;
 
-    const linksList = isAnimated
-      ? [`[WebP Animado](${animatedWebpDownloadUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`]
-      : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`];
-
-    const infjQuote = isSelf
-      ? '*Apesar de tudo, a sua essência visual permanece marcante.*'
-      : `*Um vislumbre sobre a identidade de **${fetchedUser.username}**.*`;
-
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} ${fetchedUser.username}`,
-      description: `${infjQuote}\n\n📥 **Downloads:** ${linksList.join(' • ')}`,
       image: { url: embedImageUrl },
       color: fetchedUser.accentColor ?? undefined,
     });

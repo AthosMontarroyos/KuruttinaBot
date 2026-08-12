@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
+import { getEmojis, createKuruttinaEmbed, sendErrorReply, resolveUser } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -48,50 +48,15 @@ export const command: CommandModule = {
     await ctx.deferReply();
 
     const e = await getEmojis(ctx.client);
-    let targetUser: User | null = null;
-    let targetId: string | null = null;
-
-    if (ctx.isSlash && ctx.slashInteraction) {
-      const explicitId = ctx.slashInteraction.options.getString('id');
-      const optionUser = ctx.slashInteraction.options.getUser('usuario');
-
-      if (explicitId) {
-        const idMatch = explicitId.match(/\d{17,20}/);
-        targetId = idMatch ? idMatch[0] : explicitId.trim();
-      } else if (optionUser) {
-        targetUser = optionUser;
-      }
-    } else {
-      if (ctx.args[0]) {
-        const rawArg = ctx.args[0].trim();
-        const idMatch = rawArg.match(/\d{17,20}/);
-        if (idMatch) {
-          targetId = idMatch[0];
-        }
-      }
-    }
-
-    // Default to command author if no target specified
-    if (!targetUser && !targetId) {
-      targetUser = ctx.user;
-    }
-
-    // Fetch user by ID if specified
-    if (!targetUser && targetId) {
-      try {
-        targetUser = await ctx.client.users.fetch(targetId);
-      } catch {
-        await sendErrorReply(
-          ctx,
-          `${e.ERROR} Usuário Não Encontrado`,
-          `Não foi possível encontrar nenhum usuário do Discord com o ID \`${targetId}\`. Verifique se o ID está correto.`
-        );
-        return;
-      }
-    }
+    const targetUser = await resolveUser(ctx, null, { fallbackToAuthor: true });
 
     if (!targetUser) {
-      targetUser = ctx.user;
+      await sendErrorReply(
+        ctx,
+        `${e.ERROR} Usuário Não Encontrado`,
+        'Não foi possível encontrar o usuário especificado por menção ou ID. Verifique o valor informado.'
+      );
+      return;
     }
 
     const avatarUrl = targetUser.displayAvatarURL({ size: 1024 });

@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
+import { getEmojis, createKuruttinaEmbed, sendErrorReply, resolveUser } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -48,37 +48,13 @@ export const command: CommandModule = {
     await ctx.deferReply();
 
     const e = await getEmojis(ctx.client);
-    let targetId: string = ctx.user.id;
+    const fetchedUser = await resolveUser(ctx, null, { forceFetch: true, fallbackToAuthor: true });
 
-    if (ctx.isSlash && ctx.slashInteraction) {
-      const explicitId = ctx.slashInteraction.options.getString('id');
-      const optionUser = ctx.slashInteraction.options.getUser('usuario');
-
-      if (explicitId) {
-        const idMatch = explicitId.match(/\d{17,20}/);
-        targetId = idMatch ? idMatch[0] : explicitId.trim();
-      } else if (optionUser) {
-        targetId = optionUser.id;
-      }
-    } else {
-      if (ctx.args[0]) {
-        const rawArg = ctx.args[0].trim();
-        const idMatch = rawArg.match(/\d{17,20}/);
-        if (idMatch) {
-          targetId = idMatch[0];
-        }
-      }
-    }
-
-    let fetchedUser: User | null = null;
-    try {
-      // Force fetch to ensure full profile details (including banner hash & accent color) are loaded directly from Discord REST API
-      fetchedUser = await ctx.client.users.fetch(targetId, { force: true });
-    } catch {
+    if (!fetchedUser) {
       await sendErrorReply(
         ctx,
         `${e.ERROR} Usuário Não Encontrado`,
-        `Não foi possível encontrar nenhum usuário do Discord com o ID \`${targetId}\`. Verifique se o ID está correto.`
+        'Não foi possível encontrar nenhum usuário do Discord com a menção ou ID especificado.'
       );
       return;
     }

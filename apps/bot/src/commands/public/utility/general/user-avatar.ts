@@ -1,4 +1,11 @@
-import { SlashCommandBuilder, User } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  User,
+  ComponentType,
+  ButtonStyle,
+  APIActionRowComponent,
+  APIButtonComponent,
+} from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
@@ -34,7 +41,7 @@ export const command: CommandModule = {
       'k!pfp 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta (mesmo que ele não esteja no servidor atual). Disponibiliza links de download em PNG, JPG, WEBP e GIF.',
+      'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta. Disponibiliza links de download em PNG, JPG, WEBP e GIF.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -87,6 +94,7 @@ export const command: CommandModule = {
       targetUser = ctx.user;
     }
 
+    const isSelf = targetUser.id === ctx.user.id;
     const avatarUrl = targetUser.displayAvatarURL({ size: 1024 });
     const pngUrl = targetUser.displayAvatarURL({ extension: 'png', size: 1024 });
     const jpgUrl = targetUser.displayAvatarURL({ extension: 'jpg', size: 1024 });
@@ -100,27 +108,31 @@ export const command: CommandModule = {
       `[WEBP](${webpUrl})`,
     ];
     if (gifUrl) {
-      linksList.push(`[GIF](${gifUrl})`);
+      linksList.unshift(`[GIF](${gifUrl})`);
     }
 
+    const infjQuote = isSelf
+      ? '*A imagem escolhida para representar a sua jornada.*'
+      : `*O olhar e a imagem de **${targetUser.username}**.*`;
+
     const avatarEmbed = createKuruttinaEmbed(ctx.client, {
-      title: `${e.PHOTO} Avatar de ${targetUser.username}`,
-      description: `📥 **Downloads:** ${linksList.join(' • ')}`,
+      title: `${e.PHOTO} ${targetUser.username}`,
+      description: `${infjQuote}\n\n📥 **Downloads:** ${linksList.join(' • ')}`,
       image: { url: avatarUrl },
-      fields: [
-        {
-          name: `${e.USER} Usuário`,
-          value: `**${targetUser.username}** (\`${targetUser.tag}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.ID} ID`,
-          value: `\`${targetUser.id}\``,
-          inline: true,
-        },
-      ],
     });
 
-    await ctx.reply({ embeds: [avatarEmbed] });
+    const actionRow: APIActionRowComponent<APIButtonComponent> = {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Link,
+          label: 'Abrir avatar no navegador',
+          url: avatarUrl,
+        },
+      ],
+    };
+
+    await ctx.reply({ embeds: [avatarEmbed], components: [actionRow] });
   },
 };

@@ -41,7 +41,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações vivas usando ?animated=true.',
+      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID com o estilo característico da Kuruttina.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -85,34 +85,23 @@ export const command: CommandModule = {
 
     if (!fetchedUser.banner) {
       const accentInfo = fetchedUser.hexAccentColor
-        ? `\n\n🎨 **Cor de Destaque (Accent Color):** \`${fetchedUser.hexAccentColor}\``
+        ? `\n\n🎨 **Cor de Destaque:** \`${fetchedUser.hexAccentColor}\``
         : '';
 
       const noBannerEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.INFO} Banner Não Configurado`,
-        description: `O usuário **${fetchedUser.username}** (\`${fetchedUser.tag}\`) não possui um banner customizado em seu perfil.${accentInfo}`,
+        title: `${e.INFO} Banner de ${fetchedUser.username}`,
+        description: `Este usuário não possui um banner customizado configurado em seu perfil.${accentInfo}`,
         color: fetchedUser.accentColor ?? undefined,
-        fields: [
-          {
-            name: `${e.USER} Usuário`,
-            value: `**${fetchedUser.username}**`,
-            inline: true,
-          },
-          {
-            name: `${e.ID} ID`,
-            value: `\`${fetchedUser.id}\``,
-            inline: true,
-          },
-        ],
       });
 
       await ctx.reply({ embeds: [noBannerEmbed] });
       return;
     }
 
+    const isSelf = fetchedUser.id === ctx.user.id;
     const isAnimated = fetchedUser.banner.startsWith('a_');
 
-    // Discord CDN URLs using ?animated=true parameter for live animation rendering
+    // Discord CDN URLs
     const animatedWebpEmbedUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?animated=true&size=512`;
     const animatedWebpDownloadUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?animated=true&size=1024`;
     const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
@@ -125,23 +114,15 @@ export const command: CommandModule = {
       ? [`[WebP Animado](${animatedWebpDownloadUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`]
       : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`];
 
+    const infjQuote = isSelf
+      ? '*Apesar de tudo, a sua essência visual permanece marcante.*'
+      : `*Um vislumbre sobre a identidade de **${fetchedUser.username}**.*`;
+
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
-      title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
-      description: `📥 **Downloads:** ${linksList.join(' • ')}`,
+      title: `${e.PHOTO} ${fetchedUser.username}`,
+      description: `${infjQuote}\n\n📥 **Downloads:** ${linksList.join(' • ')}`,
       image: { url: embedImageUrl },
       color: fetchedUser.accentColor ?? undefined,
-      fields: [
-        {
-          name: `${e.USER} Usuário`,
-          value: `**${fetchedUser.username}** (\`${fetchedUser.tag}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.ID} ID`,
-          value: `\`${fetchedUser.id}\``,
-          inline: true,
-        },
-      ],
     });
 
     const actionRow: APIActionRowComponent<APIButtonComponent> = {

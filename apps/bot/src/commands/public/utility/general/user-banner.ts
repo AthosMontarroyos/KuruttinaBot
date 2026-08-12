@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, User } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
+import { getEmojis, createKuruttinaEmbed, sendErrorReply, KuruttinaEmbedOptions } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -34,7 +34,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Detecta automaticamente se o banner é um GIF animado real ou uma imagem estática.',
+      'Busca e exibe o banner de perfil de um usuário do Discord. Renderiza a imagem no embed estritamente quando o banner for um GIF animado válido.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -123,8 +123,6 @@ export const command: CommandModule = {
       }
     }
 
-    const displayUrl = hasValidGif ? candidateGifUrl : webpUrl;
-
     const linksList = [
       `[PNG](${pngUrl})`,
       `[JPG](${jpgUrl})`,
@@ -134,10 +132,9 @@ export const command: CommandModule = {
       linksList.unshift(`[GIF](${candidateGifUrl})`);
     }
 
-    const bannerEmbed = createKuruttinaEmbed(ctx.client, {
+    const embedOptions: KuruttinaEmbedOptions = {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads:** ${linksList.join(' • ')}`,
-      image: { url: displayUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {
@@ -151,7 +148,14 @@ export const command: CommandModule = {
           inline: true,
         },
       ],
-    });
+    };
+
+    // Strictly render image in embed ONLY if banner is a valid animated GIF
+    if (hasValidGif) {
+      embedOptions.image = { url: candidateGifUrl };
+    }
+
+    const bannerEmbed = createKuruttinaEmbed(ctx.client, embedOptions);
 
     await ctx.reply({ embeds: [bannerEmbed] });
   },

@@ -8,6 +8,8 @@ export interface KuruttinaEmbedOptions {
   fields?: APIEmbed['fields'];
   color?: number;
   footerText?: string;
+  image?: APIEmbed['image'];
+  thumbnail?: APIEmbed['thumbnail'];
 }
 
 /**
@@ -28,6 +30,8 @@ export function createKuruttinaEmbed(
     description: options.description,
     color: options.color ?? EMBED_COLORS.BLACK.number,
     fields: options.fields,
+    image: options.image,
+    thumbnail: options.thumbnail,
     footer: {
       text: footerText,
       icon_url: botAvatar,

@@ -34,7 +34,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações (Animated WebP) e downloads em múltiplos formatos.',
+      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Detecta automaticamente se o banner é um GIF animado real ou uma imagem estática.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -103,19 +103,36 @@ export const command: CommandModule = {
       return;
     }
 
-    const isAnimated = fetchedUser.banner.startsWith('a_');
+    const isAnimatedHash = fetchedUser.banner.startsWith('a_');
 
-    // Discord CDN URLs for PNG, JPG, and Animated WEBP
     const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
     const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
     const webpUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
+    const candidateGifUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.gif?size=1024`;
 
-    // Display Animated WebP for animated banners (a_...) or PNG for static banners
-    const displayUrl = isAnimated ? webpUrl : pngUrl;
+    // Dynamic verification: Check if Discord CDN serves valid GIF format (HTTP 200) for multi-frame animated GIFs
+    let hasValidGif = false;
+    if (isAnimatedHash) {
+      try {
+        const headRes = await fetch(candidateGifUrl, { method: 'HEAD' });
+        if (headRes.ok) {
+          hasValidGif = true;
+        }
+      } catch {
+        hasValidGif = false;
+      }
+    }
 
-    const linksList = isAnimated
-      ? [`[WebP Animado](${webpUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`]
-      : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`, `[WEBP](${webpUrl})`];
+    const displayUrl = hasValidGif ? candidateGifUrl : webpUrl;
+
+    const linksList = [
+      `[PNG](${pngUrl})`,
+      `[JPG](${jpgUrl})`,
+      `[WEBP](${webpUrl})`,
+    ];
+    if (hasValidGif) {
+      linksList.unshift(`[GIF](${candidateGifUrl})`);
+    }
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,

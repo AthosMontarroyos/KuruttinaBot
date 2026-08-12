@@ -34,7 +34,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta banners customizados e exibe cor de destaque caso não possua banner.',
+      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações (Animated WebP) e downloads em múltiplos formatos.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -103,21 +103,24 @@ export const command: CommandModule = {
       return;
     }
 
-    // Direct Discord CDN endpoints for PNG, JPG, and WEBP formats (guaranteed 200 OK by Discord API)
+    const isAnimated = fetchedUser.banner.startsWith('a_');
+
+    // Discord CDN URLs for PNG, JPG, and Animated WEBP
     const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
     const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
     const webpUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
 
-    const linksList = [
-      `[PNG](${pngUrl})`,
-      `[JPG](${jpgUrl})`,
-      `[WEBP](${webpUrl})`,
-    ];
+    // Display Animated WebP for animated banners (a_...) or PNG for static banners
+    const displayUrl = isAnimated ? webpUrl : pngUrl;
+
+    const linksList = isAnimated
+      ? [`[WebP Animado](${webpUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`]
+      : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`, `[WEBP](${webpUrl})`];
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads:** ${linksList.join(' • ')}`,
-      image: { url: pngUrl },
+      image: { url: displayUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {

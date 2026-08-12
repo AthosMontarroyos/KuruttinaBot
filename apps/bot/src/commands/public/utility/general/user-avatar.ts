@@ -5,7 +5,7 @@ import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../uti
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
-    .setName('avatar')
+    .setName('user-avatar')
     .setDescription('Exibe e disponibiliza para download a foto de perfil de um usuário por menção ou ID')
     .addUserOption((option) =>
       option
@@ -20,18 +20,18 @@ export const command: CommandModule = {
         .setRequired(false)
     ),
 
-  prefixAliases: ['avatar', 'av', 'pfp', 'foto', 'ic'],
+  prefixAliases: ['user-avatar', 'useravatar', 'avatar', 'av', 'pfp', 'foto', 'ic'],
   category: 'utility',
   subCategory: 'general',
   guide: {
-    syntax: 'k!avatar [usuario_ou_id] ou /avatar [usuario:<usuario>] [id:<id>]',
+    syntax: 'k!user-avatar [usuario_ou_id] ou /user-avatar [usuario:<usuario>] [id:<id>]',
     examples: [
-      '/avatar',
-      '/avatar usuario:@Membro',
-      '/avatar id:123456789012345678',
-      'k!avatar',
+      '/user-avatar',
+      '/user-avatar usuario:@Membro',
+      '/user-avatar id:123456789012345678',
+      'k!user-avatar',
       'k!avatar @Membro',
-      'k!avatar 123456789012345678',
+      'k!pfp 123456789012345678',
     ],
     detailedDescription:
       'Busca e exibe em alta resolução (1024px) a foto de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta (mesmo que ele não esteja no servidor atual). Disponibiliza links de download em PNG, JPG, WEBP e GIF.',

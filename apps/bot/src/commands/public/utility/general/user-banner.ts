@@ -41,7 +41,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações GIF e botão direto para abrir no navegador.',
+      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações GIF/WebP e botão direto para abrir no navegador.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -112,21 +112,39 @@ export const command: CommandModule = {
 
     const isAnimated = fetchedUser.banner.startsWith('a_');
 
-    // Standard Discord.js v14 Banner URL resolution (forceStatic: false ensures animated GIF banners render as GIF)
-    const bannerUrl = fetchedUser.bannerURL({ forceStatic: false, size: 1024 })!;
-    const pngUrl = fetchedUser.bannerURL({ extension: 'png', size: 1024 })!;
-    const jpgUrl = fetchedUser.bannerURL({ extension: 'jpg', size: 1024 })!;
-    const webpUrl = fetchedUser.bannerURL({ extension: 'webp', size: 1024 })!;
-    const gifUrl = isAnimated ? fetchedUser.bannerURL({ extension: 'gif', size: 1024, forceStatic: false }) : null;
+    const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
+    const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
+    const webpUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
+    const candidateGifUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.gif?size=1024`;
 
-    const linksList = isAnimated && gifUrl
-      ? [`[GIF](${gifUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`, `[WEBP](${webpUrl})`]
+    // Fast check if Discord CDN serves .gif for this banner hash (returns 200 vs 415)
+    let hasWorkingGif = false;
+    if (isAnimated) {
+      try {
+        const headRes = await fetch(candidateGifUrl, { method: 'HEAD' });
+        if (headRes.ok) {
+          hasWorkingGif = true;
+        }
+      } catch {
+        hasWorkingGif = false;
+      }
+    }
+
+    // If CDN serves GIF format use GIF URL, otherwise use Animated WebP (which returns HTTP 200 OK for Tenor/Discord preset banners)
+    const embedImageUrl = hasWorkingGif ? candidateGifUrl : webpUrl;
+
+    const linksList = isAnimated
+      ? [
+          hasWorkingGif ? `[GIF](${candidateGifUrl})` : `[WebP (Animado)](${webpUrl})`,
+          `[PNG](${pngUrl})`,
+          `[JPG](${jpgUrl})`,
+        ]
       : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`, `[WEBP](${webpUrl})`];
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads:** ${linksList.join(' • ')}`,
-      image: { url: bannerUrl },
+      image: { url: embedImageUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {
@@ -149,7 +167,7 @@ export const command: CommandModule = {
           type: ComponentType.Button,
           style: ButtonStyle.Link,
           label: 'Abrir banner no navegador',
-          url: bannerUrl,
+          url: embedImageUrl,
         },
       ],
     };

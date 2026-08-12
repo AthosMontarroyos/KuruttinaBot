@@ -41,7 +41,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID. Inclui botão direto para abrir a mídia original no navegador.',
+      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações vivas usando ?animated=true.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -110,21 +110,25 @@ export const command: CommandModule = {
       return;
     }
 
-    // Direct Discord CDN endpoints (WebP returns 200 OK for animated/preset banners, PNG/JPG for static fallbacks)
-    const webpUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
+    const isAnimated = fetchedUser.banner.startsWith('a_');
+
+    // Discord CDN URLs using ?animated=true parameter for live animation rendering
+    const animatedWebpEmbedUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?animated=true&size=512`;
+    const animatedWebpDownloadUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?animated=true&size=1024`;
     const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
     const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
 
-    const linksList = [
-      `[WEBP](${webpUrl})`,
-      `[PNG](${pngUrl})`,
-      `[JPG](${jpgUrl})`,
-    ];
+    const embedImageUrl = isAnimated ? animatedWebpEmbedUrl : pngUrl;
+    const primaryBrowserUrl = isAnimated ? animatedWebpDownloadUrl : pngUrl;
+
+    const linksList = isAnimated
+      ? [`[WebP Animado](${animatedWebpDownloadUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`]
+      : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`];
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads:** ${linksList.join(' • ')}`,
-      image: { url: webpUrl },
+      image: { url: embedImageUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {
@@ -147,7 +151,7 @@ export const command: CommandModule = {
           type: ComponentType.Button,
           style: ButtonStyle.Link,
           label: 'Abrir banner no navegador',
-          url: webpUrl,
+          url: primaryBrowserUrl,
         },
       ],
     };

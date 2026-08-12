@@ -34,7 +34,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord informando uma menção ou o ID da conta. Verifica se o usuário possui um banner customizado e fornece links de download em PNG, JPG, WEBP e GIF.',
+      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta banners estáticos e animados (GIF).',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -122,12 +122,15 @@ export const command: CommandModule = {
     const isAnimated = bannerHash.startsWith('a_');
     const defaultExt = isAnimated ? 'gif' : 'png';
 
-    // Construct CDN URLs dynamically with guaranteed extension parameters
+    // Construct CDN URLs
     const cdnBase = isGuildBanner
       ? `https://cdn.discordapp.com/guilds/${ctx.guild!.id}/users/${targetId}/banners/${bannerHash}`
       : `https://cdn.discordapp.com/banners/${targetId}/${bannerHash}`;
 
-    const bannerUrl = `${cdnBase}.${defaultExt}?size=1024`;
+    // Use 512px for embed image to prevent Discord Proxy 8MB payload limit failure on heavy GIF banners
+    const embedBannerUrl = `${cdnBase}.${defaultExt}?size=512`;
+
+    // 1024px High-Res Download Links
     const pngUrl = `${cdnBase}.png?size=1024`;
     const jpgUrl = `${cdnBase}.jpg?size=1024`;
     const webpUrl = `${cdnBase}.webp?size=1024`;
@@ -144,8 +147,8 @@ export const command: CommandModule = {
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
-      description: `📥 **Downloads:** ${linksList.join(' • ')}`,
-      image: { url: bannerUrl },
+      description: `📥 **Downloads (1024px):** ${linksList.join(' • ')}`,
+      image: { url: embedBannerUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {

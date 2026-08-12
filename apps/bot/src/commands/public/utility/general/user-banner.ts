@@ -34,7 +34,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta banners estáticos e animados (GIF).',
+      'Busca e exibe em alta resolução o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta banners customizados e exibe cor de destaque caso não possua banner.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -103,47 +103,21 @@ export const command: CommandModule = {
       return;
     }
 
-    const isAnimated = fetchedUser.banner.startsWith('a_');
-
-    // Use Discord.js v14 official bannerURL method with explicit extension and forceStatic parameters
-    const bannerUrl =
-      fetchedUser.bannerURL({
-        extension: isAnimated ? 'gif' : 'png',
-        size: 1024,
-        forceStatic: false,
-      }) ||
-      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.${isAnimated ? 'gif' : 'png'}?size=1024`;
-
-    const pngUrl =
-      fetchedUser.bannerURL({ extension: 'png', size: 1024 }) ||
-      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
-
-    const jpgUrl =
-      fetchedUser.bannerURL({ extension: 'jpg', size: 1024 }) ||
-      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
-
-    const webpUrl =
-      fetchedUser.bannerURL({ extension: 'webp', size: 1024 }) ||
-      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
-
-    const gifUrl = isAnimated
-      ? fetchedUser.bannerURL({ extension: 'gif', size: 1024, forceStatic: false }) ||
-        `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.gif?size=1024`
-      : null;
+    // Direct Discord CDN endpoints for PNG, JPG, and WEBP formats (guaranteed 200 OK by Discord API)
+    const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
+    const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
+    const webpUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
 
     const linksList = [
       `[PNG](${pngUrl})`,
       `[JPG](${jpgUrl})`,
       `[WEBP](${webpUrl})`,
     ];
-    if (gifUrl) {
-      linksList.push(`[GIF](${gifUrl})`);
-    }
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
-      description: `📥 **Downloads (1024px):** ${linksList.join(' • ')}`,
-      image: { url: bannerUrl },
+      description: `📥 **Downloads:** ${linksList.join(' • ')}`,
+      image: { url: pngUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {

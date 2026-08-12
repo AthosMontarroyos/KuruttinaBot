@@ -76,7 +76,23 @@ export const command: CommandModule = {
       return;
     }
 
-    if (!fetchedUser.banner) {
+    // Check for Guild Member specific banner first, fallback to Global User banner
+    let bannerHash: string | null = null;
+    let isGuildBanner = false;
+
+    if (ctx.guild) {
+      const member = await ctx.guild.members.fetch(targetId).catch(() => null);
+      if (member && member.banner) {
+        bannerHash = member.banner;
+        isGuildBanner = true;
+      }
+    }
+
+    if (!bannerHash && fetchedUser.banner) {
+      bannerHash = fetchedUser.banner;
+    }
+
+    if (!bannerHash) {
       const accentInfo = fetchedUser.hexAccentColor
         ? `\n\n🎨 **Cor de Destaque (Accent Color):** \`${fetchedUser.hexAccentColor}\``
         : '';
@@ -103,12 +119,19 @@ export const command: CommandModule = {
       return;
     }
 
-    const bannerUrl = fetchedUser.bannerURL({ size: 1024 });
-    const pngUrl = fetchedUser.bannerURL({ extension: 'png', size: 1024 });
-    const jpgUrl = fetchedUser.bannerURL({ extension: 'jpg', size: 1024 });
-    const webpUrl = fetchedUser.bannerURL({ extension: 'webp', size: 1024 });
-    const isAnimated = fetchedUser.banner.startsWith('a_');
-    const gifUrl = isAnimated ? fetchedUser.bannerURL({ extension: 'gif', size: 1024 }) : null;
+    const isAnimated = bannerHash.startsWith('a_');
+    const defaultExt = isAnimated ? 'gif' : 'png';
+
+    // Construct CDN URLs dynamically with guaranteed extension parameters
+    const cdnBase = isGuildBanner
+      ? `https://cdn.discordapp.com/guilds/${ctx.guild!.id}/users/${targetId}/banners/${bannerHash}`
+      : `https://cdn.discordapp.com/banners/${targetId}/${bannerHash}`;
+
+    const bannerUrl = `${cdnBase}.${defaultExt}?size=1024`;
+    const pngUrl = `${cdnBase}.png?size=1024`;
+    const jpgUrl = `${cdnBase}.jpg?size=1024`;
+    const webpUrl = `${cdnBase}.webp?size=1024`;
+    const gifUrl = isAnimated ? `${cdnBase}.gif?size=1024` : null;
 
     const linksList = [
       `[PNG](${pngUrl})`,
@@ -122,7 +145,7 @@ export const command: CommandModule = {
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads:** ${linksList.join(' • ')}`,
-      image: { url: bannerUrl! },
+      image: { url: bannerUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {

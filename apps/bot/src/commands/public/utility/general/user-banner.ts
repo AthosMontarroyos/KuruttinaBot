@@ -1,7 +1,14 @@
-import { SlashCommandBuilder, User } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  User,
+  ComponentType,
+  ButtonStyle,
+  APIActionRowComponent,
+  APIButtonComponent,
+} from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmojis, createKuruttinaEmbed, sendErrorReply, KuruttinaEmbedOptions } from '../../../../utils';
+import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -34,7 +41,7 @@ export const command: CommandModule = {
       'k!banner 123456789012345678',
     ],
     detailedDescription:
-      'Busca e exibe o banner de perfil de um usuário do Discord. Renderiza a imagem no embed estritamente quando o banner for um GIF animado válido.',
+      'Busca e exibe em alta resolução (1024px) o banner de perfil de qualquer usuário do Discord por menção ou ID. Suporta animações GIF e botão direto para abrir no navegador.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -103,38 +110,23 @@ export const command: CommandModule = {
       return;
     }
 
-    const isAnimatedHash = fetchedUser.banner.startsWith('a_');
+    const isAnimated = fetchedUser.banner.startsWith('a_');
 
-    const pngUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
-    const jpgUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
-    const webpUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
-    const candidateGifUrl = `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.gif?size=1024`;
+    // Standard Discord.js v14 Banner URL resolution (forceStatic: false ensures animated GIF banners render as GIF)
+    const bannerUrl = fetchedUser.bannerURL({ forceStatic: false, size: 1024 })!;
+    const pngUrl = fetchedUser.bannerURL({ extension: 'png', size: 1024 })!;
+    const jpgUrl = fetchedUser.bannerURL({ extension: 'jpg', size: 1024 })!;
+    const webpUrl = fetchedUser.bannerURL({ extension: 'webp', size: 1024 })!;
+    const gifUrl = isAnimated ? fetchedUser.bannerURL({ extension: 'gif', size: 1024, forceStatic: false }) : null;
 
-    // Dynamic verification: Check if Discord CDN serves valid GIF format (HTTP 200) for multi-frame animated GIFs
-    let hasValidGif = false;
-    if (isAnimatedHash) {
-      try {
-        const headRes = await fetch(candidateGifUrl, { method: 'HEAD' });
-        if (headRes.ok) {
-          hasValidGif = true;
-        }
-      } catch {
-        hasValidGif = false;
-      }
-    }
+    const linksList = isAnimated && gifUrl
+      ? [`[GIF](${gifUrl})`, `[PNG](${pngUrl})`, `[JPG](${jpgUrl})`, `[WEBP](${webpUrl})`]
+      : [`[PNG](${pngUrl})`, `[JPG](${jpgUrl})`, `[WEBP](${webpUrl})`];
 
-    const linksList = [
-      `[PNG](${pngUrl})`,
-      `[JPG](${jpgUrl})`,
-      `[WEBP](${webpUrl})`,
-    ];
-    if (hasValidGif) {
-      linksList.unshift(`[GIF](${candidateGifUrl})`);
-    }
-
-    const embedOptions: KuruttinaEmbedOptions = {
+    const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads:** ${linksList.join(' • ')}`,
+      image: { url: bannerUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {
@@ -148,15 +140,20 @@ export const command: CommandModule = {
           inline: true,
         },
       ],
+    });
+
+    const actionRow: APIActionRowComponent<APIButtonComponent> = {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Link,
+          label: 'Abrir banner no navegador',
+          url: bannerUrl,
+        },
+      ],
     };
 
-    // Strictly render image in embed ONLY if banner is a valid animated GIF
-    if (hasValidGif) {
-      embedOptions.image = { url: candidateGifUrl };
-    }
-
-    const bannerEmbed = createKuruttinaEmbed(ctx.client, embedOptions);
-
-    await ctx.reply({ embeds: [bannerEmbed] });
+    await ctx.reply({ embeds: [bannerEmbed], components: [actionRow] });
   },
 };

@@ -41,7 +41,11 @@ async function syncCommandGroup(
       const remoteMap = new Map(remoteCommands.map((c) => [c.name, c]));
       for (const localCmd of localCommands) {
         const remoteCmd = remoteMap.get(localCmd.name);
-        if (!remoteCmd || remoteCmd.description !== localCmd.description) {
+        if (
+          !remoteCmd ||
+          remoteCmd.description !== localCmd.description ||
+          JSON.stringify(remoteCmd.options ?? []) !== JSON.stringify(localCmd.options ?? [])
+        ) {
           needsSync = true;
           break;
         }

@@ -65,7 +65,7 @@ export const command: CommandModule = {
 
     let fetchedUser: User | null = null;
     try {
-      // Force fetch to ensure full profile details (including banner hash & accent color) are loaded
+      // Force fetch to ensure full profile details (including banner hash & accent color) are loaded directly from Discord REST API
       fetchedUser = await ctx.client.users.fetch(targetId, { force: true });
     } catch {
       await sendErrorReply(
@@ -76,23 +76,7 @@ export const command: CommandModule = {
       return;
     }
 
-    // Check for Guild Member specific banner first, fallback to Global User banner
-    let bannerHash: string | null = null;
-    let isGuildBanner = false;
-
-    if (ctx.guild) {
-      const member = await ctx.guild.members.fetch(targetId).catch(() => null);
-      if (member && member.banner) {
-        bannerHash = member.banner;
-        isGuildBanner = true;
-      }
-    }
-
-    if (!bannerHash && fetchedUser.banner) {
-      bannerHash = fetchedUser.banner;
-    }
-
-    if (!bannerHash) {
+    if (!fetchedUser.banner) {
       const accentInfo = fetchedUser.hexAccentColor
         ? `\n\n🎨 **Cor de Destaque (Accent Color):** \`${fetchedUser.hexAccentColor}\``
         : '';
@@ -119,22 +103,33 @@ export const command: CommandModule = {
       return;
     }
 
-    const isAnimated = bannerHash.startsWith('a_');
-    const defaultExt = isAnimated ? 'gif' : 'png';
+    const isAnimated = fetchedUser.banner.startsWith('a_');
 
-    // Construct CDN URLs
-    const cdnBase = isGuildBanner
-      ? `https://cdn.discordapp.com/guilds/${ctx.guild!.id}/users/${targetId}/banners/${bannerHash}`
-      : `https://cdn.discordapp.com/banners/${targetId}/${bannerHash}`;
+    // Use Discord.js v14 official bannerURL method with explicit extension and forceStatic parameters
+    const bannerUrl =
+      fetchedUser.bannerURL({
+        extension: isAnimated ? 'gif' : 'png',
+        size: 1024,
+        forceStatic: false,
+      }) ||
+      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.${isAnimated ? 'gif' : 'png'}?size=1024`;
 
-    // Use 512px for embed image to prevent Discord Proxy 8MB payload limit failure on heavy GIF banners
-    const embedBannerUrl = `${cdnBase}.${defaultExt}?size=512`;
+    const pngUrl =
+      fetchedUser.bannerURL({ extension: 'png', size: 1024 }) ||
+      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.png?size=1024`;
 
-    // 1024px High-Res Download Links
-    const pngUrl = `${cdnBase}.png?size=1024`;
-    const jpgUrl = `${cdnBase}.jpg?size=1024`;
-    const webpUrl = `${cdnBase}.webp?size=1024`;
-    const gifUrl = isAnimated ? `${cdnBase}.gif?size=1024` : null;
+    const jpgUrl =
+      fetchedUser.bannerURL({ extension: 'jpg', size: 1024 }) ||
+      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.jpg?size=1024`;
+
+    const webpUrl =
+      fetchedUser.bannerURL({ extension: 'webp', size: 1024 }) ||
+      `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.webp?size=1024`;
+
+    const gifUrl = isAnimated
+      ? fetchedUser.bannerURL({ extension: 'gif', size: 1024, forceStatic: false }) ||
+        `https://cdn.discordapp.com/banners/${fetchedUser.id}/${fetchedUser.banner}.gif?size=1024`
+      : null;
 
     const linksList = [
       `[PNG](${pngUrl})`,
@@ -148,7 +143,7 @@ export const command: CommandModule = {
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
       title: `${e.PHOTO} Banner de ${fetchedUser.username}`,
       description: `📥 **Downloads (1024px):** ${linksList.join(' • ')}`,
-      image: { url: embedBannerUrl },
+      image: { url: bannerUrl },
       color: fetchedUser.accentColor ?? undefined,
       fields: [
         {

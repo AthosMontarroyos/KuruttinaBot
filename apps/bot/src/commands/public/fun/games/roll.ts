@@ -118,8 +118,8 @@ export const command: CommandModule = {
     }
 
     // Batch resolve Application Emojis concurrently
-    const { DICE_ROLL, DICE_ANIMATED, DICE, STAR, WARNING, STATS } = await getEmojis(client, [
-      'DICE_ROLL', 'DICE_ANIMATED', 'DICE', 'STAR', 'WARNING', 'STATS',
+    const { DICE_ROLL, DICE_ANIMATED, DICE, STAR, WARNING, STATS, THINKING } = await getEmojis(client, [
+      'DICE_ROLL', 'DICE_ANIMATED', 'DICE', 'STAR', 'WARNING', 'STATS', 'THINKING',
     ]);
 
     // INFJ Persona Wittiness & Commentary
@@ -146,7 +146,7 @@ export const command: CommandModule = {
       description: commentary,
       fields: [
         {
-          name: `${DICE} Resultados Individuais`,
+          name: `${THINKING} Resultados Individuais`,
           value: formattedRolls || 'Nenhum resultado.',
           inline: false,
         },

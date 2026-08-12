@@ -5,7 +5,6 @@ import {
   PermissionGuard,
   getEmojiAppConfigs,
   withAppClient,
-  getEmoji,
   getEmojis,
   createKuruttinaEmbed,
   sendErrorReply,
@@ -30,13 +29,12 @@ export const command: CommandModule = {
     if (!isAllowed) return;
 
     await ctx.deferReply(true);
+    const e = await getEmojis(ctx.client);
 
     try {
       const appConfigs = await getEmojiAppConfigs();
       const fields: { name: string; value: string; inline: boolean }[] = [];
       let totalGlobalEmojis = 0;
-
-      const e = await getEmojis(ctx.client, ['VAULT', 'FOLDER', 'PHOTO', 'STAR', 'LABEL', 'INFO']);
 
       for (const appConfig of appConfigs) {
         try {
@@ -90,10 +88,9 @@ export const command: CommandModule = {
       await ctx.reply({ embeds: [embed], ephemeral: true });
     } catch (error: any) {
       console.error('❌ Erro ao listar emojis multi-app:', error);
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       await sendErrorReply(
         ctx,
-        `${errorEmoji} Erro ao Listar Emojis`,
+        `${e.ERROR} Erro ao Listar Emojis`,
         `Ocorreu uma falha ao buscar os emojis das aplicações: \`${error.message || error}\``
       );
     }

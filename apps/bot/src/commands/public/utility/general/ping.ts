@@ -25,19 +25,19 @@ export const command: CommandModule = {
 
     const apiPing = Date.now() - startMsgTime;
 
-    // Resolve live emojis from Developer Portal concurrently
-    const { DANCING, GATEWAY, API } = await getEmojis(ctx.client, ['DANCING', 'GATEWAY', 'API']);
+    // Resolve live emojis from Developer Portal
+    const e = await getEmojis(ctx.client);
 
     const pingEmbed = createKuruttinaEmbed(ctx.client, {
-      title: `${DANCING} Pong!`,
+      title: `${e.DANCING} Pong!`,
       fields: [
         {
-          name: `${GATEWAY} Gateway Ping`,
+          name: `${e.GATEWAY} Gateway Ping`,
           value: `\`${gatewayPing}ms\``,
           inline: true,
         },
         {
-          name: `${API} API Ping`,
+          name: `${e.API} API Ping`,
           value: `\`${apiPing}ms\``,
           inline: true,
         },

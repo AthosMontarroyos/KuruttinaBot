@@ -117,46 +117,44 @@ export const command: CommandModule = {
       if (numSides === 20 && rollValue === 1) hasNat1 = true;
     }
 
-    // Batch resolve Application Emojis concurrently
-    const { DICE_ROLL, DICE_ANIMATED, DICE, STAR, WARNING, STATS, THINKING } = await getEmojis(client, [
-      'DICE_ROLL', 'DICE_ANIMATED', 'DICE', 'STAR', 'WARNING', 'STATS', 'THINKING',
-    ]);
+    // Resolve Application Emojis dynamically into single e object
+    const e = await getEmojis(client);
 
     // INFJ Persona Wittiness & Commentary
-    let commentary = `${DICE_ANIMATED} A sorte foi lançada sobre a mesa!`;
+    let commentary = `${e.DICE_ANIMATED} A sorte foi lançada sobre a mesa!`;
     if (hasNat20) {
-      commentary = `${STAR} **Vinte Natural!** Um resultado extraordinário guiado pela mais pura intuição!`;
+      commentary = `${e.STAR} **Vinte Natural!** Um resultado extraordinário guiado pela mais pura intuição!`;
     } else if (hasNat1) {
-      commentary = `${WARNING} **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
+      commentary = `${e.WARNING} **Falha Crítica (1)...** A sabedoria também habita nos pequenos percalços do destino.`;
     }
 
     // Format individual rolls list
     const formattedRolls = rolls
       .map((val, idx) => {
         let highlight = `\`${val}\``;
-        if (numSides === 20 && val === 20) highlight = `**\`20\`** ${STAR} (Crítico!)`;
+        if (numSides === 20 && val === 20) highlight = `**\`20\`** ${e.STAR} (Crítico!)`;
         if (numSides === 20 && val === 1) highlight = `**\`1\`** (Falha Crítica!)`;
-        return `${DICE} Giro ${idx + 1}: ${highlight}`;
+        return `${e.DICE} Giro ${idx + 1}: ${highlight}`;
       })
       .join('\n');
 
     // Build Embed using factory
     const resultEmbed = createKuruttinaEmbed(client, {
-      title: `${DICE_ROLL} Lançamento de Dados: ${numDice}d${numSides}`,
+      title: `${e.DICE_ROLL} Lançamento de Dados: ${numDice}d${numSides}`,
       description: commentary,
       fields: [
         {
-          name: `${THINKING} Resultados Individuais`,
+          name: `${e.THINKING} Resultados Individuais`,
           value: formattedRolls || 'Nenhum resultado.',
           inline: false,
         },
         {
-          name: `${STATS} Soma Total`,
+          name: `${e.STATS} Soma Total`,
           value: `\`${totalSum}\``,
           inline: true,
         },
         {
-          name: `${STATS} Média`,
+          name: `${e.STATS} Média`,
           value: `\`${(totalSum / numDice).toFixed(1)}\``,
           inline: true,
         },

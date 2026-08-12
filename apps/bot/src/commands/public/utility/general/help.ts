@@ -10,7 +10,7 @@ import { EMBED_COLORS, DEFAULT_BOT_CONFIG, createCustomId } from '@kuruttina/sha
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
 import { KuruttinaClient } from '../../../../types/kuruttina-client';
-import { getEmoji } from '../../../../utils';
+import { getEmoji, getEmojis, createKuruttinaEmbed } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -44,17 +44,10 @@ export const command: CommandModule = {
       targetCommandName = ctx.args[0].trim().toLowerCase();
     }
 
-    // Resolve Live Application Emojis from Developer Portal
-    const dancingEmoji = await getEmoji(client, 'DANCING');
-    const searchEmoji = await getEmoji(client, 'SEARCH');
-    const thumbUpEmoji = await getEmoji(client, 'THUMBUP');
-    const folderEmoji = await getEmoji(client, 'FOLDER');
-    const pinkDividerEmoji = await getEmoji(client, 'DIVIDER');
-    const bookEmoji = await getEmoji(client, 'BOOK');
-    const pinEmoji = await getEmoji(client, 'PIN');
-    const ideaEmoji = await getEmoji(client, 'IDEA');
-    const labelEmoji = await getEmoji(client, 'LABEL');
-    const securityEmoji = await getEmoji(client, 'SECURITY');
+    // Resolve Application Emojis dynamically into single e helper object
+    const e = await getEmojis(client);
+
+
 
     // SCENARIO 1: Detailed Single Command View (/help <command>)
     if (targetCommandName) {
@@ -71,11 +64,10 @@ export const command: CommandModule = {
       const canSeeDevCommands = isDevGuild || isDevUser;
 
       if (!foundCommand || (foundCommand.category === 'developer' && !canSeeDevCommands)) {
-        const errorEmbed: APIEmbed = {
-          title: `${searchEmoji} Comando Não Encontrado`,
+        const errorEmbed = createKuruttinaEmbed(client, {
+          title: `${e.SEARCH} Comando Não Encontrado`,
           description: `Não foi possível localizar o comando \`${targetCommandName}\`. Verifique o nome ou navegue pelas páginas.`,
-          color: EMBED_COLORS.BLACK.number,
-        };
+        });
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
         return;
       }
@@ -86,49 +78,46 @@ export const command: CommandModule = {
         detailedDescription: foundCommand.data.description,
       };
 
-      const commandDetailEmbed: APIEmbed = {
-        title: `${bookEmoji} Guia do Comando: /${foundCommand.data.name}`,
-        description: guide.detailedDescription || foundCommand.data.description,
-        color: EMBED_COLORS.BLACK.number,
-        fields: [
-          {
-            name: `${pinEmoji} Sintaxe`,
-            value: `\`${guide.syntax}\``,
-            inline: false,
-          },
-          {
-            name: `${ideaEmoji} Exemplos de Uso`,
-            value: guide.examples.map((ex) => `• \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
-            inline: false,
-          },
-          {
-            name: `${labelEmoji} Categoria & Subcategoria`,
-            value: `\`${foundCommand.category.toUpperCase()}\` • Sub: \`${foundCommand.subCategory || 'geral'}\``,
-            inline: true,
-          },
-        ],
-        footer: {
-          text: `${DEFAULT_BOT_CONFIG.BOT_NAME} • Diretório Completo`,
-          icon_url: client.user?.displayAvatarURL(),
+      const fields: APIEmbed['fields'] = [
+        {
+          name: `${e.PIN} Sintaxe`,
+          value: `\`${guide.syntax}\``,
+          inline: false,
         },
-        timestamp: new Date().toISOString(),
-      };
+        {
+          name: `${e.IDEA} Exemplos de Uso`,
+          value: guide.examples.map((ex) => `• \`${ex}\``).join('\n') || 'Nenhum exemplo disponível.',
+          inline: false,
+        },
+        {
+          name: `${e.LABEL} Categoria & Subcategoria`,
+          value: `\`${foundCommand.category.toUpperCase()}\` • Sub: \`${foundCommand.subCategory || 'geral'}\``,
+          inline: true,
+        },
+      ];
 
       if (foundCommand.prefixAliases && foundCommand.prefixAliases.length > 0) {
-        commandDetailEmbed.fields!.push({
-          name: `${labelEmoji} Atalhos de Prefixo`,
+        fields.push({
+          name: `${e.LABEL} Atalhos de Prefixo`,
           value: foundCommand.prefixAliases.map((a) => `\`k!${a}\``).join(', '),
           inline: true,
         });
       }
 
       if (guide.requiredPermissions && guide.requiredPermissions.length > 0) {
-        commandDetailEmbed.fields!.push({
-          name: `${securityEmoji} Permissões Requeridas`,
+        fields.push({
+          name: `${e.SECURITY} Permissões Requeridas`,
           value: guide.requiredPermissions.map((p) => `\`${p}\``).join(', '),
           inline: true,
         });
       }
+
+      const commandDetailEmbed = createKuruttinaEmbed(client, {
+        title: `${e.BOOK} Guia do Comando: /${foundCommand.data.name}`,
+        description: guide.detailedDescription || foundCommand.data.description,
+        fields,
+        footerText: 'Diretório Completo',
+      });
 
       await ctx.reply({ embeds: [commandDetailEmbed], ephemeral: true });
       return;
@@ -201,19 +190,14 @@ export const command: CommandModule = {
 
     pages.push({
       id: 'home',
-      embed: {
-        title: `${dancingEmoji} Central de Ajuda da Kuruttina`,
+      embed: createKuruttinaEmbed(client, {
+        title: `${e.DANCING} Central de Ajuda da Kuruttina`,
         description:
-          `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos ${thumbUpEmoji}.\n\n` +
-          `Navegue pelas páginas usando os **botões de seta (◀ / ▶)** ou escolha uma categoria no menu abaixo.`,
-        color: EMBED_COLORS.BLACK.number,
+          `Olá! Sou a **Kuruttina**, estou aqui para te dar uma geral sobre como utilizar meus comandos ${e.THUMBUP}.\n\n` +
+          `Navegue pelas páginas usando os **botões de seta** ou escolha uma categoria no menu abaixo.`,
         fields: homeFields,
-        footer: {
-          text: `Página 1/${categoryMap.size + 1} • ${DEFAULT_BOT_CONFIG.BOT_NAME}`,
-          icon_url: client.user?.displayAvatarURL(),
-        },
-        timestamp: new Date().toISOString(),
-      },
+        footerText: `Página 1/${categoryMap.size + 1}`,
+      }),
     });
 
     // --- PAGES 1..N: Category Pages with Sub-Category Breakdown & Impeccable Visual Hierarchy ---
@@ -233,13 +217,12 @@ export const command: CommandModule = {
       const subFields: { name: string; value: string; inline: boolean }[] = [];
 
       for (const [subKey, cmds] of subMap.entries()) {
-        const subTitle = `${folderEmoji} Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
+        const subTitle = `${e.FOLDER} Subcategoria: ${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`;
 
-        // Proper Text Prefix Usage: {pinkDividerEmoji} {Texto} (e.g. 🦋| /comando)
         const cmdList = cmds
           .map((c) => {
             const alias = c.prefixAliases?.[0] ? ` \`(k!${c.prefixAliases[0]})\`` : '';
-            return `${pinkDividerEmoji} **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
+            return `${e.DIVIDER} **\`/${c.data.name}\`**${alias}\n> ${c.data.description}`;
           })
           .join('\n\n');
 
@@ -252,17 +235,12 @@ export const command: CommandModule = {
 
       pages.push({
         id: `cat:${catKey}`,
-        embed: {
+        embed: createKuruttinaEmbed(client, {
           title: `${catEmoji} Categoria: ${catLabel}`,
           description: `Exibindo todas as subcategorias e comandos da categoria **${catLabel}**.`,
-          color: EMBED_COLORS.BLACK.number,
           fields: subFields,
-          footer: {
-            text: `Página ${catPageIndex}/${catKeysArray.length + 1} • ${DEFAULT_BOT_CONFIG.BOT_NAME}`,
-            icon_url: client.user?.displayAvatarURL(),
-          },
-          timestamp: new Date().toISOString(),
-        },
+          footerText: `Página ${catPageIndex}/${catKeysArray.length + 1}`,
+        }),
       });
 
       catPageIndex++;
@@ -280,17 +258,20 @@ export const command: CommandModule = {
       const btnPrev = new ButtonBuilder()
         .setCustomId(prevCustomId)
         .setLabel('Anterior')
+        .setEmoji(e.PREV)
         .setStyle(ButtonStyle.Primary)
         .setDisabled(pageIdx === 0);
 
       const btnNext = new ButtonBuilder()
         .setCustomId(nextCustomId)
         .setLabel('Próximo')
+        .setEmoji(e.NEXT)
         .setStyle(ButtonStyle.Primary)
         .setDisabled(pageIdx === pages.length - 1);
 
       const btnWeb = new ButtonBuilder()
         .setLabel('Diretório Web Oficial')
+        .setEmoji(e.LINK)
         .setStyle(ButtonStyle.Link)
         .setURL('https://kuruttinabot.athosmontarroyos.com/commands');
 
@@ -300,7 +281,7 @@ export const command: CommandModule = {
           label: 'Início & Resumo (Página 1)',
           description: 'Retorna à página principal da Central de Ajuda',
           value: '0',
-          emoji: '🏠',
+          emoji: e.HOME,
         },
       ];
 
@@ -346,9 +327,8 @@ export const command: CommandModule = {
     collector.on('collect', async (interaction) => {
       // Security check: Only allow command invoker to paginate
       if (interaction.user.id !== ctx.user.id) {
-        const errEmoji = await getEmoji(client, 'WARNING');
         await interaction.reply({
-          content: `${errEmoji} Apenas o usuário que usou o comando pode navegar nas páginas.`,
+          content: `${e.WARNING} Apenas o usuário que usou o comando pode navegar nas páginas.`,
           flags: 64, // Ephemeral
         });
         return;
@@ -381,17 +361,20 @@ export const command: CommandModule = {
         const disabledPrev = new ButtonBuilder()
           .setCustomId(prevCustomId)
           .setLabel('Anterior')
+          .setEmoji(e.PREV)
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true);
 
         const disabledNext = new ButtonBuilder()
           .setCustomId(nextCustomId)
           .setLabel('Próximo')
+          .setEmoji(e.NEXT)
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true);
 
         const disabledWeb = new ButtonBuilder()
           .setLabel('Diretório Web Oficial')
+          .setEmoji(e.LINK)
           .setStyle(ButtonStyle.Link)
           .setURL('https://kuruttinabot.athosmontarroyos.com/commands');
 

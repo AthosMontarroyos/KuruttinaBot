@@ -5,7 +5,7 @@ import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
 import {
   PermissionGuard,
-  getEmoji,
+  getEmojis,
   getEmojiAppConfigs,
   withAppClient,
   EmojiAppConfig,
@@ -200,6 +200,8 @@ export const command: CommandModule = {
 
     await ctx.deferReply(true);
 
+    const e = await getEmojis(ctx.client);
+
     let explicitName: string | null = null;
     let rawEmojiInput: string | null = null;
     let fileAttachment: Attachment | null = null;
@@ -221,9 +223,8 @@ export const command: CommandModule = {
     const emojiName = extractEmojiName(explicitName, rawEmojiInput, fileAttachment);
 
     if (!emojiName) {
-      const warningEmoji = await getEmoji(ctx.client, 'WARNING');
       const errorEmbed: APIEmbed = {
-        title: `${warningEmoji} Nome do Emoji Não Identificado`,
+        title: `${e.WARNING} Nome do Emoji Não Identificado`,
         description:
           'Não foi possível extrair o nome do emoji automaticamente. Forneça o nome no final: `k!dev-emoji-add <emoji> 2 meu_nome` ou `/dev-emoji-add emoji:<emoji> app:2 nome:meu_nome`',
         color: EMBED_COLORS.BLACK.number,
@@ -242,9 +243,8 @@ export const command: CommandModule = {
       }
 
       if (!dataUri) {
-        const errorEmoji = await getEmoji(ctx.client, 'ERROR');
         const errorEmbed: APIEmbed = {
-          title: `${errorEmoji} Imagem Não Encontrada`,
+          title: `${e.ERROR} Imagem Não Encontrada`,
           description:
             'Forneça um emoji customizado do Discord, uma URL de imagem válida ou um arquivo anexado.',
           color: EMBED_COLORS.BLACK.number,
@@ -255,9 +255,8 @@ export const command: CommandModule = {
 
       const allApps = await getEmojiAppConfigs();
       if (allApps.length === 0) {
-        const errorEmoji = await getEmoji(ctx.client, 'ERROR');
         const errorEmbed: APIEmbed = {
-          title: `${errorEmoji} Nenhuma App Vault Configurada`,
+          title: `${e.ERROR} Nenhuma App Vault Configurada`,
           description: 'Nenhum token de aplicação foi encontrado na configuração `.env`.',
           color: EMBED_COLORS.BLACK.number,
         };
@@ -269,9 +268,8 @@ export const command: CommandModule = {
       if (targetAppIndex) {
         selectedApp = allApps.find((a: EmojiAppConfig) => a.id === targetAppIndex) || null;
         if (!selectedApp) {
-          const warningEmoji = await getEmoji(ctx.client, 'WARNING');
           const errorEmbed: APIEmbed = {
-            title: `${warningEmoji} App Não Encontrada`,
+            title: `${e.WARNING} App Não Encontrada`,
             description: `App ID **#${targetAppIndex}** não existe. Aplicações disponíveis: ${allApps
               .map((a: EmojiAppConfig) => `\`#${a.id}: ${a.name}\``)
               .join(', ')}`,
@@ -291,33 +289,32 @@ export const command: CommandModule = {
 
         const existingEmojis = await uploadClient.application.emojis.fetch();
         const existingByName = existingEmojis.find(
-          (e: any) => e.name?.toLowerCase() === emojiName.toLowerCase()
+          (emojiItem: any) => emojiItem.name?.toLowerCase() === emojiName.toLowerCase()
         );
 
         if (existingByName) {
-          const warningEmoji = await getEmoji(ctx.client, 'WARNING');
           const warningEmbed: APIEmbed = {
-            title: `${warningEmoji} Emoji Já Existente na Vault`,
+            title: `${e.WARNING} Emoji Já Existente na Vault`,
             description: `O emoji **${existingByName.name}** (\`${existingByName.name}\`) já existe no **Discord Developer Portal** da App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
             color: EMBED_COLORS.BLACK.number,
             fields: [
               {
-                name: '✨ Emoji Existente',
+                name: `${e.STAR} Emoji Existente`,
                 value: `${existingByName.toString()}`,
                 inline: true,
               },
               {
-                name: '🏷️ Marcação Copiável',
+                name: `${e.LABEL} Marcação Copiável`,
                 value: `\`${existingByName.toString()}\``,
                 inline: true,
               },
               {
-                name: '🆔 ID do Emoji',
+                name: `${e.ID} ID do Emoji`,
                 value: `\`${existingByName.id}\``,
                 inline: true,
               },
               {
-                name: '💡 Dica de Nome',
+                name: `${e.IDEA} Dica de Nome`,
                 value: `Para salvar outro emoji parecido nesta mesma Vault, especifique um nome diferente no final: \`k!dev-emoji-add <emoji> ${selectedApp!.id} ${emojiName}_2\``,
                 inline: false,
               },
@@ -338,29 +335,28 @@ export const command: CommandModule = {
           name: emojiName,
         });
 
-        const successEmoji = await getEmoji(ctx.client, 'SUCCESS');
         const successEmbed: APIEmbed = {
-          title: `${successEmoji} Application Emoji Criado!`,
+          title: `${e.SUCCESS} Application Emoji Criado!`,
           description: `O emoji **${createdAppEmoji.name}** foi importado com sucesso na App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
           color: EMBED_COLORS.BLACK.number,
           fields: [
             {
-              name: '✨ Emoji Renderizado',
+              name: `${e.RENDER} Emoji Renderizado`,
               value: `${createdAppEmoji.toString()}`,
               inline: true,
             },
             {
-              name: '🏷️ Marcação / Formato Copiável',
+              name: `${e.LABEL} Marcação / Formato Copiável`,
               value: `\`${createdAppEmoji.toString()}\``,
               inline: true,
             },
             {
-              name: '🆔 ID do Emoji',
+              name: `${e.ID} ID do Emoji`,
               value: `\`${createdAppEmoji.id}\``,
               inline: true,
             },
             {
-              name: '📦 App Vault Destino',
+              name: `${e.VAULT} App Vault Destino`,
               value: `\`#${selectedApp!.id}: ${selectedApp!.name}\` (\`${selectedApp!.sanitizedFolderName}\`)`,
               inline: false,
             },
@@ -377,9 +373,8 @@ export const command: CommandModule = {
     } catch (error: any) {
       console.error('❌ Erro ao registrar Application Emoji no Developer Portal:', error);
 
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       const errorEmbed: APIEmbed = {
-        title: `${errorEmoji} Falha no Registro`,
+        title: `${e.ERROR} Falha no Registro`,
         description: `Ocorreu uma falha ao importar o emoji para o Developer Portal: \`${
           error.message || error
         }\``,

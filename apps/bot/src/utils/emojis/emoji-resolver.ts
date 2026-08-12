@@ -1,7 +1,44 @@
 import fs from 'fs';
 import path from 'path';
 import { Client } from 'discord.js';
-import { EMOJIS, EmojiKey } from '@kuruttina/shared';
+import { EMOJIS, EmojiKey, EMOJI_KEYS } from '@kuruttina/shared';
+
+/**
+ * Resolves emojis concurrently by array, map object, or resolves ALL registered EMOJI_KEYS if omitted.
+ */
+export async function getEmojis(client: Client): Promise<Record<EmojiKey, string>>;
+export async function getEmojis<K extends EmojiKey | string>(
+  client: Client,
+  keys: readonly K[]
+): Promise<Record<K, string>>;
+export async function getEmojis<M extends Record<string, EmojiKey | string>>(
+  client: Client,
+  mapping: M
+): Promise<Record<keyof M, string>>;
+export async function getEmojis(
+  client: Client,
+  keysOrMapping?: readonly string[] | Record<string, string>
+): Promise<Record<string, string>> {
+  if (!keysOrMapping) {
+    const entries = await Promise.all(
+      EMOJI_KEYS.map(async (key) => [key, await getEmoji(client, key)] as const)
+    );
+    return Object.fromEntries(entries);
+  }
+
+  if (Array.isArray(keysOrMapping)) {
+    const entries = await Promise.all(
+      keysOrMapping.map(async (key) => [key, await getEmoji(client, key)] as const)
+    );
+    return Object.fromEntries(entries);
+  }
+
+  const entries = await Promise.all(
+    Object.entries(keysOrMapping).map(async ([alias, key]) => [alias, await getEmoji(client, key)] as const)
+  );
+  return Object.fromEntries(entries);
+}
+
 
 const CATALOG_PATH = path.resolve(__dirname, '../../../../../Pictures/emojis/KuruttinaBotEmojis/catalog.json');
 
@@ -130,18 +167,3 @@ export async function getEmoji(client: Client, key: EmojiKey | string): Promise<
 
   return defaultEmoji;
 }
-
-/**
- * Resolves multiple emojis concurrently by key, returning a Record mapping each key to its resolved emoji string.
- * Reduces 10+ sequential await getEmoji(...) lines into a single destructurable call.
- */
-export async function getEmojis<K extends string>(
-  client: Client,
-  keys: readonly K[]
-): Promise<Record<K, string>> {
-  const entries = await Promise.all(
-    keys.map(async (key) => [key, await getEmoji(client, key)] as const)
-  );
-  return Object.fromEntries(entries) as Record<K, string>;
-}
-

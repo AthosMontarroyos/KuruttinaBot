@@ -162,11 +162,11 @@ Guidelines and rules for AI coding assistants working in this repository.
 
 ### 16. Message Writing Philosophy, Emojis & Visual Highlights Policy
 - **Engaging & Dynamic Message Formatting (No Plain Text)**: All bot messages, embeds, and responses MUST be visually polished, structured, and highly readable. Avoid plain or unformatted text blocks. Use rich Markdown elements (bold text, inline code blocks `` `value` ``, blockquotes, and lists) to create clean visual hierarchy.
-- **Discord Developer Portal Emojis Integration (`getEmoji` / `getEmojis`)**:
-  - All visual designs and embeds MUST use `await getEmoji(client, 'NOME')` or `await getEmojis(client, ['KEY1', 'KEY2'])` (`src/utils/emoji-resolver.ts`) or `EMOJIS.NOME` (`@kuruttina/shared`).
-  - **Batch Emoji Resolution (`getEmojis`)**: When resolving multiple emojis in a command or handler, use `await getEmojis(client, ['KEY1', 'KEY2', ...])` to fetch all keys concurrently via `Promise.all` in a single destructurable call.
+- **Discord Developer Portal Emojis Integration (`const e = await getEmojis(client)`)**:
+  - **Dynamic Single-Object Emoji Resolution (`const e = await getEmojis(client)`)**: All bot commands, embeds, and event handlers MUST resolve emojis into a single helper object `e` using `const e = await getEmojis(client)` (`src/utils/emoji-resolver.ts`).
+  - **ZERO DESTRUCTURING / EXPORT BOILERPLATE**: NEVER write giant destructuring blocks (`const { DANCING: dancingEmoji, ... } = await getEmojis(...)`) or list 15-30 variables manually. Simply call `const e = await getEmojis(client)` once at the start of execution and access properties on `e` directly across the file (`e.SEARCH`, `e.DANCING`, `e.SUCCESS`, `e.ERROR`, `e.RENDER`, `e.WARNING`, `e.STAR`).
   - **Interactive & Expressive Aesthetic (No Corporate Plain Icons)**: Custom Developer Portal emojis should be expressive, interactive, character-driven, animated GIF/APNG (`<a:name:id>`), or anime/chibi styled reflecting Kuruttina's INFJ personality rather than corporate static icons.
-  - **Dynamic Resolution Engine**: When the developer uploads a custom emoji to the Discord Developer Portal with a name matching a system key (e.g. `success`, `error`, `moderation`, `shield`), `getEmoji()` automatically detects it from `client.application.emojis.cache` and renders the custom Developer Portal emoji (`<:name:id>` / `<a:name:id>`) in all bot embeds and UI designs without requiring code changes!
+  - **Dynamic Resolution Engine**: When the developer uploads a custom emoji to the Discord Developer Portal with a name matching a system key (e.g. `success`, `error`, `moderation`, `shield`), `getEmojis()` automatically detects it from `client.application.emojis.cache` and renders the custom Developer Portal emoji (`<:name:id>` / `<a:name:id>`) in all bot embeds and UI designs without requiring code changes!
   - **Official Emoji Naming Matrix**:
     - Status: `success`, `error`, `warning`, `info`, `loading`
     - Categories: `moderation`, `utility`, `developer`, `admin`, `fun`, `affiliate`

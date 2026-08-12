@@ -1,7 +1,7 @@
-import { Events, Interaction, APIEmbed } from 'discord.js';
-import { EMBED_COLORS } from '@kuruttina/shared';
+import { Events, Interaction } from 'discord.js';
 import { CommandContext } from '../../../types/command-context';
 import { KuruttinaClient } from '../../../types/kuruttina-client';
+import { getEmoji, createKuruttinaEmbed } from '../../../utils';
 
 export const event = {
   name: Events.InteractionCreate,
@@ -23,11 +23,11 @@ export const event = {
     } catch (error) {
       console.error(`❌ Erro ao executar o comando /${interaction.commandName}:`, error);
 
-      const errorEmbed: APIEmbed = {
-        title: '❌ Ocorreu um Erro',
+      const errorEmoji = await getEmoji(client, 'ERROR');
+      const errorEmbed = createKuruttinaEmbed(client, {
+        title: `${errorEmoji} Ocorreu um Erro`,
         description: 'Ocorreu uma falha interna ao processar este comando. Tente novamente mais tarde.',
-        color: EMBED_COLORS.BLACK.number,
-      };
+      });
 
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
     }

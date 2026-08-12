@@ -9,7 +9,7 @@ import {
 import { CooldownManager } from '@kuruttina/shared';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmoji, getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
+import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
 
 // 10-second cooldown per user to prevent API flooding
 const clearCooldowns = new CooldownManager(10);
@@ -46,12 +46,13 @@ export const command: CommandModule = {
   },
 
   async execute(ctx: CommandContext): Promise<void> {
+    const e = await getEmojis(ctx.client);
+
     // 1. Authorization Guard (User must have Manage Messages permission)
     if (!ctx.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       await sendErrorReply(
         ctx,
-        `${errorEmoji} Permissão Insuficiente`,
+        `${e.ERROR} Permissão Insuficiente`,
         'Você precisa da permissão de **Gerenciar Mensagens** para utilizar este comando.'
       );
       return;
@@ -60,10 +61,9 @@ export const command: CommandModule = {
     // 2. Cooldown Guard (10s)
     const cooldownLeft = clearCooldowns.check(ctx.user.id);
     if (cooldownLeft > 0) {
-      const warningEmoji = await getEmoji(ctx.client, 'WARNING');
       await sendErrorReply(
         ctx,
-        `${warningEmoji} Aguarde um momento`,
+        `${e.WARNING} Aguarde um momento`,
         `Aguarde \`${cooldownLeft}s\` para usar o comando de limpeza novamente.`
       );
       return;
@@ -79,10 +79,9 @@ export const command: CommandModule = {
         channel instanceof ThreadChannel
       )
     ) {
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       await sendErrorReply(
         ctx,
-        `${errorEmoji} Canal Inválido`,
+        `${e.ERROR} Canal Inválido`,
         'Este comando só pode ser executado em canais de texto do servidor.'
       );
       return;
@@ -97,10 +96,9 @@ export const command: CommandModule = {
         PermissionFlagsBits.ReadMessageHistory,
       ])
     ) {
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       await sendErrorReply(
         ctx,
-        `${errorEmoji} Permissão do Bot Ausente`,
+        `${e.ERROR} Permissão do Bot Ausente`,
         'Eu preciso das permissões de **Gerenciar Mensagens** e **Ver Histórico de Mensagens** neste canal para executar a limpeza.'
       );
       return;
@@ -117,10 +115,9 @@ export const command: CommandModule = {
       // Prefix Command Parsing: k!clear <amount> [@user|userID]
       const rawAmount = parseInt(ctx.args[0], 10);
       if (isNaN(rawAmount) || rawAmount < 1 || rawAmount > 200) {
-        const warningEmoji = await getEmoji(ctx.client, 'WARNING');
         await sendErrorReply(
           ctx,
-          `${warningEmoji} Quantidade Inválida`,
+          `${e.WARNING} Quantidade Inválida`,
           'Por favor, informe uma quantidade válida de mensagens entre **1** e **200**.\n\n*Exemplo:* `k!clear 50`'
         );
         return;
@@ -141,42 +138,37 @@ export const command: CommandModule = {
     // Apply Cooldown after passing validation
     clearCooldowns.apply(ctx.user.id);
 
-    // Acknowledge interaction (3-second rule)
-    await ctx.deferReply(true);
-
+    // 6. Execute Bulk Delete Operation
     try {
-      let totalDeleted = 0;
-      let skippedOldMessages = false;
+      await ctx.deferReply(true);
 
-      // 6. Batch Processing (Discord API limits bulkDelete to max 100 messages per call)
-      const batches = amountToClear > 100 ? [100, amountToClear - 100] : [amountToClear];
+      const fetchedMessages = await channel.messages.fetch({ limit: amountToClear });
 
-      for (const batchSize of batches) {
-        let fetchedMessages = await channel.messages.fetch({ limit: batchSize });
-
-        // Filter by user if target specified
-        if (targetUser) {
-          fetchedMessages = fetchedMessages.filter((msg) => msg.author.id === targetUser!.id);
-        }
-
-        if (fetchedMessages.size === 0) continue;
-
-        // Perform bulk deletion (filterOld = true automatically ignores messages > 14 days)
-        const deletedBatch = await channel.bulkDelete(fetchedMessages, true);
-        totalDeleted += deletedBatch.size;
-
-        if (deletedBatch.size < fetchedMessages.size) {
-          skippedOldMessages = true;
-        }
-
-        // Small pause between batches to prevent REST rate-limits
-        if (batches.length > 1) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
+      // Filter by user if specified
+      let messagesToDelete = fetchedMessages;
+      if (targetUser) {
+        messagesToDelete = fetchedMessages.filter((msg) => msg.author.id === targetUser!.id);
       }
 
-      // Batch resolve Developer Portal emojis concurrently
-      const e = await getEmojis(ctx.client, ['CLEANING', 'SUCCESS', 'TRASH', 'YES', 'WAIT']);
+      // Filter out messages older than 14 days (Discord API restriction)
+      const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+      const validMessages = messagesToDelete.filter(
+        (msg) => msg.createdTimestamp > fourteenDaysAgo
+      );
+      const skippedOldMessages = messagesToDelete.size - validMessages.size;
+
+      let totalDeleted = 0;
+
+      if (validMessages.size > 0) {
+        if (validMessages.size === 1) {
+          const singleMsg = validMessages.first()!;
+          await singleMsg.delete();
+          totalDeleted = 1;
+        } else {
+          const deleted = await channel.bulkDelete(validMessages, true);
+          totalDeleted = deleted.size;
+        }
+      }
 
       const filterNotice = targetUser ? ` do usuário **${targetUser.tag}**` : '';
 
@@ -193,7 +185,7 @@ export const command: CommandModule = {
         },
       ];
 
-      if (skippedOldMessages) {
+      if (skippedOldMessages > 0) {
         fields.push({
           name: `${e.WAIT} Trava de 14 Dias`,
           value: 'Algumas mensagens com mais de 14 dias não puderam ser apagadas e foram ignoradas automaticamente.',
@@ -211,13 +203,11 @@ export const command: CommandModule = {
     } catch (error: any) {
       console.error('❌ [Clear Command Error]:', error);
 
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       await sendErrorReply(
         ctx,
-        `${errorEmoji} Falha na Limpeza`,
+        `${e.ERROR} Falha na Limpeza`,
         `Ocorreu um erro ao tentar apagar as mensagens: \`${error.message || error}\``
       );
     }
   },
 };
-

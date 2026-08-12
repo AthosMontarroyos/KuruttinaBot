@@ -5,7 +5,6 @@ import {
   PermissionGuard,
   getEmojiAppConfigs,
   withAppClient,
-  getEmoji,
   getEmojis,
   createKuruttinaEmbed,
   sendErrorReply,
@@ -30,6 +29,7 @@ export const command: CommandModule = {
     if (!isAllowed) return;
 
     await ctx.deferReply(true);
+    const e = await getEmojis(ctx.client);
 
     try {
       const appConfigs = await getEmojiAppConfigs();
@@ -38,12 +38,6 @@ export const command: CommandModule = {
       let totalAnimatedEmojis = 0;
       const MAX_PER_APP = 2000;
       const totalCapacity = appConfigs.length * MAX_PER_APP;
-
-      // Batch pre-fetch system Application Emojis
-      const e = await getEmojis(ctx.client, [
-        'CROWN', 'FOLDER', 'SHIELD', 'PHOTO', 'STAR',
-        'BULLET', 'WARNING', 'STATS', 'VAULT', 'LABEL', 'ID', 'USER',
-      ]);
 
       for (const appConfig of appConfigs) {
         try {
@@ -102,10 +96,9 @@ export const command: CommandModule = {
       await ctx.reply({ embeds: [embed], ephemeral: true });
     } catch (error: any) {
       console.error('❌ Erro ao listar App Vaults:', error);
-      const errorEmoji = await getEmoji(ctx.client, 'ERROR');
       await sendErrorReply(
         ctx,
-        `${errorEmoji} Erro ao Listar App Vaults`,
+        `${e.ERROR} Erro ao Listar App Vaults`,
         `Ocorreu uma falha ao consultar as aplicações: \`${error.message || error}\``
       );
     }

@@ -135,6 +135,13 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Mentions & Snowflake IDs**: Automatically extracts snowflake IDs from mentions (`<@123...>`, `<@!123...>`), raw numeric IDs (`123456789...`), or User objects across both Slash interactions and Prefix args (`k!cmd @user` / `k!cmd 123...`).
 - **Safe Option Resolution**: Uses type-agnostic `options.get()` inside `resolveUser` to safely extract String values or User objects without throwing `DiscordjsTypeError`.
 
+#### Time Duration Parsing & `parseTimeString` Utility Component Policy
+- **Unified Time Parsing (`parseTimeString`)**: Any command requiring time duration input (e.g. message deletion window, timeouts, mutes, tempbans, reminders, cooldowns) MUST use `parseTimeString(input, options)` (`src/utils/time/time-parser.ts`, re-exported via `src/utils/index.ts`).
+- **Supported Units & Formats**: Supports `s` (seconds), `m` (minutes), `h` (hours), `d` (days) and combined durations (e.g. `28s`, `28m`, `28h`, `7d`, `1d12h`).
+- **Default Unit & Numeric Fallback**: Accepts pure numbers (e.g. `7` or `28`), using `options.defaultUnit` (e.g. `defaultUnit: 'd'` defaults raw numbers to days for ban/mute commands).
+- **Flexible Argument Order in Prefix Commands**: When parsing prefix commands with optional time and reason (e.g. `k!ban @user 7d Spam` or `k!ban @user Spam 7d`), inspect both the first extra argument (`args[1]`) and the last argument (`args[args.length - 1]`) using `parseTimeString` so users can specify duration before or after the reason naturally.
+- **Human-Readable Output**: `parseTimeString` returns `ParsedTimeResult` containing `seconds`, `milliseconds`, `formatted` (e.g. `28d`), and localized `humanReadable` string (e.g. `28 Dias` or `1 Hora e 30 Minutos`).
+
 #### Database (Supabase / PostgreSQL)
 - Use `@supabase/supabase-js` or type-safe query builders with auto-generated Supabase TypeScript definitions.
 - Ensure database connections and queries are optimized for async execution in bot command handlers.

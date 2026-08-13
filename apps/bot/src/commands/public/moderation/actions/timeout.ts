@@ -166,6 +166,15 @@ export const command: CommandModule = {
       return;
     }
 
+    if (!targetMember.moderatable) {
+      await sendErrorReply(
+        ctx,
+        `${e.ERROR} Membro Não Moderável`,
+        'Este membro possui permissões administrativas e não pode receber castigos no servidor.'
+      );
+      return;
+    }
+
     // 7. Parse Duration & Reason
     let durationStr: string | null = null;
     let reason: string | null = null;

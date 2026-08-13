@@ -142,6 +142,15 @@ export const command: CommandModule = {
       return;
     }
 
+    if (!targetMember.moderatable) {
+      await sendErrorReply(
+        ctx,
+        `${e.ERROR} Membro Não Moderável`,
+        'Este membro possui permissões administrativas e não pode ter o castigo alterado.'
+      );
+      return;
+    }
+
     // 8. Cooldown Guard (5s)
     const cooldownLeft = untimeoutCooldowns.check(ctx.user.id);
     if (cooldownLeft > 0) {

@@ -115,6 +115,10 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   PHOTO: ['photo', 'taking_photo'],
   UNBAN: ['unban_untimeout', 'unban', 'untimeout'],
   UNMUTE: ['unmute', 'unban_untimeout'],
+  TIMEOUT: ['timeout', 'mute'],
+  MUTE: ['timeout', 'mute'],
+  UNTIMEOUT: ['unban_untimeout', 'untimeout', 'unmute'],
+  BOT_USER: ['bot_user', 'bot_status'],
 };
 
 /**

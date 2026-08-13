@@ -20,7 +20,7 @@ Prover um dashboard web moderno, responsivo e intuitivo para o gerenciamento da 
 
 ## Positioning
 
-Uma aplicação full-stack para Discord focada em extrema eficiência de recursos (AWS Ready), combinando a personalidade ENTP da Kuruttina com um painel de gerenciamento elegante, dinâmico e sem duplicação de código.
+Uma aplicação full-stack para Discord focada em extrema eficiência de recursos (AWS Ready), combinando a personalidade INFJ da Kuruttina com um painel de gerenciamento elegante, dinâmico e sem duplicação de código.
 
 ## Operating Context
 
@@ -34,8 +34,8 @@ Acessado via navegadores web em desktop e dispositivos móveis, integrado ao eco
 ## Brand Commitments
 
 - **Nome**: Kuruttina (estritamente).
-- **Personalidade**: ENTP ("The Debater / Visionary Innovator") — analítica, sagaz, brincalhona, direta e carismática.
-- **Assets de Marca**: Armazenados exclusivamente em `Pictures/branding/`, `Pictures/dashboard/`, `Pictures/avatars/` e `Pictures/icons/`.
+- **Personalidade**: INFJ ("The Advocate / Insightful Protector / Visionary Guardian") — empática, acolhedora, analítica, perspicaz, protetora e sagazmente espirituosa.
+- **Assets de Marca**: Armazenados exclusivamente em `Pictures/branding/`, `Pictures/dashboard/`, `Pictures/avatars/`, `Pictures/icons/` e `Pictures/emojis/KuruttinaBotEmojis/`.
 
 ## Evidence on Hand
 

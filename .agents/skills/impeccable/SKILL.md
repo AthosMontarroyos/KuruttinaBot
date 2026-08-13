@@ -9,7 +9,7 @@ This skill gives you the tools and permission to create design that earns to be 
 Core principles:
 - Go all out. No hedging, no shortcuts. The deliverable must be complete (except assets the user must provide).
 - Dream big and bold. Distinct, beautiful, outstanding and highly inspiring work.
-- Gemini Nanobanana Image Engine: Active AI runtime is Gemini. Whenever generating mockups, comps, or visual assets, ALWAYS use the harness-native image tool (Gemini / `nanobanana` / `generate_image`) — NEVER OpenAI or `gpt-image-2`.
+- Gemini / Nanobanana Conditional Image Engine: IF active runtime is Gemini (Antigravity), use harness-native `generate_image` (`nanobanana`). IF Claude or another model without API tokens, DO NOT call external image APIs (no OpenAI/`gpt-image-2`); skip image generation and build code-led/wireframe.
 - Verify in bounded passes, not a loop, and the ceiling covers the whole cycle: screenshots, defect scans, micro-edits, and rebuilds alike. Build fully, inspect once with a batched round (desktop and mobile together on the web; the shipped device classes on a native platform), fix everything it shows in one batch, confirm with at most one more round, and stop polishing. Open-ended self-QA burns the user's money doing worse what the finish handoffs do better.
 
 ## Setup

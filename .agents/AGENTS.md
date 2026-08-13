@@ -150,7 +150,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - Build modular, clean React components using modern React patterns (Functional Components, Hooks, Custom Hooks).
 - Serve shared assets from `Pictures/` via Next.js API asset routers.
 - Use `frontend-architect`, `impeccable`, and `copywriting` rules for UI design, persuasive UX copy, responsiveness, accessibility (a11y), visual polish, and INFJ voice consistency.
-- **AI Image Generation Engine (Gemini / `nanobanana`)**: Whenever generating UI mockups, concept comps, or visual assets with Impeccable/AI, the active AI engine is strictly **Gemini** (using the harness-native `generate_image` / `nanobanana` model). NEVER use OpenAI or GPT Images (`gpt-image-2`).
+- **AI Image Generation Engine (Condicional)**: SE a IA ativa for Gemini (Google Antigravity), use a ferramenta nativa `generate_image` (`nanobanana`). SE for Claude ou outro modelo sem token de API, NUNCA chamar APIs externas (OpenAI/`gpt-image-2`); não gerar imagens e seguir fluxo puramente em código (code-led / wireframes).
 
 ### 12. JavaScript Object (JSON Format) for Embeds & Components V2
 - **MANDATORY POLICY**: All Discord Embeds and Message Components V2 must be defined and constructed in **JavaScript Object Notation (JS Object / JSON format)** (e.g. `APIEmbed`, `APIActionRowComponent`, `APIButtonComponent`, or JSON object factory functions like `{ title, description, color, fields, components }`).

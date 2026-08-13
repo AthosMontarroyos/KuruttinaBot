@@ -29,7 +29,7 @@ Acessado via navegadores web em desktop e dispositivos móveis, integrado ao eco
 ## Capabilities and Constraints
 
 - **Capacidades**: Configurações de servidores por guild (mensagens de boas-vindas, cargos automáticos, logs de moderação), controle de acesso por comando e monitoramento de telemetria ao vivo (servidores, latência, uptime).
-- **Restrições**: Princípio DRY rigoroso, zero valores/URLs hardcoded, arquivo `.env` mantido estritamente na raiz do repositório, assets visuais armazenados na raiz (`Pictures/`), código otimizado para deploy na Amazon AWS, geração de imagens por IA/Impeccable estritamente via Gemini (`nanobanana` / ferramenta nativa `generate_image`, nunca GPT images / OpenAI).
+- **Restrições**: Princípio DRY rigoroso, zero valores/URLs hardcoded, arquivo `.env` mantido estritamente na raiz do repositório, assets visuais armazenados na raiz (`Pictures/`), código otimizado para deploy na Amazon AWS, geração de imagens por IA/Impeccable condicional: apenas no Gemini (Antigravity) via `nanobanana` (`generate_image`); caso Claude/sem token, fluxo puramente em código (code-led/sem geração externa).
 
 ## Brand Commitments
 

@@ -17,7 +17,7 @@ Specialized skill for engineering production-ready React web interfaces and dash
 - **Copywriting Integration**: Apply the `copywriting` skill for all customer-facing text, landing page copy, value propositions, hero headlines, feature titles, empty states, and Call to Actions (CTAs).
 - **Dashboard Usability**: Prioritize scanability, responsiveness, dark mode elegance, and fast data updates for bot stats and guild configurations.
 - **State Management & Async**: Clean data fetching (React Query / SWR / custom hooks) paired with PostgreSQL-backed API endpoints.
-- **AI Image Generation Engine (Gemini / `nanobanana`)**: UI mockups, concept comps, and visual asset generation must strictly use Gemini (`nanobanana` / native `generate_image` tool), never GPT Images / OpenAI.
+- **AI Image Generation Engine (Condicional)**: SE a IA ativa for Gemini (Antigravity), use `generate_image` (`nanobanana`). SE for Claude ou modelo sem token de API, não gerar imagens e seguir fluxo puramente em código (code-led). NUNCA chamar APIs externas da OpenAI (`gpt-image-2`).
 
 ## Copywriting & UX Copy Integration
 

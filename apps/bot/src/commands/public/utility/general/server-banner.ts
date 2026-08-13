@@ -7,57 +7,45 @@ import {
 } from 'discord.js';
 import { CommandContext } from '../../../../types/command-context';
 import { CommandModule } from '../../../../types/command-interface';
-import { getEmojis, createKuruttinaEmbed, sendErrorReply, resolveGuild } from '../../../../utils';
+import { getEmojis, createKuruttinaEmbed, sendErrorReply } from '../../../../utils';
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('server-banner')
-    .setDescription('Exibe e disponibiliza para download o banner do servidor (Requer Nível 2 de Impulso)')
-    .addStringOption((option) =>
-      option
-        .setName('servidor')
-        .setDescription('ID numérico ou link/código de convite do servidor')
-        .setRequired(false)
-    ),
+    .setDescription('Exibe e disponibiliza para download o banner do servidor atual (Requer Nível 2 de Impulso)'),
 
   prefixAliases: ['server-banner', 'serverbanner', 'sbanner', 'bannerserver'],
   category: 'utility',
   subCategory: 'general',
   guide: {
-    syntax: 'k!server-banner [id_ou_convite] ou /server-banner [servidor:<id_ou_convite>]',
+    syntax: 'k!server-banner ou /server-banner',
     examples: [
       '/server-banner',
-      '/server-banner servidor:123456789012345678',
-      '/server-banner servidor:discord.gg/kuruttina',
       'k!server-banner',
-      'k!server-banner 123456789012345678',
-      'k!sbanner discord.gg/kuruttina',
+      'k!sbanner',
       'k!bannerserver',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil do servidor atual ou de outro servidor por ID ou convite. Banners de servidor são desbloqueados a partir do Nível 2 de Impulso (Server Boost).',
+      'Busca e exibe em alta resolução (1024px) o banner de perfil do servidor atual. Banners de servidor são desbloqueados a partir do Nível 2 de Impulso (Server Boost).',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
     await ctx.deferReply();
 
     const e = await getEmojis(ctx.client);
-    const targetGuild = await resolveGuild(ctx);
 
-    if (!targetGuild) {
+    if (!ctx.guild) {
       await sendErrorReply(
         ctx,
-        `${e.ERROR} Servidor Não Encontrado`,
-        'Não foi possível encontrar o servidor informado.\n\n💡 **Dica:** Para servidores externos onde o bot não está presente, você pode informar o **link ou código de convite** (ex: `k!server-banner discord.gg/codigo`).'
+        `${e.ERROR} Comando Restrito a Servidores`,
+        'Este comando só pode ser executado dentro de um servidor do Discord.'
       );
       return;
     }
 
-    const banner = 'banner' in targetGuild ? targetGuild.banner : null;
-
-    if (!banner) {
+    if (!ctx.guild.banner) {
       const noBannerEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.INFO} Banner de ${targetGuild.name}`,
+        title: `${e.INFO} Banner de ${ctx.guild.name}`,
         description: `Este servidor não possui um banner customizado configurado.\n\n✨ **Requisito de Impulso:** Banners de servidor são desbloqueados a partir do **Nível 2 de Impulso (Server Boost)**.`,
       });
 
@@ -65,18 +53,18 @@ export const command: CommandModule = {
       return;
     }
 
-    const isAnimated = banner.startsWith('a_');
+    const isAnimated = ctx.guild.banner.startsWith('a_');
 
     // Discord CDN URLs using ?animated=true parameter for live animation rendering (Level 2/3 Boost)
-    const animatedWebpEmbedUrl = `https://cdn.discordapp.com/banners/${targetGuild.id}/${banner}.webp?animated=true&size=512`;
-    const animatedWebpDownloadUrl = `https://cdn.discordapp.com/banners/${targetGuild.id}/${banner}.webp?animated=true&size=1024`;
-    const pngUrl = `https://cdn.discordapp.com/banners/${targetGuild.id}/${banner}.png?size=1024`;
+    const animatedWebpEmbedUrl = `https://cdn.discordapp.com/banners/${ctx.guild.id}/${ctx.guild.banner}.webp?animated=true&size=512`;
+    const animatedWebpDownloadUrl = `https://cdn.discordapp.com/banners/${ctx.guild.id}/${ctx.guild.banner}.webp?animated=true&size=1024`;
+    const pngUrl = `https://cdn.discordapp.com/banners/${ctx.guild.id}/${ctx.guild.banner}.png?size=1024`;
 
     const embedImageUrl = isAnimated ? animatedWebpEmbedUrl : pngUrl;
     const primaryBrowserUrl = isAnimated ? animatedWebpDownloadUrl : pngUrl;
 
     const bannerEmbed = createKuruttinaEmbed(ctx.client, {
-      title: `${e.PHOTO} ${targetGuild.name}`,
+      title: `${e.PHOTO} ${ctx.guild.name}`,
       image: { url: embedImageUrl },
     });
 

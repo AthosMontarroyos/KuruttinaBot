@@ -208,3 +208,21 @@ Guidelines and rules for AI coding assistants working in this repository.
 ### 18. Mandatory Knowledge Persistence & Skill Documentation Policy
 - **MANDATORY POLICY (ZERO EXCEPTION)**: NEVER, under ANY circumstances, fail to document valuable new technical decisions, architectural rules, security policies, workflows, or developer guidelines inside **`AGENTS.md`** or the specific relevant **Skill file** (`.agents/skills/<skill_name>/SKILL.md`).
 - **Immediate Context Persistence**: Every new rule, constraint, or pattern established during development MUST be immediately persisted into the appropriate documentation file so future AI sessions and team members inherit the context automatically.
+
+### 19. Interaction Commands Gender & Asset Resolution Policy
+- **Interaction Asset Directory Hierarchy (`Pictures/interactions/<action>/`)**:
+  - `kiss/het/female_initiated/`, `kiss/het/male_initiated/`, `kiss/het/mutual/`
+  - `kiss/yuri/`
+  - `kiss/yaoi/`
+  - `hug/het/`, `hug/yuri/`, `hug/yaoi/`
+- **Gender Check & Folder Resolution Logic (`resolveInteractionAsset`)**:
+  - **Both undefined**: Randomly selects an asset from all eligible categories (`het`, `yuri`, `yaoi`).
+  - **Female Initiator + Male Target**: Selects from `het/female_initiated` OR `het/mutual`.
+  - **Male Initiator + Female Target**: Selects from `het/male_initiated` OR `het/mutual`.
+  - **Female + Female**: Selects from `yuri`.
+  - **Male + Male**: Selects from `yaoi`.
+  - **Male Initiator + Undefined Target**: Randomly selects from `het` (`male_initiated` / `mutual`) OR `yaoi`.
+  - **Female Initiator + Undefined Target**: Randomly selects from `het` (`female_initiated` / `mutual`) OR `yuri`.
+  - **Undefined Initiator + Male Target**: Randomly selects from `het` (`female_initiated` / `mutual`) OR `yaoi`.
+  - **Undefined Initiator + Female Target**: Randomly selects from `het` (`male_initiated` / `mutual`) OR `yuri`.
+- **Unified Interaction Helper (`resolveInteractionAsset`)**: All interaction commands MUST consume `resolveInteractionAsset({ action, initiatorGender, targetGender })` (`src/utils/interactions/interaction-resolver.ts`, re-exported via `src/utils/index.ts`).

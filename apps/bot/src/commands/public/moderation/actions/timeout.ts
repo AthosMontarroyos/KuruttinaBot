@@ -82,8 +82,8 @@ export const command: CommandModule = {
       return;
     }
 
-    // 3. Bot Permissions Guard
-    const botMember = ctx.guild.members.me;
+    // 3. Bot Permissions Guard (Fetch fresh bot member for accurate role hierarchy)
+    const botMember = await ctx.guild.members.fetchMe().catch(() => ctx.guild?.members.me);
     if (!botMember || !botMember.permissions.has(PermissionFlagsBits.ModerateMembers)) {
       await sendErrorReply(
         ctx,
@@ -239,13 +239,17 @@ export const command: CommandModule = {
       return;
     }
 
-    timeoutCooldowns.apply(ctx.user.id);
-
     // 9. Execute Timeout
     try {
       const auditReason = reason || 'Nenhum motivo especificado.';
-      await targetMember.timeout(
+      // Subtract 60 seconds safety margin if reaching max 28 days to prevent clock drift API rejection
+      const safeDurationMs = Math.min(
         parsedTime.milliseconds,
+        (MAX_TIMEOUT_SECONDS - 60) * 1000
+      );
+
+      await targetMember.timeout(
+        safeDurationMs,
         `[Kuruttina Moderação] ${auditReason} (Por: ${ctx.user.tag})`
       );
 

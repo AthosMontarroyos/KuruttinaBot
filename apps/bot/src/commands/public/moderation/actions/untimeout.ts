@@ -68,8 +68,8 @@ export const command: CommandModule = {
       return;
     }
 
-    // 3. Bot Permissions Guard
-    const botMember = ctx.guild.members.me;
+    // 3. Bot Permissions Guard (Fetch fresh bot member for accurate role hierarchy)
+    const botMember = await ctx.guild.members.fetchMe().catch(() => ctx.guild?.members.me);
     if (!botMember || !botMember.permissions.has(PermissionFlagsBits.ModerateMembers)) {
       await sendErrorReply(
         ctx,

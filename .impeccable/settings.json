@@ -1,3 +1,5 @@
 {
-  "buildPath": "code"
+  "buildPath": "code",
+  "aiEngine": "gemini",
+  "imageEngine": "nanobanana"
 }

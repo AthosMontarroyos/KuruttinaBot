@@ -166,15 +166,6 @@ export const command: CommandModule = {
       return;
     }
 
-    if (!targetMember.moderatable) {
-      await sendErrorReply(
-        ctx,
-        `${e.ERROR} Membro Protegido`,
-        'Este membro não pode ser castigado por possuir permissões administrativas ou de proteção no servidor.'
-      );
-      return;
-    }
-
     // 7. Parse Duration & Reason
     let durationStr: string | null = null;
     let reason: string | null = null;

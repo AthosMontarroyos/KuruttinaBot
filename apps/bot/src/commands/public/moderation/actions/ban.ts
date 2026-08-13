@@ -157,15 +157,6 @@ export const command: CommandModule = {
         );
         return;
       }
-
-      if (!targetMember.bannable) {
-        await sendErrorReply(
-          ctx,
-          `${e.ERROR} Membro Protegido`,
-          'Este membro não pode ser banido por possuir permissões administrativas ou de proteção no servidor.'
-        );
-        return;
-      }
     }
 
     // 7. Cooldown Guard (5s)

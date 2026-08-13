@@ -147,15 +147,6 @@ export const command: CommandModule = {
       return;
     }
 
-    if (!targetMember.kickable) {
-      await sendErrorReply(
-        ctx,
-        `${e.ERROR} Membro Protegido`,
-        'Este membro não pode ser expulso por possuir permissões administrativas ou de proteção no servidor.'
-      );
-      return;
-    }
-
     // 7. Cooldown Guard (5s)
     const cooldownLeft = kickCooldowns.check(ctx.user.id);
     if (cooldownLeft > 0) {

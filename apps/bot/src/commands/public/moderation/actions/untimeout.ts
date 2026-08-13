@@ -133,15 +133,6 @@ export const command: CommandModule = {
       return;
     }
 
-    if (!targetMember.moderatable) {
-      await sendErrorReply(
-        ctx,
-        `${e.ERROR} Membro Protegido`,
-        'Este membro não pode ter o castigo alterado por possuir permissões administrativas ou de proteção no servidor.'
-      );
-      return;
-    }
-
     // 8. Cooldown Guard (5s)
     const cooldownLeft = untimeoutCooldowns.check(ctx.user.id);
     if (cooldownLeft > 0) {

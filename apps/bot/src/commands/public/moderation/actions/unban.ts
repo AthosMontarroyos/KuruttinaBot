@@ -130,34 +130,10 @@ export const command: CommandModule = {
         `[Kuruttina Moderação] ${auditReason} (Por: ${ctx.user.tag})`
       );
 
-      const fields = [
-        {
-          name: `${e.USER} Usuário`,
-          value: `${targetUser.tag} (\`${targetUser.id}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.SHIELD} Moderador`,
-          value: `${ctx.user.tag} (\`${ctx.user.id}\`)`,
-          inline: true,
-        },
-      ];
-
-      if (reason) {
-        fields.push({
-          name: `${e.DOCUMENTATION} Motivo`,
-          value: `\`${reason}\``,
-          inline: false,
-        });
-      }
-
-      const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.UNBAN} Usuário Desbanido`,
-        description: `${e.SUCCESS} O usuário **${targetUser.tag}** foi desbanido com sucesso do servidor.`,
-        fields,
+      const reasonSuffix = reason ? ` | Motivo: \`${reason}\`` : '';
+      await ctx.reply({
+        content: `${e.UNBAN} O usuário ${targetUser} foi desbanido do servidor por ${ctx.user}.${reasonSuffix}`,
       });
-
-      await ctx.reply({ embeds: [successEmbed] });
     } catch (error: any) {
       console.error('❌ [Unban Command Error]:', error);
       await sendErrorReply(

@@ -173,34 +173,10 @@ export const command: CommandModule = {
       const auditReason = reason || 'Nenhum motivo especificado.';
       await targetMember.kick(`[Kuruttina Moderação] ${auditReason} (Por: ${ctx.user.tag})`);
 
-      const fields = [
-        {
-          name: `${e.USER} Membro`,
-          value: `${targetUser.tag} (\`${targetUser.id}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.SHIELD} Moderador`,
-          value: `${ctx.user.tag} (\`${ctx.user.id}\`)`,
-          inline: true,
-        },
-      ];
-
-      if (reason) {
-        fields.push({
-          name: `${e.DOCUMENTATION} Motivo`,
-          value: `\`${reason}\``,
-          inline: false,
-        });
-      }
-
-      const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.KICK} Membro Expulso`,
-        description: `${e.SUCCESS} O membro **${targetUser.tag}** foi expulso com sucesso do servidor.`,
-        fields,
+      const reasonSuffix = reason ? ` | Motivo: \`${reason}\`` : '';
+      await ctx.reply({
+        content: `${e.KICK} O membro ${targetUser} foi expulso do servidor por ${ctx.user}.${reasonSuffix}`,
       });
-
-      await ctx.reply({ embeds: [successEmbed] });
     } catch (error: any) {
       console.error('❌ [Kick Command Error]:', error);
       await sendErrorReply(

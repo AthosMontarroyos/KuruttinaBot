@@ -170,36 +170,14 @@ export const command: CommandModule = {
         }
       }
 
-      const filterNotice = targetUser ? ` do usuário **${targetUser.tag}**` : '';
+      const filterNotice = targetUser ? ` do usuário ${targetUser}` : '';
 
-      const fields = [
-        {
-          name: `${e.TRASH} Mensagens Solicitadas`,
-          value: `\`${amountToClear}\``,
-          inline: true,
-        },
-        {
-          name: `${e.YES} Apagadas com Sucesso`,
-          value: `\`${totalDeleted}\``,
-          inline: true,
-        },
-      ];
-
+      let responseContent = `${e.CLEAR} Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`;
       if (skippedOldMessages > 0) {
-        fields.push({
-          name: `${e.WAIT} Trava de 14 Dias`,
-          value: 'Algumas mensagens com mais de 14 dias não puderam ser apagadas e foram ignoradas automaticamente.',
-          inline: false,
-        });
+        responseContent += `\n${e.WAIT} *Algumas mensagens com mais de 14 dias foram ignoradas.*`;
       }
 
-      const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.CLEANING} Limpeza Concluída`,
-        description: `${e.SUCCESS} Foram apagadas **${totalDeleted}** mensagem(ns)${filterNotice} no canal <#${channel.id}>.`,
-        fields,
-      });
-
-      await ctx.reply({ embeds: [successEmbed], ephemeral: true });
+      await ctx.reply({ content: responseContent, ephemeral: true });
     } catch (error: any) {
       console.error('❌ [Clear Command Error]:', error);
 

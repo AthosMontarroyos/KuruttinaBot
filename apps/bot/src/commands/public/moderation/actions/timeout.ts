@@ -262,39 +262,10 @@ export const command: CommandModule = {
         `[Kuruttina Moderação] ${auditReason} (Por: ${ctx.user.tag})`
       );
 
-      const fields = [
-        {
-          name: `${e.USER} Membro`,
-          value: `${targetUser.tag} (\`${targetUser.id}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.SHIELD} Moderador`,
-          value: `${ctx.user.tag} (\`${ctx.user.id}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.WAIT || e.LOADING} Duração`,
-          value: `\`${parsedTime.humanReadable}\` (\`${parsedTime.formatted}\`)`,
-          inline: false,
-        },
-      ];
-
-      if (reason) {
-        fields.push({
-          name: `${e.DOCUMENTATION} Motivo`,
-          value: `\`${reason}\``,
-          inline: false,
-        });
-      }
-
-      const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.MUTE} Castigo Aplicado`,
-        description: `${e.SUCCESS} O membro **${targetUser.tag}** foi silenciado por **${parsedTime.humanReadable}**.`,
-        fields,
+      const reasonSuffix = reason ? ` | Motivo: \`${reason}\`` : '';
+      await ctx.reply({
+        content: `${e.TIMEOUT} O membro ${targetUser} foi silenciado por **${parsedTime.humanReadable}** por ${ctx.user}.${reasonSuffix}`,
       });
-
-      await ctx.reply({ embeds: [successEmbed] });
     } catch (error: any) {
       console.error('❌ [Timeout Command Error]:', error);
       await sendErrorReply(

@@ -220,42 +220,15 @@ export const command: CommandModule = {
         deleteMessageSeconds: messageDeleteTime ? messageDeleteTime.seconds : 0,
       });
 
-      const fields = [
-        {
-          name: `${e.USER} Usuário`,
-          value: `${targetUser.tag} (\`${targetUser.id}\`)`,
-          inline: true,
-        },
-        {
-          name: `${e.SHIELD} Moderador`,
-          value: `${ctx.user.tag} (\`${ctx.user.id}\`)`,
-          inline: true,
-        },
-      ];
+      const reasonSuffix = reason ? ` | Motivo: \`${reason}\`` : '';
+      const msgDelSuffix =
+        messageDeleteTime && messageDeleteTime.seconds > 0
+          ? ` | Mensagens: \`${messageDeleteTime.humanReadable}\``
+          : '';
 
-      if (reason) {
-        fields.push({
-          name: `${e.DOCUMENTATION} Motivo`,
-          value: `\`${reason}\``,
-          inline: false,
-        });
-      }
-
-      if (messageDeleteTime && messageDeleteTime.seconds > 0) {
-        fields.push({
-          name: `${e.CLEAR} Mensagens Apagadas`,
-          value: `\`${messageDeleteTime.humanReadable}\``,
-          inline: true,
-        });
-      }
-
-      const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.BAN} Usuário Banido`,
-        description: `${e.SUCCESS} O usuário **${targetUser.tag}** foi banido com sucesso do servidor.`,
-        fields,
+      await ctx.reply({
+        content: `${e.BAN} O usuário ${targetUser} foi banido do servidor por ${ctx.user}.${reasonSuffix}${msgDelSuffix}`,
       });
-
-      await ctx.reply({ embeds: [successEmbed] });
     } catch (error: any) {
       console.error('❌ [Ban Command Error]:', error);
       await sendErrorReply(

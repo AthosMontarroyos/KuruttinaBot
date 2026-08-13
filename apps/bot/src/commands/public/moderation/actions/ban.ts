@@ -149,11 +149,20 @@ export const command: CommandModule = {
       }
 
       // Bot Role Hierarchy Check
-      if (botMember.roles.highest.position <= targetMember.roles.highest.position || !targetMember.bannable) {
+      if (botMember.roles.highest.position <= targetMember.roles.highest.position) {
         await sendErrorReply(
           ctx,
           `${e.ERROR} Impossível Banir`,
           'Não posso banir este membro pois o cargo dele é igual ou superior ao meu.'
+        );
+        return;
+      }
+
+      if (!targetMember.bannable) {
+        await sendErrorReply(
+          ctx,
+          `${e.ERROR} Membro Protegido`,
+          'Este membro não pode ser banido por possuir permissões administrativas ou de proteção no servidor.'
         );
         return;
       }

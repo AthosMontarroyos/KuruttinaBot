@@ -124,11 +124,20 @@ export const command: CommandModule = {
       }
     }
 
-    if (botMember.roles.highest.position <= targetMember.roles.highest.position || !targetMember.moderatable) {
+    if (botMember.roles.highest.position <= targetMember.roles.highest.position) {
       await sendErrorReply(
         ctx,
         `${e.ERROR} Impossível Remover Castigo`,
         'Não posso remover o castigo deste membro pois o cargo dele é igual ou superior ao meu.'
+      );
+      return;
+    }
+
+    if (!targetMember.moderatable) {
+      await sendErrorReply(
+        ctx,
+        `${e.ERROR} Membro Protegido`,
+        'Este membro não pode ter o castigo alterado por possuir permissões administrativas ou de proteção no servidor.'
       );
       return;
     }

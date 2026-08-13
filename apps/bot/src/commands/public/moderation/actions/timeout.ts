@@ -157,11 +157,20 @@ export const command: CommandModule = {
     }
 
     // Bot Role Hierarchy Check
-    if (botMember.roles.highest.position <= targetMember.roles.highest.position || !targetMember.moderatable) {
+    if (botMember.roles.highest.position <= targetMember.roles.highest.position) {
       await sendErrorReply(
         ctx,
         `${e.ERROR} Impossível Castigar`,
         'Não posso castigar este membro pois o cargo dele é igual ou superior ao meu.'
+      );
+      return;
+    }
+
+    if (!targetMember.moderatable) {
+      await sendErrorReply(
+        ctx,
+        `${e.ERROR} Membro Protegido`,
+        'Este membro não pode ser castigado por possuir permissões administrativas ou de proteção no servidor.'
       );
       return;
     }

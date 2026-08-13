@@ -111,6 +111,15 @@ export const command: CommandModule = {
       return;
     }
 
+    if (targetUser.id === ctx.client.user?.id) {
+      await sendErrorReply(
+        ctx,
+        `${e.WARNING} Ação Inválida`,
+        `Você não pode remover o castigo de mim mesma ${e.ANGER}`
+      );
+      return;
+    }
+
     // 7. Hierarchy & Safety Guards
     const executorMember = await ctx.guild.members.fetch(ctx.user.id).catch(() => null);
     if (ctx.user.id !== ctx.guild.ownerId) {

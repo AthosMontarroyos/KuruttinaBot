@@ -129,7 +129,7 @@ export const command: CommandModule = {
       await sendErrorReply(
         ctx,
         `${e.WARNING} Ação Inválida`,
-        'Você não pode me aplicar um castigo usando o meu próprio comando.'
+        `Você não pode me aplicar um castigo usando o meu próprio comando ${e.ANGER}`
       );
       return;
     }

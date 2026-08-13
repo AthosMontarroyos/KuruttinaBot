@@ -21,7 +21,7 @@ export const command: CommandModule = {
         .setRequired(false)
     ),
 
-  prefixAliases: ['user-avatar', 'userbanner', 'avatar', 'av', 'pfp', 'foto', 'ic'],
+  prefixAliases: ['user-avatar', 'useravatar', 'avatar', 'av', 'pfp', 'foto', 'ic', 'uavatar'],
   category: 'utility',
   subCategory: 'general',
   guide: {

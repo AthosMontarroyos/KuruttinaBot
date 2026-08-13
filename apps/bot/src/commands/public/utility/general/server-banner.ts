@@ -16,7 +16,7 @@ export const command: CommandModule = {
     .addStringOption((option) =>
       option
         .setName('servidor')
-        .setDescription('ID numérico do servidor do Discord')
+        .setDescription('ID numérico ou link/código de convite do servidor')
         .setRequired(false)
     ),
 
@@ -24,17 +24,18 @@ export const command: CommandModule = {
   category: 'utility',
   subCategory: 'general',
   guide: {
-    syntax: 'k!server-banner [id_servidor] ou /server-banner [servidor:<id>]',
+    syntax: 'k!server-banner [id_ou_convite] ou /server-banner [servidor:<id_ou_convite>]',
     examples: [
       '/server-banner',
       '/server-banner servidor:123456789012345678',
+      '/server-banner servidor:discord.gg/kuruttina',
       'k!server-banner',
       'k!server-banner 123456789012345678',
-      'k!sbanner 123456789012345678',
+      'k!sbanner discord.gg/kuruttina',
       'k!bannerserver',
     ],
     detailedDescription:
-      'Busca e exibe em alta resolução (1024px) o banner de perfil do servidor atual ou de um servidor por ID. Banners de servidor são desbloqueados a partir do Nível 2 de Impulso (Server Boost).',
+      'Busca e exibe em alta resolução (1024px) o banner de perfil do servidor atual ou de outro servidor por ID ou convite. Banners de servidor são desbloqueados a partir do Nível 2 de Impulso (Server Boost).',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -47,7 +48,7 @@ export const command: CommandModule = {
       await sendErrorReply(
         ctx,
         `${e.ERROR} Servidor Não Encontrado`,
-        'Não foi possível encontrar nenhum servidor com o ID especificado. Verifique se o ID numérico está correto ou execute dentro de um servidor.'
+        'Não foi possível encontrar o servidor informado.\n\n💡 **Dica:** Para servidores externos onde o bot não está presente, você pode informar o **link ou código de convite** (ex: `k!server-banner discord.gg/codigo`).'
       );
       return;
     }

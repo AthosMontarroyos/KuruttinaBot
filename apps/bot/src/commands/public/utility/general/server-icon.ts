@@ -16,7 +16,7 @@ export const command: CommandModule = {
     .addStringOption((option) =>
       option
         .setName('servidor')
-        .setDescription('ID numérico do servidor do Discord')
+        .setDescription('ID numérico ou link/código de convite do servidor')
         .setRequired(false)
     ),
 
@@ -24,17 +24,18 @@ export const command: CommandModule = {
   category: 'utility',
   subCategory: 'general',
   guide: {
-    syntax: 'k!server-icon [id_servidor] ou /server-icon [servidor:<id>]',
+    syntax: 'k!server-icon [id_ou_convite] ou /server-icon [servidor:<id_ou_convite>]',
     examples: [
       '/server-icon',
       '/server-icon servidor:123456789012345678',
+      '/server-icon servidor:discord.gg/kuruttina',
       'k!server-icon',
       'k!server-icon 123456789012345678',
-      'k!sicon 123456789012345678',
+      'k!sicon discord.gg/kuruttina',
       'k!icone',
     ],
     detailedDescription:
-      'Exibe em alta resolução (1024px) a foto/ícone de perfil do servidor atual ou de um servidor por ID. Servidores com Nível 1 de Impulso suportam ícones animados (GIF/APNG).',
+      'Exibe em alta resolução (1024px) a foto/ícone de perfil do servidor atual ou de outro servidor por ID ou convite. Servidores com Nível 1 de Impulso suportam ícones animados (GIF/APNG).',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -47,7 +48,7 @@ export const command: CommandModule = {
       await sendErrorReply(
         ctx,
         `${e.ERROR} Servidor Não Encontrado`,
-        'Não foi possível encontrar nenhum servidor com o ID especificado. Verifique se o ID numérico está correto ou execute dentro de um servidor.'
+        'Não foi possível encontrar o servidor informado.\n\n💡 **Dica:** Para servidores externos onde o bot não está presente, você pode informar o **link ou código de convite** (ex: `k!server-icon discord.gg/codigo`).'
       );
       return;
     }

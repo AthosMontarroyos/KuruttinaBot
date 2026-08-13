@@ -59,6 +59,8 @@ export const EMOJI_CATEGORY_MAP = {
     KICK: '🥾',
     MUTE: '🔇',
     UNMUTE: '🔊',
+    TIMEOUT: '⏳',
+    UNTIMEOUT: '🔓',
     CLEAR: '🧹',
     SEARCH: '🔍',
     ADD: '➕',

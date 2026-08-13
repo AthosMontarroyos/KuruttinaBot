@@ -193,7 +193,7 @@ export const command: CommandModule = {
       }
 
       const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.UNMUTE} Castigo Removido`,
+        title: `${e.UNTIMEOUT} Castigo Removido`,
         description: `${e.SUCCESS} O castigo do membro **${targetUser.tag}** foi removido com sucesso.`,
         fields,
       });

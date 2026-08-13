@@ -55,6 +55,7 @@ export const EMOJI_CATEGORY_MAP = {
   },
   'Actions & Moderation': {
     BAN: '🔨',
+    UNBAN: '🔓',
     KICK: '🥾',
     MUTE: '🔇',
     UNMUTE: '🔊',

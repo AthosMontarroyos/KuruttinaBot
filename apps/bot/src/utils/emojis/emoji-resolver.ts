@@ -113,6 +113,8 @@ const EMOJI_ALIASES: Record<string, string[]> = {
   BOOST: ['server_boost', 'boost', 'nitro'],
   TAKING_PHOTO: ['taking_photo', 'photo'],
   PHOTO: ['photo', 'taking_photo'],
+  UNBAN: ['unban_untimeout', 'unban', 'untimeout'],
+  UNMUTE: ['unmute', 'unban_untimeout'],
 };
 
 /**

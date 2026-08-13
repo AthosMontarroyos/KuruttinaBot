@@ -152,7 +152,7 @@ export const command: CommandModule = {
       }
 
       const successEmbed = createKuruttinaEmbed(ctx.client, {
-        title: `${e.SUCCESS} Usuário Desbanido`,
+        title: `${e.UNBAN} Usuário Desbanido`,
         description: `${e.SUCCESS} O usuário **${targetUser.tag}** foi desbanido com sucesso do servidor.`,
         fields,
       });

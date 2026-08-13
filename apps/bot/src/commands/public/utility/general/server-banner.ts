@@ -44,10 +44,9 @@ export const command: CommandModule = {
     }
 
     if (!ctx.guild.banner) {
-      const boostEmoji = e.SERVER_BOOST || e.BOOST || '✨';
       const noBannerEmbed = createKuruttinaEmbed(ctx.client, {
         title: `${e.INFO} Banner de ${ctx.guild.name}`,
-        description: `Este servidor não possui um banner customizado configurado.\n\n${boostEmoji} **Requisito de Impulso:** Banners de servidor são desbloqueados a partir do **Nível 2 de Impulso (Server Boost)**.`,
+        description: `Este servidor não possui um banner customizado configurado.\n\n${e.SERVER_BOOST} **Requisito de Impulso:** Banners de servidor são desbloqueados a partir do **Nível 2 de Impulso (Server Boost)**.`,
       });
 
       await ctx.reply({ embeds: [noBannerEmbed] });

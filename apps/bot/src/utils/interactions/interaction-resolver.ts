@@ -8,12 +8,13 @@ export interface InteractionResolutionOptions {
   initiatorGender?: UserGender;
   targetGender?: UserGender;
   basePicturesDir?: string;
+  ignoreGender?: boolean;
 }
 
 export interface ResolvedInteractionAsset {
   absolutePath: string;
   relativePath: string;
-  category: 'het' | 'yuri' | 'yaoi';
+  category: 'het' | 'yuri' | 'yaoi' | 'general';
   subCategory?: 'female_initiated' | 'male_initiated' | 'mutual';
   fileName: string;
 }
@@ -90,44 +91,73 @@ export function getEligibleInteractionDirectories(
 }
 
 /**
- * Resolves a random image/GIF asset for an interaction matching gender rules.
+ * Resolves a random image/GIF asset for an interaction matching gender rules or genderless root GIFs.
  */
 export function resolveInteractionAsset(
   options: InteractionResolutionOptions
 ): ResolvedInteractionAsset | null {
   const baseDir = options.basePicturesDir ?? path.resolve(process.cwd(), 'Pictures/interactions');
-  const eligibleDirs = getEligibleInteractionDirectories(
-    options.action,
-    options.initiatorGender,
-    options.targetGender
-  );
-
   const availableFiles: { fullPath: string; dir: string; file: string }[] = [];
 
-  for (const subDir of eligibleDirs) {
-    // subDir has format "${action}/sub/path"
-    const relativeSubPath = subDir.startsWith(`${options.action}/`)
-      ? subDir.slice(options.action.length + 1)
-      : subDir;
-
-    const fullDirPath = path.join(baseDir, options.action, relativeSubPath);
-    if (!fs.existsSync(fullDirPath)) continue;
-
+  // Check root action directory (e.g. Pictures/interactions/dance) for direct root files
+  const rootDirPath = path.join(baseDir, options.action);
+  if (fs.existsSync(rootDirPath)) {
     try {
-      const files = fs.readdirSync(fullDirPath);
+      const files = fs.readdirSync(rootDirPath);
       for (const file of files) {
         if (file.startsWith('.')) continue;
         const ext = path.extname(file).toLowerCase();
         if (SUPPORTED_EXTENSIONS.has(ext)) {
-          availableFiles.push({
-            fullPath: path.join(fullDirPath, file),
-            dir: relativeSubPath,
-            file,
-          });
+          const stat = fs.statSync(path.join(rootDirPath, file));
+          if (stat.isFile()) {
+            availableFiles.push({
+              fullPath: path.join(rootDirPath, file),
+              dir: '',
+              file,
+            });
+          }
         }
       }
     } catch {
       // Directory unreadable
+    }
+  }
+
+  // Scan gender subdirectories unless ignoreGender is explicitly set to true
+  if (!options.ignoreGender) {
+    const eligibleDirs = getEligibleInteractionDirectories(
+      options.action,
+      options.initiatorGender,
+      options.targetGender
+    );
+
+    for (const subDir of eligibleDirs) {
+      const relativeSubPath = subDir.startsWith(`${options.action}/`)
+        ? subDir.slice(options.action.length + 1)
+        : subDir;
+
+      const fullDirPath = path.join(baseDir, options.action, relativeSubPath);
+      if (!fs.existsSync(fullDirPath)) continue;
+
+      try {
+        const files = fs.readdirSync(fullDirPath);
+        for (const file of files) {
+          if (file.startsWith('.')) continue;
+          const ext = path.extname(file).toLowerCase();
+          if (SUPPORTED_EXTENSIONS.has(ext)) {
+            const stat = fs.statSync(path.join(fullDirPath, file));
+            if (stat.isFile()) {
+              availableFiles.push({
+                fullPath: path.join(fullDirPath, file),
+                dir: relativeSubPath,
+                file,
+              });
+            }
+          }
+        }
+      } catch {
+        // Directory unreadable
+      }
     }
   }
 
@@ -136,14 +166,14 @@ export function resolveInteractionAsset(
   }
 
   const chosen = availableFiles[Math.floor(Math.random() * availableFiles.length)];
-  let category: 'het' | 'yuri' | 'yaoi' = 'het';
+  let category: 'het' | 'yuri' | 'yaoi' | 'general' = 'general';
   let subCategory: 'female_initiated' | 'male_initiated' | 'mutual' | undefined;
 
   if (chosen.dir.startsWith('yuri')) {
     category = 'yuri';
   } else if (chosen.dir.startsWith('yaoi')) {
     category = 'yaoi';
-  } else {
+  } else if (chosen.dir.startsWith('het')) {
     category = 'het';
     if (chosen.dir.includes('female_initiated')) subCategory = 'female_initiated';
     else if (chosen.dir.includes('male_initiated')) subCategory = 'male_initiated';

@@ -1,26 +1,27 @@
 {
-  "name": "kuruttina-monorepo",
-  "private": true,
-  "scripts": {
-    "dev": "turbo run dev --filter=@kuruttina/bot",
-    "dev:all": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "sync:emojis": "npm --prefix apps/bot run sync:emojis",
-    "fetch:emojis": "npm --prefix apps/bot run fetch:emojis",
-    "upload:emoji": "npm --prefix apps/bot run upload:emoji",
-    "delete:emoji": "npm --prefix apps/bot run delete:emoji",
-    "deploy": "npm --prefix apps/bot run deploy",
-    "deploy:dev": "npm --prefix apps/bot run deploy:dev",
-    "deploy:public": "npm --prefix apps/bot run deploy:public",
-    "security:scan": "gitleaks detect --source . --config .gitleaks.toml --verbose"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "devDependencies": {
-    "turbo": "^2.4.0",
-    "typescript": "^5.7.3"
-  }
+    "name":  "kuruttina-monorepo",
+    "private":  true,
+    "scripts":  {
+                    "dev":  "turbo run dev --filter=@kuruttina/bot",
+                    "dev:all":  "turbo run dev",
+                    "build":  "turbo run build",
+                    "lint":  "turbo run lint",
+                    "sync:emojis":  "npm --prefix apps/bot run sync:emojis",
+                    "fetch:emojis":  "npm --prefix apps/bot run fetch:emojis",
+                    "upload:emoji":  "npm --prefix apps/bot run upload:emoji",
+                    "delete:emoji":  "npm --prefix apps/bot run delete:emoji",
+                    "deploy":  "npm --prefix apps/bot run deploy",
+                    "deploy:dev":  "npm --prefix apps/bot run deploy:dev",
+                    "deploy:public":  "npm --prefix apps/bot run deploy:public",
+                    "security:scan":  "gitleaks detect --source . --config .gitleaks.toml --verbose",
+                    "clean:zone":  "bash ./scripts/clean-zone-identifier.sh ."
+                },
+    "workspaces":  [
+                       "apps/*",
+                       "packages/*"
+                   ],
+    "devDependencies":  {
+                            "turbo":  "^2.4.0",
+                            "typescript":  "^5.7.3"
+                        }
 }

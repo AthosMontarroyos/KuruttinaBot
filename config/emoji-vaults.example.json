@@ -1,0 +1,12 @@
+[
+  {
+    "name": "ManosabaGirls",
+    "category": "characters",
+    "token": "your_aux_bot_token_characters_here"
+  },
+  {
+    "name": "KuruttinaInteractions",
+    "category": "interactions",
+    "token": "your_aux_bot_token_interactions_here"
+  }
+]

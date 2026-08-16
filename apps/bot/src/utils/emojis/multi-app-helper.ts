@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
@@ -35,6 +36,7 @@ function isPlaceholderToken(token: string): boolean {
   const lower = token.toLowerCase();
   return (
     lower.includes('your_discord_bot_token') ||
+    lower.includes('your_aux_bot_token') ||
     lower.includes('aux_bot_token_3') ||
     lower.includes('aux_bot_token')
   );
@@ -110,7 +112,7 @@ export async function discoverAppConfig(
 /**
  * Array Pipeline:
  * 1. Primary Bot (Kuruttina)
- * 2. Array of Secondary Bots (EMOJI_BOT_TOKENS JSON or Comma-separated)
+ * 2. Array of Secondary Bots (config/emoji-vaults.json or EMOJI_BOT_TOKENS)
  */
 export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
   const primaryToken = process.env.DISCORD_TOKEN;
@@ -122,13 +124,22 @@ export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
   // Step 1: Start with Primary Bot (Kuruttina)
   const primaryApp = await discoverAppConfig(primaryToken, true, 1, 'primary');
 
-  // Step 2: Array of Secondary Bots from EMOJI_BOT_TOKENS
-  const rawTokens = (process.env.EMOJI_BOT_TOKENS || '').trim();
+  // Step 2: Load Secondary Bots from config/emoji-vaults.json or EMOJI_BOT_TOKENS
   const entries: { token: string; name?: string; category?: string }[] = [];
 
-  if (rawTokens.startsWith('[') || rawTokens.startsWith('{')) {
+  const configPath = path.join(rootDir, 'config/emoji-vaults.json');
+  const rootConfigPath = path.join(rootDir, 'emoji-vaults.json');
+
+  const targetFile = fs.existsSync(configPath)
+    ? configPath
+    : fs.existsSync(rootConfigPath)
+    ? rootConfigPath
+    : null;
+
+  if (targetFile) {
     try {
-      const parsed = JSON.parse(rawTokens);
+      const content = fs.readFileSync(targetFile, 'utf-8').trim();
+      const parsed = JSON.parse(content);
       const list: any[] = Array.isArray(parsed) ? parsed : [parsed];
       for (const item of list) {
         if (typeof item === 'string' && item && !isPlaceholderToken(item)) {
@@ -141,19 +152,44 @@ export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
           });
         }
       }
-    } catch {
-      console.warn('⚠️ Could not parse EMOJI_BOT_TOKENS as JSON, falling back to comma-separated list.');
+    } catch (err: any) {
+      console.warn(`⚠️ Warning: Failed to parse ${targetFile}: ${err.message}`);
     }
   }
 
-  if (entries.length === 0 && rawTokens.length > 0 && !rawTokens.startsWith('[') && !rawTokens.startsWith('{')) {
-    const splitTokens = rawTokens
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0 && !isPlaceholderToken(t));
+  // Fallback to process.env.EMOJI_BOT_TOKENS if no entries found from file
+  if (entries.length === 0) {
+    const rawTokens = (process.env.EMOJI_BOT_TOKENS || '').trim();
 
-    for (const t of splitTokens) {
-      entries.push({ token: t, category: 'characters' });
+    if (rawTokens.startsWith('[') || rawTokens.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(rawTokens);
+        const list: any[] = Array.isArray(parsed) ? parsed : [parsed];
+        for (const item of list) {
+          if (typeof item === 'string' && item && !isPlaceholderToken(item)) {
+            entries.push({ token: item.trim() });
+          } else if (typeof item === 'object' && item?.token && !isPlaceholderToken(item.token)) {
+            entries.push({
+              token: item.token.trim(),
+              name: item.name || item.nome,
+              category: item.category || item.categoria || 'characters',
+            });
+          }
+        }
+      } catch {
+        console.warn('⚠️ Could not parse EMOJI_BOT_TOKENS as JSON, falling back to comma-separated list.');
+      }
+    }
+
+    if (entries.length === 0 && rawTokens.length > 0 && !rawTokens.startsWith('[') && !rawTokens.startsWith('{')) {
+      const splitTokens = rawTokens
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0 && !isPlaceholderToken(t));
+
+      for (const t of splitTokens) {
+        entries.push({ token: t, category: 'characters' });
+      }
     }
   }
 

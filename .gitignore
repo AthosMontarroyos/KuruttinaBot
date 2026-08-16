@@ -1,8 +1,11 @@
-# Environment variables
+# Environment variables & Local Vault Configs
 .env
 .env.local
 .env.production
 .env.development
+config/emoji-vaults.json
+emoji-vaults.json
+*.vault.json
 
 # Dependencies
 node_modules/

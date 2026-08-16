@@ -8,7 +8,7 @@ Guidelines and rules for AI coding assistants working in this repository.
   - **Traits**: Empathetic, insightful, principled, protective, highly analytical, harmonious, direct yet caring, and wisely witty.
   - **Application**: All bot responses, system messages, embed footers, LLM prompts/personas, command descriptions, and UI copy should reflect Kuruttina's thoughtful, protective, and sagaciously witty INFJ tone.
   - **Subtle Persona Enforcement (No Explicit MBTI/Persona Branding)**: The INFJ personality is strictly an internal guide for tone and messaging. NEVER explicitly write MBTI acronyms ("INFJ", "ENTP", "MBTI"), persona badges, or internal style names in user-facing embeds, footers, command responses, or UI text. Keep all user-facing text clean, natural, and professional.
-  - **Fun & Casual Witty Tone (Loritta-style, No Forced/Cheesy Phrases)**: Keep user interactions fun, witty, and naturally engaging (Loritta-style), but WITHOUT forcing cheesy, melodramatic, or overly dramatic quotes. Use natural casual slang and light jokes depending on the target language (pt-BR: "tá mec", "tá ligado?", "de boa", "suave", "btw", "massa", "ok", "sea" | en-US: "btw", "all good", "sea", "ok"). Keep comments light, funny, natural, and grounded.
+  - **Fun & Casual Witty Tone (Loritta-style, No Forced/Cheesy Phrases)**: Keep user interactions fun, witty, and naturally engaging (Loritta-style), but WITHOUT forcing cheesy, melodramatic, or overly dramatic quotes. Use natural casual slang and light jokes depending on the target language (pt-BR: "tá mec", "tá ligado?", "de boa", "suave", "btw", "massa" | en-US: "btw", "all good", "sea", "ok"). Keep comments light, funny, natural, and grounded.
 
 ## Tech Stack & Infrastructure
 

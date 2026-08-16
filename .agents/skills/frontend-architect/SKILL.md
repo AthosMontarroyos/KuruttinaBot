@@ -17,7 +17,7 @@ Specialized skill for engineering production-ready React web interfaces and dash
 - **Copywriting Integration**: Apply the `copywriting` skill for all customer-facing text, landing page copy, value propositions, hero headlines, feature titles, empty states, and Call to Actions (CTAs).
 - **Dashboard Usability**: Prioritize scanability, responsiveness, dark mode elegance, and fast data updates for bot stats and guild configurations.
 - **State Management & Async**: Clean data fetching (React Query / SWR / custom hooks) paired with PostgreSQL-backed API endpoints.
-- **AI Image Generation Engine (Condicional)**: SE a IA ativa for Gemini (Antigravity), use `generate_image` (`nanobanana`). SE for Claude ou modelo sem token de API, não gerar imagens e seguir fluxo puramente em código (code-led). NUNCA chamar APIs externas da OpenAI (`gpt-image-2`).
+- **Native GPT Image**: When the interface needs an original raster image or an edit to an existing image, load the `imagegen` skill and use the native `image_gen` tool. This is the default path and does not require `OPENAI_API_KEY`. Never gate image generation on Gemini/Nano Banana or replace a requested image with a wireframe, SVG, or CSS solely because an API token is unavailable. To create a new image, provide a production-ready prompt and omit image inputs. To edit a local file, inspect it first with `view_image`, then pass its path through `referenced_image_paths`; to edit an attached or previously generated conversational image without a local path, use `num_last_images_to_include` with the smallest sufficient value. Explicitly state every invariant in the prompt. Use external scripts or APIs only when the user explicitly requests that fallback.
 
 ## Copywriting & UX Copy Integration
 

@@ -58,11 +58,18 @@ export const command: CommandModule = {
               ? `${e.CROWN} **Bot Principal**`
               : `${e.VAULT} **Vault Secundário (REST)**`;
 
+            const categoryLabel = appConfig.isPrimary
+              ? 'Sistema Principal'
+              : appConfig.category === 'interactions'
+              ? 'Interactions (GIFs/Ações)'
+              : 'Characters (Personagens)';
+
             fields.push({
               name: `App #${appConfig.id}: ${appConfig.name} (${statusBadge})`,
               value: [
                 `${e.BULLET} ${e.USER} **Bot User:** \`${appConfig.botTag || appConfig.name}\``,
                 `${e.BULLET} ${e.ID} **Application ID:** \`${appConfig.appId || 'N/A'}\``,
+                `${e.BULLET} ${e.LABEL} **Categoria:** \`${categoryLabel}\``,
                 `${e.BULLET} ${e.FOLDER} **Pasta Local:** \`Pictures/emojis/${appConfig.sanitizedFolderName}/\``,
                 `${e.BULLET} ${e.PHOTO} **Emojis Estáticos:** \`${staticCount}\` | ${e.STAR} **Animados:** \`${animCount}\``,
                 `${e.BULLET} ${e.LABEL} **Uso de Cota:** \`${totalUsed}/${MAX_PER_APP}\` (${remaining} vagas restantes)`,

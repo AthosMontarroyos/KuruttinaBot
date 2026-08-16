@@ -6,9 +6,18 @@ import { Client, GatewayIntentBits, Events } from 'discord.js';
 const rootDir = path.resolve(__dirname, '../../../../../');
 dotenv.config({ path: path.join(rootDir, '.env') });
 
+export interface EmojiVaultEntry {
+  name?: string;
+  nome?: string;
+  category?: 'characters' | 'interactions' | string;
+  categoria?: 'characters' | 'interactions' | string;
+  token: string;
+}
+
 export interface EmojiAppConfig {
   id: number;
   name: string;
+  category?: string;
   sanitizedFolderName: string;
   token: string;
   isPrimary: boolean;
@@ -65,7 +74,9 @@ export async function withAppClient<T>(
 export async function discoverAppConfig(
   token: string,
   isPrimary: boolean,
-  appIndex: number
+  appIndex: number,
+  category?: string,
+  customName?: string
 ): Promise<EmojiAppConfig> {
   return withAppClient(token, async (client) => {
     if (client.application) {
@@ -76,7 +87,7 @@ export async function discoverAppConfig(
       }
     }
 
-    const appName = client.application?.name || client.user?.username || `AppVault${appIndex}`;
+    const appName = customName || client.application?.name || client.user?.username || `AppVault${appIndex}`;
     const botTag = client.user?.tag || appName;
     const appId = client.application?.id || client.user?.id;
 
@@ -86,6 +97,7 @@ export async function discoverAppConfig(
     return {
       id: appIndex,
       name: appName,
+      category: category || (isPrimary ? 'primary' : 'characters'),
       sanitizedFolderName: folderName,
       token,
       isPrimary,
@@ -98,7 +110,7 @@ export async function discoverAppConfig(
 /**
  * Array Pipeline:
  * 1. Primary Bot (Kuruttina)
- * 2. Array of Secondary Bots (EMOJI_BOT_TOKENS) displaying each bot's name
+ * 2. Array of Secondary Bots (EMOJI_BOT_TOKENS JSON or Comma-separated)
  */
 export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
   const primaryToken = process.env.DISCORD_TOKEN;
@@ -108,21 +120,51 @@ export async function getEmojiAppConfigs(): Promise<EmojiAppConfig[]> {
   }
 
   // Step 1: Start with Primary Bot (Kuruttina)
-  const primaryApp = await discoverAppConfig(primaryToken, true, 1);
+  const primaryApp = await discoverAppConfig(primaryToken, true, 1, 'primary');
 
   // Step 2: Array of Secondary Bots from EMOJI_BOT_TOKENS
-  const secondaryTokens = (process.env.EMOJI_BOT_TOKENS || '')
-    .split(',')
-    .map((t) => t.trim())
-    .filter((t) => t.length > 0 && !isPlaceholderToken(t));
+  const rawTokens = (process.env.EMOJI_BOT_TOKENS || '').trim();
+  const entries: { token: string; name?: string; category?: string }[] = [];
+
+  if (rawTokens.startsWith('[') || rawTokens.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(rawTokens);
+      const list: any[] = Array.isArray(parsed) ? parsed : [parsed];
+      for (const item of list) {
+        if (typeof item === 'string' && item && !isPlaceholderToken(item)) {
+          entries.push({ token: item.trim() });
+        } else if (typeof item === 'object' && item?.token && !isPlaceholderToken(item.token)) {
+          entries.push({
+            token: item.token.trim(),
+            name: item.name || item.nome,
+            category: item.category || item.categoria || 'characters',
+          });
+        }
+      }
+    } catch {
+      console.warn('⚠️ Could not parse EMOJI_BOT_TOKENS as JSON, falling back to comma-separated list.');
+    }
+  }
+
+  if (entries.length === 0 && rawTokens.length > 0 && !rawTokens.startsWith('[') && !rawTokens.startsWith('{')) {
+    const splitTokens = rawTokens
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0 && !isPlaceholderToken(t));
+
+    for (const t of splitTokens) {
+      entries.push({ token: t, category: 'characters' });
+    }
+  }
 
   const secondaryApps: EmojiAppConfig[] = [];
-  for (let i = 0; i < secondaryTokens.length; i++) {
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
     try {
-      const cfg = await discoverAppConfig(secondaryTokens[i], false, i + 2);
+      const cfg = await discoverAppConfig(entry.token, false, i + 2, entry.category, entry.name);
       secondaryApps.push(cfg);
     } catch (err: any) {
-      console.warn(`⚠️ Warning: Failed to load secondary bot #${i + 1}: ${err.message}`);
+      console.warn(`⚠️ Warning: Failed to load secondary bot #${i + 1} (${entry.name || 'unnamed'}): ${err.message}`);
     }
   }
 

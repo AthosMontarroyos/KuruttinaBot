@@ -22,6 +22,7 @@ export interface LocalEmojiCatalogEntry {
   id: string;
   format: string;
   animated: boolean;
+  category?: string;
   filename: string;
   localPath: string;
   cdnUrl: string;
@@ -135,6 +136,7 @@ async function syncEmojisForApp(
             id: emoji.id,
             format: formatStr,
             animated: emoji.animated || false,
+            category: appConfig.category || (appConfig.isPrimary ? 'primary' : 'characters'),
             filename,
             localPath: `Pictures/emojis/${appConfig.sanitizedFolderName}/${filename}`,
             cdnUrl: `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=256&quality=lossless`,

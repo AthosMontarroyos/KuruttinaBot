@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from 'discord.js';
+import { AutocompleteInteraction, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from 'discord.js';
 import { CommandContext } from './command-context';
 
 export interface CommandUsageGuide {
@@ -15,4 +15,5 @@ export interface CommandModule {
   subCategory?: string;
   guide: CommandUsageGuide;
   execute: (ctx: CommandContext) => Promise<void>;
+  autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>;
 }

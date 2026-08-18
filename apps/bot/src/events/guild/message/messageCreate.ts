@@ -12,7 +12,8 @@ export const event = {
 
     const prefix = process.env.DEFAULT_PREFIX || DEFAULT_BOT_CONFIG.DEFAULT_PREFIX;
 
-    if (!message.content.startsWith(prefix)) return;
+    // Aceita o prefixo sem diferenciar maiúsculas de minúsculas (k! e K!).
+    if (message.content.slice(0, prefix.length).toLowerCase() !== prefix.toLowerCase()) return;
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandTrigger = args.shift()?.toLowerCase();

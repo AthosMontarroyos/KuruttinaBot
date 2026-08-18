@@ -1,5 +1,5 @@
 import path from 'path';
-import { SlashCommandBuilder, APIEmbed, Attachment, Events } from 'discord.js';
+import { ApplicationEmoji, SlashCommandBuilder, APIEmbed, Attachment } from 'discord.js';
 import { EMBED_COLORS, DEFAULT_BOT_CONFIG, sanitizeEmojiName } from '@kuruttina/shared';
 import { CommandContext } from '../../../types/command-context';
 import { CommandModule } from '../../../types/command-interface';
@@ -98,57 +98,105 @@ function extractEmojiName(
   return candidate ? sanitizeEmojiName(candidate) : null;
 }
 
+
+function getApplicationEmojiImageUrl(emoji: ApplicationEmoji): string | null {
+  try {
+    return emoji.imageURL({
+      extension: emoji.animated ? 'gif' : 'webp',
+      size: 256,
+    });
+  } catch {
+    return null;
+  }
+}
 /**
- * Smart Prefix Argument Parser:
- * Token order: k!dev-emoji-add <emoji_ou_url> [app_id] [nome]
+ * Smart Prefix Argument Parser.
+ * Supports selectors from the JSON (app:ManosabaGirls, --app=Kiss),
+ * while keeping numeric app IDs working for existing prefix commands.
  */
 function parsePrefixEmojiAddArgs(args: string[], attachment: Attachment | null) {
   let explicitName: string | null = null;
   let rawEmojiInput: string | null = null;
-  let targetAppIndex: number | null = null;
+  let targetAppSelector: string | null = null;
+  const positionalTokens: string[] = [];
 
-  for (let i = 0; i < args.length; i++) {
-    const token = args[i].trim();
+  for (const rawToken of args) {
+    const token = rawToken.trim();
     if (!token) continue;
 
-    // Flag syntax: app:2 or --app=2
-    const flagMatch = token.match(/^(?:--)?app[:=]?(\d+)$/i);
+    const flagMatch = token.match(/^(?:--)?app[:=](.+)$/i);
     if (flagMatch) {
-      targetAppIndex = parseInt(flagMatch[1], 10);
+      targetAppSelector = flagMatch[1].trim();
       continue;
     }
 
-    const nameFlagMatch = token.match(/^(?:--)?name[:=]?(.+)$/i);
+    const nameFlagMatch = token.match(/^(?:--)?name[:=](.+)$/i);
     if (nameFlagMatch) {
-      explicitName = nameFlagMatch[1];
+      explicitName = nameFlagMatch[1].trim();
       continue;
     }
 
-    // Custom emoji tag (<a:name:id> or <:name:id>) or HTTP URL
-    if (token.startsWith('<a:') || token.startsWith('<:') || token.startsWith('http://') || token.startsWith('https://')) {
-      if (!rawEmojiInput) {
-        rawEmojiInput = token;
-      }
+    if (
+      token.startsWith('<a:') ||
+      token.startsWith('<:') ||
+      token.startsWith('http://') ||
+      token.startsWith('https://')
+    ) {
+      if (!rawEmojiInput) rawEmojiInput = token;
       continue;
     }
 
-    // Standalone number (App ID like "2" or "#2")
     const numberMatch = token.match(/^#?(\d+)$/);
-    if (numberMatch) {
-      const val = parseInt(numberMatch[1], 10);
-      if (!targetAppIndex && (attachment || rawEmojiInput || explicitName || i > 0)) {
-        targetAppIndex = val;
-        continue;
-      }
+    if (numberMatch && !targetAppSelector) {
+      targetAppSelector = numberMatch[1];
+      continue;
     }
 
-    // Otherwise token is explicit name override!
-    if (!explicitName && !/^\d+$/.test(token)) {
-      explicitName = token;
-    }
+    positionalTokens.push(token);
   }
 
-  return { explicitName, rawEmojiInput, targetAppIndex };
+  if (!targetAppSelector && positionalTokens.length > 1) {
+    targetAppSelector = positionalTokens.shift() || null;
+  }
+
+  if (!explicitName && positionalTokens.length > 0) {
+    explicitName = positionalTokens.join('_');
+  }
+
+  return { explicitName, rawEmojiInput, targetAppSelector };
+}
+
+function normalizeAppSelector(value: string): string {
+  return value
+    .trim()
+    .replace(/^#/, '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '');
+}
+
+function appMatchesSelector(app: EmojiAppConfig, selector: string): boolean {
+  const normalizedSelector = normalizeAppSelector(selector);
+  const candidates = [app.selector, ...app.aliases, app.name, app.sanitizedFolderName, String(app.id), '#' + app.id];
+  return candidates.some((candidate) => normalizeAppSelector(candidate) === normalizedSelector);
+}
+
+function resolveAppConfig(apps: EmojiAppConfig[], selector: string): EmojiAppConfig | null {
+  return apps.find((app) => appMatchesSelector(app, selector)) || null;
+}
+
+function formatAvailableApps(apps: EmojiAppConfig[]): string {
+  const codeMark = String.fromCharCode(96);
+  return apps
+    .map((app) => codeMark + app.selector + codeMark + ' — ' + (app.isPrimary ? 'Vault principal' : 'Vault secundária') + ': ' + app.name)
+    .join('\n');
+}
+
+function getAppChoiceName(app: EmojiAppConfig): string {
+  const scope = app.isPrimary ? 'Principal' : 'Secundária';
+  const category = app.category && app.category !== 'primary' ? ' · ' + app.category : '';
+  return (scope + ': ' + app.name + category).slice(0, 100);
 }
 
 export const command: CommandModule = {
@@ -167,10 +215,11 @@ export const command: CommandModule = {
         .setDescription('Arquivo de imagem (PNG, GIF, WEBP) para enviar')
         .setRequired(false)
     )
-    .addIntegerOption((option) =>
+    .addStringOption((option) =>
       option
         .setName('app')
-        .setDescription('ID da App Vault de destino (ex: 1 para Kuruttina, 2 para Emojis)')
+        .setDescription('App Vault de destino; selecione pelo nome (omita para usar a vault principal)')
+        .setAutocomplete(true)
         .setRequired(false)
     )
     .addStringOption((option) =>
@@ -180,18 +229,39 @@ export const command: CommandModule = {
         .setRequired(false)
     ),
 
+  autocomplete: async (interaction) => {
+    const query = interaction.options.getString('app') || '';
+    const apps = await getEmojiAppConfigs({ discoverRemote: false });
+    const normalizedQuery = normalizeAppSelector(query);
+
+    const choices = apps
+      .filter((app) => {
+        if (!normalizedQuery) return true;
+        return [app.selector, ...app.aliases, app.name, app.sanitizedFolderName]
+          .some((candidate) => normalizeAppSelector(candidate).includes(normalizedQuery));
+      })
+      .slice(0, 25)
+      .map((app) => ({
+        name: getAppChoiceName(app),
+        value: app.selector.slice(0, 100),
+      }));
+
+    await interaction.respond(choices);
+  },
+
   prefixAliases: ['dev-emoji-add', 'add-emoji', 'import-emoji'],
   category: 'developer',
   subCategory: 'emojis',
   guide: {
-    syntax: 'k!dev-emoji-add <emoji_ou_url> [app_id] [nome] ou /dev-emoji-add emoji:<emoji> [app:<id>] [nome:<nome>]',
+    syntax: 'k!dev-emoji-add <emoji_ou_url> [app] [nome] ou /dev-emoji-add emoji:<emoji> [app:<seletor>] [nome:<nome>]',
     examples: [
-      'k!dev-emoji-add <a:kiss:1492107771510919300> 2',
-      'k!dev-emoji-add <a:kiss:1492107771510919300> 2 meu_nome_customizado',
-      '/dev-emoji-add emoji:<a:shooting:1492107771510919300> app:2',
+      'k!dev-emoji-add <a:kiss:1492107771510919300>',
+      'k!dev-emoji-add <a:kiss:1492107771510919300> app:Kiss',
+      'k!dev-emoji-add <a:kiss:1492107771510919300> app:ManosabaGirls meu_nome_customizado',
+      '/dev-emoji-add emoji:<a:shooting:1492107771510919300> app:Kiss',
     ],
     detailedDescription:
-      'Baixa a imagem de um emoji customizado ou URL e cadastra diretamente no Discord Developer Portal de uma das aplicações vinculadas. O nome é opcional e extraído automaticamente.',
+      'Baixa a imagem de um emoji customizado ou URL e cadastra diretamente no Discord Developer Portal. Sem app informado, usa a vault principal; com app informado, usa a aplicação selecionada no JSON de vaults.',
   },
 
   async execute(ctx: CommandContext): Promise<void> {
@@ -205,19 +275,19 @@ export const command: CommandModule = {
     let explicitName: string | null = null;
     let rawEmojiInput: string | null = null;
     let fileAttachment: Attachment | null = null;
-    let targetAppIndex: number | null = null;
+    let targetAppSelector: string | null = null;
 
     if (ctx.isSlash && ctx.slashInteraction) {
       rawEmojiInput = ctx.slashInteraction.options.getString('emoji');
       fileAttachment = ctx.slashInteraction.options.getAttachment('arquivo');
-      targetAppIndex = ctx.slashInteraction.options.getInteger('app');
+      targetAppSelector = ctx.slashInteraction.options.getString('app');
       explicitName = ctx.slashInteraction.options.getString('nome');
     } else {
       fileAttachment = ctx.message?.attachments.first() || null;
       const parsed = parsePrefixEmojiAddArgs(ctx.args, fileAttachment);
       explicitName = parsed.explicitName;
       rawEmojiInput = parsed.rawEmojiInput;
-      targetAppIndex = parsed.targetAppIndex;
+      targetAppSelector = parsed.targetAppSelector;
     }
 
     const emojiName = extractEmojiName(explicitName, rawEmojiInput, fileAttachment);
@@ -226,7 +296,7 @@ export const command: CommandModule = {
       const errorEmbed: APIEmbed = {
         title: `${e.WARNING} Nome do Emoji Não Identificado`,
         description:
-          'Não foi possível extrair o nome do emoji automaticamente. Forneça o nome no final: `k!dev-emoji-add <emoji> 2 meu_nome` ou `/dev-emoji-add emoji:<emoji> app:2 nome:meu_nome`',
+          'Não foi possível extrair o nome do emoji automaticamente. Forneça o nome no final: `k!dev-emoji-add <emoji> app:Kiss meu_nome` ou `/dev-emoji-add emoji:<emoji> app:Kiss nome:meu_nome`',
         color: EMBED_COLORS.BLACK.number,
       };
       await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
@@ -253,7 +323,7 @@ export const command: CommandModule = {
         return;
       }
 
-      const allApps = await getEmojiAppConfigs();
+      const allApps = await getEmojiAppConfigs({ discoverRemote: false });
       if (allApps.length === 0) {
         const errorEmbed: APIEmbed = {
           title: `${e.ERROR} Nenhuma App Vault Configurada`,
@@ -265,14 +335,16 @@ export const command: CommandModule = {
       }
 
       let selectedApp: EmojiAppConfig | null = null;
-      if (targetAppIndex) {
-        selectedApp = allApps.find((a: EmojiAppConfig) => a.id === targetAppIndex) || null;
+      if (targetAppSelector) {
+        selectedApp = resolveAppConfig(allApps, targetAppSelector);
         if (!selectedApp) {
           const errorEmbed: APIEmbed = {
-            title: `${e.WARNING} App Não Encontrada`,
-            description: `App ID **#${targetAppIndex}** não existe. Aplicações disponíveis: ${allApps
-              .map((a: EmojiAppConfig) => `\`#${a.id}: ${a.name}\``)
-              .join(', ')}`,
+            title: e.WARNING + ' App Não Encontrada',
+            description: [
+              'O seletor de app "' + targetAppSelector + '" não existe.',
+              'Aplicações disponíveis:',
+              formatAvailableApps(allApps),
+            ].join('\n'),
             color: EMBED_COLORS.BLACK.number,
           };
           await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
@@ -280,6 +352,16 @@ export const command: CommandModule = {
         }
       } else {
         selectedApp = allApps[0];
+      }
+
+      if (!selectedApp) {
+        const errorEmbed: APIEmbed = {
+          title: e.ERROR + ' Nenhuma App Vault Configurada',
+          description: 'A vault principal e as vaults secundárias não foram encontradas na configuração.',
+          color: EMBED_COLORS.BLACK.number,
+        };
+        await ctx.reply({ embeds: [errorEmbed], ephemeral: true });
+        return;
       }
 
       await withAppClient(selectedApp.token, async (uploadClient: any) => {
@@ -293,6 +375,7 @@ export const command: CommandModule = {
         );
 
         if (existingByName) {
+          const existingEmojiImageUrl = getApplicationEmojiImageUrl(existingByName as ApplicationEmoji);
           const warningEmbed: APIEmbed = {
             title: `${e.WARNING} Emoji Já Existente na Vault`,
             description: `O emoji **${existingByName.name}** (\`${existingByName.name}\`) já existe no **Discord Developer Portal** da App Vault **#${selectedApp!.id} (${selectedApp!.name})**!`,
@@ -315,7 +398,7 @@ export const command: CommandModule = {
               },
               {
                 name: `${e.IDEA} Dica de Nome`,
-                value: `Para salvar outro emoji parecido nesta mesma Vault, especifique um nome diferente no final: \`k!dev-emoji-add <emoji> ${selectedApp!.id} ${emojiName}_2\``,
+                value: `Para salvar outro emoji parecido nesta mesma Vault, especifique um nome diferente no final: \`k!dev-emoji-add <emoji> app:${selectedApp!.selector} ${emojiName}_2\``,
                 inline: false,
               },
             ],
@@ -326,6 +409,10 @@ export const command: CommandModule = {
             timestamp: new Date().toISOString(),
           };
 
+          if (existingEmojiImageUrl) {
+            warningEmbed.image = { url: existingEmojiImageUrl };
+          }
+
           await ctx.reply({ embeds: [warningEmbed], ephemeral: true });
           return;
         }
@@ -334,6 +421,7 @@ export const command: CommandModule = {
           attachment: dataUri!,
           name: emojiName,
         });
+        const createdEmojiImageUrl = getApplicationEmojiImageUrl(createdAppEmoji);
 
         const successEmbed: APIEmbed = {
           title: `${e.SUCCESS} Application Emoji Criado!`,
@@ -367,6 +455,10 @@ export const command: CommandModule = {
           },
           timestamp: new Date().toISOString(),
         };
+
+        if (createdEmojiImageUrl) {
+          successEmbed.image = { url: createdEmojiImageUrl };
+        }
 
         await ctx.reply({ embeds: [successEmbed], ephemeral: true });
       });

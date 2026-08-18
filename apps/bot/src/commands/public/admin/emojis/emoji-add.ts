@@ -11,54 +11,11 @@ import {
   getEmojis,
   createKuruttinaEmbed,
   sendErrorReply,
+  fetchDiscordEmojiDataUri,
 } from '../../../../utils';
 
 // Cooldown: 5s per user
 const emojiAddCooldowns = new CooldownManager(5);
-
-/**
- * Downloads image buffer from HTTP/CDN URL with candidate extension fallback
- * (.gif -> .png -> .webp) to prevent Discord CDN error pages.
- */
-async function fetchValidImageDataUri(sourceUrl: string): Promise<string | null> {
-  const customEmojiMatch = sourceUrl.match(/<a?:(\w+):(\d+)>/);
-  if (customEmojiMatch) {
-    const isAnimated = sourceUrl.startsWith('<a:');
-    const emojiId = customEmojiMatch[2];
-    const candidateExts = isAnimated ? ['gif', 'png', 'webp'] : ['png', 'gif', 'webp'];
-
-    for (const ext of candidateExts) {
-      const cdnUrl = `https://cdn.discordapp.com/emojis/${emojiId}.${ext}?size=256&quality=lossless`;
-      try {
-        const res = await fetch(cdnUrl);
-        if (res.ok) {
-          const contentType = res.headers.get('content-type') || '';
-          if (contentType.startsWith('image/')) {
-            const arrayBuffer = await res.arrayBuffer();
-            const base64 = Buffer.from(arrayBuffer).toString('base64');
-            return `data:${contentType};base64,${base64}`;
-          }
-        }
-      } catch {
-        // Try next candidate extension
-      }
-    }
-    return null;
-  }
-
-  try {
-    const res = await fetch(sourceUrl);
-    if (!res.ok) return null;
-    const contentType = res.headers.get('content-type') || 'image/png';
-    if (!contentType.startsWith('image/')) return null;
-
-    const arrayBuffer = await res.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
-    return `data:${contentType};base64,${base64}`;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Extracts emoji name automatically from custom emoji tag (<a:name:id>), URL, attachment filename, or explicit string.
@@ -273,9 +230,9 @@ export const command: CommandModule = {
       let dataUri: string | null = null;
 
       if (fileAttachment) {
-        dataUri = await fetchValidImageDataUri(fileAttachment.url);
+        dataUri = await fetchDiscordEmojiDataUri(fileAttachment.url);
       } else if (rawEmojiInput) {
-        dataUri = await fetchValidImageDataUri(rawEmojiInput);
+        dataUri = await fetchDiscordEmojiDataUri(rawEmojiInput);
       }
 
       if (!dataUri) {

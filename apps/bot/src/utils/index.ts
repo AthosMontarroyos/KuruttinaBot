@@ -1,4 +1,5 @@
 export * from './emojis/emoji-resolver';
+export * from './emojis/emoji-image';
 export * from './emojis/multi-app-helper';
 export * from './embeds/embed-builder';
 export * from './security/permission-guard';

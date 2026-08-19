@@ -15,6 +15,7 @@ export interface ReplyPayload {
   content?: string;
   embeds?: APIEmbed[];
   components?: any[];
+  files?: MessageCreateOptions['files'];
   ephemeral?: boolean;
   allowedMentions?: any;
 }
@@ -102,6 +103,7 @@ export class CommandContext {
         content: payload.content,
         embeds: payload.embeds,
         components: payload.components,
+        files: payload.files,
         flags: payload.ephemeral ? MessageFlags.Ephemeral : undefined,
         allowedMentions: defaultAllowedMentions,
       };
@@ -122,6 +124,7 @@ export class CommandContext {
         content: payload.content,
         embeds: payload.embeds,
         components: payload.components,
+        files: payload.files,
         allowedMentions: defaultAllowedMentions,
       };
 

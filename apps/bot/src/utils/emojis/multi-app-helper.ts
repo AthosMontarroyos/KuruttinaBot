@@ -15,8 +15,8 @@ export interface EmojiVaultEntry {
   id?: string | number;
   aliases?: string[];
   alias?: string | string[];
-  category?: 'characters' | 'interactions' | string;
-  categoria?: 'characters' | 'interactions' | string;
+  category?: 'characters' | 'roleplay' | string;
+  categoria?: 'characters' | 'roleplay' | string;
   appId?: string;
   applicationId?: string;
   clientId?: string;

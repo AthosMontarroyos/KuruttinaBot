@@ -60,8 +60,8 @@ export const command: CommandModule = {
 
             const categoryLabel = appConfig.isPrimary
               ? 'Sistema Principal'
-              : appConfig.category === 'interactions'
-              ? 'Interactions (GIFs/Ações)'
+              : appConfig.category === 'roleplay'
+              ? 'Roleplay (GIFs/Ações)'
               : 'Characters (Personagens)';
 
             fields.push({

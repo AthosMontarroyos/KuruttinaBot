@@ -41,7 +41,8 @@ KuruttinaBot/
 │   ├── branding/                  # Logos, banners e marcas
 │   ├── dashboard/                 # Capturas e mídias da UI
 │   ├── avatars/                   # Avatares do bot e cargos
-│   └── icons/                     # Ícones de botões e categorias
+│   ├── icons/                     # Ícones de botões e categorias
+│   └── Roleplay/                  # GIFs de ações e subpastas por gênero
 ├── .env                           # Variáveis de ambiente únicas da raiz (Ignorado no Git)
 ├── .env.example                   # Template de variáveis de ambiente
 ├── .gitignore                     # Proteção de credenciais e arquivos temporários

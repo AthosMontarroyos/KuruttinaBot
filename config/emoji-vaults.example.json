@@ -5,8 +5,8 @@
     "token": "your_aux_bot_token_characters_here"
   },
   {
-    "name": "KuruttinaInteractions",
-    "category": "interactions",
-    "token": "your_aux_bot_token_interactions_here"
+    "name": "KuruttinaRoleplay",
+    "category": "roleplay",
+    "token": "your_aux_bot_token_roleplay_here"
   }
 ]

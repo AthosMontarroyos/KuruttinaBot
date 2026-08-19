@@ -16,6 +16,7 @@ dist/
 .next/
 out/
 build/
+.turbo/
 *.tsbuildinfo
 
 # IDE & Editor Settings

@@ -248,6 +248,8 @@ export const command: CommandModule = {
       return;
     }
 
+    timeoutCooldowns.apply(ctx.user.id);
+
     // 9. Execute Timeout
     try {
       const auditReason = reason || 'Nenhum motivo especificado.';

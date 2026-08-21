@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Turborepo monorepo com Next.js / React (TypeScript) em `apps/website` e Discord.js v14 (TypeScript) em `apps/bot`. Banco de dados Supabase (PostgreSQL ativo) e Kurubase (em desenvolvimento). Hospedagem de desenvolvimento na Vercel/Railway e produção final na Amazon AWS, roteada por Cloudflare Tunnel (`kuruttinabot.athosmontarroyos.com`).
+Turborepo monorepo com React / Vite (TypeScript) em `apps/website` e Discord.js v14 (TypeScript) em `apps/bot`. O dashboard está somente na fundação técnica, sem interface implementada. Banco de dados Supabase (PostgreSQL ativo) e Kurubase (em desenvolvimento). Hospedagem de desenvolvimento na Vercel/Railway e produção final na Amazon AWS, roteada por Cloudflare Tunnel (`kuruttinabot.athosmontarroyos.com`).
 
 ## Users
 
@@ -29,7 +29,7 @@ Acessado via navegadores web em desktop e dispositivos móveis, integrado ao eco
 ## Capabilities and Constraints
 
 - **Capacidades**: Configurações de servidores por guild (mensagens de boas-vindas, cargos automáticos, logs de moderação), controle de acesso por comando e monitoramento de telemetria ao vivo (servidores, latência, uptime).
-- **Restrições**: Princípio DRY rigoroso, zero valores/URLs hardcoded, arquivo `.env` mantido estritamente na raiz do repositório, assets visuais armazenados na raiz (`Pictures/`), código otimizado para deploy na Amazon AWS, geração de imagens por IA/Impeccable condicional: apenas no Gemini (Antigravity) via `nanobanana` (`generate_image`); caso Claude/sem token, fluxo puramente em código (code-led/sem geração externa).
+- **Restrições**: Princípio DRY rigoroso, zero valores/URLs hardcoded, arquivo `.env` mantido estritamente na raiz do repositório, assets visuais armazenados na raiz (`Pictures/`), código otimizado para deploy na Amazon AWS. Geração ou edição de imagens por IA só ocorre quando o usuário pedir explicitamente e segue a skill `imagegen`; fora disso, consuma os assets fornecidos pelo desenvolvedor.
 
 ## Brand Commitments
 

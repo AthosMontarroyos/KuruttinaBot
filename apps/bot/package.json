@@ -10,6 +10,7 @@
     "deploy:public": "ts-node src/deploy-commands.ts --scope=public",
     "deploy:affiliate": "ts-node src/deploy-commands.ts --scope=affiliate",
     "deploy:clear": "ts-node src/deploy-commands.ts --clear",
+    "sync:startup": "ts-node src/scripts/auto-sync-commands.ts",
     "sync:emojis": "ts-node src/scripts/emojis/sync-app-emojis.ts",
     "fetch:emojis": "ts-node src/scripts/emojis/fetch-app-emojis.ts",
     "upload:emoji": "ts-node src/scripts/emojis/upload-custom-emoji.ts",

@@ -5,6 +5,7 @@ import {
   Guild,
   User,
   APIEmbed,
+  InteractionEditReplyOptions,
   InteractionReplyOptions,
   MessageCreateOptions,
   MessageFlags,
@@ -108,11 +109,38 @@ export class CommandContext {
         allowedMentions: defaultAllowedMentions,
       };
 
-      if (this.slashInteraction.deferred || this.slashInteraction.replied) {
-        await this.slashInteraction.followUp(interactionOptions);
-      } else {
-        await this.slashInteraction.reply(interactionOptions);
+      // A normal response after deferReply must edit the original response.
+      // Otherwise followUp creates a second message and fetchReply() returns
+      // the still-empty "thinking" response, breaking component collectors.
+      if (this.slashInteraction.deferred) {
+        const shouldKeepDeferredVisibility =
+          payload.ephemeral === true && this.slashInteraction.ephemeral !== true;
+
+        if (!shouldKeepDeferredVisibility) {
+          const editOptions: InteractionEditReplyOptions = {
+            content: payload.content,
+            embeds: payload.embeds,
+            components: payload.components,
+            files: payload.files,
+            allowedMentions: defaultAllowedMentions,
+          };
+          return await this.slashInteraction.editReply(editOptions);
+        }
+
+        return await this.slashInteraction.followUp({
+          ...interactionOptions,
+          fetchReply: true,
+        });
       }
+
+      if (this.slashInteraction.replied) {
+        return await this.slashInteraction.followUp({
+          ...interactionOptions,
+          fetchReply: true,
+        });
+      }
+
+      await this.slashInteraction.reply(interactionOptions);
 
       try {
         return await this.slashInteraction.fetchReply();

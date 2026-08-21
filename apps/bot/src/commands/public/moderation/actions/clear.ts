@@ -1,6 +1,7 @@
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
+  Message,
   TextChannel,
   NewsChannel,
   ThreadChannel,
@@ -142,7 +143,27 @@ export const command: CommandModule = {
     try {
       await ctx.deferReply(true);
 
-      const fetchedMessages = await channel.messages.fetch({ limit: amountToClear });
+      // Discord limits each history request to 100 messages. Fetch up to 200
+      // in two pages so the command can still offer a single 200-message UX.
+      const fetchedMessages: Message[] = [];
+      let before: string | undefined;
+
+      while (fetchedMessages.length < amountToClear) {
+        const remaining = amountToClear - fetchedMessages.length;
+        const pageSize = Math.min(100, remaining);
+        const page = await channel.messages.fetch({
+          limit: pageSize,
+          ...(before ? { before } : {}),
+        });
+        const pageMessages = Array.from(page.values());
+
+        if (pageMessages.length === 0) break;
+
+        fetchedMessages.push(...pageMessages);
+        before = pageMessages[pageMessages.length - 1]?.id;
+
+        if (pageMessages.length < pageSize) break;
+      }
 
       // Filter by user if specified
       let messagesToDelete = fetchedMessages;
@@ -155,18 +176,20 @@ export const command: CommandModule = {
       const validMessages = messagesToDelete.filter(
         (msg) => msg.createdTimestamp > fourteenDaysAgo
       );
-      const skippedOldMessages = messagesToDelete.size - validMessages.size;
+      const skippedOldMessages = messagesToDelete.length - validMessages.length;
 
       let totalDeleted = 0;
 
-      if (validMessages.size > 0) {
-        if (validMessages.size === 1) {
-          const singleMsg = validMessages.first()!;
-          await singleMsg.delete();
-          totalDeleted = 1;
-        } else {
-          const deleted = await channel.bulkDelete(validMessages, true);
-          totalDeleted = deleted.size;
+      // Discord bulk-delete accepts at most 100 messages per request.
+      for (let offset = 0; offset < validMessages.length; offset += 100) {
+        const chunk = validMessages.slice(offset, offset + 100);
+
+        if (chunk.length === 1) {
+          await chunk[0].delete();
+          totalDeleted += 1;
+        } else if (chunk.length > 1) {
+          const deleted = await channel.bulkDelete(chunk, true);
+          totalDeleted += deleted.size;
         }
       }
 

@@ -17,7 +17,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Bot Engine**: Discord.js v14 (`TypeScript`)
 - **Database (Active)**: **Supabase** (Cloud PostgreSQL database + `@supabase/supabase-js` for server configs, moderation logs, user states).
 - **Database (In Development)**: **Kurubase** (Personal self-hosted Supabase database instance).
-- **Frontend / Dashboard**: Next.js / React (TypeScript) with **Impeccable** integration for UI craft and auditing.
+- **Frontend / Dashboard**: React + Vite (TypeScript) with **Impeccable** integration for UI craft and auditing. The dashboard has not started yet; `apps/website` currently contains its Vite foundation only.
 - **Hosting (Development)**: **Vercel** (Frontend) or **Railway** (Bot / Backend staging).
 - **Hosting (Production Final)**: **Amazon AWS** (AWS ECS/EC2/Fargate/S3).
 - **Domain & Tunnel Routing**: **Cloudflare Tunnel** routing traffic to `kuruttinabot.athosmontarroyos.com`.
@@ -104,7 +104,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **Data Removal (LGPD/GDPR)**: Support data deletion/anonymization upon server bot removal or user request.
 
 ### 10. Never Trust Frontend & Zero-Eval Command Security Policy
-- 🚨 **ZERO FRONTEND TRUST & ZERO DIRECT DB ON FRONTEND**: Never expose database credentials, DB queries, or `SUPABASE_SERVICE_ROLE_KEY` to browser/frontend code (`apps/website`). ALL database actions MUST run strictly server-side (Node backend / Next.js Server Actions).
+- 🚨 **ZERO FRONTEND TRUST & ZERO DIRECT DB ON FRONTEND**: Never expose database credentials, DB queries, or `SUPABASE_SERVICE_ROLE_KEY` to browser/frontend code (`apps/website`). ALL database actions MUST run strictly in an authenticated server-side service (Node backend or AWS service); Vite is a client build tool, not a server-action runtime.
 - **Zero-Eval Custom Commands**: Custom commands MUST be Declarative Data Structures (JSON templates) validated by Zod (`customCommandPayloadSchema`) — NEVER `eval()` or dynamic code execution.
 - **Key Pillars Summary**: SQL Injection Immunity (SDK queries only), Server Authorization (`PermissionGuard`), REST Mutation Scope Protection (`DEV_ACCOUNT_ID` gatekeeping), Ping Spam Immunity (`allowedMentions: { parse: [] }`), In-Memory Rate Limiting (`CooldownManager`), Component Namespacing (`createCustomId`), Anti-IDOR identity proofing.
 - **Detailed Security Rules**: See [security-architect SKILL.md](skills/security-architect/SKILL.md).
@@ -126,7 +126,7 @@ Guidelines and rules for AI coding assistants working in this repository.
   - Command handlers MUST reside in `src/commands/` and event handlers in `src/events/` by category/sub-category.
   - Utility modules MUST reside in domain subfolders (`src/utils/embeds/`, `src/utils/emojis/`, `src/utils/loaders/`, `src/utils/security/`, `src/utils/users/`) and be re-exported via `src/utils/index.ts` (Barrel Export) so callers import cleanly from `utils`.
   - CLI automation scripts MUST reside in domain subfolders (e.g. `src/scripts/emojis/`).
-- **Command Deployment**: Keep command registration in a separate deployment script (`src/deploy-commands.ts`). Do not sync commands automatically on every bot startup.
+- **Command Deployment**: Keep command registration in `src/deploy-commands.ts`. Startup invokes the dedicated `src/scripts/auto-sync-commands.ts` only when root `AUTO_SYNC_COMMANDS=true`; this intentionally syncs the complete `all` scope. Keep it `false` outside explicit development/deployment workflows.
 - **Error Handling**: Wrap interaction execution in `try / catch` blocks to gracefully handle errors and notify users.
 
 #### Single Option User Resolution & `resolveUser` Utility Component Policy
@@ -146,11 +146,11 @@ Guidelines and rules for AI coding assistants working in this repository.
 - Use `@supabase/supabase-js` or type-safe query builders with auto-generated Supabase TypeScript definitions.
 - Ensure database connections and queries are optimized for async execution in bot command handlers.
 
-#### Frontend (Next.js / React + Impeccable + Copywriting)
+#### Frontend (React + Vite + Impeccable + Copywriting)
 - Build modular, clean React components using modern React patterns (Functional Components, Hooks, Custom Hooks).
-- Serve shared assets from `Pictures/` via Next.js API asset routers.
+- During local development, serve the approved shared asset roots from `Pictures/` through Vite middleware. Keep a strict filesystem-root check so the middleware cannot expose unrelated repository files.
 - Use `frontend-architect`, `impeccable`, and `copywriting` rules for UI design, persuasive UX copy, responsiveness, accessibility (a11y), visual polish, and INFJ voice consistency.
-- **AI Image Generation Engine (Condicional)**: SE a IA ativa for Gemini (Google Antigravity), use a ferramenta nativa `generate_image` (`nanobanana`). SE for Claude ou outro modelo sem token de API, NUNCA chamar APIs externas (OpenAI/`gpt-image-2`); não gerar imagens e seguir fluxo puramente em código (code-led / wireframes).
+- **AI Image Generation**: Only create or edit raster assets when the user explicitly requests it. Follow the active `imagegen` skill and use the native image tool; otherwise, consume the developer-provided assets already stored in `Pictures/`.
 
 ### 12. JavaScript Object (JSON Format) for Embeds & Components V2
 - **MANDATORY POLICY**: All Discord Embeds and Message Components V2 must be defined and constructed in **JavaScript Object Notation (JS Object / JSON format)** (e.g. `APIEmbed`, `APIActionRowComponent`, `APIButtonComponent`, or JSON object factory functions like `{ title, description, color, fields, components }`).
@@ -191,7 +191,7 @@ Guidelines and rules for AI coding assistants working in this repository.
     - Security: `shield`, `lock`, `unlock`, `settings`, `logs`, `user`, `guild`, `crown`
     - Branding: `link`, `documentation`, `star`
   - **Application Emoji Scope Optimization**: Developer Portal Application Emojis are reserved strictly for core system tokens (`STATUS`, `CATEGORIES`, `ACTIONS`, `TELEMETRY`, `SECURITY`, `BRANDING`). Custom decoration or third-party emojis can be referenced via formatted strings (`<:name:id>`) without consuming application emoji quota.
-- **Manual Image & Asset Authoring Policy (Zero AI Image Generation)**: AI assistants MUST NEVER generate image assets or emojis via AI image tools. All image assets, banners, icons, dividers, and custom emojis are created and uploaded manually by the developer. AI assistants strictly consume, inspect, and synchronize the developer's custom Application Emojis via `npm run sync:emojis` (`npx ts-node src/scripts/sync-app-emojis.ts`).
+- **Asset Authoring Policy**: Prefer developer-provided assets and keep them under `Pictures/`. When the user explicitly requests a new or edited raster asset, follow the `imagegen` skill; otherwise, only consume, inspect, and synchronize the developer's custom Application Emojis via `npm run sync:emojis` (`npx ts-node src/scripts/sync-app-emojis.ts`).
 - **Pre-Inspection Application Emoji Requirement**: BEFORE creating or modifying any bot command or embed involving emojis, AI agents MUST execute `npx ts-node src/scripts/fetch-app-emojis.ts` (inside `apps/bot/`) to inspect all live custom Application Emojis uploaded to the Discord Developer Portal.
 - **Strict Black or White Embed Color Theme Policy & `createKuruttinaEmbed` Factory**: All Discord Embeds must use strictly **Black** (`0x000001` / `#000000`) or **White** (`0xFFFFFF` / `#FFFFFF`) color themes for embed side borders. Construct embeds using `createKuruttinaEmbed(client, options)` (`src/utils/embed-builder.ts`) to automatically enforce border styling, dynamic bot avatar URLs, and ISO timestamps. Use `sendErrorReply` and `sendSuccessReply` for standardized command feedback.
 
@@ -209,8 +209,8 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **MANDATORY POLICY (ZERO EXCEPTION)**: NEVER, under ANY circumstances, fail to document valuable new technical decisions, architectural rules, security policies, workflows, or developer guidelines inside **`AGENTS.md`** or the specific relevant **Skill file** (`.agents/skills/<skill_name>/SKILL.md`).
 - **Immediate Context Persistence**: Every new rule, constraint, or pattern established during development MUST be immediately persisted into the appropriate documentation file so future AI sessions and team members inherit the context automatically.
 
-### 19. Interaction Commands Gender & Asset Resolution Policy
-- **Interaction Asset Directory Hierarchy (`Pictures/interactions/<action>/`)**:
+### 19. Roleplay Asset Resolution Policy
+- **Roleplay Asset Directory Hierarchy (`Pictures/Roleplay/<action>/`)**:
   - `kiss/het/female_initiated/`, `kiss/het/male_initiated/`, `kiss/het/mutual/`
   - `kiss/yuri/`
   - `kiss/yaoi/`
@@ -225,4 +225,4 @@ Guidelines and rules for AI coding assistants working in this repository.
   - **Female Initiator + Undefined Target**: Randomly selects from `het` (`female_initiated` / `mutual`) OR `yuri`.
   - **Undefined Initiator + Male Target**: Randomly selects from `het` (`female_initiated` / `mutual`) OR `yaoi`.
   - **Undefined Initiator + Female Target**: Randomly selects from `het` (`male_initiated` / `mutual`) OR `yuri`.
-- **Unified Interaction Helper (`resolveInteractionAsset`)**: All interaction commands MUST consume `resolveInteractionAsset({ action, initiatorGender, targetGender })` (`src/utils/interactions/interaction-resolver.ts`, re-exported via `src/utils/index.ts`).
+- **Unified Roleplay Helper (`resolveRoleplayAsset`)**: All Roleplay commands MUST consume `resolveRoleplayAsset({ action, initiatorGender, targetGender })` (`src/utils/Roleplay/roleplay-resolver.ts`, re-exported via `src/utils/index.ts`). Do not use the retired `Pictures/interactions`, `utils/interactions`, or `resolveInteractionAsset` names.

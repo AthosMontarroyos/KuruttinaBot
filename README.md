@@ -1,6 +1,6 @@
 # Kuruttina — Full-Stack Discord Bot Ecosystem & Web Dashboard
 
-> **Kuruttina** é um ecossistema full-stack moderno, resiliente e altamente otimizado para Discord, combinando um bot de alta performance em **TypeScript (Discord.js v14)** com um painel web intuitivo em **Next.js / React** e persistência de dados no **Supabase (PostgreSQL)**.
+> **Kuruttina** é um ecossistema full-stack moderno, resiliente e altamente otimizado para Discord, combinando um bot de alta performance em **TypeScript (Discord.js v14)** com uma fundação de painel web em **React / Vite** e persistência planejada no **Supabase (PostgreSQL)**.
 
 ---
 
@@ -18,7 +18,7 @@ Kuruttina é projetada com arquitetura monorepo (**Turborepo**), focada em extre
 
 - **Linguagem**: TypeScript (`.ts`, `.tsx`) com tipagem estrita
 - **Bot Engine**: Discord.js v14 (Node.js)
-- **Dashboard Web**: Next.js / React (TypeScript) + Impeccable UI Craft
+- **Dashboard Web**: React / Vite (TypeScript) + Impeccable UI Craft — fundação criada; interface ainda não iniciada
 - **Banco de Dados (Ativo)**: **Supabase** (PostgreSQL na nuvem + `@supabase/supabase-js`)
 - **Banco de Dados (Em Andamento)**: **Kurubase** (Instância própria do Supabase)
 - **Monorepo**: Turborepo com npm workspaces (`apps/bot` e `apps/website`)
@@ -36,7 +36,7 @@ KuruttinaBot/
 │   ├── bot/                       # Aplicação do Bot Kuruttina (Discord.js v14 + TS)
 │   │   ├── src/commands/          # Comandos Slash (aninhados por Categoria/Subcategoria)
 │   │   └── src/events/            # Manipuladores de Eventos (aninhados)
-│   └── website/                   # Dashboard Web Oficial (Next.js/React + TS)
+│   └── website/                   # Fundação do Dashboard Web (React/Vite + TS)
 ├── Pictures/                      # Repositório Central de Assets Visuais (Raiz)
 │   ├── branding/                  # Logos, banners e marcas
 │   ├── dashboard/                 # Capturas e mídias da UI

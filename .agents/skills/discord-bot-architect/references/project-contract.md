@@ -57,6 +57,7 @@ Discord InteractionCreate ─┐
 MessageCreate with k! ────┘
 
 deploy-commands.ts ─> same command modules ─> Discord REST registration
+auto-sync-commands.ts ─> deploy-commands.ts (only when AUTO_SYNC_COMMANDS=true)
 ~~~
 
 index.ts discovers every .ts or .js file recursively under src/commands and src/events using utils/loaders/recursive-loader.ts.
@@ -176,9 +177,10 @@ npm --prefix apps/bot run deploy
 npm --prefix apps/bot run deploy:dev
 npm --prefix apps/bot run deploy:public
 npm --prefix apps/bot run deploy:clear
+npm --prefix apps/bot run sync:startup
 ~~~
 
-The deploy script performs a remote diff and only PUTs when command data changed, unless a fresh deploy is requested with --fresh or --clean-deploy. Deployment needs DISCORD_TOKEN, CLIENT_ID or DISCORD_CLIENT_ID, and DEV_GUILD_ID for developer commands.
+The deploy script performs a remote diff and only PUTs when command data changed, unless a fresh deploy is requested with --fresh or --clean-deploy. Deployment needs DISCORD_TOKEN, CLIENT_ID or DISCORD_CLIENT_ID, and DEV_GUILD_ID for developer commands. On bot startup, `scripts/auto-sync-commands.ts` runs `all` only when the root environment explicitly sets `AUTO_SYNC_COMMANDS=true`; otherwise it does nothing.
 
 ## Operational boundaries
 

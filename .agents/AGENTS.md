@@ -52,6 +52,7 @@ Guidelines and rules for AI coding assistants working in this repository.
 - **[`copywriting`](skills/copywriting/SKILL.md)**: High-converting marketing copy, CTAs, landing page copy, value propositions, and INFJ voice alignment.
 - **[`impeccable`](skills/impeccable/SKILL.md)**: Design framework and visual craft audit tool for React UI components.
 - **[`agent-browser`](skills/agent-browser/SKILL.md)**: Fast browser automation CLI for exploratory testing, QA, and website interactions.
+- **[`notion-project`](skills/notion-project/SKILL.md)**: Fluxo do Notion da Kuruttina: atualiza a página `KuruttinaBot` na base `Projetos`, cria tarefas vinculadas na base `Tarefas` e verifica relações sem expor segredos.
 
 
 ## Core Rules & Principles

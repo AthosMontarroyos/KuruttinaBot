@@ -134,6 +134,8 @@ For local Roleplay GIFs, pass files with attachment: asset.absolutePath and a fi
 - Use discord.js API types and builders, not another Discord library.
 - Do not use direct discord.py patterns or a second execution path.
 
+Any command or event that consumes a user-controlled attachment or remote file URL must also read and follow `references/file-auditing.md`. Receiving an `Attachment` from discord.js does not validate its contents; the audit must happen explicitly before the first file-related side effect.
+
 ## Shared utility map
 
 Use the barrel unless changing an internal utility.
@@ -141,6 +143,7 @@ Use the barrel unless changing an internal utility.
 | Need | Utility |
 |---|---|
 | Application emoji resolution | utils/emojis/emoji-resolver.ts |
+| Inbound emoji image validation and sanitization | utils/emojis/emoji-image.ts |
 | Temporary secondary App Vault client | utils/emojis/multi-app-helper.ts |
 | Embed and reply helpers | utils/embeds/embed-builder.ts |
 | Recursive discovery | utils/loaders/recursive-loader.ts |
@@ -198,6 +201,7 @@ The deploy script performs a remote diff and only PUTs when command data changed
 - New command: this reference, one similar command and the relevant helper.
 - New event: this reference, the matching event file, index.ts and the loader.
 - New utility: this reference, its barrel export and one direct consumer.
+- File attachment, upload or remote file URL: this reference plus file-auditing.md and the relevant consumer.
 - Emoji vault: this reference, multi-app helper and one relevant script.
 - Roleplay: roleplay.md plus the resolver.
 - Architecture change: this reference plus the exact files being changed.

@@ -1,6 +1,6 @@
 ---
 name: discord-bot-architect
-description: Maintain and extend the Kuruttina Discord bot built with TypeScript, Node.js and discord.js v14. Use this skill for bot commands, events, loaders, Discord REST deployment, moderation, emoji vaults, shared helpers and Roleplay assets.
+description: Maintain and extend the Kuruttina Discord bot built with TypeScript, Node.js and discord.js v14. Use this skill for bot commands, events, loaders, Discord REST deployment, moderation, emoji vaults, inbound attachment/file validation, shared helpers and Roleplay assets.
 metadata:
   short-description: Project-specific Discord.js architecture for Kuruttina
   project: Kuruttina
@@ -34,6 +34,7 @@ Read only the reference needed for the task:
 | Task | Read |
 |---|---|
 | Architecture, command/event contracts, Context, deployment, validation | references/project-contract.md |
+| User attachments, file/image URLs, uploads or file integrity | references/file-auditing.md plus references/project-contract.md |
 | Roleplay assets, gender routing or GIF commands | references/roleplay.md |
 | New command or event | references/project-contract.md plus one neighboring implementation |
 | Emoji vault or emoji scripts | references/project-contract.md plus the relevant utility/script |
@@ -48,6 +49,7 @@ Do not scan every command, every asset or the entire discord.js documentation fo
 - Defer long slash operations before network/API work.
 - Use CommandContext.reply for responses; preserve its default allowedMentions suppression.
 - Use project helpers for embeds, emojis, target users, durations, permissions, cooldowns and secondary App Vault clients.
+- Audit every user-controlled file before the bot downloads, decodes, persists, proxies, re-uploads or sends it to another API. Follow references/file-auditing.md; Discord attachments are not audited automatically.
 - Keep embeds/components serializable as Discord API objects; do not introduce EmbedBuilder into commands.
 - Keep quick moderation success replies concise content responses.
 - Use resolveRoleplayAsset for Roleplay assets; do not duplicate directory or gender logic.

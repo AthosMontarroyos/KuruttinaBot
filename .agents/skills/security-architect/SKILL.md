@@ -1,6 +1,6 @@
 ---
 name: security-architect
-description: Comprehensive security checklist and architecture guide for Kuruttina. Covers zero-leak credentials (.env containment), user & server data privacy (GDPR/LGPD, Supabase RLS), zero-eval declarative commands, server-side Zod validation, scope protection on REST mutations, ping spam immunity, rate limiting, and component namespacing. Use when reviewing security, creating commands, configuring Supabase, auditing code, or handling user/guild data.
+description: Comprehensive security checklist and architecture guide for Kuruttina. Covers credentials, privacy, RLS, zero-eval commands, server validation, REST mutation scope, untrusted upload/file auditing, ping immunity, rate limiting and component namespacing. Use when reviewing security, creating commands, configuring Supabase, auditing code, or handling user/guild data and files.
 ---
 
 # Security Architect Skill (`security-architect`)
@@ -55,6 +55,7 @@ This skill defines the complete security framework, checklists, and compliance r
 - [ ] Cooldown & Rate Limit: Enforced per-user & per-guild in memory (`CooldownManager`).
 - [ ] Component V2 Namespacing: Custom IDs use `scope:guildId:commandId:action` pattern (`createCustomId` / `parseCustomId`).
 - [ ] Zero-Trust Input & File Rejection: Assume ALL user inputs & files are untrusted/hostile ("guilty until proven innocent"). Reject arbitrary files and untrusted input without strict Zod schema validation & MIME-type checks.
+- [ ] Mandatory File Audit Before Side Effects: Before the bot downloads, decodes, stores, proxies, re-uploads or forwards a user-controlled file, run the domain-specific audit/sanitization helper. Treat filename, extension, `Attachment.contentType`, `Attachment.size`, HTTP headers and remote URLs only as untrusted hints to cross-check against bounded bytes and the decoded format. For Discord bot uploads, follow `../discord-bot-architect/references/file-auditing.md`.
 - [ ] Anti-IDOR & Identity Proofing: Every HTTP request/API route MUST verify server session tokens. Identity is extracted ONLY from signed tokens — users CANNOT swap, alter, or spoof `userId` on the frontend/payloads. Zero access via arbitrary client-supplied IDs.
 
 

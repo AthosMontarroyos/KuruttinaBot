@@ -113,7 +113,7 @@ export const command: CommandModule = {
     .addAttachmentOption((option) =>
       option
         .setName('arquivo')
-        .setDescription('Arquivo de imagem (PNG, GIF, WEBP) para enviar')
+        .setDescription('Imagem PNG, JPEG, GIF, WEBP ou AVIF (máx. 10 MiB)')
         .setRequired(false)
     )
     .addStringOption((option) =>
@@ -230,16 +230,20 @@ export const command: CommandModule = {
       let dataUri: string | null = null;
 
       if (fileAttachment) {
-        dataUri = await fetchDiscordEmojiDataUri(fileAttachment.url);
+        dataUri = await fetchDiscordEmojiDataUri(fileAttachment.url, {
+          contentType: fileAttachment.contentType,
+          size: fileAttachment.size,
+          consumer: 'emoji-add',
+        });
       } else if (rawEmojiInput) {
-        dataUri = await fetchDiscordEmojiDataUri(rawEmojiInput);
+        dataUri = await fetchDiscordEmojiDataUri(rawEmojiInput, { consumer: 'emoji-add' });
       }
 
       if (!dataUri) {
         await sendErrorReply(
           ctx,
           `${e.ERROR} Imagem Inválida ou Inacessível`,
-          'Não foi possível baixar ou processar a imagem do emoji. Certifique-se de enviar uma imagem PNG, GIF ou WEBP válida.'
+          'Não foi possível validar ou processar a imagem do emoji. Envie uma imagem PNG, JPEG, GIF, WEBP ou AVIF válida de até 10 MiB.'
         );
         return;
       }

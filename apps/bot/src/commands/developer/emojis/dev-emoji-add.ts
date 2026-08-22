@@ -169,7 +169,7 @@ export const command: CommandModule = {
     .addAttachmentOption((option) =>
       option
         .setName('arquivo')
-        .setDescription('Arquivo de imagem (PNG, GIF, WEBP) para enviar')
+        .setDescription('Imagem PNG, JPEG, GIF, WEBP ou AVIF (máx. 10 MiB)')
         .setRequired(false)
     )
     .addStringOption((option) =>
@@ -264,16 +264,22 @@ export const command: CommandModule = {
       let dataUri: string | null = null;
 
       if (fileAttachment) {
-        dataUri = await fetchDiscordEmojiDataUri(fileAttachment.url);
+        dataUri = await fetchDiscordEmojiDataUri(fileAttachment.url, {
+          contentType: fileAttachment.contentType,
+          size: fileAttachment.size,
+          consumer: 'dev-emoji-add',
+        });
       } else if (rawEmojiInput) {
-        dataUri = await fetchDiscordEmojiDataUri(rawEmojiInput);
+        dataUri = await fetchDiscordEmojiDataUri(rawEmojiInput, {
+          consumer: 'dev-emoji-add',
+        });
       }
 
       if (!dataUri) {
         const errorEmbed: APIEmbed = {
-          title: `${e.ERROR} Imagem Não Encontrada`,
+          title: `${e.ERROR} Imagem Inválida ou Inacessível`,
           description:
-            'Forneça um emoji customizado do Discord, uma URL de imagem válida ou um arquivo anexado.',
+            'Forneça um emoji customizado do Discord, uma URL ou um arquivo PNG, JPEG, GIF, WEBP ou AVIF válido de até 10 MiB.',
           color: EMBED_COLORS.BLACK.number,
         };
         await ctx.reply({ embeds: [errorEmbed], ephemeral: true });

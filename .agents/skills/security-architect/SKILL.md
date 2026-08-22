@@ -12,7 +12,7 @@ This skill defines the complete security framework, checklists, and compliance r
 ## 🛡️ Master Security Checklist
 
 ### 1. Environment & Credential Shield (Zero-Leak)
-- [ ] Secrets exist ONLY in root `.env` (never in `apps/bot`, `apps/website`, or `packages/shared`).
+- [ ] Primary runtime secrets exist ONLY in root `.env` (never in `apps/bot`, `apps/website`, or `packages/shared`). Auxiliary emoji-vault tokens exist exclusively in the ignored `config/emoji-vaults.json`, never in `.env` or source code.
 - [ ] `.gitignore` explicitly includes `.env`, `.env.local`, `.env.*.local`.
 - [ ] `.env.example` contains ONLY non-sensitive placeholder values (`your_token_here`).
 - [ ] No hardcoded tokens, passwords, API keys, or connection strings in source code or commits.

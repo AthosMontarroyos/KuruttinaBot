@@ -253,17 +253,10 @@ function metadataFromEntry(entry: EmojiVaultEntry): EmojiAppMetadata {
 function readConfiguredEntries(): EmojiVaultEntry[] {
   const entries: EmojiVaultEntry[] = [];
   const configPath = path.join(rootDir, 'config/emoji-vaults.json');
-  const rootConfigPath = path.join(rootDir, 'emoji-vaults.json');
 
-  const targetFile = fs.existsSync(configPath)
-    ? configPath
-    : fs.existsSync(rootConfigPath)
-    ? rootConfigPath
-    : null;
-
-  if (targetFile) {
+  if (fs.existsSync(configPath)) {
     try {
-      const content = fs.readFileSync(targetFile, 'utf-8').trim();
+      const content = fs.readFileSync(configPath, 'utf-8').trim();
       const parsed: unknown = JSON.parse(content);
       const list: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
 
@@ -272,32 +265,7 @@ function readConfiguredEntries(): EmojiVaultEntry[] {
         if (entry) entries.push(entry);
       }
     } catch (err: any) {
-      console.warn('⚠️ Warning: Failed to parse ' + targetFile + ': ' + err.message);
-    }
-  }
-
-  // Fallback to process.env.EMOJI_BOT_TOKENS if no entries were found in the JSON file.
-  if (entries.length === 0) {
-    const rawTokens = (process.env.EMOJI_BOT_TOKENS || '').trim();
-
-    if (rawTokens.startsWith('[') || rawTokens.startsWith('{')) {
-      try {
-        const parsed: unknown = JSON.parse(rawTokens);
-        const list: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-        for (const item of list) {
-          const entry = parseVaultEntry(item);
-          if (entry) entries.push(entry);
-        }
-      } catch {
-        console.warn('⚠️ Could not parse EMOJI_BOT_TOKENS as JSON, falling back to comma-separated list.');
-      }
-    }
-
-    if (entries.length === 0 && rawTokens.length > 0 && !rawTokens.startsWith('[') && !rawTokens.startsWith('{')) {
-      for (const token of rawTokens.split(',')) {
-        const entry = parseVaultEntry(token);
-        if (entry) entries.push(entry);
-      }
+      console.warn('⚠️ Warning: Failed to parse ' + configPath + ': ' + err.message);
     }
   }
 
@@ -307,7 +275,7 @@ function readConfiguredEntries(): EmojiVaultEntry[] {
 /**
  * Array Pipeline:
  * 1. Primary Bot (Kuruttina)
- * 2. Array of Secondary Bots (config/emoji-vaults.json or EMOJI_BOT_TOKENS)
+ * 2. Array of Secondary Bots (config/emoji-vaults.json only)
  */
 export async function getEmojiAppConfigs(
   options: GetEmojiAppConfigsOptions = {}

@@ -4,7 +4,7 @@ This is the detailed reference for agents changing bot architecture, commands, e
 
 ## Runtime map
 
-The executable bot is apps/bot. It starts in src/index.ts, loads the root .env, creates KuruttinaClient and logs in with DISCORD_TOKEN.
+The executable bot is apps/bot. It starts in src/index.ts, loads the root `.env`, creates KuruttinaClient and logs in with `DISCORD_TOKEN`. Auxiliary emoji-vault tokens are read exclusively from the ignored `config/emoji-vaults.json`; they are not read from environment variables.
 
 KuruttinaClient extends discord.js Client and adds commands: Collection<string, CommandModule>.
 

@@ -23,7 +23,7 @@ This is a project-specific router, not a generic Discord bot manual. It applies 
 - Default prefix is k!, with DEFAULT_PREFIX as the root .env override.
 - Assets live under Pictures/; Roleplay assets live under Pictures/Roleplay/.
 - There are currently no Roleplay commands; only the resolver and assets exist.
-- Tokens belong only in the root .env and must never be logged or documented.
+- The primary bot token belongs in the root `.env`; auxiliary emoji-vault tokens belong exclusively in the ignored `config/emoji-vaults.json`. Never log or document token values.
 
 Do not add guidance or dependencies for discord.py, Next.js, Supabase/Postgres, sharding, distributed queues or distributed rate limiting unless the project explicitly adopts them. The website is a separate React/Vite application and is not governed by this bot skill.
 

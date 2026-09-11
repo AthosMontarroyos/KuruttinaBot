@@ -1,7 +1,9 @@
 services:
   bot-development:
     profiles: [development]
-    build: .
+    build:
+      context: .
+      dockerfile: infra/docker/bot.Dockerfile
     env_file:
       - path: .env
         required: false
@@ -13,7 +15,9 @@ services:
     cpus: 1.0
   bot-production:
     profiles: [production]
-    build: .
+    build:
+      context: .
+      dockerfile: infra/docker/bot.Dockerfile
     env_file:
       - path: .env
         required: false

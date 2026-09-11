@@ -3,6 +3,12 @@
 .env.*
 !.env.example
 
+# Dependencies and generated outputs
+node_modules/
+dist/
+coverage/
+*.log
+
 # Discord configuration (defense in depth)
 /config/**
 !/config/

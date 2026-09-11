@@ -10,6 +10,8 @@
 
 **Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona `Pictures/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
 
+No ambiente Windows de desenvolvimento, `npm run assets:mount` monta esse bucket em `Pictures/` por meio do perfil local `kurrutina-r2` do rclone; `npm run assets:unmount` encerra a montagem. O executável, cache, PID e credenciais permanecem ignorados pelo Git.
+
 ### Regra: integração com o site
 
 **Nível:** MUST

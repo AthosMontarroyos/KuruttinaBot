@@ -11,6 +11,7 @@ coverage/
 
 # Assets are stored in Cloudflare R2; keep local backups out of deploys and Git.
 Pictures/
+.tools/
 
 #Cache
 .vscode

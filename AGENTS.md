@@ -583,7 +583,13 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Nível:** MUST
 
-**Regra:** `Pictures/` armazena apenas fontes/assets do projeto, organizados por uso e com nomes kebab-case descritivos. Não é storage de upload, cache, IPC entre serviços nem banco de dados.
+**Regra:** `Pictures/` na raiz é a origem canônica global de todas as imagens reutilizáveis pelo bot, site ou outros consumidores. Armazene ali apenas fontes/assets do projeto, organizados por uso e com nomes kebab-case descritivos; não mantenha cópias versionadas divergentes dentro dos apps. `Pictures/` não é storage de upload, cache, IPC entre serviços nem banco de dados.
+
+### Regra: integração com o site
+
+**Nível:** MUST
+
+**Regra:** Como arquivos públicos do Next.js precisam ser expostos pelo app/build, use um mecanismo explícito e determinístico de mapeamento, sincronização, cópia ou link gerado entre `Pictures/` e a área pública do site, incluindo somente os assets usados. A fonte continua sendo `Pictures/`; a saída gerada não deve ser editada nem versionada. Resolva a partir da raiz/workspace, evitando imports com cadeias frágeis de `../`. O mecanismo deve ser reproduzível em desenvolvimento, CI, Docker e Railway e não pode exigir symlink específico do sistema operacional.
 
 ### Regra: otimização e distribuição
 

@@ -33,6 +33,7 @@ O projeto é um monorepo modular, não uma coleção de microsserviços. As unid
 ├── apps/
 │   ├── bot/                 # processo discord.js
 │   └── site/                # aplicação Next.js App Router
+├── config/                 # configurações locais e exemplos (não confundir com packages/config)
 ├── packages/
 │   ├── database/            # schema, migrations, RLS, client e repositories
 │   ├── contracts/           # schemas e contratos realmente compartilhados
@@ -95,6 +96,14 @@ apps (composition roots)
 **Motivo:** aplica DRY sem criar abstrações prematuras.
 
 **Exemplo:** schema de configuração de guild usado por site e bot pertence a `contracts`; componente React e handler Discord permanecem nos respectivos apps.
+
+### Regra: organização enxuta
+
+**Nível:** SHOULD
+
+**Regra:** Mantenha arquivos com responsabilidade coesa e pastas com nomes autoexplicativos. Informações, contratos e constantes importantes e realmente compartilhados devem ter uma origem reutilizável, sem duplicação. “Enxuto” não significa criar arquivos artificiais demais nem ocultar responsabilidades; preserve a regra de compartilhamento com critério e extraia apenas quando houver dois consumidores reais ou um invariante canônico.
+
+**Motivo:** torna a estrutura legível e reduz divergências sem incentivar abstração prematura.
 
 ### Regra: composição e domínio
 

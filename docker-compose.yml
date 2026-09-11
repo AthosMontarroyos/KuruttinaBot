@@ -1,0 +1,25 @@
+services:
+  bot-development:
+    profiles: [development]
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      BOT_TARGET: development
+    command: ["node", "dist/apps/bot/src/runner.js", "development"]
+    restart: unless-stopped
+    mem_limit: 500m
+    cpus: 1.0
+  bot-production:
+    profiles: [production]
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      BOT_TARGET: production
+    command: ["node", "dist/apps/bot/src/runner.js", "production"]
+    restart: unless-stopped
+    mem_limit: 500m
+    cpus: 1.0

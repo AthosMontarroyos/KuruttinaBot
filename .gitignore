@@ -9,6 +9,9 @@ dist/
 coverage/
 *.log
 
+#Cache
+.vscode
+
 # Discord configuration (defense in depth)
 /config/**
 !/config/

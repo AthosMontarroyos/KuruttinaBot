@@ -9,7 +9,7 @@ O projeto é um monorepo modular, não uma coleção de microsserviços. As unid
 ```text
 /
 ├── apps/
-│   ├── bot/                 # processo discord.js e configuração Square própria
+│   ├── bot/                 # processo discord.js
 │   └── site/                # aplicação Next.js App Router
 ├── config/                 # configurações locais e exemplos (não confundir com packages/config)
 ├── packages/

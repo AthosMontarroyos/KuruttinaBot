@@ -31,7 +31,7 @@ O startup falha fechado em configuração, identidade ou deploy. O shutdown dest
 
 ## Execução e distribuição
 
-Há formas npm (`build`, `start:*`, `dev:*`, `deploy:central`) e Docker Compose com perfis explícitos `development` e `production`. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. O bot possui `apps/bot/squarecloud.app` com runtime Node 22.14.0, 512 MB, auto-restart e startup de produção; o empacotamento para upload ainda precisa colocá-lo na raiz do artefato exigida pela Square.
+Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) com aliases genéricos compatíveis, além de `deploy:central`, e Docker Compose com perfis `development`/`production`. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. Não há `squarecloud.app` versionado: o bot será configurado no painel da Square com 512 MB e `npm run build:bot && npm run start:bot:production`, preservando configuração independente para o futuro site.
 
 ## Segurança e validação
 

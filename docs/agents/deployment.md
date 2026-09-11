@@ -20,7 +20,7 @@ O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict 
 
 **Regra:** Implante `site` e `bot` como projetos/processos separados no Square Cloud Hobby, cada um com somente suas variáveis necessárias. Use um projeto Supabase Free de production para PostgreSQL; o projeto Supabase de development nunca recebe tráfego ou secrets de production. Não agrupe bot e site no mesmo processo e não divida módulos internos em novos serviços sem métricas ou requisito de isolamento.
 
-Cada app mantém sua configuração canônica `squarecloud.app` no próprio diretório. Como a Square exige esse arquivo na raiz do pacote enviado, o empacotamento copia a configuração do app selecionado para a raiz do artefato junto dos manifests, lockfile, configuração TypeScript, fontes e packages necessários; nunca envie `.env`, secrets, `node_modules`, outputs ou arquivos do outro app sem necessidade.
+Não versione um `squarecloud.app` único na raiz do monorepo, pois ele seria compartilhado de forma ambígua por bot e site. Configure cada aplicação separadamente no painel da Square, apontando para o mesmo repositório e para seu próprio comando npm, memória, tipo e domínio. O bot usa `npm run build:bot && npm run start:bot:production`; quando o site existir, ele usa `npm run build:site && npm run start:site:production`. Os aliases genéricos existem somente para ergonomia local; produção sempre usa scripts nomeados pela unidade implantável.
 
 **Motivo:** mantém isolamento de falhas e deploy independente sem custo de microsserviços desnecessários.
 

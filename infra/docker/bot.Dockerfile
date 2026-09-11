@@ -4,7 +4,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY tsconfig.json ./
 COPY apps ./apps
-RUN npm run build && npm prune --omit=dev
+RUN npm run build:bot && npm prune --omit=dev
 
 FROM node:22.14.0-bookworm-slim AS runtime
 WORKDIR /app

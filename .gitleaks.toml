@@ -1,0 +1,18 @@
+title = "KuruttinaBot Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "kuruttinabot-discord-bot-token"
+description = "Discord bot token assigned to a KuruttinaBot environment variable"
+regex = '''(?i)DISCORD_BOT_TOKEN_(?:DEVELOPMENT|PRODUCTION)\s*[:=]\s*["']?([A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{20,})'''
+secretGroup = 1
+keywords = ["discord_bot_token_"]
+
+[[rules]]
+id = "kuruttinabot-discord-client-secret"
+description = "Discord OAuth2 client secret assigned to a KuruttinaBot environment variable"
+regex = '''(?i)DISCORD_CLIENT_SECRET_(?:DEVELOPMENT|PRODUCTION)[ \t]*[:=][ \t]*["']?([A-Za-z0-9_-]{20,})'''
+secretGroup = 1
+keywords = ["discord_client_secret_"]

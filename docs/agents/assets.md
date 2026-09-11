@@ -14,7 +14,7 @@
 
 **Nível:** MUST
 
-**Regra:** Como arquivos públicos do Next.js precisam ser expostos pelo app/build, use um mecanismo explícito e determinístico de mapeamento, sincronização, cópia ou link gerado entre `Pictures/` e a área pública do site, incluindo somente os assets usados. A fonte continua sendo `Pictures/`; a saída gerada não deve ser editada nem versionada. Resolva a partir da raiz/workspace, evitando imports com cadeias frágeis de `../`. O mecanismo deve ser reproduzível em desenvolvimento, CI, Docker e Railway e não pode exigir symlink específico do sistema operacional.
+**Regra:** Como arquivos públicos do Next.js precisam ser expostos pelo app/build, use um mecanismo explícito e determinístico de mapeamento, sincronização, cópia ou link gerado entre `Pictures/` e a área pública do site, incluindo somente os assets usados. A fonte continua sendo `Pictures/`; a saída gerada não deve ser editada nem versionada. Resolva a partir da raiz/workspace, evitando imports com cadeias frágeis de `../`. O mecanismo deve ser reproduzível em desenvolvimento, CI, Docker e Square Cloud e não pode exigir symlink específico do sistema operacional.
 
 ### Regra: otimização e distribuição
 

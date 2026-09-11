@@ -4,7 +4,7 @@
 
 ## Escopo implementado
 
-O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, executado em Node `22.14.x`, com `discord.js` `14.27.0`. Não há site, banco de dados, configuração Railway, comandos guild-specific reais ou integração Discord real automatizada nos testes.
+O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, executado em Node `22.14.x`, com `discord.js` `14.27.0`. Não há site, banco de dados, configuração Square Cloud, comandos guild-specific reais ou integração Discord real automatizada nos testes.
 
 ## Estrutura e responsabilidades
 
@@ -31,7 +31,7 @@ O startup falha fechado em configuração, identidade ou deploy. O shutdown dest
 
 ## Execução e distribuição
 
-Há formas npm (`build`, `start:*`, `dev:*`, `deploy:central`) e Docker Compose com perfis explícitos `development` e `production`. O `Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. Não existe configuração Railway versionada.
+Há formas npm (`build`, `start:*`, `dev:*`, `deploy:central`) e Docker Compose com perfis explícitos `development` e `production`. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. O bot possui `apps/bot/squarecloud.app` com runtime Node 22.14.0, 512 MB, auto-restart e startup de produção; o empacotamento para upload ainda precisa colocá-lo na raiz do artefato exigida pela Square.
 
 ## Segurança e validação
 
@@ -42,4 +42,4 @@ Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou ima
 - Credenciais duplas no mesmo ambiente ampliam o blast radius; manter seleção explícita, sem fallback, e rotação imediata após exposição.
 - O deploy global é implementado; deploys guild-specific são apenas extensão futura, não comportamento atual.
 - O shutdown é limitado e não há endpoint de health dedicado para o bot.
-- A arquitetura futura de persistência/site/Railway ainda não foi decidida; não inferir esses componentes a partir das regras genéricas.
+- A direção futura está decidida como Square Cloud Hobby para `bot`/`site` e dois projetos Supabase Free isolados para development/production, mas esses componentes ainda não estão implementados; consulte o [ADR](../decisions/square-cloud-supabase.md).

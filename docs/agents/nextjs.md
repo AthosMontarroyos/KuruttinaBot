@@ -38,7 +38,7 @@
 
 **Nível:** MUST
 
-**Regra:** Mutations autenticadas por cookie aceitam apenas métodos não seguros apropriados, exigem `Origin` igual à origem pública canônica configurada e usam proteção CSRF da biblioteca/framework ou token explícito quando a proteção embutida não cobrir o fluxo. Não derive a origem esperada de `Host`/`X-Forwarded-*` fornecidos livremente; aceite forwarded headers somente de proxies Railway explicitamente confiáveis e normalize protocolo/host/porta antes da comparação. `GET` não altera estado.
+**Regra:** Mutations autenticadas por cookie aceitam apenas métodos não seguros apropriados, exigem `Origin` igual à origem pública canônica configurada e usam proteção CSRF da biblioteca/framework ou token explícito quando a proteção embutida não cobrir o fluxo. Não derive a origem esperada de `Host`/`X-Forwarded-*` fornecidos livremente; aceite forwarded headers somente de proxies Square Cloud explicitamente confiáveis e normalize protocolo/host/porta antes da comparação. `GET` não altera estado.
 
 ### Regra: fetching e memória
 

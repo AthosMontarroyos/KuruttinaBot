@@ -58,7 +58,13 @@ Para o bot Discord atual, a configuração exige ambos os tokens/IDs, seleciona 
 
 **Nível:** MUST
 
-**Regra:** Restrinja permissões Discord, scopes OAuth, roles PostgreSQL, acesso Railway, rede, filesystem e tokens ao mínimo necessário. Ambientes usam credenciais distintas.
+**Regra:** Restrinja permissões Discord, scopes OAuth, roles PostgreSQL/Supabase, acesso Square Cloud, rede, filesystem e tokens ao mínimo necessário. Development e production usam projetos Supabase e credenciais completamente distintos. Credenciais do painel/Management API, owner/migration e secret/`service_role` não entram no runtime comum nem no bundle client.
+
+### Regra: fronteira Supabase
+
+**Nível:** MUST
+
+**Regra:** Trate o projeto Supabase como sistema externo privilegiado. Permita acesso administrativo somente a contas individuais necessárias, com MFA, sem compartilhamento de login. A aplicação recebe apenas secrets do ambiente e função correspondentes. Nunca registre URL com senha, headers de autorização, JWT, chaves ou payloads sensíveis; alertas e screenshots também devem ser redigidos. Rotacione imediatamente qualquer credencial suspeita e atualize apenas o ambiente afetado.
 
 ### Regra: resposta a erro
 

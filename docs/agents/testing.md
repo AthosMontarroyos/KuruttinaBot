@@ -58,7 +58,7 @@ O conjunto atual do bot é coberto por testes Vitest de configuração, composi�
 
 **Nível:** MUST
 
-**Regra:** Development, staging e production têm credenciais, bancos e OAuth callbacks separados. Produção não habilita debug, seed de teste, hot reload ou fallback inseguro. Configuração ausente causa falha no startup.
+**Regra:** Development e production têm projetos Supabase, credenciais e OAuth callbacks separados. Staging e testes usam PostgreSQL local/CI descartável com credenciais próprias, nunca o projeto de production. Produção não habilita debug, seed de teste, hot reload ou fallback inseguro. Configuração ausente causa falha no startup; nenhum ambiente faz fallback para outro.
 
 ## 16. Skills e divisão de responsabilidade
 
@@ -70,7 +70,7 @@ Domínios recomendados, desde que as respectivas skills existam:
 - `project-architect`: fronteiras, dependências, ADRs e mudanças transversais; não implementa detalhes de cada domínio.
 - `database-developer`: schema, migrations, query/repository, roles, RLS, pooling e análise SQL.
 - `nextjs-dashboard-developer`: App Router, React, Tailwind, rotas/actions e integração da autenticação; policies continuam server-side.
-- `docker-railway-developer`: Dockerfiles, Compose, Railway, builds, health, shutdown e orçamento operacional.
+- `docker-railway-developer`: Dockerfiles, Compose, Square Cloud, builds, health, shutdown e orçamento operacional.
 - `security-reviewer`: threat model e revisão transversal de auth, API, banco, Discord, containers e deploy; revisa, não toma posse automática de toda implementação.
 - `testing-auditor`: estratégia e verificação independente de testes, regressões, integração, segurança e consumo.
 

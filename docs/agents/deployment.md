@@ -2,7 +2,7 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
-O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict em Node 22.14. Não há configuração Railway versionada nem serviços de site ou banco neste escopo; consulte o [snapshot do estado atual](../project/current-state.md) para o inventário verificável.
+O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict em Node 22.14. A direção de produção é Square Cloud Hobby para `bot`/`site` e Supabase para PostgreSQL; ainda não há configuração Square, site ou banco implementados. Consulte o [snapshot](../project/current-state.md) e o [ADR](../decisions/square-cloud-supabase.md).
 
 ## 3. Serviços e execução
 
@@ -10,19 +10,27 @@ O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict 
 
 **Nível:** MUST
 
-**Regra:** `docker compose up` deve poder iniciar PostgreSQL, bot e site com rede interna, variáveis documentadas e dependências verificadas por readiness. O banco usa volume persistente nomeado; código-fonte montado como volume é opção apenas do perfil de desenvolvimento.
+**Regra:** `docker compose up` deve poder iniciar PostgreSQL local descartável, bot e site com rede interna, variáveis documentadas e dependências verificadas por readiness. O banco local usa volume nomeado; código-fonte montado como volume é opção apenas do perfil de desenvolvimento. Compose reproduz contratos e não implica que production rode os três componentes no mesmo provedor.
 
 **Motivo:** torna o ambiente reproduzível e diferencia persistência de build.
 
-### Regra: topologia Railway
+### Regra: topologia de produção
 
 **Nível:** SHOULD
 
-**Regra:** Implante inicialmente três serviços separados: um processo `site`, um processo `bot` e PostgreSQL gerenciado pela Railway. Não agrupe bot e site no mesmo container e não divida módulos internos em novos serviços sem métricas ou requisito de isolamento.
+**Regra:** Implante `site` e `bot` como projetos/processos separados no Square Cloud Hobby, cada um com somente suas variáveis necessárias. Use um projeto Supabase Free de production para PostgreSQL; o projeto Supabase de development nunca recebe tráfego ou secrets de production. Não agrupe bot e site no mesmo processo e não divida módulos internos em novos serviços sem métricas ou requisito de isolamento.
+
+Cada app mantém sua configuração canônica `squarecloud.app` no próprio diretório. Como a Square exige esse arquivo na raiz do pacote enviado, o empacotamento copia a configuração do app selecionado para a raiz do artefato junto dos manifests, lockfile, configuração TypeScript, fontes e packages necessários; nunca envie `.env`, secrets, `node_modules`, outputs ou arquivos do outro app sem necessidade.
 
 **Motivo:** mantém isolamento de falhas e deploy independente sem custo de microsserviços desnecessários.
 
-**Exceções:** um plano Railway comprovadamente mais econômico pode agrupar processos apenas após medir memória, garantir supervisão/sinais e documentar o acoplamento de deploy.
+**Exceções:** mudança de provedor ou plano exige comparação de custo total, deploy automático, recursos, disponibilidade, segurança e trabalho operacional, além de atualização do ADR.
+
+### Regra: evolução econômica
+
+**Nível:** MUST
+
+**Regra:** Permaneça no Supabase Free enquanto seus limites e garantias atenderem ao uso real. Upgrade no Supabase só ocorre por limite medido, requisito de backup/disponibilidade ou receita sustentável; não adote Railway pago, database da Square ou self-hosting como fallback implícito. Uma troca de persistência é decisão arquitetural explícita com plano de migração e rollback.
 
 ### Regra: migrations em produção
 
@@ -44,7 +52,7 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 
 **Motivo:** OOM mata processos sem encerramento confiável.
 
-**Exceções:** limiares podem ser ajustados após registrar medições representativas, configuração Railway e margem equivalente.
+**Exceções:** limiares podem ser ajustados após registrar medições representativas, configuração Square Cloud e margem equivalente.
 
 ### Regra: processamento limitado
 
@@ -90,7 +98,7 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 
 **Nível:** MUST
 
-**Regra:** Cada app implantável usa Dockerfile multi-stage, versão major/minor de Node fixada, instalação pelo lockfile e estágio final com apenas artefatos e dependências de produção. Execute como usuário não-root. O build deve falhar se o lockfile estiver inconsistente.
+**Regra:** Cada app implantável usa Dockerfile multi-stage nomeado (`infra/docker/<app>.Dockerfile`), versão major/minor de Node fixada, instalação pelo lockfile e estágio final com apenas artefatos e dependências de produção. Execute como usuário não-root. O build deve falhar se o lockfile estiver inconsistente. O contexto permanece na raiz do monorepo e Compose aponta explicitamente para o Dockerfile do serviço.
 
 **Motivo:** reduz imagem, superfície de ataque e variação entre ambientes.
 
@@ -136,13 +144,13 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 
 **Nível:** MUST
 
-**Regra:** Injete configuração e secrets no runtime por variáveis/secret store Railway. Valide schema no startup, falhe cedo com mensagem sem valor secreto e mantenha `.env.example` apenas com nomes e exemplos inofensivos.
+**Regra:** Injete configuração e secrets no runtime pelas variáveis protegidas da Square Cloud e do CI. Valide schema no startup, falhe cedo com mensagem sem valor secreto e mantenha `.env.example` apenas com nomes e exemplos inofensivos. Nunca copie secrets de development para production ou credenciais administrativas Supabase para os runtimes.
 
 ### Regra: configuração local compartilhada
 
 **Nível:** MUST
 
-**Regra:** No desenvolvimento local, mantenha um único `.env` global na raiz do monorepo como fonte de configuração para `packages/database`, `apps/bot` e `apps/site`; os apps não devem manter arquivos `.env` locais divergentes. O `.env` nunca é versionado, cada processo valida apenas as variáveis que consome no startup, e produção/Railway usa variáveis ou secret store em runtime.
+**Regra:** No desenvolvimento local, mantenha um único `.env` global na raiz do monorepo como fonte de configuração para `packages/database`, `apps/bot` e `apps/site`; os apps não devem manter arquivos `.env` locais divergentes. O `.env` nunca é versionado, cada processo valida apenas as variáveis que consome no startup, e production/Square usa variáveis protegidas em runtime. Testes preferem configuração própria efêmera e não carregam o `.env` de production.
 
 Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e `BOT_TARGET` escolhe a credencial ativa sem fallback; essa exceção está registrada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
 
@@ -182,7 +190,7 @@ Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e
 
 **Nível:** SHOULD
 
-**Regra:** Acompanhe RSS/heap, event-loop lag, reinícios/OOM, latência/erros, pool ativo/em espera, queries lentas, fila e cache. Use recursos nativos/Railway ou endpoint leve; não adicione stack de observabilidade pesada sem orçamento.
+**Regra:** Acompanhe RSS/heap, event-loop lag, reinícios/OOM, latência/erros, pool ativo/em espera, queries lentas, fila e cache. Use recursos nativos da Square Cloud/Supabase ou endpoint leve; não adicione stack de observabilidade pesada sem orçamento.
 
 ## 13. Dependências e performance
 

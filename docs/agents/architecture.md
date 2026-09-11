@@ -4,12 +4,12 @@
 
 ## 2. Arquitetura de referência
 
-O projeto é um monorepo modular, não uma coleção de microsserviços. As unidades implantáveis iniciais são `bot` e `site`; PostgreSQL é um serviço de infraestrutura. `packages/database` contém código de acesso a dados e nunca representa o servidor PostgreSQL.
+O projeto é um monorepo modular, não uma coleção de microsserviços. As unidades implantáveis iniciais são `bot` e `site`, hospedadas separadamente no Square Cloud Hobby; PostgreSQL é infraestrutura gerenciada em dois projetos Supabase Free isolados. `packages/database` contém código de acesso a dados e nunca representa o servidor PostgreSQL. A decisão e seus gatilhos de evolução estão no [ADR Square Cloud + Supabase](../decisions/square-cloud-supabase.md).
 
 ```text
 /
 ├── apps/
-│   ├── bot/                 # processo discord.js
+│   ├── bot/                 # processo discord.js e configuração Square própria
 │   └── site/                # aplicação Next.js App Router
 ├── config/                 # configurações locais e exemplos (não confundir com packages/config)
 ├── packages/
@@ -19,15 +19,14 @@ O projeto é um monorepo modular, não uma coleção de microsserviços. As unid
 │   ├── auth/                # somente se autenticação/autorização for reutilizada
 │   └── shared/              # utilitários puros e pequenos; não é depósito genérico
 ├── infra/
-│   ├── docker/
-│   └── railway/
+│   └── docker/              # Dockerfiles nomeados por app; contexto na raiz
 ├── Pictures/                # fontes de imagens e assets do projeto
 ├── .agents/skills/          # procedimentos especializados para agentes
 ├── docker-compose.yml
 └── AGENTS.md
 ```
 
-Diretórios opcionais (`auth`, `shared`, `infra/railway`) só devem existir quando possuírem conteúdo real. Uma nova aplicação ou serviço exige ciclo de vida, necessidade de deploy ou isolamento operacional próprio; importância de domínio, sozinha, não basta.
+Diretórios opcionais (`auth`, `shared`) só devem existir quando possuírem conteúdo real. Uma nova aplicação ou serviço exige ciclo de vida, necessidade de deploy ou isolamento operacional próprio; importância de domínio, sozinha, não basta.
 
 ### Regra: direção de dependências
 

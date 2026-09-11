@@ -25,6 +25,8 @@ O conjunto canônico publica somente `ping`. O deploy central substitui o conjun
 
 O `.env.example` também reserva `DISCORD_CLIENT_SECRET_DEVELOPMENT` e `DISCORD_CLIENT_SECRET_PRODUCTION` para futuros fluxos OAuth2. Esses Client Secrets são diferentes dos Bot Tokens e ainda não são lidos nem exigidos pelo runtime atual.
 
+`ASSETS_BASE_URL` é obrigatória, aceita somente HTTPS sem credenciais, query ou fragmento e aponta para o bucket R2 compartilhado. As imagens não fazem mais parte do repositório nem do build; o endpoint `r2.dev` atual é provisório até a conexão de um domínio próprio.
+
 `AUTO_SYNC_COMMANDS` aceita `true`/`false` e assume `false` quando ausente. Quando ativo, todos os deploys registrados são executados sequencialmente, antes do Gateway e da readiness; a primeira falha interrompe o startup. A identidade ativa é validada em `/users/@me` com timeout de 5 segundos, exigindo resposta de bot e ID esperado.
 
 O startup falha fechado em configuração, identidade ou deploy. O shutdown destrói o client e termina após timeout. Logs estruturados incluem timestamp, nível, serviço e evento, sem tokens.
@@ -43,3 +45,4 @@ Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou ima
 - O deploy global é implementado; deploys guild-specific são apenas extensão futura, não comportamento atual.
 - O shutdown é limitado e não há endpoint de health dedicado para o bot.
 - A direção futura está decidida como Square Cloud Hobby para `bot`/`site` e dois projetos Supabase Free isolados para development/production, mas esses componentes ainda não estão implementados; consulte o [ADR](../decisions/square-cloud-supabase.md).
+- O bucket R2 é a origem operacional das imagens; o backup externo e a futura troca de `r2.dev` por domínio próprio são responsabilidades operacionais registradas no [ADR de assets](../decisions/cloudflare-r2-assets.md).

@@ -7,6 +7,7 @@ export type BotConfig = Readonly<{
   credentials: Readonly<{ development: BotCredential; production: BotCredential }>;
   activeCredential: BotCredential;
   autoSyncCommands: boolean;
+  assetsBaseUrl: string;
 }>;
 
 const required = (env: NodeJS.ProcessEnv, name: string): string => {
@@ -22,6 +23,23 @@ const parseBoolean = (value: string | undefined): boolean => {
   throw new Error('AUTO_SYNC_COMMANDS must be true or false');
 };
 
+const parseAssetsBaseUrl = (env: NodeJS.ProcessEnv): string => {
+  const value = required(env, 'ASSETS_BASE_URL');
+  let url: URL;
+
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error('ASSETS_BASE_URL must be a valid HTTPS URL');
+  }
+
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+    throw new Error('ASSETS_BASE_URL must be a valid HTTPS URL without credentials, query, or fragment');
+  }
+
+  return url.href.replace(/\/$/, '');
+};
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): BotConfig {
   const target = required(env, 'BOT_TARGET');
   if (target !== 'development' && target !== 'production') throw new Error('BOT_TARGET must be development or production');
@@ -29,7 +47,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): BotConfig {
     development: readCredential(env, 'DEVELOPMENT'),
     production: readCredential(env, 'PRODUCTION'),
   });
-  return Object.freeze({ target, credentials, activeCredential: credentials[target], autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS) });
+  return Object.freeze({
+    target,
+    credentials,
+    activeCredential: credentials[target],
+    autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS),
+    assetsBaseUrl: parseAssetsBaseUrl(env),
+  });
 }
 
 function readCredential(env: NodeJS.ProcessEnv, suffix: 'DEVELOPMENT' | 'PRODUCTION'): BotCredential {

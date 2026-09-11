@@ -31,7 +31,7 @@ Antes de alterar um artefato, leia integralmente cada documento diretamente apli
 - [Dashboard Next.js e administração](docs/agents/nextjs.md): App Router, React, Tailwind, OAuth, sessões, CSRF, cache e operações administrativas.
 - [Segurança transversal](docs/agents/security.md): validação, autorização, secrets, XSS, SSRF, uploads, rate limit e resposta a erro.
 - [Deployment, operação e performance](docs/agents/deployment.md): serviços, recursos, Docker, Compose, Square Cloud, Supabase, observabilidade, resiliência, dependências e payloads.
-- [Assets](docs/agents/assets.md): organização de `Pictures/`, integração, otimização, proveniência e limpeza.
+- [Assets](docs/agents/assets.md): armazenamento R2, integração, otimização, proveniência e limpeza.
 - [Desenvolvimento, testes e conclusão](docs/agents/testing.md): comandos, testes, Git, documentação, ambientes, divisão entre skills e Definition of Done.
 
 ## Uso conjunto

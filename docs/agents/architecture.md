@@ -20,7 +20,6 @@ O projeto é um monorepo modular, não uma coleção de microsserviços. As unid
 │   └── shared/              # utilitários puros e pequenos; não é depósito genérico
 ├── infra/
 │   └── docker/              # Dockerfiles nomeados por app; contexto na raiz
-├── Pictures/                # fontes de imagens e assets do projeto
 ├── .agents/skills/          # procedimentos especializados para agentes
 ├── docker-compose.yml
 └── AGENTS.md

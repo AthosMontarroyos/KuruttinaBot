@@ -9,6 +9,7 @@ const context: DeploymentContext = {
     credentials: { development: { token: 'fake-token', expectedBotId: '123456789012345678' }, production: { token: 'fake-prod-token', expectedBotId: '987654321098765432' } },
     activeCredential: { token: 'fake-token', expectedBotId: '123456789012345678' },
     autoSyncCommands: true,
+    assetsBaseUrl: 'https://assets.example.com',
   },
 };
 

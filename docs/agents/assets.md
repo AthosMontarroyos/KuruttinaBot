@@ -2,19 +2,19 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
-## 12. Assets em `Pictures/`
+## 12. Assets no Cloudflare R2
 
 ### Regra: finalidade e organização
 
 **Nível:** MUST
 
-**Regra:** `Pictures/` na raiz é a origem canônica global de todas as imagens reutilizáveis pelo bot, site ou outros consumidores. Armazene ali apenas fontes/assets do projeto, organizados por uso e com nomes kebab-case descritivos; não mantenha cópias versionadas divergentes dentro dos apps. `Pictures/` não é storage de upload, cache, IPC entre serviços nem banco de dados.
+**Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona `Pictures/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
 
 ### Regra: integração com o site
 
 **Nível:** MUST
 
-**Regra:** Como arquivos públicos do Next.js precisam ser expostos pelo app/build, use um mecanismo explícito e determinístico de mapeamento, sincronização, cópia ou link gerado entre `Pictures/` e a área pública do site, incluindo somente os assets usados. A fonte continua sendo `Pictures/`; a saída gerada não deve ser editada nem versionada. Resolva a partir da raiz/workspace, evitando imports com cadeias frágeis de `../`. O mecanismo deve ser reproduzível em desenvolvimento, CI, Docker e Square Cloud e não pode exigir symlink específico do sistema operacional.
+**Regra:** bot e site recebem a mesma `ASSETS_BASE_URL` HTTPS validada e persistem somente caminhos relativos estáveis. O runtime monta URLs públicas sem credenciais do R2; nenhuma imagem é copiada para o build ou para a área pública do site. Em produção, use domínio próprio conectado ao bucket; `r2.dev` é provisório por ser limitado e não recomendado pela Cloudflare para produção.
 
 ### Regra: otimização e distribuição
 
@@ -26,4 +26,4 @@
 
 **Nível:** MUST
 
-**Regra:** Asset externo precisa de licença/proveniência compatível registrada. Remova duplicados e assets não utilizados após confirmar referências; não versione artefatos temporários ou exportações enormes.
+**Regra:** Asset externo precisa de licença/proveniência compatível registrada antes do upload. Remova duplicados e assets não utilizados após confirmar referências; não versione binários, artefatos temporários ou exportações enormes.

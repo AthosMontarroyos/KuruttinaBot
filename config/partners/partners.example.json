@@ -1,0 +1,8 @@
+{
+  "servidores": [
+    { "nome": "Servidor VIP de exemplo", "id": "9000000000000000001", "permissao": "Vip" },
+    { "nome": "Servidor parceiro de exemplo", "id": "9000000000000000002", "permissao": "Parceiro" },
+    { "nome": "Servidor developer de exemplo", "id": "9000000000000000003", "permissao": "Developer" },
+    { "nome": "Servidor creator de exemplo", "id": "9000000000000000004", "permissao": "Creator" }
+  ]
+}

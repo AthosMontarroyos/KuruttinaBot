@@ -12,11 +12,11 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Regra:** Toda alteração específica de discord.js consulta e segue `discordbot-developer`, além deste arquivo. Use apenas bot accounts e APIs oficiais; self-bot é proibido.
 
-### Regra: separação de bots por ambiente
+### Regra: seleção de credenciais e alvo
 
 **Nível:** MUST
 
-**Regra:** Existem duas aplicações/credenciais Discord distintas: Bot Dev para desenvolvimento e Bot Principal para produção/deploy automático Railway. Não coloque dois tokens no mesmo runtime nem crie duas variáveis de token ativas: cada processo lê somente `DISCORD_BOT_TOKEN`; o `.env` local contém apenas o token Dev e o secret store do serviço de produção Railway contém apenas o token Principal. `APP_ENV` é obrigatório e aceita exatamente `development|production`, sem default; não use `NODE_ENV` sozinho para selecionar credencial. Antes do login no Gateway, da readiness e de `AUTO_SYNC_COMMANDS`, valide pela API oficial (`/users/@me`) que o token autentica um bot e que seu ID corresponde ao ID público esperado e versionado para o `APP_ENV`; mismatch, timeout ou resposta inválida falha fechado, com log sem token. Produção também exige `NODE_ENV=production` e o ambiente Railway esperado; comandos Dev devem ser preferencialmente guild-scoped e cada app deve operar somente nas guilds de seu ambiente, com least privilege. Staging futuro não reutiliza nenhuma dessas credenciais sem exceção humana documentada.
+**Regra:** `BOT_TARGET` aceita somente `development` ou `production` e seleciona exatamente uma credencial ativa, sem fallback. A configuração exige sempre os dois pares `DISCORD_BOT_TOKEN_DEVELOPMENT`/`DISCORD_BOT_ID_DEVELOPMENT` e `DISCORD_BOT_TOKEN_PRODUCTION`/`DISCORD_BOT_ID_PRODUCTION`, inclusive quando apenas um alvo será conectado. O runtime pode manter ambas disponíveis de forma somente leitura para operações cross-bot autorizadas, mas o Gateway e cada deploy usam apenas a credencial ativa. Variáveis legadas ou seleção implícita por ambiente não são permitidas. Esta é a exceção vigente às regras históricas de uma credencial por runtime; contexto, impacto e controles estão em [ADR de credenciais duplas](../decisions/dual-bot-credentials.md). Antes do Gateway ou de qualquer deploy, valide `/users/@me` com timeout, confirme `bot: true` e o ID público esperado; mismatch, timeout ou resposta inválida falha fechado, sem token nos logs.
 
 ### Regra: sincronização automática de commands
 

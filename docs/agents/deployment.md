@@ -2,6 +2,8 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
+O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict em Node 22.14. Não há configuração Railway versionada nem serviços de site ou banco neste escopo; consulte o [snapshot do estado atual](../project/current-state.md) para o inventário verificável.
+
 ## 3. Serviços e execução
 
 ### Regra: topologia local
@@ -141,6 +143,8 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 **Nível:** MUST
 
 **Regra:** No desenvolvimento local, mantenha um único `.env` global na raiz do monorepo como fonte de configuração para `packages/database`, `apps/bot` e `apps/site`; os apps não devem manter arquivos `.env` locais divergentes. O `.env` nunca é versionado, cada processo valida apenas as variáveis que consome no startup, e produção/Railway usa variáveis ou secret store em runtime.
+
+Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e `BOT_TARGET` escolhe a credencial ativa sem fallback; essa exceção está registrada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
 
 ## 11. APIs, erros, observabilidade e resiliência
 

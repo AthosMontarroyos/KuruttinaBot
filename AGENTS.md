@@ -24,6 +24,7 @@ Antes de alterar um artefato, leia integralmente cada documento diretamente apli
 
 ## Índice sob demanda
 
+- [Estado implementado](docs/project/current-state.md): snapshot verificável do que existe hoje, comandos, runtime, deploys, segurança, testes e lacunas conhecidas.
 - [Arquitetura e contratos](docs/agents/architecture.md): estrutura do monorepo, dependências, composição, TypeScript, contratos e configuração tipada.
 - [PostgreSQL e acesso a dados](docs/agents/database.md): schema, migrations, queries, repositories, RLS, roles, pooling e transações.
 - [Discord bot](docs/agents/discord-bot.md): discord.js, credenciais por ambiente, command sync, registry, memória e ciclo de vida.

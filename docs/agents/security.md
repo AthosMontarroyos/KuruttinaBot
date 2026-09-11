@@ -2,6 +2,8 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
+Para o bot Discord atual, a configuração exige ambos os tokens/IDs, seleciona o alvo apenas por `BOT_TARGET` e valida a identidade ativa em `/users/@me` antes de deploy ou Gateway. Não há fallback entre credenciais; consulte o [ADR de credenciais duplas](../decisions/dual-bot-credentials.md) e o [snapshot do estado atual](../project/current-state.md).
+
 ## 8. Segurança transversal
 
 ### Regra: entrada não confiável

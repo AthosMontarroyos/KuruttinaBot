@@ -6,6 +6,12 @@ Consulte o [estado atual do projeto](docs/project/current-state.md) e as [decis�
 
 Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `BOT_TARGET`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
 
+O bot não monta nem sincroniza o bucket no startup. Em qualquer ambiente, ele publica as imagens pelas URLs montadas a partir de `ASSETS_BASE_URL`, sem credenciais administrativas do R2. Os comandos `npm run assets:mount` e `npm run assets:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `Pictures/`.
+
+## Aliases de importação
+
+O alias `#bot/*` aponta para `apps/bot/src/*` durante desenvolvimento e typecheck, e para `dist/apps/bot/src/*` no Node após o build. Ele está declarado em `tsconfig.json`, `jsconfig.json` e no campo `imports` de `package.json`; por isso funciona no editor, no `tsx` e no runtime ESM sem reescrita adicional. Use, por exemplo, `#bot/infrastructure/logger.js` em vez de atravessar vários diretórios com `../../`. Imports entre futuros workspaces devem continuar usando o nome público do package, sem criar aliases para internals.
+
 No Docker Compose, use um perfil por vez: `docker compose --profile development up --build` ou `docker compose --profile production up --build`. Nenhum serviço de bot é iniciado sem um perfil explícito.
 
 `AUTO_SYNC_COMMANDS=false` é o padrão seguro. Quando `true`, todos os deploys registrados são executados sequencialmente uma vez antes do login e da readiness. Uma falha interrompe o startup. Nunca versione `.env` ou tokens.

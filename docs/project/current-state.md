@@ -1,6 +1,6 @@
 # Estado atual do KuruttinaBot
 
-Última consolidação: 11 de setembro de 2026.
+Última consolidação: 12 de setembro de 2026.
 
 ## Escopo implementado
 
@@ -9,15 +9,16 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, ex
 ## Estrutura e responsabilidades
 
 - `apps/bot/src/config.ts`: validação estrita de configuração e seleção do alvo.
-- `apps/bot/src/bootstrap.ts` e `index.ts`: identidade, deploy opcional, Gateway, eventos e shutdown.
-- `apps/bot/src/commands/`: comandos separados por tipo oficial e composição do único comando `ping`.
-- `apps/bot/src/handlers/`: roteamento de commands e execução sequencial dos deployments.
+- `apps/bot/src/bootstrap.ts` e `index.ts`: identidade, deploy opcional, composição do Client, registro de eventos e shutdown.
+- `apps/bot/src/commands/`: comandos organizados pelas categorias `public`, `private`, `settings`, `mod` e `admin`; atualmente contém apenas `public/ping.ts`.
+- `apps/bot/src/events/`: callbacks dos eventos do Discord, separados do bootstrap.
+- `apps/bot/src/handlers/`: catálogo, payload e despacho global de commands, além da execução sequencial dos deployments.
 - `apps/bot/src/deployments/`: tipos e deploy central global.
 - `apps/bot/src/infrastructure/discord/`: chamadas Discord e validação de identidade.
 - `apps/bot/src/infrastructure/logger.ts`: logs JSON em stdout/stderr.
 - `config/partners` e `config/emojis`: exemplos/configuração auxiliar; não são comandos ativos.
 
-O conjunto canônico publica somente `ping`. O deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
+O `CommandsHandler` é a origem canônica dos comandos registrados: ele valida nomes duplicados, gera o payload de publicação e despacha cada interaction pelo `commandName`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
 
 ## Configuração e ciclo de vida
 
@@ -33,7 +34,7 @@ O startup falha fechado em configuração, identidade ou deploy. O shutdown dest
 
 ## Execução e distribuição
 
-Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) com aliases genéricos compatíveis, além de `deploy:central`, e Docker Compose com perfis `development`/`production`. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. Não há `squarecloud.app` versionado: o bot será configurado no painel da Square com 512 MB e `npm run build:bot && npm run start:bot:production`, preservando configuração independente para o futuro site.
+Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) com aliases genéricos compatíveis, além de `deploy:central`, e Docker Compose com perfis `development`/`production`. O startup não monta nem sincroniza o R2: os runtimes consomem imagens somente pelas URLs derivadas de `ASSETS_BASE_URL`; a montagem em `Pictures/` permanece uma ferramenta manual de manutenção local. O alias ESM nativo `#bot/*`, compartilhado por `package.json`, `tsconfig.json` e `jsconfig.json`, evita caminhos relativos transversais e resolve para o código compilado em produção. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. Não há `squarecloud.app` versionado: o bot será configurado no painel da Square com 512 MB e `npm run build:bot && npm run start:bot:production`, preservando configuração independente para o futuro site.
 
 ## Segurança e validação
 

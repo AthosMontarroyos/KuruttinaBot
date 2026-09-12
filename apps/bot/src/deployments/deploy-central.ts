@@ -1,6 +1,6 @@
-import { loadConfig } from '../config.js';
-import { verifyBotIdentity } from '../infrastructure/discord/identity.js';
-import { log } from '../infrastructure/logger.js';
+import { loadConfig } from '#bot/config.js';
+import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
+import { log } from '#bot/infrastructure/logger.js';
 import { centralDeployment } from './central.js';
 
 async function deployCentral(): Promise<void> {

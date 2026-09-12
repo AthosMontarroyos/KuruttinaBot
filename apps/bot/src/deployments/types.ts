@@ -1,4 +1,4 @@
-import type { BotConfig } from '../config.js';
+import type { BotConfig } from '#bot/config.js';
 
 export type DeploymentContext = Readonly<{
   config: BotConfig;

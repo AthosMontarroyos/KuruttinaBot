@@ -1,6 +1,6 @@
-import { log } from '../infrastructure/logger.js';
-import { centralDeployment } from '../deployments/central.js';
-import type { Deployment, DeploymentContext } from '../deployments/types.js';
+import { centralDeployment } from '#bot/deployments/central.js';
+import type { Deployment, DeploymentContext } from '#bot/deployments/types.js';
+import { log } from '#bot/infrastructure/logger.js';
 
 export const deployments: readonly Deployment[] = [centralDeployment];
 

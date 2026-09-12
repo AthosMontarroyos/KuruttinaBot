@@ -1,5 +1,6 @@
 import type {
   ChatInputCommandInteraction,
+  Message,
   RESTPostAPIApplicationCommandsJSONBody,
   SlashCommandBuilder,
 } from 'discord.js';
@@ -8,10 +9,14 @@ import { extname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { log } from '#bot/infrastructure/logger.js';
 
+// Commands depend on the shared transport capabilities, never a fabricated interaction.
+export interface CommandContext {
+  reply(content: string): Promise<void>;
+}
+
 export interface ChatInputCommand {
   readonly data: Pick<SlashCommandBuilder, 'name' | 'toJSON'>;
-  readonly prefixCommand: boolean;
-  execute(interaction: ChatInputCommandInteraction): Promise<void>;
+  execute(context: CommandContext): Promise<void>;
 }
 
 interface CommandModule {
@@ -22,7 +27,7 @@ function isChatInputCommand(value: unknown): value is ChatInputCommand {
   if (typeof value !== 'object' || value === null) return false;
 
   const candidate = value as Partial<ChatInputCommand>;
-  if (typeof candidate.prefixCommand !== 'boolean' || typeof candidate.execute !== 'function') return false;
+  if (typeof candidate.execute !== 'function') return false;
   if (typeof candidate.data !== 'object' || candidate.data === null) return false;
 
   const data = candidate.data as Partial<ChatInputCommand['data']> & { description?: unknown };
@@ -55,7 +60,6 @@ export async function loadCommands(commandsDirectory = new URL('../commands/', i
     log('info', 'command_loaded', {
       command: module.command.data.name,
       description: module.command.data.toJSON().description,
-      prefixCommand: module.command.prefixCommand,
     });
   }
 
@@ -67,6 +71,7 @@ export class CommandsHandler {
 
   constructor(registeredCommands: readonly ChatInputCommand[]) {
     for (const command of registeredCommands) {
+      if (!isChatInputCommand(command)) throw new Error('Invalid command');
       if (this.commandsByName.has(command.data.name)) {
         throw new Error(`Duplicate chat input command: ${command.data.name}`);
       }
@@ -84,7 +89,17 @@ export class CommandsHandler {
 
     if (!command) throw new Error(`Unknown command: ${interaction.commandName}`);
 
-    await command.execute(interaction);
+    await command.execute({ reply: async (content) => { await interaction.reply(content); } });
+  }
+
+  async executeMessage(message: Pick<Message, 'content' | 'author' | 'webhookId' | 'system' | 'reply'>): Promise<void> {
+    if (message.author.bot || message.webhookId || message.system) return;
+    const match = /^[kK]!([^\s]+)(?:\s|$)/u.exec(message.content);
+    if (!match?.[1]) return;
+    const command = this.commandsByName.get(match[1]);
+    if (!command) return;
+
+    await command.execute({ reply: async (content) => { await message.reply(content); } });
   }
 }
 

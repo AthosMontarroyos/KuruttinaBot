@@ -1,10 +1,9 @@
-import { SlashCommandBuilder, type ChatInputCommandInteraction } from 'discord.js';
-import type { ChatInputCommand } from '../../handlers/CommandsHandler.js';
+import { SlashCommandBuilder } from 'discord.js';
+import type { ChatInputCommand, CommandContext } from '#bot/handlers/CommandsHandler.js';
 
 export const command = {
   data: new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!'),
-  prefixCommand: false,
-  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    await interaction.reply('Pong!');
+  async execute(context: CommandContext): Promise<void> {
+    await context.reply('Pong!');
   },
 } satisfies ChatInputCommand;

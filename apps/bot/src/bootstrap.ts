@@ -1,7 +1,8 @@
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { Client, Events, GatewayIntentBits, Options, Partials } from 'discord.js';
 import { loadConfig } from '#bot/config.js';
 import { handleClientReady } from '#bot/events/clientReady.js';
 import { handleInteractionCreate } from '#bot/events/interactionCreate.js';
+import { handleMessageCreate } from '#bot/events/messageCreate.js';
 import { commandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
@@ -17,12 +18,16 @@ export async function startBot(): Promise<void> {
   }
 
   const client = new Client({
-    intents: [GatewayIntentBits.Guilds],
+    // Message content enables the fixed prefixes; DirectMessages preserves slash DM availability.
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
+    partials: [Partials.Channel],
+    makeCache: Options.cacheWithLimits({ ...Options.DefaultMakeCacheSettings, MessageManager: 0 }),
     allowedMentions: { parse: [], repliedUser: false },
   });
 
   client.once(Events.ClientReady, (readyClient) => handleClientReady(readyClient, config.target));
   client.on(Events.InteractionCreate, (interaction) => handleInteractionCreate(interaction, commandsHandler));
+  client.on(Events.MessageCreate, (message) => handleMessageCreate(message, commandsHandler));
 
   let stopping = false;
   const shutdown = (signal: string): void => {

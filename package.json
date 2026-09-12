@@ -2,6 +2,9 @@
   "name": "kuruttina-bot",
   "private": true,
   "type": "module",
+  "imports": {
+    "#bot/*": "./dist/apps/bot/src/*"
+  },
   "engines": { "node": "22.14.x" },
   "scripts": {
     "build": "npm run build:bot",

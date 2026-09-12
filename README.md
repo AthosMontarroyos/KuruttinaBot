@@ -4,6 +4,10 @@ Consulte o [estado atual do projeto](docs/project/current-state.md) e as [decis�
 
 ## Bot local/Docker
 
+Slash é o padrão. Todos os comandos do registry também respondem automaticamente aos prefixos fixos `k!` e `K!`: `/ping`, `k!ping` e `K!ping` usam o mesmo executor, inclusive em DM. Não existe comando ou variável para ativar/configurar prefixo. Os nomes dos comandos são exatos; mensagens de bots/webhooks/sistema e comandos desconhecidos são ignorados. O conjunto atual não possui argumentos.
+
+Habilite **Message Content Intent** em **Developer Portal → aplicação → Bot → Privileged Gateway Intents** para cada bot usado (development e production). O código solicita esse intent; sem autorização no portal, o Discord pode rejeitar o Gateway com código 4014. Aplicações verificadas podem precisar de aprovação do Discord. O bot precisa poder ver o canal e enviar respostas. O cache de mensagens fica desabilitado: o despacho usa somente a mensagem recebida.
+
 Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `BOT_TARGET`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
 
 O bot não monta nem sincroniza o bucket no startup. Em qualquer ambiente, ele publica as imagens pelas URLs montadas a partir de `ASSETS_BASE_URL`, sem credenciais administrativas do R2. Os comandos `npm run assets:mount` e `npm run assets:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `Pictures/`.

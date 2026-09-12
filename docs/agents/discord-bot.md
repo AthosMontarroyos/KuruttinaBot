@@ -28,7 +28,7 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Nível:** MUST
 
-**Regra:** Todo módulo de command declara nome, descrição não vazia e a opção booleana `prefixCommand`. O registry descobre automaticamente os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido ou nome duplicado e emite um log estruturado `command_loaded` por command carregado. `prefixCommand` expressa compatibilidade do command, mas não autoriza habilitar `MessageContent` nem implementar despacho por prefixo sem decisão explícita.
+**Regra:** Todo módulo de command declara nome, descrição não vazia e um único executor baseado no contrato compartilhado `CommandContext`. Slash é a definição canônica; todos os commands registrados também são acessíveis automaticamente por `k!` e pelo alias `K!`, sem opt-out, configuração ou comando de ativação. O registry descobre automaticamente os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido ou nome duplicado e emite um log estruturado `command_loaded` por command carregado. Os adapters de slash e mensagem usam o mesmo executor, sem duplicar lógica nos commands. Capacidades novas, como argumentos, devem ampliar o contrato e ambos os adapters conjuntamente. O uso de `MessageContent` para esse despacho foi autorizado explicitamente pelo usuário; ele também deve estar habilitado no Developer Portal para cada aplicação.
 
 ### Regra: registry de parceiros
 

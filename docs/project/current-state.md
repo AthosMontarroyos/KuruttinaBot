@@ -18,7 +18,9 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, ex
 - `apps/bot/src/infrastructure/logger.ts`: logs JSON em stdout/stderr.
 - `config/partners` e `config/emojis`: exemplos/configuração auxiliar; não são comandos ativos.
 
-O `CommandsHandler` é a origem canônica dos comandos registrados: ele descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e a opção booleana `prefixCommand`, valida nomes duplicados, registra cada carregamento no terminal, gera o payload de publicação e despacha cada interaction pelo `commandName`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
+O `CommandsHandler` é a origem canônica dos comandos registrados: ele descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e executor compartilhado, valida nomes duplicados, registra cada carregamento no terminal e gera o payload de publicação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Ambos os adapters usam `CommandContext`; atualmente a capacidade compartilhada é responder texto, sem argumentos. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
+
+O Client solicita `Guilds`, `GuildMessages`, `DirectMessages` e `MessageContent`, com partial de canal para receber DMs e cache de mensagens desabilitado. `Message Content Intent` deve estar habilitado no Developer Portal de cada aplicação ativa. Bots, webhooks, mensagens de sistema e nomes desconhecidos são ignorados pelo despacho por prefixo.
 
 ## Configuração e ciclo de vida
 

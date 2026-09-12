@@ -24,6 +24,12 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Regra:** `AUTO_SYNC_COMMANDS` é uma variável booleana estrita do env global, aceitando somente `true` ou `false`, documentada em `.env.example`, com default seguro `false`. Quando `true`, o bootstrap do bot sincroniza automaticamente o conjunto canônico completo de application commands uma única vez por inicialização, antes de declarar readiness. Não registre a sincronização dentro do evento `ready`, pois reconexões repetem o evento e o `PUT` substitui o conjunto do escopo. Quando `false`, pule o redeploy. Falha de sync deve impedir readiness e terminar/falhar o startup com log redigido, sem token. O escopo global/guild deve vir de configuração existente ou futura, sem inventar variável agora.
 
+### Regra: contrato e carregamento de commands
+
+**Nível:** MUST
+
+**Regra:** Todo módulo de command declara nome, descrição não vazia e a opção booleana `prefixCommand`. O registry descobre automaticamente os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido ou nome duplicado e emite um log estruturado `command_loaded` por command carregado. `prefixCommand` expressa compatibilidade do command, mas não autoriza habilitar `MessageContent` nem implementar despacho por prefixo sem decisão explícita.
+
 ### Regra: registry de parceiros
 
 **Nível:** MUST

@@ -18,7 +18,7 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, ex
 - `apps/bot/src/infrastructure/logger.ts`: logs JSON em stdout/stderr.
 - `config/partners` e `config/emojis`: exemplos/configuração auxiliar; não são comandos ativos.
 
-O `CommandsHandler` é a origem canônica dos comandos registrados: ele valida nomes duplicados, gera o payload de publicação e despacha cada interaction pelo `commandName`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
+O `CommandsHandler` é a origem canônica dos comandos registrados: ele descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e a opção booleana `prefixCommand`, valida nomes duplicados, registra cada carregamento no terminal, gera o payload de publicação e despacha cada interaction pelo `commandName`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
 
 ## Configuração e ciclo de vida
 

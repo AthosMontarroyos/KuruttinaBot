@@ -13,6 +13,7 @@
     "tunnel:production": "node scripts/tunnel.mjs production",
     "tunnel:check": "node scripts/tunnel.mjs --check",
     "build": "npm run build:bot",
+    "prebuild:bot": "node scripts/clean-dist.mjs",
     "build:bot": "tsc -p apps/bot/tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "start": "npm run start:bot",

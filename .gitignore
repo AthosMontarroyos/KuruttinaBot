@@ -10,7 +10,7 @@ coverage/
 *.log
 
 # Assets are stored in Cloudflare R2; keep local backups out of deploys and Git.
-Pictures/
+R2/
 .tools/
 
 #Cache

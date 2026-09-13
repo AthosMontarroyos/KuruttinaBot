@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $rcloneExe = Join-Path $projectRoot ".tools\rclone\rclone.exe"
-$mountPoint = Join-Path $projectRoot "Pictures"
+$mountPoint = Join-Path $projectRoot "R2"
 $runtimeDir = Join-Path $projectRoot ".tools\r2-mount"
 $stateFile = Join-Path $runtimeDir "rclone-state.json"
 $legacyPidFile = Join-Path $runtimeDir "rclone.pid"
@@ -15,7 +15,7 @@ if (-not (Test-Path -LiteralPath $stateFile)) {
         }
         Remove-Item -LiteralPath $legacyPidFile -Force
     }
-    Write-Output "Pictures nao esta montada."
+    Write-Output "R2 nao esta montado."
     exit 0
 }
 
@@ -28,7 +28,7 @@ catch {
 $process = Get-Process -Id ([int]$state.pid) -ErrorAction SilentlyContinue
 if (-not $process) {
     Remove-Item -LiteralPath $stateFile -Force
-    Write-Output "Pictures nao esta montada; estado obsoleto removido."
+    Write-Output "R2 nao esta montado; estado obsoleto removido."
     exit 0
 }
 
@@ -53,11 +53,11 @@ if (-not ($sameExecutable -and $sameMountPoint -and $sameExpectedExecutable -and
     throw "O PID registrado nao pertence a montagem esperada; nenhum processo foi encerrado."
 }
 
-Stop-Process -Id $process.Id
+Stop-Process -Id ([int]$state.pid) -Force
 $process.WaitForExit(5000) | Out-Null
-if (-not $process.HasExited) {
+if (Get-Process -Id ([int]$state.pid) -ErrorAction SilentlyContinue) {
     throw "rclone nao encerrou dentro de 5 segundos; estado preservado para nova verificacao."
 }
 
 Remove-Item -LiteralPath $stateFile -Force
-Write-Output "Cloudflare R2 desmontado de Pictures."
+Write-Output "Bucket R2 inteiro desmontado."

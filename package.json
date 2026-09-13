@@ -30,8 +30,9 @@
     "dev:production": "npm run dev:bot:production",
     "dev:bot:development": "tsx apps/bot/src/runner.ts development",
     "dev:bot:production": "tsx apps/bot/src/runner.ts production",
-    "assets:mount": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/mount-r2-pictures.ps1",
-    "assets:unmount": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/unmount-r2-pictures.ps1",
+    "r2:mount": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/mount-r2-pictures.ps1",
+    "r2:unmount": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/unmount-r2-pictures.ps1",
+    "emojis:sync": "node --no-warnings --experimental-strip-types scripts/sync-discord-emojis.ts",
     "security:secrets": "gitleaks detect --source . --config .gitleaks.toml --redact --verbose",
     "security:secrets:docker": "docker run --rm -v \"%cd%:/repo\" zricethezav/gitleaks:v8.30.1 git /repo --config /repo/.gitleaks.toml --redact --no-banner",
     "test": "vitest run"

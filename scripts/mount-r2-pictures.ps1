@@ -2,8 +2,9 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $rcloneExe = Join-Path $projectRoot ".tools\rclone\rclone.exe"
-$mountPoint = Join-Path $projectRoot "Pictures"
+$mountPoint = Join-Path $projectRoot "R2"
 $runtimeDir = Join-Path $projectRoot ".tools\r2-mount"
+$cacheDir = Join-Path $projectRoot ".tools\rclone-cache"
 $stateFile = Join-Path $runtimeDir "rclone-state.json"
 $legacyPidFile = Join-Path $runtimeDir "rclone.pid"
 $logFile = Join-Path $runtimeDir "rclone.log"
@@ -43,7 +44,7 @@ if (Test-Path -LiteralPath $stateFile) {
     catch { $state = $null }
     $existingProcess = Get-VerifiedMountProcess -State $state
     if ($existingProcess) {
-        Write-Output "Pictures ja esta montada (PID $($existingProcess.Id))."
+        Write-Output "R2 inteiro ja esta montado (PID $($existingProcess.Id))."
         exit 0
     }
     Remove-Item -LiteralPath $stateFile -Force
@@ -58,6 +59,7 @@ if (Test-Path -LiteralPath $legacyPidFile) {
 }
 
 New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
+New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
 
 if (Test-Path -LiteralPath $mountPoint) {
     if (Get-ChildItem -LiteralPath $mountPoint -Force | Select-Object -First 1) {
@@ -76,7 +78,8 @@ $arguments = @(
     "--vfs-cache-max-size", "2G",
     "--dir-cache-time", "10s",
     "--poll-interval", "0",
-    "--volname", '"Kurrutina Bot Pictures"',
+    "--cache-dir", ('"' + $cacheDir + '"'),
+    "--volname", '"Kurrutina Bot R2"',
     "--log-file", ('"' + $logFile + '"'),
     "--log-level", "INFO"
 )
@@ -95,4 +98,4 @@ if ($process.HasExited) {
     mountPoint = [IO.Path]::GetFullPath($mountPoint)
 } | ConvertTo-Json | Set-Content -LiteralPath $stateFile -Encoding utf8
 
-Write-Output "Cloudflare R2 montado em $mountPoint (PID $($process.Id))."
+Write-Output "Bucket R2 inteiro montado em $mountPoint (PID $($process.Id))."

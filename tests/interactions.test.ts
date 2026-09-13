@@ -11,7 +11,14 @@ function interactionPort() {
   let deferred = false;
   let replied = false;
   const port: InteractionCommandPort = {
+    client: {
+      application: {
+        emojis: { fetch: vi.fn(async () => ({ find: () => undefined })) },
+      },
+      ws: { ping: 84 },
+    },
     commandName: 'example',
+    createdTimestamp: Date.now() - 42,
     id: 'interaction-id',
     get deferred() { return deferred; },
     get replied() { return replied; },

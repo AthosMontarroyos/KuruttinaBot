@@ -1,8 +1,16 @@
-import type { RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
+import type { APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
+
+export type CommandReply = string | {
+  content: string;
+  embeds: APIEmbed[];
+};
 
 export interface CommandContext {
+  readonly apiPing: number;
+  readonly gatewayPing: number;
   acknowledge(): Promise<void>;
-  reply(content: string): Promise<void>;
+  emoji(name: string): Promise<string>;
+  reply(content: CommandReply): Promise<void>;
 }
 
 export interface ChatInputCommand {

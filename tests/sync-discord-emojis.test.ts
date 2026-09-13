@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseVaults, renderGallery, safeSegment } from '../scripts/sync-discord-emojis.ts';
+import { bytesEqual, parseVaults, previousMirrorState, renderGallery, safeSegment } from '../scripts/sync-discord-emojis.ts';
 
 describe('sync de emojis', () => {
   it('aceita nome e o alias legado name sem depender de categoria', () => {
@@ -19,5 +19,25 @@ describe('sync de emojis', () => {
     expect(html).toContain('&lt;App&gt;');
     expect(html).toContain('wow&quot;');
     expect(html).toContain('A%26B/wow%231.webp');
+  });
+
+  it('compara o conteudo dos emojis sem considerar apenas nome ou tamanho', () => {
+    expect(bytesEqual(Uint8Array.from([1, 2, 3]), Uint8Array.from([1, 2, 3]))).toBe(true);
+    expect(bytesEqual(Uint8Array.from([1, 2, 3]), Uint8Array.from([1, 2, 4]))).toBe(false);
+    expect(bytesEqual(Uint8Array.from([1, 2]), Uint8Array.from([1, 2, 3]))).toBe(false);
+  });
+
+  it('preserva a identidade anterior da origem para detectar recriacao com o mesmo nome', () => {
+    const state = previousMirrorState({ applications: [
+      { applicationId: 'production', emojis: [{ id: 'source-old', name: 'dancing' }] },
+      { applicationId: 'development', emojis: [{ id: 'target-old', name: 'dancing' }] },
+    ] }, 'production', 'development');
+    expect(state.get('dancing')).toEqual({ sourceEmojiId: 'source-old', targetEmojiId: 'target-old' });
+
+    const explicit = previousMirrorState({ applications: [
+      { applicationId: 'production', emojis: [] },
+      { applicationId: 'development', emojis: [{ id: 'target-new', name: 'dancing', sourceEmojiId: 'source-new' }] },
+    ] }, 'production', 'development');
+    expect(explicit.get('dancing')).toEqual({ sourceEmojiId: 'source-new', targetEmojiId: 'target-new' });
   });
 });

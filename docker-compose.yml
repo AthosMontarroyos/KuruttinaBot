@@ -4,13 +4,15 @@ services:
     build:
       context: .
       dockerfile: infra/docker/bot.Dockerfile
-    env_file:
-      - path: .env
-        required: false
     environment:
       APP_ENV: development
+      AUTO_SYNC_COMMANDS: ${AUTO_SYNC_COMMANDS:-false}
+      DISCORD_BOT_ID_DEVELOPMENT: ${DISCORD_BOT_ID_DEVELOPMENT:-}
+      DISCORD_BOT_ID_PRODUCTION: ${DISCORD_BOT_ID_PRODUCTION:-}
+      DISCORD_BOT_TOKEN_DEVELOPMENT: ${DISCORD_BOT_TOKEN_DEVELOPMENT:-}
+      DISCORD_BOT_TOKEN_PRODUCTION: ${DISCORD_BOT_TOKEN_PRODUCTION:-}
     command: ["node", "dist/apps/bot/src/runner.js", "development"]
-    restart: unless-stopped
+    restart: "no"
     mem_limit: 500m
     cpus: 1.0
   bot-production:
@@ -18,12 +20,14 @@ services:
     build:
       context: .
       dockerfile: infra/docker/bot.Dockerfile
-    env_file:
-      - path: .env
-        required: false
     environment:
       APP_ENV: production
+      AUTO_SYNC_COMMANDS: ${AUTO_SYNC_COMMANDS:-false}
+      DISCORD_BOT_ID_DEVELOPMENT: ${DISCORD_BOT_ID_DEVELOPMENT:-}
+      DISCORD_BOT_ID_PRODUCTION: ${DISCORD_BOT_ID_PRODUCTION:-}
+      DISCORD_BOT_TOKEN_DEVELOPMENT: ${DISCORD_BOT_TOKEN_DEVELOPMENT:-}
+      DISCORD_BOT_TOKEN_PRODUCTION: ${DISCORD_BOT_TOKEN_PRODUCTION:-}
     command: ["node", "dist/apps/bot/src/runner.js", "production"]
-    restart: unless-stopped
+    restart: "no"
     mem_limit: 500m
     cpus: 1.0

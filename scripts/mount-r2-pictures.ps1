@@ -4,19 +4,57 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $rcloneExe = Join-Path $projectRoot ".tools\rclone\rclone.exe"
 $mountPoint = Join-Path $projectRoot "Pictures"
 $runtimeDir = Join-Path $projectRoot ".tools\r2-mount"
-$pidFile = Join-Path $runtimeDir "rclone.pid"
+$stateFile = Join-Path $runtimeDir "rclone-state.json"
+$legacyPidFile = Join-Path $runtimeDir "rclone.pid"
 $logFile = Join-Path $runtimeDir "rclone.log"
+
+function Get-VerifiedMountProcess {
+    param([object]$State)
+
+    if (-not $State -or -not $State.pid -or -not $State.startedAtUtc -or -not $State.executablePath -or -not $State.mountPoint) {
+        return $null
+    }
+
+    $candidate = Get-Process -Id ([int]$State.pid) -ErrorAction SilentlyContinue
+    if (-not $candidate) { return $null }
+
+    $sameExecutable = [string]::Equals(
+        [IO.Path]::GetFullPath([string]$State.executablePath),
+        [IO.Path]::GetFullPath([string]$candidate.Path),
+        [StringComparison]::OrdinalIgnoreCase
+    )
+    $sameMountPoint = [string]::Equals(
+        [IO.Path]::GetFullPath([string]$State.mountPoint),
+        [IO.Path]::GetFullPath($mountPoint),
+        [StringComparison]::OrdinalIgnoreCase
+    )
+    $sameStartTime = $candidate.StartTime.ToUniversalTime().ToString("o") -eq [string]$State.startedAtUtc
+
+    if ($sameExecutable -and $sameMountPoint -and $sameStartTime) { return $candidate }
+    return $null
+}
 
 if (-not (Test-Path -LiteralPath $rcloneExe -PathType Leaf)) {
     throw "rclone nao encontrado em $rcloneExe"
 }
 
-if (Test-Path -LiteralPath $pidFile) {
-    $existingPid = [int](Get-Content -Raw -LiteralPath $pidFile)
-    if (Get-Process -Id $existingPid -ErrorAction SilentlyContinue) {
-        Write-Output "Pictures ja esta montada (PID $existingPid)."
+if (Test-Path -LiteralPath $stateFile) {
+    try { $state = Get-Content -Raw -LiteralPath $stateFile | ConvertFrom-Json }
+    catch { $state = $null }
+    $existingProcess = Get-VerifiedMountProcess -State $state
+    if ($existingProcess) {
+        Write-Output "Pictures ja esta montada (PID $($existingProcess.Id))."
         exit 0
     }
+    Remove-Item -LiteralPath $stateFile -Force
+}
+
+if (Test-Path -LiteralPath $legacyPidFile) {
+    $legacyPid = [int](Get-Content -Raw -LiteralPath $legacyPidFile)
+    if (Get-Process -Id $legacyPid -ErrorAction SilentlyContinue) {
+        throw "Estado legado aponta para um processo ativo e nao sera encerrado sem verificacao manual (PID $legacyPid)."
+    }
+    Remove-Item -LiteralPath $legacyPidFile -Force
 }
 
 New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
@@ -25,7 +63,6 @@ if (Test-Path -LiteralPath $mountPoint) {
     if (Get-ChildItem -LiteralPath $mountPoint -Force | Select-Object -First 1) {
         throw "$mountPoint precisa estar vazia antes da montagem."
     }
-
     Remove-Item -LiteralPath $mountPoint -Force
 }
 
@@ -45,12 +82,17 @@ $arguments = @(
 )
 
 $process = Start-Process -FilePath $rcloneExe -ArgumentList $arguments -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
-$process.Id | Set-Content -LiteralPath $pidFile -Encoding ascii
 Start-Sleep -Seconds 2
 
 if ($process.HasExited) {
-    Remove-Item -LiteralPath $pidFile -Force -ErrorAction SilentlyContinue
     throw "A montagem falhou. Consulte $logFile"
 }
+
+@{
+    pid = $process.Id
+    startedAtUtc = $process.StartTime.ToUniversalTime().ToString("o")
+    executablePath = [IO.Path]::GetFullPath($rcloneExe)
+    mountPoint = [IO.Path]::GetFullPath($mountPoint)
+} | ConvertTo-Json | Set-Content -LiteralPath $stateFile -Encoding utf8
 
 Write-Output "Cloudflare R2 montado em $mountPoint (PID $($process.Id))."

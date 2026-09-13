@@ -6,7 +6,7 @@
   "imports": {
     "#bot/*": "./dist/apps/bot/src/*"
   },
-  "engines": { "node": "22.14.x" },
+  "engines": { "node": "^22.14.0 || ^24.0.0 || ^26.0.0" },
   "scripts": {
     "tunnel": "node scripts/tunnel.mjs",
     "tunnel:development": "node scripts/tunnel.mjs development",

@@ -2,7 +2,7 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
-O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict em Node 22.14. A direção de produção é Square Cloud Hobby para `bot`/`site` e Supabase para PostgreSQL; ainda não há configuração Square, site ou banco implementados. Consulte o [snapshot](../project/current-state.md) e o [ADR](../decisions/square-cloud-supabase.md).
+O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict. O contrato de runtime aceita as linhas pares Node 22 a partir de 22.14, Node 24 e Node 26; a imagem Docker permanece fixada em 22.14.0, enquanto a Square usa a versão recomendada disponível. A direção de produção é Square Cloud Hobby para `bot`/`site` e Supabase para PostgreSQL; ainda não há configuração Square versionada, site ou banco implementados. Consulte o [snapshot](../project/current-state.md) e o [ADR](../decisions/square-cloud-supabase.md).
 
 ## 3. Serviços e execução
 
@@ -23,6 +23,8 @@ O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict 
 Não versione um `squarecloud.app` único na raiz do monorepo, pois ele seria compartilhado de forma ambígua por bot e site. Configure cada aplicação separadamente no painel da Square, apontando para o mesmo repositório e para seu próprio comando npm, memória, tipo e domínio. O bot usa `npm run build:bot && npm run start:bot:production`; quando o site existir, ele usa `npm run build:site && npm run start:site:production`. Os aliases genéricos existem somente para ergonomia local; produção sempre usa scripts nomeados pela unidade implantável.
 
 A Square instala dependências npm em modo de produção antes de executar o comando inicial. Portanto, toda ferramenta necessária ao build feito na plataforma deve permanecer em `dependencies`, mesmo que não seja usada pelo processo depois da compilação. No bot, `typescript` e `@types/node` são dependências diretas de produção por esse motivo; movê-las para `devDependencies` faz o deploy falhar com `tsc: not found`. `tsx`, Vitest e demais ferramentas exclusivamente locais permanecem em `devDependencies`.
+
+O campo `engines.node` deve cobrir tanto a versão fixada no Docker quanto a versão recomendada usada pela Square. Não suprima `EBADENGINE`: ajuste a faixa somente depois de validar a nova linha do Node, para que incompatibilidades reais continuem visíveis.
 
 **Motivo:** mantém isolamento de falhas e deploy independente sem custo de microsserviços desnecessários.
 

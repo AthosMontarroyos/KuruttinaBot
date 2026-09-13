@@ -4,7 +4,7 @@
 
 ## Escopo implementado
 
-O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, executado em Node `22.14.x`, com `discord.js` `14.27.0`. Não há site, banco de dados, configuração Square Cloud, comandos guild-specific reais ou integração Discord real automatizada nos testes.
+O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, com `discord.js` `14.27.0`. O contrato `engines.node` aceita Node 22 a partir de `22.14.0` e as linhas 24 e 26; o Docker usa `22.14.0`, a Square foi observada em `24.15.0` e o ambiente local foi validado em `26.7.0`. Não há site, banco de dados, configuração Square Cloud versionada, comandos guild-specific reais ou integração Discord real automatizada nos testes.
 
 ## Estrutura e responsabilidades
 
@@ -54,4 +54,4 @@ Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou ima
 
 Em 12/09/2026 foram recriados `kuruttina-development` e `kuruttina-production` na conta correta, com CNAMEs para `kuruttina.dev.athosmontarroyos.com` e `kuruttina.athosmontarroyos.com`, ambos roteados para `http://localhost:3666`. Permanecem inativos até iniciar seus connectors. O bucket R2 `kurrutina-bot-pictures` foi recriado, recebeu os 135 arquivos do backup e expõe provisoriamente `https://pub-271b6233fa924c46b0aa8664e8587f3f.r2.dev`. Inventário: [Cloudflare Tunnel](cloudflare-tunnel.md).
 
-Validação desta consolidação: typecheck, build do bot e 58 testes aprovados; uma instalação limpa com `npm ci --omit=dev` também compilou o bot e confirmou a disponibilidade de `typescript` e `@types/node` no ambiente equivalente ao instalador da Square. Checks locais de seleção e manifesto dos dois túneis foram aprovados e o Compose foi renderizado com a allowlist esperada. Node disponível: 26.7.0, diferente do 22.14.x declarado. O build Docker foi tentado, mas o daemon do Docker Desktop estava indisponível.
+Validação desta consolidação: typecheck, build do bot e 58 testes aprovados; uma instalação limpa com `npm ci --omit=dev` também compilou o bot e confirmou a disponibilidade de `typescript` e `@types/node` no ambiente equivalente ao instalador da Square. Checks locais de seleção e manifesto dos dois túneis foram aprovados e o Compose foi renderizado com a allowlist esperada. O contrato de engine foi validado com Node 26.7.0 local e cobre o Node 24.15.0 observado na Square sem `EBADENGINE`. O build Docker foi tentado, mas o daemon do Docker Desktop estava indisponível.

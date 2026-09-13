@@ -22,19 +22,19 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Nível:** MUST
 
-**Regra:** `AUTO_SYNC_COMMANDS` é uma variável booleana estrita do env global, aceitando somente `true` ou `false`, documentada em `.env.example`, com default seguro `false`. Quando `true`, o bootstrap do bot sincroniza automaticamente o conjunto canônico completo de application commands uma única vez por inicialização, antes de declarar readiness. Não registre a sincronização dentro do evento `ready`, pois reconexões repetem o evento e o `PUT` substitui o conjunto do escopo. Quando `false`, pule o redeploy. Falha de sync deve impedir readiness e terminar/falhar o startup com log redigido, sem token. O escopo global/guild deve vir de configuração existente ou futura, sem inventar variável agora.
+**Regra:** `AUTO_SYNC_COMMANDS` é uma variável booleana estrita do env global, aceitando somente `true` ou `false`, documentada em `.env.example`, com default seguro `false` apenas quando ausente; string vazia é inválida. Quando `true`, o bootstrap do bot sincroniza automaticamente o conjunto canônico completo de application commands uma única vez por inicialização, antes de declarar readiness. Não registre a sincronização dentro do evento `ready`, pois reconexões repetem o evento e o `PUT` substitui o conjunto do escopo. Quando `false`, pule o redeploy. Falha de sync deve impedir readiness e terminar/falhar o startup com log redigido, sem token. O escopo global/guild deve vir de configuração existente ou futura, sem inventar variável agora.
 
 ### Regra: contrato e carregamento de commands
 
 **Nível:** MUST
 
-**Regra:** Todo módulo de command declara nome, descrição não vazia e um único executor baseado no contrato compartilhado `CommandContext`. Slash é a definição canônica; todos os commands registrados também são acessíveis automaticamente por `k!` e pelo alias `K!`, sem opt-out, configuração ou comando de ativação. O registry descobre automaticamente os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido ou nome duplicado e emite um log estruturado `command_loaded` por command carregado. Os adapters de slash e mensagem usam o mesmo executor, sem duplicar lógica nos commands. Capacidades novas, como argumentos, devem ampliar o contrato e ambos os adapters conjuntamente. O uso de `MessageContent` para esse despacho foi autorizado explicitamente pelo usuário; ele também deve estar habilitado no Developer Portal para cada aplicação.
+**Regra:** Todo módulo de command declara nome, descrição não vazia e um único executor baseado no contrato compartilhado `CommandContext`. Slash é a definição canônica; todos os commands registrados também são acessíveis automaticamente por `k!` e pelo alias `K!`, sem opt-out, configuração ou comando de ativação. O loader é chamado explicitamente pelo composition root, descobre os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido e emite um log estruturado `command_loaded`; o catálogo rejeita nome duplicado. Os adapters de slash e mensagem usam o mesmo executor, sem duplicar lógica nos commands. `acknowledge()` reconhece trabalho lento e `reply()` conclui a resposta em ambos os transports. Capacidades novas, como argumentos, devem ampliar o contrato e ambos os adapters conjuntamente. O uso de `MessageContent` para esse despacho foi autorizado explicitamente pelo usuário; ele também deve estar habilitado no Developer Portal para cada aplicação.
 
 ### Regra: registry de parceiros
 
 **Nível:** MUST
 
-**Regra:** O parser do registry falha fechado: aceita objeto e campos exatos, strings sem coerção, enum case-sensitive, IDs únicos e no máximo um `Creator`; desconhecido, duplicado ou segundo `Creator` rejeita todo o arquivo, e zero `Creator` não aciona fallback. Permissões por ação usam mapa explícito deny-by-default, nunca ordem lexical ou índice do enum. O arquivo não é gravável por UI/bot; exemplos nunca são carregados.
+**Regra:** Quando essa feature for implementada, seu contrato específico vem de [`config/partners/README.md`](../../config/partners/README.md). O adapter Discord não redefine schema nem transforma a classificação de guild em autorização de usuário.
 
 ### Regra: memória do bot
 

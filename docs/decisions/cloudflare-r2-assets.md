@@ -6,7 +6,7 @@ Os 135 arquivos de imagem ocupavam aproximadamente 165 MB, acima do limite real 
 
 ## Decisão
 
-O bucket R2 `kurrutina-bot-pictures` é a origem operacional compartilhada. Os runtimes recebem uma `ASSETS_BASE_URL` HTTPS e armazenam somente caminhos relativos. `Pictures/` deixa de ser versionada e é ignorada por Git e Docker; o backup fora do repositório permanece sob responsabilidade do mantenedor.
+O bucket R2 `kurrutina-bot-pictures` é a origem operacional compartilhada. Features que consomem mídia recebem uma `ASSETS_BASE_URL` HTTPS e armazenam somente caminhos relativos; processos sem consumidor não recebem a variável. `Pictures/` deixa de ser versionada e é ignorada por Git e Docker; o backup fora do repositório permanece sob responsabilidade do mantenedor.
 
 O endpoint público `r2.dev` atende provisoriamente. Antes do uso de produção sustentado, o bucket deve receber um domínio próprio para cache e confiabilidade adequados.
 

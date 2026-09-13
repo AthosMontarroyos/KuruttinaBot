@@ -20,8 +20,8 @@ Ler AGENTS.md; traçar contrato e auth; implementar menor rota; validar lint, ti
 ## Checklist de validação
 - [ ] Foco, teclado, contraste, responsividade e mutations cobertos.
 ## Referências
-- [Dashboard, auth e UI](../../../AGENTS.md#7-dashboard-nextjs-autenticação-e-ui)
-- [Segurança transversal](../../../AGENTS.md#8-segurança-transversal)
+- [Dashboard, auth e UI](../../../docs/agents/nextjs.md)
+- [Segurança transversal](../../../docs/agents/security.md)
 ## Arquivos relevantes
 app/, componentes, middleware, Tailwind, auth, clientes e testes.
 ## Integração com outras skills

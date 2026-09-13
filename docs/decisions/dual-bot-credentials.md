@@ -14,7 +14,9 @@ Esta é uma exceção explícita às regras anteriores de uma credencial por run
 
 ## Impacto e controles
 
-O blast radius é crítico: uma seleção ou segredo incorreto pode operar o bot Principal. `.env` permanece ignorado pelo Git; logs não incluem tokens; não há fallback; a identidade é verificada; Compose exige perfil explícito; tokens devem ser rotacionados após exposição ou conforme política operacional.
+O blast radius é crítico: uma seleção ou segredo incorreto pode operar o bot Principal. `.env` permanece ignorado pelo Git; logs não incluem tokens; não há fallback; a identidade é verificada. A leitura local seleciona as chaves do bot sem popular `process.env` com todo o arquivo, e o Compose exige perfil explícito e injeta por allowlist somente os dois pares Discord e a configuração consumida. Tokens Cloudflare, Client Secrets OAuth e outros valores do `.env` não entram no ambiente carregado pelo bot. Tokens devem ser rotacionados após exposição ou conforme política operacional.
+
+O primeiro command cross-bot deve introduzir uma capability explícita e estreita, com autorização por operação, auditoria e testes negativos; não deve entregar o objeto global de credenciais ao command. Até esse consumidor existir, não crie service, repository ou camada vazia apenas para representar a capability futura.
 
 Responsável: AthosMontarroyos.
 

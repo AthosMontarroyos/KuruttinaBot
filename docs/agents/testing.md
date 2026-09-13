@@ -2,7 +2,7 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
-O conjunto atual do bot é coberto por testes Vitest de configuração, composição de commands e execução de deployments. Eles são herméticos e não usam token Discord real; o inventário e as limitações estão no [snapshot do estado atual](../project/current-state.md).
+O conjunto atual do bot é coberto por testes Vitest de configuração, composição/adapters de commands, estados de interaction, identidade e execução de deployments. Eles são herméticos e não usam token Discord real; o inventário e as limitações estão no [snapshot do estado atual](../project/current-state.md).
 
 ## 14. Desenvolvimento, testes e Git
 

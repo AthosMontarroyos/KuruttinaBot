@@ -12,7 +12,7 @@ Correções isoladas ou renomes mecânicos.
 ## Responsabilidades
 Mapear direção de dependências, contratos, ownership e orçamentos.
 ## Fluxo operacional
-Ler AGENTS.md; inventariar entradas; registrar ADR com alternativas; implementar menor escopo e validar fronteiras.
+Ler AGENTS.md; inventariar entradas; registrar ADR somente para decisão duradoura; implementar menor escopo e validar fronteiras.
 ## Checklist de segurança
 - [ ] Trust boundaries, segredos e autorização têm donos.
 ## Checklist de recursos
@@ -20,8 +20,8 @@ Ler AGENTS.md; inventariar entradas; registrar ADR com alternativas; implementar
 ## Checklist de validação
 - [ ] ADR e testes de contrato refletem o código real.
 ## Referências
-- [Arquitetura e direção de dependências](../../../AGENTS.md#2-arquitetura-de-referência)
-- [Validação proporcional](../../../AGENTS.md#14-desenvolvimento-testes-e-git)
+- [Arquitetura e direção de dependências](../../../docs/agents/architecture.md)
+- [Validação proporcional](../../../docs/agents/testing.md)
 ## Arquivos relevantes
 AGENTS.md, package.json, configs, entradas, testes e manifests.
 ## Integração com outras skills

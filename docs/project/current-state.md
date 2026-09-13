@@ -1,6 +1,6 @@
 # Estado atual do KuruttinaBot
 
-Última consolidação: 12 de setembro de 2026.
+Última consolidação: 13 de setembro de 2026.
 
 ## Escopo implementado
 
@@ -8,17 +8,17 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, ex
 
 ## Estrutura e responsabilidades
 
-- `apps/bot/src/config.ts`: validação estrita de configuração e seleção do alvo.
+- `apps/bot/src/config.ts`: validação estrita da configuração realmente consumida e seleção do alvo.
 - `apps/bot/src/bootstrap.ts` e `index.ts`: identidade, deploy opcional, composição do Client, registro de eventos e shutdown.
-- `apps/bot/src/commands/`: comandos organizados pelas categorias `public`, `private`, `settings`, `mod` e `admin`; atualmente contém apenas `public/ping.ts`.
+- `apps/bot/src/commands/`: contratos, descoberta e commands organizados por categoria; atualmente contém apenas `public/ping.ts` como command executável.
 - `apps/bot/src/events/`: callbacks dos eventos do Discord, separados do bootstrap.
-- `apps/bot/src/handlers/`: catálogo, payload e despacho global de commands, além da execução sequencial dos deployments.
+- `apps/bot/src/handlers/`: catálogo, payload e despacho de commands, além da execução sequencial dos deployments.
 - `apps/bot/src/deployments/`: tipos e deploy central global.
 - `apps/bot/src/infrastructure/discord/`: chamadas Discord e validação de identidade.
 - `apps/bot/src/infrastructure/logger.ts`: logs JSON em stdout/stderr.
 - `config/partners` e `config/emojis`: exemplos/configuração auxiliar; não são comandos ativos.
 
-O `CommandsHandler` é a origem canônica dos comandos registrados: ele descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e executor compartilhado, valida nomes duplicados, registra cada carregamento no terminal e gera o payload de publicação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Ambos os adapters usam `CommandContext`; atualmente a capacidade compartilhada é responder texto, sem argumentos. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`. A lista explícita de deployments é extensível, mas hoje contém apenas `central`.
+O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e executor compartilhado e registra cada carregamento. O `CommandsHandler` valida nomes duplicados, mantém o catálogo canônico e gera o payload de publicação. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; atualmente não há argumentos. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`.
 
 O Client solicita `Guilds`, `GuildMessages`, `DirectMessages` e `MessageContent`, com partial de canal para receber DMs e cache de mensagens desabilitado. `Message Content Intent` deve estar habilitado no Developer Portal de cada aplicação ativa. Bots, webhooks, mensagens de sistema e nomes desconhecidos são ignorados pelo despacho por prefixo.
 
@@ -26,21 +26,19 @@ O Client solicita `Guilds`, `GuildMessages`, `DirectMessages` e `MessageContent`
 
 `APP_ENV` aceita exatamente `development` ou `production`. Os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` são sempre obrigatórios; `activeCredential` é exatamente o par correspondente ao alvo, sem fallback. A exceção de acesso conjunto e cross-bot está formalizada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
 
-O `.env.example` também reserva `DISCORD_CLIENT_SECRET_DEVELOPMENT` e `DISCORD_CLIENT_SECRET_PRODUCTION` para futuros fluxos OAuth2. Esses Client Secrets são diferentes dos Bot Tokens e ainda não são lidos nem exigidos pelo runtime atual.
-
-`ASSETS_BASE_URL` é obrigatória, aceita somente HTTPS sem credenciais, query ou fragmento e aponta para o bucket R2 compartilhado. As imagens não fazem mais parte do repositório nem do build; o endpoint `r2.dev` atual é provisório até a conexão de um domínio próprio.
+Client Secrets OAuth2 não são declarados nem injetados até existir um fluxo que os consuma. `ASSETS_BASE_URL` também só passa a integrar o contrato do processo quando uma feature de mídia existir. As imagens não fazem parte do repositório nem do build; o endpoint `r2.dev` atual é provisório até a conexão de um domínio próprio.
 
 `AUTO_SYNC_COMMANDS` aceita `true`/`false` e assume `false` quando ausente. Quando ativo, todos os deploys registrados são executados sequencialmente, antes do Gateway e da readiness; a primeira falha interrompe o startup. A identidade ativa é validada em `/users/@me` com timeout de 5 segundos, exigindo resposta de bot e ID esperado.
 
-O startup falha fechado em configuração, identidade ou deploy. O shutdown destrói o client e termina após timeout. Logs estruturados incluem timestamp, nível, serviço e evento, sem tokens.
+O startup falha fechado em configuração, carregamento, identidade ou deploy. O shutdown destrói o client e termina após timeout. Logs estruturados incluem timestamp, nível, serviço, evento e correlação da operação/interação, sem tokens nem mensagens de exceção potencialmente sensíveis.
 
 ## Execução e distribuição
 
-Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) com aliases genéricos compatíveis, além de `deploy:central`, e Docker Compose com perfis `development`/`production`. O startup não monta nem sincroniza o R2: os runtimes consomem imagens somente pelas URLs derivadas de `ASSETS_BASE_URL`; a montagem em `Pictures/` permanece uma ferramenta manual de manutenção local. O alias ESM nativo `#bot/*`, compartilhado por `package.json`, `tsconfig.json` e `jsconfig.json`, evita caminhos relativos transversais e resolve para o código compilado em produção. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove dependências de desenvolvimento no runtime e executa como usuário não-root. Não há `squarecloud.app` versionado: o bot será configurado no painel da Square com 512 MB e `npm run build:bot && npm run start:bot:production`, preservando configuração independente para o futuro site.
+Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) com aliases genéricos compatíveis, além de `deploy:central`, e Docker Compose com perfis `development`/`production`. A leitura local e o Compose selecionam somente as credenciais/IDs Discord previstas pelo ADR e `AUTO_SYNC_COMMANDS`; secrets Cloudflare/OAuth não entram no ambiente carregado pelo bot e falhas permanentes não geram restart local infinito. O startup não monta nem sincroniza o R2; a montagem em `Pictures/` permanece uma ferramenta manual com identidade de processo validada. O alias `#bot/*`, compartilhado por `package.json`, `tsconfig.json`, `jsconfig.json` e `vitest.config.ts`, evita caminhos relativos transversais, resolve para source nos testes e para o código compilado em produção. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove TypeScript, tipos e demais dependências de desenvolvimento do runtime e executa como usuário não-root. Não há `squarecloud.app` versionado: o bot será configurado no painel da Square com 512 MB e `npm run build:bot && npm run start:bot:production`, preservando configuração independente para o futuro site.
 
 ## Segurança e validação
 
-Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). Os testes atuais são `tests/config.test.ts`, `tests/commands.test.ts` e `tests/deployments.test.ts`, cobrindo configuração, `ping`, execução sequencial e falha fechada. Não há teste de integração Discord real.
+Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 58 testes em sete arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, estados de interaction, identidade, manifesto de túnel e deployments; não há teste de integração Discord real.
 
 ## Riscos e decisões em aberto
 
@@ -56,4 +54,4 @@ Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou ima
 
 Em 12/09/2026 foram recriados `kuruttina-development` e `kuruttina-production` na conta correta, com CNAMEs para `kuruttina.dev.athosmontarroyos.com` e `kuruttina.athosmontarroyos.com`, ambos roteados para `http://localhost:3666`. Permanecem inativos até iniciar seus connectors. O bucket R2 `kurrutina-bot-pictures` foi recriado, recebeu os 135 arquivos do backup e expõe provisoriamente `https://pub-271b6233fa924c46b0aa8664e8587f3f.r2.dev`. Inventário: [Cloudflare Tunnel](cloudflare-tunnel.md).
 
-Validação desta mudança: typecheck, build do bot e 41 testes aprovados; checks locais de seleção dos dois túneis aprovados. Node disponível: 26.7.0, diferente do 22.14.x declarado; build Docker não executado.
+Validação desta consolidação: typecheck, build do bot e 58 testes aprovados; checks locais de seleção e manifesto dos dois túneis aprovados; Compose renderizado com a allowlist esperada; prune dry-run confirmou remoção do toolchain. Node disponível: 26.7.0, diferente do 22.14.x declarado. O build Docker foi tentado, mas o daemon do Docker Desktop estava indisponível.

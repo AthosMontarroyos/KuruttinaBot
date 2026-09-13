@@ -20,8 +20,8 @@ Ler AGENTS.md; localizar schema/migrations; usar pooling pequeno; revisar locks,
 ## Checklist de validação
 - [ ] Migrations repetíveis e testes de constraints, concorrência e falhas.
 ## Referências
-- [PostgreSQL e database](../../../AGENTS.md#6-postgresql-e-packagesdatabase)
-- [Validação proporcional](../../../AGENTS.md#14-desenvolvimento-testes-e-git)
+- [PostgreSQL e database](../../../docs/agents/database.md)
+- [Validação proporcional](../../../docs/agents/testing.md)
 ## Arquivos relevantes
 Migrations, schema, modelos, repositories, seeds e testes.
 ## Integração com outras skills

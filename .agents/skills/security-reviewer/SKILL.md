@@ -20,10 +20,10 @@ Ler AGENTS.md; mapear ativos/atores; rastrear input; revisar controles; corrigir
 - [ ] Auditoria não expõe dados sensíveis nem excede escopo.
 - [ ] Payloads têm limites; concorrência, rate limit, uploads e DoS são avaliados.
 ## Checklist de validação
-## Referências
-- [Regras de segurança transversal](../../../AGENTS.md#8-segurança-transversal)
-- [Payloads, rate limit e uploads](../../../AGENTS.md#13-dependências-e-performance)
 - [ ] Testes, SAST/dependency audit e logs redigidos executados.
+## Referências
+- [Regras de segurança transversal](../../../docs/agents/security.md)
+- [Payloads, rate limit e uploads](../../../docs/agents/deployment.md#13-dependências-e-performance)
 ## Arquivos relevantes
 Auth, API, webhooks, .env*, dependências, Docker e deploy.
 ## Integração com outras skills

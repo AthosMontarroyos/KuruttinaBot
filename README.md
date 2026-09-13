@@ -10,15 +10,15 @@ Habilite **Message Content Intent** em **Developer Portal → aplicação → Bo
 
 Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `APP_ENV`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
 
-O bot não monta nem sincroniza o bucket no startup. Em qualquer ambiente, ele publica as imagens pelas URLs montadas a partir de `ASSETS_BASE_URL`, sem credenciais administrativas do R2. Os comandos `npm run assets:mount` e `npm run assets:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `Pictures/`.
+O bot não monta nem sincroniza o bucket no startup e ainda não possui command que consuma imagens. Quando uma feature de mídia existir, ela receberá `ASSETS_BASE_URL` validada em sua composição e publicará somente URLs públicas, sem credenciais administrativas do R2. Os comandos `npm run assets:mount` e `npm run assets:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `Pictures/`; o estado da montagem valida PID, executável e horário de criação antes de encerrar qualquer processo.
 
 ## Aliases de importação
 
-O alias `#bot/*` aponta para `apps/bot/src/*` durante desenvolvimento e typecheck, e para `dist/apps/bot/src/*` no Node após o build. Ele está declarado em `tsconfig.json`, `jsconfig.json` e no campo `imports` de `package.json`; por isso funciona no editor, no `tsx` e no runtime ESM sem reescrita adicional. Use, por exemplo, `#bot/infrastructure/logger.js` em vez de atravessar vários diretórios com `../../`. Imports entre futuros workspaces devem continuar usando o nome público do package, sem criar aliases para internals.
+O alias `#bot/*` aponta para `apps/bot/src/*` durante desenvolvimento, typecheck e testes, e para `dist/apps/bot/src/*` no Node após o build. Ele está declarado em `tsconfig.json`, `jsconfig.json`, `vitest.config.ts` e no campo `imports` de `package.json`; os testes não dependem de `dist` preexistente. Use, por exemplo, `#bot/infrastructure/logger.js` em vez de atravessar vários diretórios com `../../`. Imports entre futuros workspaces devem continuar usando o nome público do package, sem criar aliases para internals.
 
 No Docker Compose, use um perfil por vez: `docker compose --profile development up --build` ou `docker compose --profile production up --build`. Nenhum serviço de bot é iniciado sem um perfil explícito.
 
-`AUTO_SYNC_COMMANDS=false` é o padrão seguro. Quando `true`, todos os deploys registrados são executados sequencialmente uma vez antes do login e da readiness. Uma falha interrompe o startup. Nunca versione `.env` ou tokens.
+`AUTO_SYNC_COMMANDS=false` é o padrão seguro. String vazia ou qualquer valor diferente de `true`/`false` é rejeitado. Quando `true`, todos os deploys registrados são executados sequencialmente uma vez antes do login e da readiness. Uma falha interrompe o startup. Nunca versione `.env` ou tokens. Tanto a leitura local quanto o Compose selecionam somente a allowlist de variáveis consumidas pelo bot; tokens Cloudflare e futuros secrets OAuth não entram no ambiente carregado pelo bot.
 
 Os deploys ficam em `apps/bot/src/deployments/`. O deploy central publica somente os comandos padrão globais do bot; deploys exclusivos de servidores terão entrypoints separados nessa mesma pasta.
 
@@ -31,7 +31,7 @@ npm run deploy:central
 
 `npm run deploy:commands` permanece como alias do deploy central. O processo valida a identidade, substitui o conjunto global completo via `PUT` e não abre o Gateway.
 
-Para adicionar um deploy exclusivo de servidor, implemente um novo `Deployment` e inclua-o no array `deployments` de `apps/bot/src/handlers/DeploymentsHandler.ts`. O próximo startup com auto-sync ligado o executará junto com os demais.
+Para adicionar um deploy exclusivo de servidor, implemente um novo `Deployment` e componha-o explicitamente ao construir `DeploymentsHandler`. O próximo startup com auto-sync ligado o executará junto com os demais.
 
 ## Verificação de segredos
 

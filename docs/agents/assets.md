@@ -16,7 +16,7 @@ No ambiente Windows de desenvolvimento, `npm run assets:mount` monta esse bucket
 
 **Nível:** MUST
 
-**Regra:** bot e site recebem a mesma `ASSETS_BASE_URL` HTTPS validada e persistem somente caminhos relativos estáveis. O runtime monta URLs públicas sem credenciais do R2; nenhuma imagem é copiada para o build ou para a área pública do site. Em produção, use domínio próprio conectado ao bucket; `r2.dev` é provisório por ser limitado e não recomendado pela Cloudflare para produção.
+**Regra:** cada feature de bot ou site que realmente consuma mídia recebe a mesma `ASSETS_BASE_URL` HTTPS validada em sua composição e persiste somente caminhos relativos estáveis. Processos sem consumidor não exigem nem recebem essa variável. O runtime monta URLs públicas sem credenciais do R2; nenhuma imagem é copiada para o build ou para a área pública do site. Em produção, use domínio próprio conectado ao bucket; `r2.dev` é provisório por ser limitado e não recomendado pela Cloudflare para produção.
 
 ### Regra: otimização e distribuição
 

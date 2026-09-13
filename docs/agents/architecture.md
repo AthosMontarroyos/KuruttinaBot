@@ -4,9 +4,10 @@
 
 ## 2. Arquitetura de referência
 
-O projeto é um monorepo modular, não uma coleção de microsserviços. As unidades implantáveis iniciais são `bot` e `site`, hospedadas separadamente no Square Cloud Hobby; PostgreSQL é infraestrutura gerenciada em dois projetos Supabase Free isolados. `packages/database` contém código de acesso a dados e nunca representa o servidor PostgreSQL. A decisão e seus gatilhos de evolução estão no [ADR Square Cloud + Supabase](../decisions/square-cloud-supabase.md).
+O projeto implementado é um monorepo modular com apenas o bot Discord e `packages/config`, não uma coleção de microsserviços. A árvore abaixo é a arquitetura-alvo aprovada: `site`, PostgreSQL e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A decisão e seus gatilhos de evolução estão no [ADR Square Cloud + Supabase](../decisions/square-cloud-supabase.md); o inventário do presente fica em [Estado implementado](../project/current-state.md).
 
 ```text
+Arquitetura-alvo (itens ausentes não devem ser criados preventivamente):
 /
 ├── apps/
 │   ├── bot/                 # processo discord.js
@@ -26,6 +27,15 @@ O projeto é um monorepo modular, não uma coleção de microsserviços. As unid
 ```
 
 Diretórios opcionais (`auth`, `shared`) só devem existir quando possuírem conteúdo real. Uma nova aplicação ou serviço exige ciclo de vida, necessidade de deploy ou isolamento operacional próprio; importância de domínio, sozinha, não basta.
+
+### Gatilhos de evolução
+
+- Extraia um caso de uso quando um command/listener adquirir regra de negócio testável além de adaptação e resposta simples.
+- Crie `packages/database` somente com a primeira persistência real; schema, migrations, role runtime e teste de integração entram juntos.
+- Crie `apps/site` somente com o primeiro fluxo web executável e seu ciclo de vida próprio.
+- Introduza capability cross-bot somente com o primeiro command autorizado que a consuma; não exponha o objeto global de credenciais ao command.
+- Passe `ASSETS_BASE_URL` ao processo somente quando uma feature de mídia tiver consumidor real.
+- Mantenha a abstração de deployments enquanto houver plano concreto de segundo escopo; reavalie-a se continuar com consumidor único.
 
 ### Regra: direção de dependências
 

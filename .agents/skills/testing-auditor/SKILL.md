@@ -22,7 +22,7 @@ Ler AGENTS.md; estabelecer baseline; adicionar casos observáveis; rodar alvo e 
 ## Arquivos relevantes
 package.json, configs, CI, testes, fixtures, migrations e handlers.
 ## Referências
-- [Desenvolvimento e testes](../../../AGENTS.md#14-desenvolvimento-testes-e-git)
-- [Testes de segurança](../../../AGENTS.md#8-segurança-transversal)
+- [Desenvolvimento e testes](../../../docs/agents/testing.md)
+- [Testes de segurança](../../../docs/agents/security.md)
 ## Integração com outras skills
 security-reviewer, database-developer, nextjs-dashboard-developer, docker-railway-developer e discordbot-developer.

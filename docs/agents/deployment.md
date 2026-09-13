@@ -10,7 +10,7 @@ O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict 
 
 **Nível:** MUST
 
-**Regra:** `docker compose up` deve poder iniciar PostgreSQL local descartável, bot e site com rede interna, variáveis documentadas e dependências verificadas por readiness. O banco local usa volume nomeado; código-fonte montado como volume é opção apenas do perfil de desenvolvimento. Compose reproduz contratos e não implica que production rode os três componentes no mesmo provedor.
+**Regra:** `docker compose up` deve iniciar as unidades atualmente implementadas com variáveis documentadas e readiness compatível. Quando site e PostgreSQL forem implementados, a topologia local passa a incluí-los em rede interna; o banco local então usa volume nomeado e configuração descartável. Não crie serviços vazios para antecipar essa etapa. Código-fonte montado como volume é opção apenas do perfil de desenvolvimento. Compose reproduz contratos e não implica que production rode todos os componentes no mesmo provedor.
 
 **Motivo:** torna o ambiente reproduzível e diferencia persistência de build.
 
@@ -145,6 +145,8 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 **Nível:** MUST
 
 **Regra:** Injete configuração e secrets no runtime pelas variáveis protegidas da Square Cloud e do CI. Valide schema no startup, falhe cedo com mensagem sem valor secreto e mantenha `.env.example` apenas com nomes e exemplos inofensivos. Nunca copie secrets de development para production ou credenciais administrativas Supabase para os runtimes.
+
+No Compose local, use interpolação allowlisted em `environment`; não injete o `.env` completo no container. Processos locais que leem o arquivo diretamente também selecionam apenas suas chaves em objeto isolado, sem popular `process.env` com todo o conteúdo. O `.env` pode continuar como fonte local única sem conceder a cada processo todos os secrets nele armazenados.
 
 ### Regra: configuração local compartilhada
 

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "checkJs": false,
+    "checkJs": true,
     "paths": {
       "#bot/*": ["apps/bot/src/*"]
     }

@@ -1,7 +1,13 @@
+import { randomUUID } from 'node:crypto';
 import { startBot } from '#bot/bootstrap.js';
 import { log } from '#bot/infrastructure/logger.js';
 
-startBot().catch((error: unknown) => {
-  log('error', 'startup_failed', { message: error instanceof Error ? error.message : 'unknown error' });
+const correlationId = randomUUID();
+
+startBot(correlationId).catch((error: unknown) => {
+  log('error', 'startup_failed', {
+    correlationId,
+    errorName: error instanceof Error ? error.name : 'UnknownError',
+  });
   process.exitCode = 1;
 });

@@ -1,18 +1,25 @@
+import { randomUUID } from 'node:crypto';
+import { loadCommands } from '#bot/commands/loadCommands.js';
 import { loadConfig } from '#bot/config.js';
+import { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
 import { log } from '#bot/infrastructure/logger.js';
-import { centralDeployment } from './central.js';
+import { createCentralDeployment } from './central.js';
+
+const correlationId = randomUUID();
 
 async function deployCentral(): Promise<void> {
   const config = loadConfig();
+  const commandsHandler = new CommandsHandler(await loadCommands(undefined, correlationId));
   const applicationId = await verifyBotIdentity(config.activeCredential.token, config.activeCredential.expectedBotId);
-  await centralDeployment.run({ config, applicationId });
-  log('info', 'central_commands_deployed', { applicationId });
+  await createCentralDeployment(commandsHandler).run({ config, applicationId, correlationId });
+  log('info', 'central_commands_deployed', { applicationId, correlationId });
 }
 
 deployCentral().catch((error: unknown) => {
   log('error', 'central_command_deployment_failed', {
-    message: error instanceof Error ? error.message : 'unknown error',
+    correlationId,
+    errorName: error instanceof Error ? error.name : 'UnknownError',
   });
   process.exitCode = 1;
 });

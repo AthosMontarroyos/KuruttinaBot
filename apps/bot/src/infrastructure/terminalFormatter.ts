@@ -12,6 +12,7 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   build_failed: { emoji: '❌', category: 'Build', message: 'Falha ao compilar o bot' },
   config_loaded: { emoji: '⚙️', category: 'Config', message: 'Configuração validada' },
   command_loaded: { emoji: '📦', category: 'Commands', message: 'Comando carregado' },
+  events_loaded: { emoji: '📡', category: 'Events', message: 'Eventos carregados' },
   identity_validation_started: { emoji: '🤖', category: 'Discord', message: 'Validando identidade do bot' },
   identity_validated: { emoji: '✅', category: 'Discord', message: 'Identidade do bot validada' },
   command_sync_skipped: { emoji: 'ℹ️', category: 'Sync', message: 'Sincronização automática desativada' },

@@ -38,6 +38,11 @@ export async function startBot(correlationId: string): Promise<void> {
   client.once(Events.ClientReady, (readyClient) => handleClientReady(readyClient, config.target, correlationId));
   client.on(Events.InteractionCreate, (interaction) => { void handleInteractionCreate(interaction, commandsHandler); });
   client.on(Events.MessageCreate, (message) => { void handleMessageCreate(message, commandsHandler); });
+  log('success', 'events_loaded', {
+    count: 3,
+    events: [Events.ClientReady, Events.InteractionCreate, Events.MessageCreate].join(', '),
+    correlationId,
+  });
 
   let stopping = false;
   const shutdown = (signal: string): void => {

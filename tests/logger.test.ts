@@ -60,4 +60,15 @@ describe('terminal logger', () => {
     expect(formatTerminalLog('success', 'build_completed', { durationMs: 42 }, false))
       .toContain('✅ Build      Bot compilado com sucesso  durationMs=42');
   });
+
+  it('formats the registered Discord events as a startup step', () => {
+    const output = formatTerminalLog('success', 'events_loaded', {
+      count: 3,
+      events: 'clientReady, interactionCreate, messageCreate',
+    }, false);
+
+    expect(output).toContain('📡 Events     Eventos carregados');
+    expect(output).toContain('count=3');
+    expect(output).toContain('events=clientReady, interactionCreate, messageCreate');
+  });
 });

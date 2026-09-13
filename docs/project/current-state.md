@@ -30,7 +30,7 @@ Client Secrets OAuth2 não são declarados nem injetados até existir um fluxo q
 
 `AUTO_SYNC_COMMANDS` aceita `true`/`false` e assume `false` quando ausente. Quando ativo, todos os deploys registrados são executados sequencialmente, antes do Gateway e da readiness; a primeira falha interrompe o startup. A identidade ativa é validada em `/users/@me` com timeout de 5 segundos, exigindo resposta de bot e ID esperado.
 
-O startup falha fechado em configuração, carregamento, identidade ou deploy. O shutdown destrói o client e termina após timeout. Development e production usam a mesma apresentação humana com categorias, emojis e metadata; production permanece sem ANSI, enquanto development aplica cores somente em TTY compatível e respeita `NO_COLOR`. A exceção ao JSON de produção está registrada em [Logs humanos do bot em produção](../decisions/human-readable-bot-logs.md). Os logs preservam stdout/stderr e omitem tokens e mensagens de exceção potencialmente sensíveis.
+O startup falha fechado em configuração, carregamento, identidade ou deploy e informa o registro dos listeners `clientReady`, `interactionCreate` e `messageCreate`. O shutdown destrói o client e termina após timeout. Development e production usam a mesma apresentação humana com categorias, emojis e metadata; production permanece sem ANSI, enquanto development aplica cores somente em TTY compatível e respeita `NO_COLOR`. A exceção ao JSON de produção está registrada em [Logs humanos do bot em produção](../decisions/human-readable-bot-logs.md). Os logs preservam stdout/stderr e omitem tokens e mensagens de exceção potencialmente sensíveis.
 
 ## Execução e distribuição
 
@@ -40,7 +40,7 @@ Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) co
 
 ## Segurança e validação
 
-Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 63 testes em oito arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, estados de interaction, identidade, logger, manifesto de túnel e deployments; não há teste de integração Discord real.
+Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 64 testes em oito arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, estados de interaction, identidade, logger, manifesto de túnel e deployments; não há teste de integração Discord real.
 
 ## Riscos e decisões em aberto
 

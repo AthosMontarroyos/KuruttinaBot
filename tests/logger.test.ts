@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe('terminal logger', () => {
-  it('keeps production logs structured and sends errors to stderr', () => {
+  it('uses the human format without ANSI in production and preserves stderr', () => {
     configureLogger('production');
     const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
@@ -16,11 +16,13 @@ describe('terminal logger', () => {
     log('info', 'ready', { correlationId: 'correlation-id' });
     log('error', 'startup_failed', { errorName: 'ExampleError' });
 
-    const info = JSON.parse(String(stdout.mock.calls[0]?.[0])) as Record<string, unknown>;
-    const error = JSON.parse(String(stderr.mock.calls[0]?.[0])) as Record<string, unknown>;
-    expect(info).toMatchObject({ level: 'info', service: 'bot', event: 'ready', correlationId: 'correlation-id' });
-    expect(error).toMatchObject({ level: 'error', service: 'bot', event: 'startup_failed', errorName: 'ExampleError' });
-    expect(info.timestamp).toEqual(expect.any(String));
+    const info = String(stdout.mock.calls[0]?.[0]);
+    const error = String(stderr.mock.calls[0]?.[0]);
+    expect(info).toContain('🚀 Bot');
+    expect(info).toContain('correlationId=correlation-id');
+    expect(error).toContain('❌ Startup');
+    expect(error).toContain('errorName: ExampleError');
+    expect(`${info}${error}`).not.toContain('\u001B[');
   });
 
   it('formats development logs with hierarchy and optional ANSI colors', () => {

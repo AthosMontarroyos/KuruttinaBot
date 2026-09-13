@@ -15,7 +15,7 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, co
 - `apps/bot/src/handlers/`: catálogo, payload e despacho de commands, além da execução sequencial dos deployments.
 - `apps/bot/src/deployments/`: tipos e deploy central global.
 - `apps/bot/src/infrastructure/discord/`: chamadas Discord e validação de identidade.
-- `apps/bot/src/infrastructure/logger.ts`: logger central com apresentação humana no desenvolvimento e JSON em produção; runtime e build reutilizam `terminalFormatter.ts`, e os ANSI ficam isolados em `terminalColors.ts`.
+- `apps/bot/src/infrastructure/logger.ts`: logger central com apresentação humana no desenvolvimento e na produção; runtime e build reutilizam `terminalFormatter.ts`, e os ANSI ficam isolados em `terminalColors.ts`.
 - `config/partners` e `config/emojis`: exemplos/configuração auxiliar; não são comandos ativos.
 
 O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e executor compartilhado e registra cada carregamento. O `CommandsHandler` valida nomes duplicados, mantém o catálogo canônico e gera o payload de publicação. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; atualmente não há argumentos. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`.
@@ -30,7 +30,7 @@ Client Secrets OAuth2 não são declarados nem injetados até existir um fluxo q
 
 `AUTO_SYNC_COMMANDS` aceita `true`/`false` e assume `false` quando ausente. Quando ativo, todos os deploys registrados são executados sequencialmente, antes do Gateway e da readiness; a primeira falha interrompe o startup. A identidade ativa é validada em `/users/@me` com timeout de 5 segundos, exigindo resposta de bot e ID esperado.
 
-O startup falha fechado em configuração, carregamento, identidade ou deploy. O shutdown destrói o client e termina após timeout. Em production, logs estruturados incluem timestamp, nível, serviço, evento e correlação da operação/interação. Em development, os mesmos eventos recebem apresentação humana com categorias e emojis; cores ANSI aparecem apenas em TTY compatível e respeitam `NO_COLOR`. Ambos os formatos preservam stdout/stderr e omitem tokens e mensagens de exceção potencialmente sensíveis.
+O startup falha fechado em configuração, carregamento, identidade ou deploy. O shutdown destrói o client e termina após timeout. Development e production usam a mesma apresentação humana com categorias, emojis e metadata; production permanece sem ANSI, enquanto development aplica cores somente em TTY compatível e respeita `NO_COLOR`. A exceção ao JSON de produção está registrada em [Logs humanos do bot em produção](../decisions/human-readable-bot-logs.md). Os logs preservam stdout/stderr e omitem tokens e mensagens de exceção potencialmente sensíveis.
 
 ## Execução e distribuição
 

@@ -174,6 +174,8 @@ Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e
 
 **Regra:** Em produção emita JSON estruturado para stdout/stderr com timestamp, nível, serviço, evento e correlation/request/job ID. Não grave arquivo local. Redija secrets, cookies, tokens, headers de autorização, string de conexão e dados pessoais desnecessários.
 
+**Exceção aprovada:** o processo do bot usa apresentação humana sem ANSI em production enquanto seus logs forem consumidos diretamente por pessoas na Square Cloud. Impacto, controles e condição de revisão estão em [Logs humanos do bot em produção](../decisions/human-readable-bot-logs.md).
+
 ### Regra: níveis e volume
 
 **Nível:** SHOULD

@@ -8,9 +8,15 @@
 
 **Nível:** MUST
 
-**Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona `Pictures/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
+**Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona o mount virtual `R2/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
 
-No ambiente Windows de desenvolvimento, `npm run assets:mount` monta esse bucket em `Pictures/` por meio do perfil local `kurrutina-r2` do rclone; `npm run assets:unmount` encerra a montagem. O executável, cache, PID e credenciais permanecem ignorados pelo Git.
+No ambiente Windows de desenvolvimento, `npm run r2:mount` monta o bucket inteiro na pasta virtual `R2/` da raiz por meio do perfil local `kurrutina-r2` do rclone; `npm run r2:unmount` encerra a montagem. A sincronização de emojis garante esse mount automaticamente e escreve no prefixo `emojis/`. O executável, cache, PID e credenciais permanecem ignorados pelo Git.
+
+### Regra: catálogo visual de emojis
+
+**Nível:** MUST
+
+**Regra:** `R2/emojis/manifest.json`, gerado por `npm run emojis:sync`, é o inventário canônico para agentes e ferramentas escolherem emojis: registra Team, aplicação proprietária, ID, nome, animação e caminho visual. `R2/emojis/index.html` é somente uma galeria humana. Antes de referenciar um emoji, sincronize, consulte o manifesto e inspecione visualmente o WebP montado; não use o nome do arquivo como prova de significado, ownership ou animação.
 
 ### Regra: integração com o site
 

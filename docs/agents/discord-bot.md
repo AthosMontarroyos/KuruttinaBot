@@ -42,6 +42,14 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Regra:** Justifique intents, partials e caches; limite sweepers/cache managers, collectors, listeners, timers, filas e dados temporários. Collector temporário sempre possui timeout/idle/condição de encerramento. Cache miss não deve ser tratado automaticamente como inexistência.
 
+### Regra: emojis customizados em mensagens e embeds
+
+**Nível:** MUST
+
+**Regra:** Antes de criar ou alterar mensagem, component ou embed que se beneficie de identidade visual, execute `npm run emojis:sync`, leia `R2/emojis/manifest.json` e visualize os candidatos em `R2/emojis/<team>/<app>/`. Escolha emojis pela função semântica e coerência visual, não apenas pelo nome do arquivo; use poucos elementos e preserve legibilidade e acessibilidade do texto sem depender do emoji para transmitir informação indispensável.
+
+Para uso inline, derive a sintaxe exclusivamente dos campos atuais do manifesto: `<:name:id>` para estático e `<a:name:id>` para animado. Nunca invente ID, reutilize referência obsoleta nem decida animação pela extensão `.webp`. Emoji de aplicação só pode ser usado inline pelo próprio `applicationId`; confirme que ele corresponde ao app que enviará a resposta. Emojis pertencentes a outra vault podem servir como referência visual ou imagem de embed por URL pública autorizada, mas não como emoji inline do bot consumidor. Em campos de imagem (`thumbnail`, `image`, ícone de author/footer), use URL HTTPS do asset, não a marcação `<:name:id>`. O catálogo e o procedimento operacional pertencem a [`config/emojis/README.md`](../../config/emojis/README.md).
+
 ### Regra: estado distribuído
 
 **Nível:** MUST

@@ -8,7 +8,7 @@ export class DeploymentsHandler {
     for (const deployment of this.registeredDeployments) {
       log('info', 'deployment_started', { correlationId: context.correlationId, deployment: deployment.name });
       await deployment.run(context);
-      log('info', 'deployment_completed', { correlationId: context.correlationId, deployment: deployment.name });
+      log('success', 'deployment_completed', { correlationId: context.correlationId, deployment: deployment.name });
     }
   }
 }

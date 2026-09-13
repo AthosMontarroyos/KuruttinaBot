@@ -13,7 +13,7 @@ async function deployCentral(): Promise<void> {
   const commandsHandler = new CommandsHandler(await loadCommands(undefined, correlationId));
   const applicationId = await verifyBotIdentity(config.activeCredential.token, config.activeCredential.expectedBotId);
   await createCentralDeployment(commandsHandler).run({ config, applicationId, correlationId });
-  log('info', 'central_commands_deployed', { applicationId, correlationId });
+  log('success', 'central_commands_deployed', { applicationId, correlationId });
 }
 
 deployCentral().catch((error: unknown) => {

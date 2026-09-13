@@ -8,17 +8,23 @@ import { handleMessageCreate } from '#bot/events/messages/messageCreate.js';
 import { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
-import { log } from '#bot/infrastructure/logger.js';
+import { configureLogger, log } from '#bot/infrastructure/logger.js';
 
 export async function startBot(correlationId: string): Promise<void> {
   const config = loadConfig();
+  configureLogger(config.target);
+  log('success', 'config_loaded', { target: config.target, autoSyncCommands: config.autoSyncCommands });
   const registeredCommands = await loadCommands(undefined, correlationId);
   const commandsHandler = new CommandsHandler(registeredCommands);
   const deploymentsHandler = new DeploymentsHandler([createCentralDeployment(commandsHandler)]);
+  log('info', 'identity_validation_started', { correlationId, target: config.target });
   const applicationId = await verifyBotIdentity(config.activeCredential.token, config.activeCredential.expectedBotId);
+  log('success', 'identity_validated', { applicationId, correlationId });
 
   if (config.autoSyncCommands) {
     await deploymentsHandler.run({ config, applicationId, correlationId });
+  } else {
+    log('info', 'command_sync_skipped', { correlationId });
   }
 
   const client = new Client({
@@ -39,11 +45,13 @@ export async function startBot(correlationId: string): Promise<void> {
     stopping = true;
     log('info', 'shutdown_started', { correlationId, signal });
     client.destroy();
+    log('success', 'shutdown_completed', { correlationId, signal });
     setTimeout(() => process.exit(0), 5_000).unref();
   };
 
   process.once('SIGTERM', () => shutdown('SIGTERM'));
   process.once('SIGINT', () => shutdown('SIGINT'));
 
+  log('info', 'gateway_connecting', { correlationId });
   await client.login(config.activeCredential.token);
 }

@@ -8,7 +8,7 @@ Slash é o padrão. Todos os comandos do registry também respondem automaticame
 
 Habilite **Message Content Intent** em **Developer Portal → aplicação → Bot → Privileged Gateway Intents** para cada bot usado (development e production). O código solicita esse intent; sem autorização no portal, o Discord pode rejeitar o Gateway com código 4014. Aplicações verificadas podem precisar de aprovação do Discord. O bot precisa poder ver o canal e enviar respostas. O cache de mensagens fica desabilitado: o despacho usa somente a mensagem recebida.
 
-Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `BOT_TARGET`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
+Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `APP_ENV`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
 
 O bot não monta nem sincroniza o bucket no startup. Em qualquer ambiente, ele publica as imagens pelas URLs montadas a partir de `ASSETS_BASE_URL`, sem credenciais administrativas do R2. Os comandos `npm run assets:mount` e `npm run assets:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `Pictures/`.
 
@@ -48,3 +48,9 @@ npm run security:secrets:docker
 ```
 
 Achados são redigidos na saída. Não adicione tokens reais a allowlists; se uma credencial for detectada, revogue-a e rotacione-a antes de limpar o histórico.
+
+## Cloudflare Tunnel
+
+O modo global agora é `APP_ENV`; remova `BOT_TARGET` também das variáveis protegidas de deploy. O `.env` local foi migrado preservando os demais valores. `PORT=3666` é o padrão da futura origem web. Confira o ambiente e o túnel com `npm run tunnel:check`.
+
+Os dois túneis, seus CNAMEs e as rotas para `localhost:3666` foram criados na conta correta. Os connectors ficam inativos até serem iniciados e o site ainda não existe; consulte [configuração e estado dos túneis](docs/project/cloudflare-tunnel.md).

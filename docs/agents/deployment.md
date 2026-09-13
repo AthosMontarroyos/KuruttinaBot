@@ -152,7 +152,7 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 
 **Regra:** No desenvolvimento local, mantenha um único `.env` global na raiz do monorepo como fonte de configuração para `packages/database`, `apps/bot` e `apps/site`; os apps não devem manter arquivos `.env` locais divergentes. O `.env` nunca é versionado, cada processo valida apenas as variáveis que consome no startup, e production/Square usa variáveis protegidas em runtime. Testes preferem configuração própria efêmera e não carregam o `.env` de production.
 
-Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e `BOT_TARGET` escolhe a credencial ativa sem fallback; essa exceção está registrada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
+Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e `APP_ENV` escolhe a credencial ativa sem fallback; essa exceção está registrada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
 
 ## 11. APIs, erros, observabilidade e resiliência
 
@@ -213,3 +213,11 @@ Para o bot atual, o `.env` global contém os dois pares de credenciais Discord e
 **Nível:** MUST
 
 **Regra:** Defina limite de entrada e saída. Listagens paginam, exports usam streaming/batches e respostas omitem campos desnecessários. Comprima na borda quando apropriado sem manter buffers duplicados.
+
+## Cloudflare Tunnel e ambiente global
+
+**Nível:** MUST
+
+`APP_ENV=development|production` é o seletor global, validado por `@kuruttina/config`, sem fallback por `NODE_ENV`; `BOT_TARGET` é rejeitado. Scripts explicitamente nomeados por ambiente sobrescrevem `APP_ENV` somente no processo iniciado. A origem web local usa `localhost` e `PORT=3666` por padrão. O bot Gateway não abre porta HTTP.
+
+Use um túnel distinto por ambiente; não conecte development e production à mesma origem simultaneamente. Portas diferentes exigem atualizar também as rotas remotas, pois `PORT` não modifica a configuração Cloudflare. Tokens de connector ficam no `.env` global local e nas variáveis protegidas da plataforma de deploy, separados por ambiente; não instale um serviço Windows global compartilhado entre ambos. Consulte [operação dos túneis](../project/cloudflare-tunnel.md) para inventário, comandos e pendências.

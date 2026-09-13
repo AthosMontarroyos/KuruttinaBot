@@ -24,7 +24,7 @@ O Client solicita `Guilds`, `GuildMessages`, `DirectMessages` e `MessageContent`
 
 ## Configuração e ciclo de vida
 
-`BOT_TARGET` aceita exatamente `development` ou `production`. Os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` são sempre obrigatórios; `activeCredential` é exatamente o par correspondente ao alvo, sem fallback. A exceção de acesso conjunto e cross-bot está formalizada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
+`APP_ENV` aceita exatamente `development` ou `production`. Os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` são sempre obrigatórios; `activeCredential` é exatamente o par correspondente ao alvo, sem fallback. A exceção de acesso conjunto e cross-bot está formalizada no [ADR de credenciais duplas](../decisions/dual-bot-credentials.md).
 
 O `.env.example` também reserva `DISCORD_CLIENT_SECRET_DEVELOPMENT` e `DISCORD_CLIENT_SECRET_PRODUCTION` para futuros fluxos OAuth2. Esses Client Secrets são diferentes dos Bot Tokens e ainda não são lidos nem exigidos pelo runtime atual.
 
@@ -49,3 +49,11 @@ Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou ima
 - O shutdown é limitado e não há endpoint de health dedicado para o bot.
 - A direção futura está decidida como Square Cloud Hobby para `bot`/`site` e dois projetos Supabase Free isolados para development/production, mas esses componentes ainda não estão implementados; consulte o [ADR](../decisions/square-cloud-supabase.md).
 - O bucket R2 é a origem operacional das imagens; o backup externo e a futura troca de `r2.dev` por domínio próprio são responsabilidades operacionais registradas no [ADR de assets](../decisions/cloudflare-r2-assets.md).
+
+## Cloudflare Tunnel e configuração compartilhada
+
+`packages/config` expõe `@kuruttina/config`, consumido pelo bot e pelo launcher de túnel. `APP_ENV` substitui `BOT_TARGET`, que passa a ser rejeitado. A origem web padrão é `http://localhost:3666`; o site continua inexistente e o bot continua sem servidor HTTP.
+
+Em 12/09/2026 foram recriados `kuruttina-development` e `kuruttina-production` na conta correta, com CNAMEs para `kuruttina.dev.athosmontarroyos.com` e `kuruttina.athosmontarroyos.com`, ambos roteados para `http://localhost:3666`. Permanecem inativos até iniciar seus connectors. O bucket R2 `kurrutina-bot-pictures` foi recriado, recebeu os 135 arquivos do backup e expõe provisoriamente `https://pub-271b6233fa924c46b0aa8664e8587f3f.r2.dev`. Inventário: [Cloudflare Tunnel](cloudflare-tunnel.md).
+
+Validação desta mudança: typecheck, build do bot e 41 testes aprovados; checks locais de seleção dos dois túneis aprovados. Node disponível: 26.7.0, diferente do 22.14.x declarado; build Docker não executado.

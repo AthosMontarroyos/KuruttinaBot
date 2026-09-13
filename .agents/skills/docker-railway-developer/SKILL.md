@@ -1,18 +1,18 @@
 ---
 name: docker-railway-developer
-description: Containerize, configure, troubleshoot, or deploy this application on Docker or Railway; triggers on Dockerfile, Compose, Railway, build/runtime health, services, volumes, or deployment requests. Do not use for source-only changes unrelated to runtime packaging.
+description: Containerize, configure, troubleshoot, or deploy this application with Docker, Square Cloud, or Cloudflare Tunnel; triggers on Dockerfile, Compose, runtime health, services, tunnels, volumes, or deployment requests. Do not use for source-only changes unrelated to runtime packaging.
 ---
 
 # Docker Railway Developer
 
 ## Quando usar
-Docker, Compose, Railway, health checks, volumes e runtime.
+Docker, Compose, Square Cloud, Cloudflare Tunnel, health checks, volumes e runtime.
 ## Não usar quando
 Mudança não toca empacotamento ou deploy.
 ## Responsabilidades
-Imagens multi-stage, build context mínimo, prod deps, sinais, readiness e serviços Railway separados.
+Imagens multi-stage, build context mínimo, prod deps, sinais, readiness, serviços separados e conectores Cloudflare por ambiente.
 ## Fluxo operacional
-Ler AGENTS.md; inspecionar scripts/config; validar não-root, sinais e env; build/run smoke; revisar deploy sem mutação irreversível.
+Ler AGENTS.md; inspecionar scripts/config; validar não-root, sinais e env; build/run smoke; revisar deploy sem mutação irreversível. Para Tunnel, conferir `APP_ENV`, ID e hostname em `infra/cloudflare/tunnels.json`, manter tokens fora do Git e nunca apontar development e production simultaneamente para a mesma origem local.
 ## Checklist de segurança
 - [ ] Sem secrets na imagem; runtime least-privilege.
 ## Checklist de recursos

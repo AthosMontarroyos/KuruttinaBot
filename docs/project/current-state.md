@@ -15,7 +15,7 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, co
 - `apps/bot/src/handlers/`: catálogo, payload e despacho de commands, além da execução sequencial dos deployments.
 - `apps/bot/src/deployments/`: tipos e deploy central global.
 - `apps/bot/src/infrastructure/discord/`: chamadas Discord e validação de identidade.
-- `apps/bot/src/infrastructure/logger.ts`: logger central com apresentação humana no desenvolvimento e JSON em produção; os ANSI ficam isolados em `terminalColors.ts`.
+- `apps/bot/src/infrastructure/logger.ts`: logger central com apresentação humana no desenvolvimento e JSON em produção; runtime e build reutilizam `terminalFormatter.ts`, e os ANSI ficam isolados em `terminalColors.ts`.
 - `config/partners` e `config/emojis`: exemplos/configuração auxiliar; não são comandos ativos.
 
 O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e executor compartilhado e registra cada carregamento. O `CommandsHandler` valida nomes duplicados, mantém o catálogo canônico e gera o payload de publicação. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; atualmente não há argumentos. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto atual publica somente `ping`; o deploy central substitui o conjunto global completo por `PUT`.
@@ -34,11 +34,13 @@ O startup falha fechado em configuração, carregamento, identidade ou deploy. O
 
 ## Execução e distribuição
 
+O `build:bot` apresenta somente o início e o resultado reais da compilação pelo mesmo formatter humano do runtime, preservando stdout/stderr do TypeScript.
+
 Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) com aliases genéricos compatíveis, além de `deploy:central`, e Docker Compose com perfis `development`/`production`. A leitura local e o Compose selecionam somente as credenciais/IDs Discord previstas pelo ADR e `AUTO_SYNC_COMMANDS`; secrets Cloudflare/OAuth não entram no ambiente carregado pelo bot e falhas permanentes não geram restart local infinito. O startup não monta nem sincroniza o R2; a montagem em `Pictures/` permanece uma ferramenta manual com identidade de processo validada. O alias `#bot/*`, compartilhado por `package.json`, `tsconfig.json`, `jsconfig.json` e `vitest.config.ts`, evita caminhos relativos transversais, resolve para source nos testes e para o código compilado em produção. O `infra/docker/bot.Dockerfile` é multi-stage, usa Node 22.14.0, instala pelo lockfile, remove as dependências classificadas somente para desenvolvimento e executa como usuário não-root. Não há `squarecloud.app` versionado: o bot é configurado no painel da Square com 512 MB e `npm run build:bot && npm run start:bot:production`, preservando configuração independente para o futuro site. Como a Square instala somente dependências de produção antes desse build, `typescript` e `@types/node` permanecem em `dependencies`; isso também os conserva no runtime Docker enquanto ambos os destinos compartilharem o mesmo manifesto.
 
 ## Segurança e validação
 
-Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 62 testes em oito arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, estados de interaction, identidade, logger, manifesto de túnel e deployments; não há teste de integração Discord real.
+Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 63 testes em oito arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, estados de interaction, identidade, logger, manifesto de túnel e deployments; não há teste de integração Discord real.
 
 ## Riscos e decisões em aberto
 

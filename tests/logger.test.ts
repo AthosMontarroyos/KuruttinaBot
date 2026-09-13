@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { configureLogger, formatPrettyLog, log, shouldUseTerminalColors } from '../apps/bot/src/infrastructure/logger.js';
+import { configureLogger, log } from '../apps/bot/src/infrastructure/logger.js';
+import { formatTerminalLog, shouldUseTerminalColors } from '../apps/bot/src/infrastructure/terminalFormatter.js';
 
 afterEach(() => {
   configureLogger('production');
@@ -23,8 +24,8 @@ describe('terminal logger', () => {
   });
 
   it('formats development logs with hierarchy and optional ANSI colors', () => {
-    const plain = formatPrettyLog('error', 'command_failed', { command: 'ping', errorName: 'ExampleError' }, false);
-    const colored = formatPrettyLog('error', 'command_failed', { command: 'ping' }, true);
+    const plain = formatTerminalLog('error', 'command_failed', { command: 'ping', errorName: 'ExampleError' }, false);
+    const colored = formatTerminalLog('error', 'command_failed', { command: 'ping' }, true);
 
     expect(plain).toContain('❌ Discord');
     expect(plain).toContain('Falha ao executar interaction');
@@ -50,5 +51,11 @@ describe('terminal logger', () => {
     expect(shouldUseTerminalColors('development', false, {})).toBe(false);
     expect(shouldUseTerminalColors('development', true, { NO_COLOR: '' })).toBe(false);
     expect(shouldUseTerminalColors('production', true, {})).toBe(false);
+  });
+
+  it('uses the shared terminal hierarchy for build events', () => {
+    expect(formatTerminalLog('info', 'build_started', {}, false)).toContain('🔨 Build');
+    expect(formatTerminalLog('success', 'build_completed', { durationMs: 42 }, false))
+      .toContain('✅ Build      Bot compilado com sucesso  durationMs=42');
   });
 });

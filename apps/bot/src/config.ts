@@ -1,6 +1,7 @@
 import 'dotenv/config';
+import { loadAppConfig, type AppEnv } from '@kuruttina/config';
 
-export type BotTarget = 'development' | 'production';
+export type BotTarget = AppEnv;
 export type BotCredential = Readonly<{ token: string; expectedBotId: string }>;
 export type BotConfig = Readonly<{
   target: BotTarget;
@@ -41,8 +42,7 @@ const parseAssetsBaseUrl = (env: NodeJS.ProcessEnv): string => {
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): BotConfig {
-  const target = required(env, 'BOT_TARGET');
-  if (target !== 'development' && target !== 'production') throw new Error('BOT_TARGET must be development or production');
+  const { appEnv: target } = loadAppConfig(env);
   const credentials = Object.freeze({
     development: readCredential(env, 'DEVELOPMENT'),
     production: readCredential(env, 'PRODUCTION'),

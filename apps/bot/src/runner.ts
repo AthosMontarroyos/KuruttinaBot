@@ -3,5 +3,5 @@ if (target !== 'development' && target !== 'production') {
   console.error('Usage: runner development|production');
   process.exit(1);
 }
-process.env.BOT_TARGET = target;
+process.env.APP_ENV = target;
 await import('./index.js');

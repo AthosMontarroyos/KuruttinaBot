@@ -1,0 +1,12 @@
+{
+  "development": {
+    "name": "kuruttina-development",
+    "id": "ef7d23f9-b164-45a1-b316-f45a02045102",
+    "hostname": "kuruttina.dev.athosmontarroyos.com"
+  },
+  "production": {
+    "name": "kuruttina-production",
+    "id": "b1460ee3-03f7-49e7-a35c-12d6a6f07ba7",
+    "hostname": "kuruttina.athosmontarroyos.com"
+  }
+}

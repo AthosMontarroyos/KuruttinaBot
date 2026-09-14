@@ -13,7 +13,7 @@ try {
   if (args.length > (target ? 1 : 0) + (check ? 1 : 0)) throw new Error('Usage: tunnel.mjs [development|production] [--check]');
   if (target !== undefined) process.env.APP_ENV = target;
   const config = loadLocalWebConfig();
-  const tunnels = parseTunnelManifest(readFileSync(new URL('../infra/cloudflare/tunnels.json', import.meta.url), 'utf8'));
+  const tunnels = parseTunnelManifest(readFileSync(new URL('../../infra/cloudflare/tunnels.json', import.meta.url), 'utf8'));
   const tunnel = tunnels[config.appEnv];
   console.log(JSON.stringify({ appEnv: config.appEnv, ...tunnel, origin: config.origin, configSource: 'cloudflare' }));
   if (!check) {

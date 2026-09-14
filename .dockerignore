@@ -6,6 +6,8 @@ dist
 **/dist
 build
 **/build
+!scripts/build/
+!scripts/build/**
 .next
 **/.next
 coverage

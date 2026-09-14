@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bytesEqual, parseVaults, previousMirrorState, renderGallery, safeSegment } from '../scripts/sync-discord-emojis.ts';
+import { bytesEqual, parseVaults, previousMirrorState, renderGallery, safeSegment } from '../scripts/discord/sync-discord-emojis.ts';
 
 describe('sync de emojis', () => {
   it('aceita nome e o alias legado name sem depender de categoria', () => {

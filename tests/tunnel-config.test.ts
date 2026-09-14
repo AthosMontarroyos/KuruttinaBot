@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseTunnelManifest, readTunnelIdFromToken } from '../scripts/tunnel-config.mjs';
+import { parseTunnelManifest, readTunnelIdFromToken } from '../scripts/cloudflare/tunnel-config.mjs';
 
 const validManifest = JSON.stringify({
   development: {

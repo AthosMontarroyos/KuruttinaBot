@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$projectRoot = Split-Path -Parent $PSScriptRoot
+$projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $rcloneExe = Join-Path $projectRoot ".tools\rclone\rclone.exe"
 $mountPoint = Join-Path $projectRoot "R2"
 $runtimeDir = Join-Path $projectRoot ".tools\r2-mount"

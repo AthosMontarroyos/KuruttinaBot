@@ -5,6 +5,7 @@ COPY packages/config ./packages/config
 RUN npm ci
 COPY tsconfig.json ./
 COPY apps ./apps
+COPY scripts/build ./scripts/build
 RUN npm run build:bot && npm prune --omit=dev
 
 FROM node:22.14.0-bookworm-slim AS runtime

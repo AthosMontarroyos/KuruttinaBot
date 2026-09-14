@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { loadConfig } from '../apps/bot/src/config.ts';
+import { loadConfig } from '../../apps/bot/src/config.ts';
 import 'dotenv/config';
 
 const API_BASE = 'https://discord.com/api/v10';
@@ -170,7 +170,7 @@ async function ensureR2Mount(projectRoot: string): Promise<void> {
     return;
   }
   console.log('Bucket R2 inteiro nao esta montado; iniciando mount em R2/...');
-  await execFileAsync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(projectRoot, 'scripts', 'mount-r2-pictures.ps1')], {
+  await execFileAsync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(projectRoot, 'scripts', 'r2', 'mount-r2-pictures.ps1')], {
     cwd: projectRoot,
     timeout: 30_000,
     windowsHide: true,
@@ -343,7 +343,7 @@ async function mirrorApplicationEmojis(
 }
 
 export async function main(): Promise<void> {
-  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
   await ensureR2Mount(projectRoot);
   const rclone = await assertR2Available(projectRoot);
   const config = loadConfig(process.env);

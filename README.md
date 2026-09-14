@@ -10,7 +10,11 @@ Habilite **Message Content Intent** em **Developer Portal → aplicação → Bo
 
 Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `APP_ENV`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
 
-O bot não monta nem sincroniza o bucket no startup e ainda não possui command que consuma imagens. Quando uma feature de mídia existir, ela receberá `ASSETS_BASE_URL` validada em sua composição e publicará somente URLs públicas, sem credenciais administrativas do R2. Os comandos `npm run assets:mount` e `npm run assets:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `Pictures/`; o estado da montagem valida PID, executável e horário de criação antes de encerrar qualquer processo.
+O bot não monta nem sincroniza o bucket no startup e ainda não possui command que consuma imagens. Quando uma feature de mídia existir, ela receberá `ASSETS_BASE_URL` validada em sua composição e publicará somente URLs públicas, sem credenciais administrativas do R2. Os comandos `npm run r2:mount` e `npm run r2:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `R2/`; o estado da montagem valida PID, executável e horário de criação antes de encerrar qualquer processo.
+
+## Scripts de manutenção
+
+Os scripts são agrupados por finalidade em `scripts/build/` (compilação e limpeza), `scripts/cloudflare/` (túneis), `scripts/r2/` (montagem do bucket) e `scripts/discord/` (sincronização de emojis). Execute-os pelos comandos npm da raiz; `npm run emojis:sync` continua garantindo a montagem do R2 automaticamente.
 
 ## Aliases de importação
 

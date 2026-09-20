@@ -10,13 +10,24 @@
 
 **Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona o mount virtual `R2/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
 
-No ambiente Windows de desenvolvimento, `npm run r2:mount` monta o bucket inteiro na pasta virtual `R2/` da raiz por meio do perfil local `kurrutina-r2` do rclone; `npm run r2:unmount` encerra a montagem. A sincronização de emojis garante esse mount automaticamente e escreve no prefixo `emojis/`. O executável, cache, PID e credenciais permanecem ignorados pelo Git.
-
-### Regra: catálogo visual de emojis
+### Regra: acesso via cloud (sem download)
 
 **Nível:** MUST
 
-**Regra:** `R2/emojis/manifest.json`, gerado por `npm run emojis:sync`, é o inventário canônico para agentes e ferramentas escolherem emojis: registra Team, aplicação proprietária, ID, nome, animação e caminho visual. `R2/emojis/index.html` é somente uma galeria humana. Antes de referenciar um emoji, sincronize, consulte o manifesto e inspecione visualmente o WebP montado; não use o nome do arquivo como prova de significado, ownership ou animação.
+**Regra:** NENHUM arquivo do R2 deve ser baixado para o repositório. O projeto acessa os arquivos diretamente via URL pública quando necessário. O gerenciamento do bucket é feito por:
+
+- **CLI** (`scripts/r2/r2-cloud.mjs`): lista, consulta, faz upload e deleta via Cloudflare API.
+- **Montagem local** (`npm run r2:mount`): ferramenta manual de manutenção que monta o bucket como filesystem via rclone e ponte WebDAV. Requer Linux/WSL, rclone, jq e FUSE.
+
+- **Leitura:** Via `ASSETS_BASE_URL` quando existir uma feature consumidora; até lá, não integra o contrato do bot
+- **Escrita:** Via `npm run r2` (Cloudflare API com credenciais) ou montagem local
+- **NUNCA:** Baixar, copiar ou versionar arquivos do R2 no repositório
+
+### Regra: espelho de Application Emojis
+
+**Nível:** MUST
+
+**Regra:** `R2/emojis/` é um diretório plano, sem subpastas, e espelha integralmente os Application Emojis do bot principal. `npm run emoji:r2:sync` substitui arquivos de mesmo nome e remove objetos excedentes somente depois que todos os uploads terminarem com sucesso. `npm run emoji:sync` executa essa substituição e então espelha o mesmo conjunto no BotDev. A transferência usa memória e APIs remotas; não persiste cópias dos emojis no repositório. Uploads são sequenciais, respeitam `429` e rejeitam Application Emojis acima de 256 KiB antes de alterar os destinos.
 
 ### Regra: integração com o site
 

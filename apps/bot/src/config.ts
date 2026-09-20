@@ -29,6 +29,11 @@ export function selectBotEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv 
   );
 }
 
+/**
+ * Carrega o `.env` do diretório de execução quando disponível.
+ * Ausência do arquivo (`ENOENT`) retorna `{}`, independentemente de APP_ENV.
+ * Outros erros de leitura (permissão, arquivo inacessível) são propagados.
+ */
 function readLocalEnvironment(): NodeJS.ProcessEnv {
   try {
     return parse(readFileSync(resolve(process.cwd(), '.env')));
@@ -38,6 +43,11 @@ function readLocalEnvironment(): NodeJS.ProcessEnv {
   }
 }
 
+/**
+ * Combina `.env` local (se existir) com `process.env`.
+ * `process.env` tem precedência sobre o arquivo local.
+ * `selectBotEnvironment` então extrai apenas as chaves consumidas pelo bot.
+ */
 function loadBotEnvironment(): NodeJS.ProcessEnv {
   return selectBotEnvironment({ ...readLocalEnvironment(), ...process.env });
 }

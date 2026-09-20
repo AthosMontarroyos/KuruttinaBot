@@ -2,19 +2,41 @@
 
 Consulte o [estado atual do projeto](docs/project/current-state.md) e as [decisões registradas](docs/decisions/dual-bot-credentials.md) antes de alterar configuração, deploy ou credenciais.
 
+## Início rápido (Linux/WSL)
+
+1. Use Node.js 22 a partir de 22.14.0, Node.js 24 ou Node.js 26, conforme `engines.node`.
+2. Instale dependências:
+   ```bash
+   npm ci
+   ```
+3. Copie e preencha o `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Preencha os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` e defina `APP_ENV`.
+   O contrato atual exige ambos os pares, independentemente do ambiente ativo.
+4. Execute em desenvolvimento:
+   ```bash
+   npm run dev:development
+   ```
+   Ou, para produção: `npm run build && npm run start:production`.
+
+O bot não monta nem sincroniza o bucket no startup e não possui commands que consumam imagens.
+Cloudflare Tunnel, R2 e OAuth são opcionais — não são necessários para iniciar o bot.
+
 ## Bot local/Docker
 
 Slash é o padrão. Todos os comandos do registry também respondem automaticamente aos prefixos fixos `k!` e `K!`: `/ping`, `k!ping` e `K!ping` usam o mesmo executor, inclusive em DM. Não existe comando ou variável para ativar/configurar prefixo. Os nomes dos comandos são exatos; mensagens de bots/webhooks/sistema e comandos desconhecidos são ignorados. O conjunto atual não possui argumentos.
 
 Habilite **Message Content Intent** em **Developer Portal → aplicação → Bot → Privileged Gateway Intents** para cada bot usado (development e production). O código solicita esse intent; sem autorização no portal, o Discord pode rejeitar o Gateway com código 4014. Aplicações verificadas podem precisar de aprovação do Discord. O bot precisa poder ver o canal e enviar respostas. O cache de mensagens fica desabilitado: o despacho usa somente a mensagem recebida.
 
-Copie `.env.example` para `.env`, preencha os dois tokens e IDs correspondentes. O alvo é escolhido estritamente por `APP_ENV`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
+O alvo é escolhido estritamente por `APP_ENV`; `npm start`/`npm run dev` usam o valor do ambiente. Para executar explicitamente: `npm run build && npm run start:development` ou `npm run start:production` (os equivalentes de desenvolvimento são `npm run dev:development` e `npm run dev:production`).
 
-O bot não monta nem sincroniza o bucket no startup e ainda não possui command que consuma imagens. Quando uma feature de mídia existir, ela receberá `ASSETS_BASE_URL` validada em sua composição e publicará somente URLs públicas, sem credenciais administrativas do R2. Os comandos `npm run r2:mount` e `npm run r2:unmount` são ferramentas manuais exclusivas para manutenção local do conteúdo em `R2/`; o estado da montagem valida PID, executável e horário de criação antes de encerrar qualquer processo.
+O bot não monta nem sincroniza o bucket no startup e ainda não possui command que consuma imagens. Quando uma feature de mídia existir, ela receberá `ASSETS_BASE_URL` validada em sua composição e publicará somente URLs públicas, sem credenciais administrativas do R2. Os comandos `npm run r2:mount` e `npm run r2:unmount` são ferramentas de manutenção local do conteúdo em `R2/`. A desmontagem verifica se o PID do rclone está ativo, confere o executável e verifica o caminho da montagem na linha de comando antes de solicitar seu encerramento.
 
 ## Scripts de manutenção
 
-Os scripts são agrupados por finalidade em `scripts/build/` (compilação e limpeza), `scripts/cloudflare/` (túneis), `scripts/r2/` (montagem do bucket) e `scripts/discord/` (sincronização de emojis). Execute-os pelos comandos npm da raiz; `npm run emojis:sync` continua garantindo a montagem do R2 automaticamente.
+Os scripts são agrupados por finalidade em `scripts/build/` (compilação e limpeza), `scripts/cloudflare/` (túneis) e `scripts/r2/` (montagem do bucket). Execute-os pelos comandos npm da raiz.
 
 ## Aliases de importação
 
@@ -28,7 +50,7 @@ Os deploys ficam em `apps/bot/src/deployments/`. O deploy central publica soment
 
 Depois de preencher o `.env`, compile e execute o deploy central:
 
-```powershell
+```bash
 npm run build
 npm run deploy:central
 ```
@@ -41,13 +63,13 @@ Para adicionar um deploy exclusivo de servidor, implemente um novo `Deployment` 
 
 O Gitleaks verifica o histórico completo em pushes e pull requests usando `.gitleaks.toml`. Para executar localmente com o binário Gitleaks instalado:
 
-```powershell
+```bash
 npm run security:secrets
 ```
 
-No Windows com Docker Desktop, sem instalar o binário:
+Em Linux/WSL com Docker, sem instalar o binário:
 
-```powershell
+```bash
 npm run security:secrets:docker
 ```
 

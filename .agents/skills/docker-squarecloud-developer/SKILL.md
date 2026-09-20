@@ -1,5 +1,5 @@
 ---
-name: docker-railway-developer
+name: docker-squarecloud-developer
 description: Containerize, configure, troubleshoot, or deploy this application with Docker, Square Cloud, or Cloudflare Tunnel; triggers on Dockerfile, Compose, runtime health, services, tunnels, volumes, or deployment requests. Do not use for source-only changes unrelated to runtime packaging.
 ---
 

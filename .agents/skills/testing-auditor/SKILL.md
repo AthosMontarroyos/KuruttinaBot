@@ -25,4 +25,4 @@ package.json, configs, CI, testes, fixtures, migrations e handlers.
 - [Desenvolvimento e testes](../../../docs/agents/testing.md)
 - [Testes de segurança](../../../docs/agents/security.md)
 ## Integração com outras skills
-security-reviewer, database-developer, nextjs-dashboard-developer, docker-railway-developer e discordbot-developer.
+security-reviewer, database-developer, nextjs-dashboard-developer, docker-squarecloud-developer e discordbot-developer.

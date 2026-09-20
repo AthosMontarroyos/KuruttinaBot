@@ -70,7 +70,7 @@ Domínios recomendados, desde que as respectivas skills existam:
 - `project-architect`: fronteiras, dependências, ADRs e mudanças transversais; não implementa detalhes de cada domínio.
 - `database-developer`: schema, migrations, query/repository, roles, RLS, pooling e análise SQL.
 - `nextjs-dashboard-developer`: App Router, React, Tailwind, rotas/actions e integração da autenticação; policies continuam server-side.
-- `docker-railway-developer`: Dockerfiles, Compose, Square Cloud, builds, health, shutdown e orçamento operacional.
+- `docker-squarecloud-developer`: Dockerfiles, Compose, Square Cloud, builds, health, shutdown e orçamento operacional.
 - `security-reviewer`: threat model e revisão transversal de auth, API, banco, Discord, containers e deploy; revisa, não toma posse automática de toda implementação.
 - `testing-auditor`: estratégia e verificação independente de testes, regressões, integração, segurança e consumo.
 

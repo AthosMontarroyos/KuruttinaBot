@@ -27,4 +27,4 @@ Ler AGENTS.md; mapear ativos/atores; rastrear input; revisar controles; corrigir
 ## Arquivos relevantes
 Auth, API, webhooks, .env*, dependências, Docker e deploy.
 ## Integração com outras skills
-project-architect, database-developer, nextjs-dashboard-developer, docker-railway-developer e discordbot-developer.
+project-architect, database-developer, nextjs-dashboard-developer, docker-squarecloud-developer e discordbot-developer.

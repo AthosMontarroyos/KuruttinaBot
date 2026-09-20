@@ -12,7 +12,6 @@ Arquitetura-alvo (itens ausentes não devem ser criados preventivamente):
 ├── apps/
 │   ├── bot/                 # processo discord.js
 │   └── site/                # aplicação Next.js App Router
-├── config/                 # configurações locais e exemplos (não confundir com packages/config)
 ├── packages/
 │   ├── database/            # schema, migrations, RLS, client e repositories
 │   ├── contracts/           # schemas e contratos realmente compartilhados

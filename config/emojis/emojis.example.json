@@ -1,6 +1,0 @@
-{
-  "vaults": [
-    { "token": "DISCORD_VAULT_TOKEN_EXAMPLE_ONLY", "nome": "vault-emojis-gerais", "descricao": "Aplicacao Discord usada para armazenar emojis." },
-    { "token": "DISCORD_VAULT_TOKEN_EXAMPLE_ONLY", "nome": "vault-emojis-eventos" }
-  ]
-}

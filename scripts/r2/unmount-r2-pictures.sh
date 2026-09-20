@@ -26,6 +26,7 @@ fi
 state_pid="$(jq -r '.pid // empty' "$stateFile" 2>/dev/null)" || state_pid=""
 state_exe="$(jq -r '.executablePath // empty' "$stateFile" 2>/dev/null)" || state_exe=""
 state_mount="$(jq -r '.mountPoint // empty' "$stateFile" 2>/dev/null)" || state_mount=""
+bridge_pid="$(jq -r '.bridgePid // empty' "$stateFile" 2>/dev/null)" || bridge_pid=""
 
 if [[ -z "$state_pid" ]]; then
     rm -f "$stateFile"
@@ -69,6 +70,10 @@ done
 if kill -0 "$state_pid" 2>/dev/null; then
     echo "rclone nao encerrou dentro de 5 segundos; estado preservado para nova verificacao." >&2
     exit 1
+fi
+
+if [[ -n "$bridge_pid" ]] && kill -0 "$bridge_pid" 2>/dev/null; then
+    kill "$bridge_pid"
 fi
 
 rm -f "$stateFile"

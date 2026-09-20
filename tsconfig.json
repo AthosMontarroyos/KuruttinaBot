@@ -4,9 +4,8 @@
     "rootDir": ".", "outDir": "dist", "strict": true, "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true, "esModuleInterop": true, "skipLibCheck": true,
     "allowJs": true, "checkJs": true, "rewriteRelativeImportExtensions": true,
-    "baseUrl": ".",
     "paths": {
-      "#bot/*": ["apps/bot/src/*"]
+      "#bot/*": ["./apps/bot/src/*"]
     }
   },
   "include": ["apps/**/*.ts", "packages/**/*.js", "scripts/**/*.mjs", "scripts/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]

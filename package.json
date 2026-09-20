@@ -30,19 +30,25 @@
     "dev:production": "npm run dev:bot:production",
     "dev:bot:development": "tsx apps/bot/src/runner.ts development",
     "dev:bot:production": "tsx apps/bot/src/runner.ts production",
-    "r2:mount": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/r2/mount-r2-pictures.ps1",
-    "r2:unmount": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/r2/unmount-r2-pictures.ps1",
-    "emojis:sync": "node --no-warnings --experimental-strip-types scripts/discord/sync-discord-emojis.ts",
+    "r2:mount": "bash scripts/r2/mount-r2-pictures.sh",
+    "r2:unmount": "bash scripts/r2/unmount-r2-pictures.sh",
     "security:secrets": "gitleaks detect --source . --config .gitleaks.toml --redact --verbose",
-    "security:secrets:docker": "docker run --rm -v \"%cd%:/repo\" zricethezav/gitleaks:v8.30.1 git /repo --config /repo/.gitleaks.toml --redact --no-banner",
-    "test": "vitest run"
+    "security:secrets:docker": "docker run --rm -v \"${PWD}:/repo\" zricethezav/gitleaks:v8.30.1 git /repo --config /repo/.gitleaks.toml --redact --no-banner",
+    "test": "vitest run",
+    "emoji:r2:sync": "tsx scripts/discord/sync-discord-emojis.ts r2",
+    "emoji:sync": "tsx scripts/discord/sync-discord-emojis.ts all",
+    "r2": "node scripts/r2/r2-cloud.mjs",
+    "r2:list": "node scripts/r2/r2-cloud.mjs list",
+    "r2:info": "node scripts/r2/r2-cloud.mjs info",
+    "r2:upload": "node scripts/r2/r2-cloud.mjs upload",
+    "r2:delete": "node scripts/r2/r2-cloud.mjs delete",
+    "r2:size": "node scripts/r2/r2-cloud.mjs size"
   },
   "dependencies": {
     "@kuruttina/config": "*",
     "@types/node": "22.13.10",
     "discord.js": "14.27.0",
     "dotenv": "16.4.7",
-    "sharp": "0.34.3",
     "typescript": "5.8.2"
   },
   "devDependencies": {

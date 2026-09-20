@@ -5,10 +5,12 @@ projectRoot="$(cd "$(dirname "$0")/../.." && pwd)"
 rcloneBin="$projectRoot/.tools/rclone/rclone"
 mountPoint="$projectRoot/R2"
 runtimeDir="$projectRoot/.tools/r2-mount"
-cacheDir="$projectRoot/.tools/rclone-cache"
 stateFile="$runtimeDir/rclone-state.json"
 legacyPidFile="$runtimeDir/rclone.pid"
 logFile="$runtimeDir/rclone.log"
+bridgeLog="$runtimeDir/bridge.log"
+bridgeConfig="$runtimeDir/rclone.conf"
+bridgePort=3762
 
 get_verified_mount_process() {
     local pid="$1"
@@ -73,7 +75,6 @@ fi
 
 # --- Prepare directories ---
 mkdir -p "$runtimeDir"
-mkdir -p "$cacheDir"
 
 # --- Ensure mount point is empty ---
 if [[ -d "$mountPoint" ]]; then
@@ -83,19 +84,42 @@ if [[ -d "$mountPoint" ]]; then
     fi
     rmdir "$mountPoint"
 fi
+mkdir -p "$mountPoint"
 
 # --- Clean old log ---
-rm -f "$logFile"
+rm -f "$logFile" "$bridgeLog"
+
+# --- Start local WebDAV bridge backed by the Cloudflare API ---
+R2_BRIDGE_PORT="$bridgePort" node "$projectRoot/scripts/r2/r2-webdav-bridge.mjs" >"$bridgeLog" 2>&1 &
+bridge_pid=$!
+for _ in $(seq 1 50); do
+    if grep -q '^READY ' "$bridgeLog" 2>/dev/null; then break; fi
+    if ! kill -0 "$bridge_pid" 2>/dev/null; then
+        echo "A ponte R2 falhou. Consulte $bridgeLog" >&2
+        exit 1
+    fi
+    sleep 0.1
+done
+if ! grep -q '^READY ' "$bridgeLog" 2>/dev/null; then
+    kill "$bridge_pid" 2>/dev/null || true
+    echo "A ponte R2 nao ficou pronta. Consulte $bridgeLog" >&2
+    exit 1
+fi
+
+cat >"$bridgeConfig" <<EOF
+[cloudflare-r2-webdav]
+type = webdav
+url = http://127.0.0.1:$bridgePort
+vendor = other
+EOF
 
 # --- Start rclone mount ---
-"$rcloneBin" mount \
-    kurrutina-r2:kurrutina-bot-pictures \
+"$rcloneBin" --config "$bridgeConfig" mount \
+    cloudflare-r2-webdav: \
     "$mountPoint" \
-    --vfs-cache-mode full \
-    --vfs-cache-max-size 2G \
-    --dir-cache-time 10s \
-    --poll-interval 0 \
-    --cache-dir "$cacheDir" \
+    --vfs-cache-mode writes \
+    --cache-dir /tmp/opencode/r2-vfs-cache \
+    --dir-cache-time 2s \
     --volname "Kurrutina Bot R2" \
     --log-file "$logFile" \
     --log-level INFO \
@@ -106,6 +130,7 @@ sleep 2
 
 # --- Verify it started ---
 if ! kill -0 "$rclone_pid" 2>/dev/null; then
+    kill "$bridge_pid" 2>/dev/null || true
     echo "A montagem falhou. Consulte $logFile" >&2
     exit 1
 fi
@@ -113,10 +138,11 @@ fi
 # --- Persist state ---
 jq -n \
     --argjson pid "$rclone_pid" \
+    --argjson bridgePid "$bridge_pid" \
     --arg startedAtUtc "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     --arg executablePath "$(readlink -f "$rcloneBin")" \
     --arg mountPoint "$(readlink -f "$mountPoint")" \
-    '{ pid: $pid, startedAtUtc: $startedAtUtc, executablePath: $executablePath, mountPoint: $mountPoint }' \
+    '{ pid: $pid, bridgePid: $bridgePid, startedAtUtc: $startedAtUtc, executablePath: $executablePath, mountPoint: $mountPoint }' \
     > "$stateFile"
 
 echo "Bucket R2 inteiro montado em $mountPoint (PID $rclone_pid)."

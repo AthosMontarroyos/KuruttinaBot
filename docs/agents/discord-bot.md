@@ -30,27 +30,11 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Regra:** Todo módulo de command declara nome, descrição não vazia e um único executor baseado no contrato compartilhado `CommandContext`. Slash é a definição canônica; todos os commands registrados também são acessíveis automaticamente por `k!` e pelo alias `K!`, sem opt-out, configuração ou comando de ativação. O loader é chamado explicitamente pelo composition root, descobre os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido e emite um log estruturado `command_loaded`; o catálogo rejeita nome duplicado. Os adapters de slash e mensagem usam o mesmo executor, sem duplicar lógica nos commands. `acknowledge()` reconhece trabalho lento e `reply()` conclui a resposta em ambos os transports. Capacidades novas, como argumentos, devem ampliar o contrato e ambos os adapters conjuntamente. O uso de `MessageContent` para esse despacho foi autorizado explicitamente pelo usuário; ele também deve estar habilitado no Developer Portal para cada aplicação.
 
-### Regra: registry de parceiros
-
-**Nível:** MUST
-
-**Regra:** Quando essa feature for implementada, seu contrato específico vem de [`config/partners/README.md`](../../config/partners/README.md). O adapter Discord não redefine schema nem transforma a classificação de guild em autorização de usuário.
-
 ### Regra: memória do bot
 
 **Nível:** MUST
 
 **Regra:** Justifique intents, partials e caches; limite sweepers/cache managers, collectors, listeners, timers, filas e dados temporários. Collector temporário sempre possui timeout/idle/condição de encerramento. Cache miss não deve ser tratado automaticamente como inexistência.
-
-### Regra: emojis customizados em mensagens e embeds
-
-**Nível:** MUST
-
-**Regra:** Antes de criar ou alterar mensagem, component ou embed que se beneficie de identidade visual, execute `npm run emojis:sync`, leia `R2/emojis/manifest.json` e visualize os candidatos em `R2/emojis/<team>/<app>/`. Escolha emojis pela função semântica e coerência visual, não apenas pelo nome do arquivo; use poucos elementos e preserve legibilidade e acessibilidade do texto sem depender do emoji para transmitir informação indispensável.
-
-Para uso inline, derive a sintaxe exclusivamente dos campos atuais do manifesto: `<:name:id>` para estático e `<a:name:id>` para animado. Nunca invente ID, reutilize referência obsoleta nem decida animação pela extensão `.webp`. Emoji de aplicação só pode ser usado inline pelo próprio `applicationId`; confirme que ele corresponde ao app que enviará a resposta. Emojis pertencentes a outra vault podem servir como referência visual ou imagem de embed por URL pública autorizada, mas não como emoji inline do bot consumidor. Em campos de imagem (`thumbnail`, `image`, ícone de author/footer), use URL HTTPS do asset, não a marcação `<:name:id>`. O catálogo e o procedimento operacional pertencem a [`config/emojis/README.md`](../../config/emojis/README.md).
-
-O Team `Interactions` é reservado aos assets dos comandos de Roleplay: `Kiss`, `Lick`, `Dance`, `Hug`, `Pat`, `Punch`, `Slap` e futuras ações equivalentes. Consulte esse Team somente ao implementar ou ajustar o comando de Roleplay correspondente. Para emojis inline, ícones de interface e decoração geral das respostas do bot, busque exclusivamente no catálogo da aplicação principal `Kurummi / Kuruttina`; não use `Kuruttina Dev` nem uma vault de `Interactions` como substituta. Nos comandos de Roleplay, a mídia da ação pode vir do diretório correspondente em `Interactions`, enquanto os emojis inline do embed continuam pertencendo à Kuruttina principal.
 
 ### Regra: estado distribuído
 

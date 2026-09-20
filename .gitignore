@@ -11,19 +11,11 @@ coverage/
 
 # Assets are stored in Cloudflare R2; keep local backups out of deploys and Git.
 /R2/
+/emojis/
 .tools/
 
 #Cache
 .vscode
 
-# Discord configuration (defense in depth)
-/config/**
-!/config/
-!/config/.gitignore
-!/config/README.md
-!/config/emojis/
-!/config/emojis/README.md
-!/config/emojis/emojis.example.json
-!/config/partners/
-!/config/partners/README.md
-!/config/partners/partners.example.json
+#Temp
+.opencode-temp

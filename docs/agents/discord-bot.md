@@ -30,6 +30,12 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 **Regra:** Todo módulo de command declara nome, descrição não vazia e um único executor baseado no contrato compartilhado `CommandContext`. Slash é a definição canônica; todos os commands registrados também são acessíveis automaticamente por `k!` e pelo alias `K!`, sem opt-out, configuração ou comando de ativação. O loader é chamado explicitamente pelo composition root, descobre os módulos sob `apps/bot/src/commands`, falha fechado diante de módulo inválido e emite um log estruturado `command_loaded`; o catálogo rejeita nome duplicado. Os adapters de slash e mensagem usam o mesmo executor, sem duplicar lógica nos commands. `acknowledge()` reconhece trabalho lento e `reply()` conclui a resposta em ambos os transports. Capacidades novas, como argumentos, devem ampliar o contrato e ambos os adapters conjuntamente. O uso de `MessageContent` para esse despacho foi autorizado explicitamente pelo usuário; ele também deve estar habilitado no Developer Portal para cada aplicação.
 
+### Regra: categorias de commands
+
+**Nível:** MUST
+
+**Regra:** Commands de moderação ficam em `apps/bot/src/commands/mod/`; o caminho canônico de `clear` é `apps/bot/src/commands/mod/clear.ts`. Commands públicos ficam em `apps/bot/src/commands/public/`. Reutilize essas categorias ao adicionar commands. Ao mover um módulo, atualize seus imports e a documentação, remova a cópia no caminho anterior e valide a descoberta automática e o build limpo para evitar registros duplicados por artefatos antigos.
+
 ### Regra: memória do bot
 
 **Nível:** MUST

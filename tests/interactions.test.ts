@@ -20,12 +20,14 @@ function interactionPort() {
     commandName: 'example',
     createdTimestamp: Date.now() - 42,
     id: 'interaction-id',
-    get deferred() { return deferred; },
-    get replied() { return replied; },
+    isDeferred: () => deferred,
+    isReplied: () => replied,
     deferReply: vi.fn(async () => { deferred = true; }),
+    deleteReply: vi.fn(async () => undefined),
     editReply: vi.fn(async () => undefined),
     followUp: vi.fn(async (_content: string | InteractionReplyOptions) => undefined),
     reply: vi.fn(async (_content: string | InteractionReplyOptions) => { replied = true; }),
+    optionsData: vi.fn(() => []),
   };
   return port;
 }
@@ -58,7 +60,7 @@ describe('interaction command boundary', () => {
     await handleChatInputCommand(interaction, handler);
 
     expect(interaction.reply).toHaveBeenCalledExactlyOnceWith({
-      content: 'Something went wrong while running this command.',
+      content: 'Algo deu errado ao executar este comando.',
       flags: MessageFlags.Ephemeral,
     });
   });
@@ -72,7 +74,7 @@ describe('interaction command boundary', () => {
 
     await handleChatInputCommand(interaction, handler);
 
-    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('Something went wrong while running this command.');
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('Algo deu errado ao executar este comando.');
   });
 
   it('contains a failure while sending the safe error response', async () => {
@@ -81,5 +83,18 @@ describe('interaction command boundary', () => {
     const handler = new CommandsHandler([command(async () => { throw new Error('private detail'); })]);
 
     await expect(handleChatInputCommand(interaction, handler)).resolves.toBeUndefined();
+  });
+
+  it('uses an ephemeral follow-up when execution fails after replying', async () => {
+    const interaction = interactionPort();
+    const handler = new CommandsHandler([command(async (context) => {
+      await context.reply('All done');
+      throw new Error('private detail');
+    })]);
+
+    await handleChatInputCommand(interaction, handler);
+    expect(interaction.followUp).toHaveBeenCalledExactlyOnceWith({
+      content: 'Algo deu errado ao executar este comando.', flags: MessageFlags.Ephemeral,
+    });
   });
 });

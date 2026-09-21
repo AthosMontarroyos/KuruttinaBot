@@ -20,7 +20,7 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
   return {
     content,
     id: 'message-id',
-    author: { bot: false },
+    author: { bot: false, id: 'author-id' },
     client: {
       application: {
         emojis: {
@@ -29,6 +29,7 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
               { name: 'dancing', toString: () => '<a:dancing:dancing-id>' },
               { name: 'stats', toString: () => '<:stats:stats-id>' },
               { name: 'gateway', toString: () => '<:gateway:gateway-id>' },
+              { name: 'cleaning', toString: () => '<:cleaning:cleaning-id>' },
             ].find(predicate),
           })),
         },
@@ -45,7 +46,7 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
 describe('commands', () => {
   it('discovers and publishes the canonical commands automatically', async () => {
     const handler = new CommandsHandler(await loadCommands());
-    expect(handler.payload().map((command) => command.name)).toEqual(['ping']);
+    expect(handler.payload().map((command) => command.name)).toEqual(['clear', 'ping']);
   });
 
   it('rejects malformed command modules during discovery', async () => {
@@ -89,7 +90,11 @@ describe('commands', () => {
     expect(reply).not.toHaveBeenCalled();
   });
 
-  it.each([{ author: { bot: true } }, { webhookId: '123' }, { system: true }])('ignores automated messages %o', async (overrides) => {
+  it.each([
+    { author: { bot: true, id: 'author-id' } },
+    { webhookId: '123' },
+    { system: true },
+  ])('ignores automated messages %o', async (overrides) => {
     const reply = vi.fn();
     await handleMessageCreate({ ...message('k!ping', reply), ...overrides }, new CommandsHandler([pingCommand]));
     expect(reply).not.toHaveBeenCalled();

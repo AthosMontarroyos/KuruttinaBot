@@ -8,6 +8,19 @@ afterEach(() => {
 });
 
 describe('terminal logger', () => {
+  it.each([
+    ['clear_fetch_failed', 'Falha ao buscar mensagens'],
+    ['clear_delete_failed', 'Falha ao apagar mensagens'],
+    ['clear_confirm_failed', 'Exclusão concluída; falha ao enviar confirmação'],
+    ['clear_unexpected_error', 'Erro inesperado na limpeza de mensagens'],
+  ])('identifies the clear stage for %s', (event, message) => {
+    const output = formatTerminalLog('error', event!, { channelId: 'channel-123', errorCode: 50013 }, false);
+    expect(output).toContain('❌ Clear');
+    expect(output).toContain(message);
+    expect(output).toContain('channelId: channel-123');
+    expect(output).toContain('errorCode: 50013');
+  });
+
   it('uses the human format without ANSI in production and preserves stderr', () => {
     configureLogger('production');
     const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);

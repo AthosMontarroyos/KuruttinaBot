@@ -26,7 +26,9 @@ Cloudflare Tunnel, R2 e OAuth são opcionais — não são necessários para ini
 
 ## Bot local/Docker
 
-Slash é o padrão. Todos os comandos do registry também respondem automaticamente aos prefixos fixos `k!` e `K!`: `/ping`, `k!ping` e `K!ping` usam o mesmo executor, inclusive em DM. Não existe comando ou variável para ativar/configurar prefixo. Os nomes dos comandos são exatos; mensagens de bots/webhooks/sistema e comandos desconhecidos são ignorados. O conjunto atual não possui argumentos.
+Slash é o padrão. Todos os comandos do registry também respondem automaticamente aos prefixos fixos `k!` e `K!`: `/ping`, `k!ping` e `K!ping` usam o mesmo executor, inclusive em DM. Não existe comando ou variável para ativar/configurar prefixo. Os nomes dos comandos são exatos; mensagens de bots/webhooks/sistema e comandos desconhecidos são ignorados.
+
+`/clear quantidade:20 usuario:@alguem` e `k!clear 20 @alguem` apagam mensagens elegíveis em canais de servidor. A quantidade vai de 1 a 200, o filtro de usuário é opcional e entradas inválidas são rejeitadas antes de buscar/apagar mensagens. As permissões efetivas do usuário e do bot são verificadas no canal. Emojis personalizados indisponíveis usam fallback Unicode, sem impedir a execução dos comandos.
 
 Habilite **Message Content Intent** em **Developer Portal → aplicação → Bot → Privileged Gateway Intents** para cada bot usado (development e production). O código solicita esse intent; sem autorização no portal, o Discord pode rejeitar o Gateway com código 4014. Aplicações verificadas podem precisar de aprovação do Discord. O bot precisa poder ver o canal e enviar respostas. O cache de mensagens fica desabilitado: o despacho usa somente a mensagem recebida.
 
@@ -36,7 +38,7 @@ O bot não monta nem sincroniza o bucket no startup e ainda não possui command 
 
 ## Scripts de manutenção
 
-Os scripts são agrupados por finalidade em `scripts/build/` (compilação e limpeza), `scripts/cloudflare/` (túneis) e `scripts/r2/` (montagem do bucket). Execute-os pelos comandos npm da raiz.
+Os scripts são agrupados por finalidade em `scripts/build/` (compilação e limpeza), `scripts/cloudflare/` (túneis), `scripts/r2/` (cliente compartilhado, CLI e montagem do bucket) e `scripts/discord/` (sincronização de emojis). Execute-os pelos comandos npm da raiz. `emoji:r2:sync` e `emoji:sync` transferem assets pelas APIs remotas, sem exigir montagem local; veja o [guia R2](scripts/r2/README.md).
 
 ## Aliases de importação
 

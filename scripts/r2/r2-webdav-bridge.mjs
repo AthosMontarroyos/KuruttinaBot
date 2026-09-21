@@ -2,48 +2,12 @@
 // @ts-nocheck -- ponte operacional isolada; entradas HTTP e Cloudflare sao validadas em runtime.
 
 import { createServer } from 'node:http';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { createR2Client } from './client.mjs';
 
-const bucket = 'kurrutina-bot-pictures';
-const apiBase = 'https://api.cloudflare.com/client/v4';
 const port = Number(process.env.R2_BRIDGE_PORT ?? 3762);
-
-function loadEnvironment() {
-  const environment = { ...process.env };
-  const content = readFileSync(resolve(import.meta.dirname, '../..', '.env'), 'utf8');
-  for (const line of content.split('\n')) {
-    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (match && environment[match[1]] === undefined) environment[match[1]] = match[2].trim();
-  }
-  return environment;
-}
-
-const env = loadEnvironment();
-const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-const apiToken = env.CLOUDFLARE_API_TOKEN;
-if (!accountId || !apiToken) throw new Error('CLOUDFLARE_ACCOUNT_ID e CLOUDFLARE_API_TOKEN sao obrigatorios');
-
-const objectsUrl = `${apiBase}/accounts/${accountId}/r2/buckets/${bucket}/objects`;
-const authorization = { Authorization: `Bearer ${apiToken}` };
-const encodeKey = (key) => key.split('/').map(encodeURIComponent).join('/');
+const r2 = createR2Client();
 const decodePath = (url = '/') => decodeURIComponent(new URL(url, 'http://localhost').pathname).replace(/^\/+|\/+$/g, '');
 const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-
-async function listObjects() {
-  const objects = [];
-  let cursor;
-  do {
-    const url = new URL(objectsUrl);
-    if (cursor) url.searchParams.set('cursor', cursor);
-    const response = await fetch(url, { headers: authorization });
-    const payload = await response.json();
-    if (!response.ok || !payload.success) throw new Error(payload.errors?.[0]?.message ?? `Cloudflare API ${response.status}`);
-    objects.push(...payload.result);
-    cursor = payload.result_info?.is_truncated ? payload.result_info.cursor : undefined;
-  } while (cursor);
-  return objects;
-}
 
 function propertyResponse(path, isDirectory, size = 0, modified = new Date()) {
   const href = `/${path ? `${escapeXml(path)}${isDirectory ? '/' : ''}` : ''}`;
@@ -55,7 +19,8 @@ function propertyResponse(path, isDirectory, size = 0, modified = new Date()) {
 }
 
 async function propfind(request, response, path) {
-  const objects = await listObjects();
+  const objects = [];
+  for await (const object of r2.list(path)) objects.push(object);
   const prefix = path ? `${path}/` : '';
   const exact = objects.find((object) => object.key === path);
   const descendants = objects.filter((object) => object.key.startsWith(prefix));
@@ -84,24 +49,20 @@ async function propfind(request, response, path) {
   response.end(`<?xml version="1.0"?><d:multistatus xmlns:d="DAV:">${entries.join('')}</d:multistatus>`);
 }
 
-async function objectRequest(path, options = {}) {
-  return fetch(`${objectsUrl}/${encodeKey(path)}`, { ...options, headers: { ...authorization, ...options.headers } });
-}
-
 async function copyOrMove(request, response, source, removeSource) {
   const destinationHeader = request.headers.destination;
   if (!destinationHeader) return void response.writeHead(400).end();
   const destination = decodePath(destinationHeader);
-  const sourceResponse = await objectRequest(source);
+  const sourceResponse = await r2.request(source);
   if (!sourceResponse.ok) return void response.writeHead(sourceResponse.status).end();
-  const putResponse = await objectRequest(destination, {
+  const putResponse = await r2.request(destination, {
     method: 'PUT',
     headers: { 'Content-Type': sourceResponse.headers.get('content-type') ?? 'application/octet-stream' },
     body: sourceResponse.body,
     duplex: 'half',
   });
   if (!putResponse.ok) return void response.writeHead(putResponse.status).end();
-  if (removeSource) await objectRequest(source, { method: 'DELETE' });
+  if (removeSource) await r2.request(source, { method: 'DELETE' });
   response.writeHead(201).end();
 }
 
@@ -113,7 +74,7 @@ const server = createServer(async (request, response) => {
     } else if (request.method === 'PROPFIND') {
       await propfind(request, response, path);
     } else if (request.method === 'GET' || request.method === 'HEAD') {
-      const remote = await objectRequest(path, { method: request.method });
+      const remote = await r2.request(path, { method: request.method });
       response.writeHead(remote.status, Object.fromEntries(['content-type', 'content-length', 'etag', 'last-modified'].flatMap((name) => {
         const value = remote.headers.get(name);
         return value === null ? [] : [[name, value]];
@@ -124,7 +85,7 @@ const server = createServer(async (request, response) => {
         response.end();
       }
     } else if (request.method === 'PUT') {
-      const remote = await objectRequest(path, {
+      const remote = await r2.request(path, {
         method: 'PUT',
         headers: { 'Content-Type': request.headers['content-type'] ?? 'application/octet-stream' },
         body: request,
@@ -132,7 +93,7 @@ const server = createServer(async (request, response) => {
       });
       response.writeHead(remote.ok ? 201 : remote.status).end();
     } else if (request.method === 'DELETE') {
-      const remote = await objectRequest(path, { method: 'DELETE' });
+      const remote = await r2.request(path, { method: 'DELETE' });
       response.writeHead(remote.ok ? 204 : remote.status).end();
     } else if (request.method === 'MKCOL') {
       response.writeHead(201).end();

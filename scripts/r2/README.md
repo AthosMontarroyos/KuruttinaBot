@@ -15,6 +15,8 @@ CLOUDFLARE_ACCOUNT_ID=seu_account_id
 CLOUDFLARE_API_TOKEN=seu_token_api
 ```
 
+CLI, ponte WebDAV e sincronizador de emojis compartilham `scripts/r2/client.mjs`. A leitura usa `dotenv`, sem popular `process.env`; variáveis do processo têm precedência sobre o `.env`. O cliente centraliza paginação, codificação das chaves, timeout e retry limitado para `429` nas operações JSON.
+
 ### Como obter as credenciais
 
 1. **Account ID:**
@@ -144,10 +146,10 @@ Os comandos usam Application Emojis do bot de **produção** como origem.
 
 **Ordem de operação:**
 
-1. Verifica a montagem R2 e tenta iniciá-la quando necessário.
-2. Obtém os Application Emojis da aplicação de produção e baixa seus assets.
+1. Valida a configuração Discord e R2, sem exigir montagem local, rclone ou FUSE.
+2. Valida a identidade da aplicação de produção e obtém seus Application Emojis em memória.
 3. Envia os arquivos ao R2 sequencialmente, substituindo objetos de mesma chave.
-4. Após **todos** os uploads terminarem com sucesso, lista e remove objetos excedentes do prefixo `emojis/`.
+4. Após **todos** os uploads e a listagem completa terminarem com sucesso, remove objetos excedentes somente do prefixo `emojis/`.
 5. No modo completo (`emoji:sync`), espelha o conjunto na aplicação de desenvolvimento: substitui emojis alterados e remove excedentes.
 
 **Nota:** os uploads substituem objetos à medida que são concluídos; a exclusão de excedentes só ocorre após sucesso completo dos uploads. O processo não é uma transação atômica — uma falha pode deixar parte das atualizações aplicada.

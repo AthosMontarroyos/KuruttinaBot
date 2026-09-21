@@ -1,33 +1,19 @@
-import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
-import { promisify } from 'node:util';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import 'dotenv/config';
 import { loadConfig } from '#bot/config.js';
+import { createR2Client } from '../r2/client.mjs';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 const DISCORD_CDN = 'https://cdn.discordapp.com/emojis';
-const CLOUDFLARE_API = 'https://api.cloudflare.com/client/v4';
-const R2_BUCKET = 'kurrutina-bot-pictures';
 const R2_PREFIX = 'emojis/';
 const REQUEST_TIMEOUT_MS = 15_000;
 const MAX_RETRIES = 5;
 const MAX_APPLICATION_EMOJI_BYTES = 256 * 1024;
-const MAX_R2_OBJECT_BYTES = 5 * 1024 * 1024 * 1024;
-const execFileAsync = promisify(execFile);
 
 type Credential = Readonly<{ token: string; expectedBotId: string }>;
 type DiscordApplication = Readonly<{ id: string; name: string }>;
 type DiscordEmoji = Readonly<{ id: string; name: string; animated?: boolean }>;
 type EmojiAsset = Readonly<{ emoji: DiscordEmoji; bytes: Uint8Array; filename: string; contentType: string }>;
-type R2Object = Readonly<{ key: string; size: number }>;
-type CloudflareListPayload = Readonly<{
-  success: boolean;
-  errors?: ReadonlyArray<Readonly<{ message?: string }>>;
-  result?: ReadonlyArray<R2Object>;
-  result_info?: Readonly<{ cursor?: string; is_truncated?: boolean }>;
-}>;
 
 export function emojiFilename(emoji: DiscordEmoji): string {
   if (!/^[A-Za-z0-9_]{2,32}$/u.test(emoji.name)) throw new Error(`Nome de emoji invalido retornado pelo Discord: ${emoji.name}`);
@@ -106,7 +92,6 @@ async function fetchEmojiAsset(emoji: DiscordEmoji): Promise<EmojiAsset> {
   if (declaredSize > MAX_APPLICATION_EMOJI_BYTES) throw new Error(`${emoji.name}: excede o limite de 256 KiB de Application Emoji.`);
   const bytes = new Uint8Array(await response.arrayBuffer());
   if (bytes.byteLength > MAX_APPLICATION_EMOJI_BYTES) throw new Error(`${emoji.name}: excede o limite de 256 KiB de Application Emoji.`);
-  if (bytes.byteLength > MAX_R2_OBJECT_BYTES) throw new Error(`${emoji.name}: excede o limite de objeto do R2.`);
   return { emoji, bytes, filename: emojiFilename(emoji), contentType: emoji.animated ? 'image/gif' : 'image/png' };
 }
 
@@ -118,87 +103,21 @@ async function sourceAssets(credential: Credential): Promise<{ application: Disc
   return { application, assets };
 }
 
-function cloudflareConfiguration(): { accountId: string; apiToken: string } {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!accountId || !apiToken) throw new Error('CLOUDFLARE_ACCOUNT_ID e CLOUDFLARE_API_TOKEN sao obrigatorios.');
-  return { accountId, apiToken };
-}
-
-function r2ObjectsUrl(accountId: string): string {
-  return `${CLOUDFLARE_API}/accounts/${accountId}/r2/buckets/${R2_BUCKET}/objects`;
-}
-
-async function listR2EmojiObjects(): Promise<R2Object[]> {
-  const { accountId, apiToken } = cloudflareConfiguration();
-  const objects: R2Object[] = [];
-  let cursor: string | undefined;
-  do {
-    const url = new URL(r2ObjectsUrl(accountId));
-    url.searchParams.set('prefix', R2_PREFIX);
-    if (cursor) url.searchParams.set('cursor', cursor);
-    const response = await fetch(url, { headers: { Authorization: `Bearer ${apiToken}` }, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-    const payload = await response.json() as CloudflareListPayload;
-    if (!response.ok || !payload.success) throw new Error(`Cloudflare R2: ${payload.errors?.[0]?.message ?? `HTTP ${response.status}`}`);
-    objects.push(...(payload.result ?? []));
-    cursor = payload.result_info?.is_truncated ? payload.result_info.cursor : undefined;
-  } while (cursor);
-  return objects;
-}
-
-const encodeR2Key = (key: string): string => key.split('/').map(encodeURIComponent).join('/');
-
 function asRequestBody(bytes: Uint8Array): ArrayBuffer {
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
   return copy.buffer;
 }
 
-async function putR2Asset(asset: EmojiAsset): Promise<void> {
-  const { accountId, apiToken } = cloudflareConfiguration();
-  const key = `${R2_PREFIX}${asset.filename}`;
-  const response = await fetch(`${r2ObjectsUrl(accountId)}/${encodeR2Key(key)}`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': asset.contentType },
-    body: asRequestBody(asset.bytes),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-  const payload = await response.json().catch(() => ({})) as { success?: boolean; errors?: ReadonlyArray<{ message?: string }> };
-  if (!response.ok || !payload.success) throw new Error(`${key}: ${payload.errors?.[0]?.message ?? `HTTP ${response.status}`}`);
-}
-
-async function deleteR2Object(key: string): Promise<void> {
-  const { accountId, apiToken } = cloudflareConfiguration();
-  const response = await fetch(`${r2ObjectsUrl(accountId)}/${encodeR2Key(key)}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${apiToken}` },
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-  const payload = await response.json().catch(() => ({})) as { success?: boolean; errors?: ReadonlyArray<{ message?: string }> };
-  if (!response.ok || !payload.success) throw new Error(`${key}: ${payload.errors?.[0]?.message ?? `HTTP ${response.status}`}`);
-}
-
-async function ensureR2Mounted(projectRoot: string): Promise<void> {
-  const statePath = join(projectRoot, '.tools', 'r2-mount', 'rclone-state.json');
-  try {
-    const state = JSON.parse(await readFile(statePath, 'utf8')) as { pid?: unknown; mountPoint?: unknown };
-    if (typeof state.pid === 'number' && state.mountPoint === join(projectRoot, 'R2')) {
-      process.kill(state.pid, 0);
-      return;
-    }
-  } catch {
-    // A montagem sera iniciada abaixo.
-  }
-  await execFileAsync('bash', [join(projectRoot, 'scripts', 'r2', 'mount-r2-pictures.sh')], { cwd: projectRoot, timeout: 30_000 });
-}
-
-export async function replaceR2Emojis(assets: readonly EmojiAsset[]): Promise<void> {
+export async function replaceR2Emojis(assets: readonly EmojiAsset[], r2 = createR2Client()): Promise<void> {
   const expectedKeys = new Set(assets.map(({ filename }) => `${R2_PREFIX}${filename}`));
-  for (const asset of assets) await putR2Asset(asset);
-  const existing = await listR2EmojiObjects();
-  for (const object of existing) {
-    if (!expectedKeys.has(object.key)) await deleteR2Object(object.key);
+  for (const asset of assets) await r2.put(`${R2_PREFIX}${asset.filename}`, asRequestBody(asset.bytes), asset.contentType);
+  // Finish pagination before deleting so mutations cannot invalidate the cursor.
+  const obsolete: string[] = [];
+  for await (const object of r2.list(R2_PREFIX)) {
+    if (object.key.startsWith(R2_PREFIX) && !expectedKeys.has(object.key)) obsolete.push(object.key);
   }
+  for (const key of obsolete) await r2.delete(key);
 }
 
 async function mirrorToDevelopment(assets: readonly EmojiAsset[], credential: Credential): Promise<void> {
@@ -242,12 +161,11 @@ async function mirrorToDevelopment(assets: readonly EmojiAsset[], credential: Cr
 }
 
 export async function main(mode: 'r2' | 'all' = 'all'): Promise<void> {
-  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-  const config = loadConfig(process.env);
-  await ensureR2Mounted(projectRoot);
+  const config = loadConfig();
+  const r2 = createR2Client();
   const { application, assets } = await sourceAssets(config.credentials.production);
   console.log(`Origem ${application.name}: ${assets.length} emoji(s).`);
-  await replaceR2Emojis(assets);
+  await replaceR2Emojis(assets, r2);
   console.log(`R2/emojis/ substituido integralmente com ${assets.length} arquivo(s), sem subpastas.`);
   if (mode === 'all') {
     await mirrorToDevelopment(assets, config.credentials.development);

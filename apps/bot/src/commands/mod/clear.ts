@@ -1,8 +1,22 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import type { ChatInputCommand, BulkDeletePort, CommandContext, CommandMessage } from '#bot/commands/types.js';
+import { validateCommandAccess } from '#bot/commands/access.js';
+import type { ChatInputCommand, BulkDeletePort, CommandAccess, CommandContext, CommandMessage } from '#bot/commands/types.js';
 import { log } from '#bot/infrastructure/logger.js';
 
-const { ManageMessages, ViewChannel, ReadMessageHistory, SendMessages, SendMessagesInThreads } = PermissionFlagsBits;
+const { ManageMessages, ViewChannel, ReadMessageHistory } = PermissionFlagsBits;
+
+/** Declared policy; enforced centrally by CommandsHandler and rechecked here before any work. */
+const access: CommandAccess = {
+  kind: 'guild',
+  userPermissions: [ManageMessages],
+  botPermissions: [ViewChannel, ReadMessageHistory, ManageMessages],
+  requireChannelSend: true,
+  messages: {
+    guildOnly: 'Vamos fazer essa limpeza em um canal de texto de servidor!',
+    userMissing: 'Para usar a vassoura, você precisa da permissão **{permissions}** neste canal!',
+    botMissing: 'Preciso destas permissões para fazer a limpeza: **{permissions}**!',
+  },
+};
 
 /** Maximum messages the user can request. */
 const MAX_COUNT = 200;
@@ -33,26 +47,6 @@ function tryAcquireLock(key: string): boolean {
   if (activeChannels.has(key)) return false;
   activeChannels.add(key);
   return true;
-}
-
-function validateUserPermissions(ctx: CommandContext): string | null {
-  if (!ctx.memberPermissions) return 'Nao foi possivel verificar suas permissoes.';
-  if (ctx.memberPermissions.has(ManageMessages, true)) return null;
-  return 'Voce precisa da permissao Gerenciar mensagens neste canal.';
-}
-
-function validateBotPermissions(ctx: CommandContext): string | null {
-  if (!ctx.appPermissions) return 'Nao consegui verificar minhas permissoes neste canal.';
-  const missing: string[] = [];
-  if (!ctx.appPermissions.has(ViewChannel, true)) missing.push('Ver canal');
-  if (!ctx.appPermissions.has(ReadMessageHistory, true)) missing.push('Ler historico');
-  if (!ctx.appPermissions.has(ManageMessages, true)) missing.push('Gerenciar mensagens');
-  const sendPermission = ctx.textChannel?.isThread ? SendMessagesInThreads : SendMessages;
-  if (!ctx.appPermissions.has(sendPermission, true)) {
-    missing.push('Enviar mensagens');
-  }
-  if (missing.length > 0) return `Estou sem permissoes necesarias: ${missing.join(', ')}.`;
-  return null;
 }
 
 function validCount(count: number): boolean {
@@ -118,20 +112,12 @@ async function fetchEligibleMessages(
 async function execute(context: CommandContext): Promise<void> {
   await context.acknowledge();
 
+  const accessError = await validateCommandAccess(access, context);
+  if (accessError) { await context.reply(accessError); return; }
+
   const channel = context.textChannel;
-  if (!channel) {
-    await context.reply('Este comando so pode ser usado em canais de texto de servidor.');
-    return;
-  }
-
-  const userError = validateUserPermissions(context);
-  if (userError) { await context.reply(userError); return; }
-
-  const botError = validateBotPermissions(context);
-  if (botError) {
-    await context.reply(botError);
-    return;
-  }
+  // Inalcançável: a política acima já nega quando não há canal de texto de servidor.
+  if (!channel) return;
 
   const args = context.options ? parseSlashArgs(context.options) : parsePrefixArgs(context.rawArgs ?? '');
 
@@ -225,5 +211,6 @@ export const command = {
     .addUserOption((option) =>
       option.setName('usuario').setDescription('Usuario especifico para apagar mensagens (opcional)').setRequired(false),
     ),
+  access,
   execute,
 } satisfies ChatInputCommand;

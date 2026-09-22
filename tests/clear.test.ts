@@ -134,7 +134,7 @@ describe('clear command', () => {
     it('replies in Portuguese when no text channel', async () => {
       const ctx = mockContext({ textChannel: undefined });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('Este comando so pode ser usado em canais de texto de servidor.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ChannelBrowser:ChannelBrowser-id> Vamos fazer essa limpeza em um canal de texto de servidor!');
     });
 
     it.each([PermissionFlagsBits.ManageMessages, PermissionFlagsBits.Administrator])('allows a user with permission %s to fetch messages', async (permission) => {
@@ -151,7 +151,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(ctx.reply).toHaveBeenCalledWith(
-        'Voce precisa da permissao Gerenciar mensagens neste canal.',
+        '<:Disappointed:Disappointed-id> Para usar a vassoura, você precisa da permissão **Gerenciar mensagens** neste canal!',
       );
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
@@ -161,7 +161,7 @@ describe('clear command', () => {
         memberPermissions: undefined,
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('Nao foi possivel verificar suas permissoes.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ops:ops-id> Não consegui conferir suas permissões. Tente novamente!');
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
 
@@ -185,15 +185,14 @@ describe('clear command', () => {
       expect(ctx.textChannel!.fetchMessages).toHaveBeenCalledOnce();
     });
 
-    it('rejects unavailable bot permissions without looking up emojis', async () => {
+    it('rejects unavailable bot permissions with the ops emoji', async () => {
       const ctx = mockContext({
         appPermissions: undefined,
       });
       await clearCommand.execute(ctx);
       expect(ctx.reply).toHaveBeenCalledWith(
-        'Nao consegui verificar minhas permissoes neste canal.',
+        '<:ops:ops-id> Não consegui conferir minhas permissões neste canal. Tente novamente!',
       );
-      expect(ctx.emoji).not.toHaveBeenCalled();
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
 
@@ -203,9 +202,10 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       const replyArg = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
-      expect(replyArg).toContain('Estou sem permissoes necesarias');
+      expect(replyArg).toContain('<:Anger:Anger-id>');
+      expect(replyArg).toContain('Preciso destas permissões para fazer a limpeza');
       expect(replyArg).toContain('Gerenciar mensagens');
-      expect(replyArg).toContain('Ler historico');
+      expect(replyArg).toContain('Ler histórico');
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
 

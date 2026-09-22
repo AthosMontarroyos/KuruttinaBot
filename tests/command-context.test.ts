@@ -77,7 +77,7 @@ describe('shared command adapters', () => {
     }
     expect(source.messages.fetch).not.toHaveBeenCalled();
     expect(source.bulkDelete).not.toHaveBeenCalled();
-    expect(client.application.emojis.fetch).not.toHaveBeenCalled();
+    // The denial reply now resolves a bot emoji, so a lookup happens before the block.
   });
 });
 

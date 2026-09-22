@@ -35,6 +35,7 @@ function interactionPort() {
 function command(execute: ChatInputCommand['execute']): ChatInputCommand {
   return {
     data: new SlashCommandBuilder().setName('example').setDescription('Example'),
+    access: { kind: 'public' },
     execute,
   };
 }

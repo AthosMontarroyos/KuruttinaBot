@@ -9,6 +9,34 @@ export interface HasPermission {
   has(permission: bigint, checkAdmin?: boolean): boolean;
 }
 
+/**
+ * Mandatory access policy of a command, validated centrally before `execute`.
+ * `guild` requires effective channel permissions; absent or invalid policy
+ * prevents the module from loading.
+ */
+export type CommandAccess =
+  | { readonly kind: 'public' }
+  | {
+      readonly kind: 'guild';
+      /** Permissions the invoking member must have in this channel. */
+      readonly userPermissions: readonly bigint[];
+      /** Permissions the bot must have in this channel. */
+      readonly botPermissions: readonly bigint[];
+      /** Additionally requires SendMessages or SendMessagesInThreads per channel kind. */
+      readonly requireChannelSend?: boolean;
+      /** Optional command-flavored denial copy overriding the generic defaults. */
+      readonly messages?: Partial<AccessDenialMessages>;
+    };
+
+/** Denial copy of a guild command; `{permissions}` is replaced by the missing names. */
+export interface AccessDenialMessages {
+  readonly guildOnly: string;
+  readonly userUnavailable: string;
+  readonly userMissing: string;
+  readonly botUnavailable: string;
+  readonly botMissing: string;
+}
+
 export type CommandMessage = Readonly<{ id: string; createdTimestamp: number; author: { readonly id: string } }>;
 
 export interface CommandContext {
@@ -48,6 +76,8 @@ export interface BulkDeletePort {
 
 export interface ChatInputCommand {
   readonly data: Pick<SlashCommandBuilder, 'name' | 'toJSON'>;
+  /** Required even for open commands, so intent is always explicit. */
+  readonly access: CommandAccess;
   execute(context: CommandContext): Promise<void>;
 }
 

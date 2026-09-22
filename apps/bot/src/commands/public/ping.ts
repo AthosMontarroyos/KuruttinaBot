@@ -3,6 +3,7 @@ import type { ChatInputCommand, CommandContext } from '#bot/commands/types.js';
 
 export const command = {
   data: new SlashCommandBuilder().setName('ping').setDescription('Mostra a latencia da API e do Gateway'),
+  access: { kind: 'public' },
   async execute(context: CommandContext): Promise<void> {
     const [dancing, stats, gateway] = await Promise.all([
       context.emoji('dancing'),

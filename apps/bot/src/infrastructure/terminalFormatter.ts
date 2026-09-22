@@ -27,6 +27,10 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   command_failed: { emoji: '❌', category: 'Discord', message: 'Falha ao executar interaction' },
   command_failure_response_failed: { emoji: '❌', category: 'Discord', message: 'Falha ao responder interaction com erro' },
   prefix_command_failed: { emoji: '❌', category: 'Commands', message: 'Falha ao executar comando por prefixo' },
+  clear_fetch_failed: { emoji: '❌', category: 'Clear', message: 'Falha ao buscar mensagens' },
+  clear_delete_failed: { emoji: '❌', category: 'Clear', message: 'Falha ao apagar mensagens' },
+  clear_confirm_failed: { emoji: '❌', category: 'Clear', message: 'Exclusão concluída; falha ao enviar confirmação' },
+  clear_unexpected_error: { emoji: '❌', category: 'Clear', message: 'Erro inesperado na limpeza de mensagens' },
   central_command_deployment_failed: { emoji: '❌', category: 'Sync', message: 'Falha ao sincronizar comandos globais' },
 };
 

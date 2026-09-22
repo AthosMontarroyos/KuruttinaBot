@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { validateCommandAccess } from '#bot/commands/access.js';
+import { validateCommandAccess, withEmojis } from '#bot/commands/access.js';
 import type { ChatInputCommand, BulkDeletePort, CommandAccess, CommandContext, CommandMessage } from '#bot/commands/types.js';
 import { log } from '#bot/infrastructure/logger.js';
 
@@ -122,18 +122,18 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parsePrefixArgs(context.rawArgs ?? '');
 
   if (!validCount(args.count)) {
-    await context.reply(`Informe um numero entre 1 e ${MAX_COUNT}.`);
+    await context.reply(withEmojis(await context.emoji('warning'), `Quantas mensagens vamos apagar? Escolha um número de **1 a ${MAX_COUNT}**!`));
     return;
   }
 
   if (args.userId !== undefined && (typeof args.userId !== 'string' || !/^\d{17,20}$/u.test(args.userId))) {
-    await context.reply('Usuario invalido.');
+    await context.reply(withEmojis(await context.emoji('warning'), 'Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!'));
     return;
   }
 
   const lockKey = `${context.guildId}:${context.channelId}`;
   if (!tryAcquireLock(lockKey)) {
-    await context.reply('Ja existe uma operacao de limpeza em andamento neste canal. Aguarde concluir.');
+    await context.reply(withEmojis(await context.emoji('loading'), 'Já estou limpando este canal! Espere eu terminar para começar outra limpeza.'));
     return;
   }
 
@@ -149,12 +149,13 @@ async function execute(context: CommandContext): Promise<void> {
       eligible = await fetchEligibleMessages(channel, args.count, args.userId, deadline, commandMessageId);
     } catch (error: unknown) {
       log('error', 'clear_fetch_failed', { channelId, ...errorDetails(error) });
-      try { await context.reply('Falha ao buscar mensagens. Operacao interrompida.'); } catch { /* best effort */ }
+      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui buscar as mensagens. Tente novamente daqui a pouco!')); } catch { /* best effort */ }
       return;
     }
 
     if (eligible.length === 0) {
-      await context.reply(`${cleaning} Nenhuma mensagem elegivel encontrada para apagar.`);
+      const filter = args.userId ? ` de <@${args.userId}>` : '';
+      await context.reply(withEmojis(await context.emoji('search'), `Não encontrei mensagens${filter} para apagar! Só consigo limpar mensagens enviadas há menos de 14 dias.`));
       return;
     }
 
@@ -163,12 +164,12 @@ async function execute(context: CommandContext): Promise<void> {
       deleted = await channel.bulkDelete(eligible);
     } catch (error: unknown) {
       log('error', 'clear_delete_failed', { channelId, ...errorDetails(error) });
-      try { await context.reply('Falha ao apagar mensagens. Operacao interrompida.'); } catch { /* best effort */ }
+      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar novamente!')); } catch { /* best effort */ }
       return;
     }
 
     const channelMention = channelId ? `<#${channelId}>` : 'canal';
-    const confirmationText = `${cleaning} Foram apagadas ${deleted} mensagens em ${channelMention}! ${slap}`;
+    const confirmationText = withEmojis(cleaning, `Foram apagadas ${deleted} mensagens em ${channelMention}!`, slap);
 
     try {
       if (context.sendMessage) await context.sendMessage(confirmationText);
@@ -194,7 +195,7 @@ async function execute(context: CommandContext): Promise<void> {
       channelId,
       ...errorDetails(error),
     });
-    try { await context.reply('Falha ao apagar mensagens. Operacao interrompida.'); } catch { /* best effort */ }
+    try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar novamente!')); } catch { /* best effort */ }
   } finally {
     activeChannels.delete(lockKey);
   }

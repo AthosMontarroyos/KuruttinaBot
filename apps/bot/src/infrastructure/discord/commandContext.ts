@@ -10,7 +10,7 @@ export interface CommandClientPort {
 }
 
 const emojiFallbacks: Readonly<Record<string, string>> = {
-  dancing: '💃', stats: '📊', gateway: '🌐', cleaning: '🧹', slap: '👋',
+  dancing: '💃', stats: '📊', gateway: '🌐',
 };
 
 export function createEmojiResolver(application: CommandClientPort['application']): CommandContext['emoji'] {

@@ -36,7 +36,9 @@ describe('shared command adapters', () => {
       return { find: () => undefined };
     });
     const emoji = createEmojiResolver({ emojis: { fetch } });
-    expect(await Promise.all([emoji('cleaning'), emoji('slap')])).toEqual(['🧹', '👋']);
+    expect(await Promise.all([emoji('dancing'), emoji('stats')])).toEqual(['💃', '📊']);
+    // clear uses only bot emojis: an unavailable emoji degrades to plain text.
+    expect(await emoji('cleaning')).toBe('');
     expect(await emoji('unknown')).toBe('');
     expect(fetch).toHaveBeenCalledOnce();
   });
@@ -77,7 +79,6 @@ describe('shared command adapters', () => {
     }
     expect(source.messages.fetch).not.toHaveBeenCalled();
     expect(source.bulkDelete).not.toHaveBeenCalled();
-    // The denial reply now resolves a bot emoji, so a lookup happens before the block.
   });
 });
 

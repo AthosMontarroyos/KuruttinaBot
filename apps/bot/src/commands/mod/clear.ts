@@ -176,8 +176,8 @@ async function execute(context: CommandContext): Promise<void> {
       else await context.reply(confirmationText);
     } catch (error: unknown) {
       log('error', 'clear_confirm_failed', { channelId, deleted, ...errorDetails(error) });
-      // Deletion succeeded but confirmation failed — inform via reply as fallback
-      try { await context.reply(`${cleaning} ${deleted} mensagens apagadas em ${channelMention} (falha ao enviar confirmacao publica).`); } catch { /* best effort */ }
+      // A exclusão já concluiu; descarta apenas o indicador efêmero, sem uma segunda confirmação.
+      try { await context.deleteReply?.(); } catch { /* best effort */ }
       return;
     }
 

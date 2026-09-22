@@ -528,7 +528,7 @@ describe('clear command', () => {
       expect(ctx.sendMessage).not.toHaveBeenCalled();
     });
 
-    it('falls back to reply when sendMessage fails after successful deletion', async () => {
+    it('sends no second confirmation when the public confirmation fails', async () => {
       const port = mockBulkDeletePort({
         fetchMessages: vi.fn(async () => [
           { id: 'msg-1', createdTimestamp: Date.now() - 1000, author: { id: 'user-1' } },
@@ -537,17 +537,19 @@ describe('clear command', () => {
       });
       const sendMessage = vi.fn().mockRejectedValue(new Error('Channel not found'));
       const reply = vi.fn().mockResolvedValue(undefined);
+      const deleteReply = vi.fn().mockResolvedValue(undefined);
       const ctx = mockContext({
         textChannel: port,
         sendMessage,
         reply,
+        deleteReply,
         options: [{ name: 'quantidade', value: 1 }],
       });
       await clearCommand.execute(ctx);
-      // sendMessage failed, so fallback reply is sent with the count
-      expect(reply).toHaveBeenCalledWith(
-        expect.stringContaining('1 mensagens apagadas'),
-      );
+      // Deletion already succeeded: only the ephemeral indicator is discarded, with no extra reply.
+      expect(sendMessage).toHaveBeenCalledOnce();
+      expect(reply).not.toHaveBeenCalled();
+      expect(deleteReply).toHaveBeenCalledOnce();
     });
 
     it.each(['50 invalid', '50 <@123>', '50 123456789012345678 extra'])('rejects an invalid prefix filter: %s', async (rawArgs) => {

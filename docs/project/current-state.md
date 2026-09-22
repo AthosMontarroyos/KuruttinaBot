@@ -1,6 +1,6 @@
 # Estado atual do KuruttinaBot
 
-Última consolidação: 21 de setembro de 2026.
+Última consolidação: 22 de setembro de 2026.
 
 ## Escopo implementado
 
@@ -10,7 +10,7 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, co
 
 - `apps/bot/src/config.ts`: validação estrita da configuração realmente consumida e seleção do alvo.
 - `apps/bot/src/bootstrap.ts` e `index.ts`: identidade, deploy opcional, composição do Client, registro de eventos e shutdown.
-- `apps/bot/src/commands/`: contratos, descoberta e commands organizados por categoria: `public/ping.ts` e `mod/clear.ts`. A convenção de categorias está em [Discord bot](../agents/discord-bot.md#regra-categorias-de-commands).
+- `apps/bot/src/commands/`: contratos, política de acesso (`types.ts`/`access.ts`), descoberta e commands organizados por categoria: `public/ping.ts` e `mod/clear.ts`. A convenção de categorias está em [Discord bot](../agents/discord-bot.md#regra-categorias-de-commands).
 - `apps/bot/src/events/`: callbacks dos eventos do Discord, separados do bootstrap.
 - `apps/bot/src/handlers/`: catálogo, payload e despacho de commands, além da execução sequencial dos deployments.
 - `apps/bot/src/deployments/`: tipos e deploy central global.
@@ -18,11 +18,11 @@ O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, co
 - `apps/bot/src/infrastructure/discord/commandContext.ts`: resolução compartilhada de emojis com fallback Unicode e contexto de canal/permissões para slash e prefixo; `clearAdapter.ts` concentra fetch e exclusão individual/em lotes.
 - `apps/bot/src/infrastructure/logger.ts`: logger central com apresentação humana no desenvolvimento e na produção; runtime e build reutilizam `terminalFormatter.ts`, e os ANSI ficam isolados em `terminalColors.ts`.
 
-O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição e executor compartilhado e registra cada carregamento. O `CommandsHandler` valida nomes duplicados, mantém o catálogo canônico e gera o payload de publicação. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; `clear` recebe quantidade de 1 a 200 e filtro opcional de usuário por options slash ou argumentos do prefixo. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto atual publica `clear` e `ping`; o deploy central substitui o conjunto global completo por `PUT`.
+O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição não vazia, executor compartilhado e a política de acesso `access` (com `default_member_permissions` consistente) e registra cada carregamento; módulo ausente ou inválido falha fechado. O `CommandsHandler` valida nomes duplicados, mantém o catálogo canônico, aplica a política de acesso antes do executor — negando fechado em slash e prefixo quando as permissões de contexto não estão disponíveis — e gera o payload de publicação. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; `clear` recebe quantidade de 1 a 200 e filtro opcional de usuário por options slash ou argumentos do prefixo. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto atual publica `clear` e `ping`; o deploy central substitui o conjunto global completo por `PUT`.
 
 O Client solicita `Guilds`, `GuildMessages`, `DirectMessages` e `MessageContent`, com partial de canal para receber DMs e cache de mensagens desabilitado. `Message Content Intent` deve estar habilitado no Developer Portal de cada aplicação ativa. Bots, webhooks, mensagens de sistema e nomes desconhecidos são ignorados pelo despacho por prefixo.
 
-O `clear` rejeita filtros de usuário inválidos antes de buscar/apagar mensagens, verifica permissões efetivas no canal (incluindo a permissão de envio própria de threads) e impede operações simultâneas no mesmo canal por processo. Emojis indisponíveis usam fallback no adapter compartilhado; o comando não possui um fluxo de erro exclusivo para decoração. A classe genérica de permissões sem consumidor no runtime foi removida.
+O `clear` rejeita filtros de usuário inválidos antes de buscar/apagar mensagens e impede operações simultâneas no mesmo canal por processo. Sua política `access` (permissões de membro e de app no canal, incluindo a permissão de envio própria de threads) é validada centralmente pelo `CommandsHandler` antes do executor, nos dois transports, e rechecada no início do executor; as negações usam a copy amigável do comando com emojis do bot, degradando para texto puro quando o emoji não resolve. Os fallbacks Unicode do resolver ficam restritos a `dancing`, `stats` e `gateway`. A classe genérica de permissões sem consumidor no runtime foi removida.
 
 ## Configuração e ciclo de vida
 
@@ -42,13 +42,15 @@ Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) co
 
 ## Segurança e validação
 
-Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 145 testes em 12 arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, estados de interaction, identidade, logger, manifesto de túnel, deployments, limpeza de mensagens, permissões efetivas, cliente R2 e sincronização de emojis; não há teste de integração Discord real.
+Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 155 testes em 12 arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, política de acesso e consistência do gate slash, estados de interaction, identidade, logger, manifesto de túnel, deployments, limpeza de mensagens, permissões efetivas, cliente R2 e sincronização de emojis; não há teste de integração Discord real.
 
 A refatoração de limpeza (setembro 2026) removeu aliases R2 mortos, adicionou `r2:info`, renomeou a skill de infraestrutura para `docker-squarecloud-developer`, reorganizou o `.env.example` em seções obrigatória/opcional/reservada, consolidou a documentação R2 com descrições fiéis ao código, corrigiu a interpolação do scanner Docker para WSL e adicionou comandos `bash` no README. As decisões de evolução econômica e credenciais duplas foram preservadas como registradas.
 
 A limpeza DRY consolidou as operações Cloudflare em `scripts/r2/client.mjs`, usado pelo CLI, ponte WebDAV e sincronizador de emojis. A configuração R2 usa `dotenv` com precedência de `process.env` em objeto isolado; o sincronizador não inicia montagem local. A listagem do CLI processa páginas sem acumular o bucket inteiro, e a remoção de emojis excedentes começa somente depois dos uploads e da paginação completa.
 
 **Validação da limpeza DRY (21 de setembro de 2026):** typecheck, 145 testes em 12 arquivos, build limpo do bot, sintaxe dos scripts R2 e `git diff --check` aprovados. APIs Discord/Cloudflare foram simuladas nos testes, sem executar sincronização ou exclusão remota.
+
+**Validação da política de acesso (22 de setembro de 2026):** typecheck, 155 testes em 12 arquivos e build do bot aprovados. Como correção adjacente, as apresentações `clear_*` ausentes no `terminalFormatter.ts` foram incluídas para fechar quatro falhas pré-existentes de `logger.test.ts`; nenhum teste usa token Discord real.
 
 **Validações desta refatoração (20 de setembro de 2026):** typecheck, 68 testes em nove arquivos e build do bot aprovados; sintaxe dos scripts shell aprovada; Compose validado com credenciais fictícias para ambos os perfis, sem iniciar containers; links relativos e referências ao identificador antigo da skill examinados. A execução do scanner Docker (`npm run security:secrets:docker`) foi bloqueada por falta de permissão de acesso ao socket `/var/run/docker.sock`; o scanner não chegou a executar e a montagem do repositório no container não foi validada. Instalação equivalente à Square e tentativa anterior de build Docker são registros históricos desta validação; não foram repetidas nesta refatoração.
 

@@ -20,3 +20,9 @@ config/**
 uploads
 **/uploads
 Pictures
+/R2/
+/emojis/
+AGENTS.md
+.agents
+docs
+IDEA.md

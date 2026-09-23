@@ -1,4 +1,0 @@
-interface:
-  display_name: "Discord.js Bot Developer"
-  short_description: "Desenvolvimento de bots modernos com discord.js"
-  default_prompt: "Use $discordbot-developer para implementar ou revisar esta funcionalidade do meu bot Discord."

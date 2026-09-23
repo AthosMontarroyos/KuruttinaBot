@@ -110,7 +110,7 @@ O limite arquitetural é aproximadamente 500 MB de RAM. Enquanto o limite exato 
 
 **Nível:** MUST
 
-**Regra:** O contexto pode ser a raiz para permitir packages do monorepo, mas `.dockerignore` exclui no mínimo `.git`, `node_modules`, outputs, caches, coverage, logs, `.env*` não exemplares, uploads e assets-fonte não usados. Nunca dependa de copiar segredo no build.
+**Regra:** O contexto pode ser a raiz para permitir packages do monorepo, mas `.dockerignore` exclui no mínimo `.git`, `node_modules`, outputs, caches, coverage, logs, `.env*` não exemplares, uploads, mounts locais (`R2/`, `emojis/`), prefixo legado `Pictures` e material de agentes/docs (`AGENTS.md`, `.agents`, `docs`, `IDEA.md`). Nunca dependa de copiar segredo no build.
 
 **Motivo:** contexto grande aumenta tempo, cache miss e risco de vazamento.
 

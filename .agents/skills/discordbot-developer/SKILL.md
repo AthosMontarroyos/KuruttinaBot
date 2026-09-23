@@ -1,6 +1,6 @@
 ---
 name: discordbot-developer
-description: Desenvolver, revisar, depurar e evoluir bots Discord em JavaScript ou TypeScript com discord.js, incluindo Gateway, application commands, interactions, components, permissões, rate limits, sharding e limites oficiais da plataforma. Não usar para Pycord, discord.py ou self-bots.
+description: Desenvolver, revisar, depurar e evoluir bots Discord em JavaScript ou TypeScript com discord.js, incluindo Gateway, application commands, interactions, components, permissões, rate limits, sharding e limites oficiais da plataforma. Não usar para Pycord, discord.py, self-bots, Next.js, Docker/R2 ou schema SQL isolado.
 metadata:
   short-description: Desenvolvimento especializado com discord.js
 ---
@@ -10,6 +10,15 @@ metadata:
 Implemente bots de produção exclusivamente com `discord.js` e APIs oficiais do Discord. Preserve a arquitetura e as convenções do projeto existente; não migre JavaScript para TypeScript, CommonJS para ESM, ou versões de dependências sem pedido ou necessidade demonstrada.
 
 Esta skill adapta `discord-bot-architect` (Apache-2.0, `vibeship-spawner-skills`) ao ecossistema `discord.js` e a complementa com documentação oficial conferida em 2026-09-07.
+
+## Quando usar
+discord.js, Gateway, application commands, interactions, components, permissões da plataforma, rate limits, sharding e limites oficiais.
+## Não usar quando
+A mudança não toca o runtime Discord (site Next.js, SQL/migrations isolados, Docker/Square, CLI R2) ou pede Pycord, discord.py ou self-bot.
+## Responsabilidades
+Adapters Discord, commands/events, deployments REST, intents/partials e respeito aos limites da plataforma; regras de produto do bot ficam em `docs/agents/discord-bot.md`.
+## Fluxo operacional
+Ler AGENTS.md e o documento do bot; inspecionar versão instalada; carregar só as referências desta skill que a tarefa exigir; validar em proporção ao risco.
 
 ## Fluxo de trabalho
 
@@ -35,14 +44,28 @@ Esta skill adapta `discord-bot-architect` (Apache-2.0, `vibeship-spawner-skills`
 - Components V2 são irreversíveis por mensagem e incompatíveis com campos legados específicos.
 - Deixe `@discordjs/rest` administrar buckets e 429; não crie sleeps fixos ou retries concorrentes.
 
-## Referências por tarefa
+## Checklist de segurança
+- [ ] Sem token/secret em código, logs ou artefatos; self-bot recusado.
+- [ ] Intents mínimos; permissões conferidas na operação; `allowedMentions` controlado.
+## Checklist de recursos
+- [ ] Sem cache/collector/retry ilimitado; REST deixado aos buckets do discord.js.
+## Checklist de validação
+- [ ] Typecheck, lint e testes dos adapters/commands alterados; estados de interaction cobertos.
 
+## Referências
+
+- Contratos do bot neste repositório: [Discord bot](../../../docs/agents/discord-bot.md).
 - Para arquitetura, Client, intents, partials, cache, módulos, TypeScript e testes: [discordjs-core.md](references/discordjs-core.md).
 - Para commands, interactions, autocomplete, components, modals, collectors e mensagens: [interactions-components.md](references/interactions-components.md).
 - Para Gateway, sharding, REST, rate limits, webhooks e voice: [gateway-rest-scale.md](references/gateway-rest-scale.md).
 - Para OAuth2, instalação, permissões, segredos, dados, monetização e políticas: [security-permissions-policy.md](references/security-permissions-policy.md).
 - Para valores exatos de campos e quotas: [limits.md](references/limits.md). Confirme limites dinâmicos na documentação oficial antes de codificá-los.
 - Para upgrades e fontes canônicas: [versions-and-sources.md](references/versions-and-sources.md).
+
+## Arquivos relevantes
+`apps/bot/src/**`, deployments, handlers, testes de commands/interactions e `docs/agents/discord-bot.md`.
+## Integração com outras skills
+security-reviewer, testing-auditor, database-developer, docker-squarecloud-developer e project-architect.
 
 ## Resultado esperado
 

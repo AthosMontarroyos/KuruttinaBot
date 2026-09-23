@@ -1,24 +1,27 @@
 # Estado atual do KuruttinaBot
 
-Última consolidação: 22 de setembro de 2026.
+Última consolidação: 23 de setembro de 2026.
 
 ## Escopo implementado
 
-O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, com `discord.js` `14.27.0`. O contrato `engines.node` aceita Node 22 a partir de `22.14.0` e as linhas 24 e 26; o Docker usa `22.14.0`, a Square foi observada em `24.15.0` e o ambiente local foi validado em `26.7.0`. Não há site, banco de dados, configuração Square Cloud versionada, comandos guild-specific reais ou integração Discord real automatizada nos testes.
+O projeto atualmente entrega somente um bot Discord em TypeScript/ESM strict, com `discord.js` `14.27.0`. O contrato `engines.node` aceita Node 22 a partir de `22.14.0` e as linhas 24 e 26; o Docker usa `22.14.0`, a Square foi observada em `24.15.0` e o ambiente local foi validado em `26.7.0`. Não há site, configuração Square Cloud versionada ou integração Discord real automatizada nos testes. PostgreSQL/Supabase, cadastro de equipe, deploy por guilda e os comandos de importação de emoji (`dev` na guilda da equipe, `emoji` no global) estão implementados; consulte [Acesso do bot](bot-access.md) e [Importação de emojis](emoji-import.md).
 
 ## Estrutura e responsabilidades
 
 - `apps/bot/src/config.ts`: validação estrita da configuração realmente consumida e seleção do alvo.
 - `apps/bot/src/bootstrap.ts` e `index.ts`: identidade, deploy opcional, composição do Client, registro de eventos e shutdown.
-- `apps/bot/src/commands/`: contratos, política de acesso (`types.ts`/`access.ts`), descoberta e commands organizados por categoria: `public/ping.ts` e `mod/clear.ts`. A convenção de categorias está em [Discord bot](../agents/discord-bot.md#regra-categorias-de-commands).
+- `apps/bot/src/commands/`: contratos, política de acesso (`types.ts`/`access.ts`), descoberta e commands organizados por categoria: `public/ping.ts`, `mod/clear.ts`, `mod/emoji.ts` e `dev/emoji.ts` (escopo `dev-guild`, deploy somente na guilda da equipe); `emojiAdd.ts` concentra o executor compartilhado das duas operações de importação e fica fora da descoberta. A convenção de categorias está em [Discord bot](../agents/discord-bot.md#regra-categorias-de-commands).
 - `apps/bot/src/events/`: callbacks dos eventos do Discord, separados do bootstrap.
 - `apps/bot/src/handlers/`: catálogo, payload e despacho de commands, além da execução sequencial dos deployments.
 - `apps/bot/src/deployments/`: tipos e deploy central global.
 - `apps/bot/src/infrastructure/discord/`: chamadas Discord e validação de identidade.
 - `apps/bot/src/infrastructure/discord/commandContext.ts`: resolução compartilhada de emojis com fallback Unicode e contexto de canal/permissões para slash e prefixo; `clearAdapter.ts` concentra fetch e exclusão individual/em lotes.
+- `apps/bot/src/application/emojis/`: núcleo de importação de emojis (contratos, validação/compressão e serviço com fila), sem exposição a comandos; ver [Importação de emojis](emoji-import.md).
+- `apps/bot/src/infrastructure/images/`: processador `sharp`/`gifenc` com escada de compressão até 256 KiB e downloader restrito ao CDN do Discord.
+- `apps/bot/src/infrastructure/discord/emojiAdapter.ts`: criação de Application/Guild Emojis via `discord.js` com data URI e mapeamento de erros de capacidade.
 - `apps/bot/src/infrastructure/logger.ts`: logger central com apresentação humana no desenvolvimento e na produção; runtime e build reutilizam `terminalFormatter.ts`, e os ANSI ficam isolados em `terminalColors.ts`.
 
-O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição não vazia, executor compartilhado e a política de acesso `access` (com `default_member_permissions` consistente) e registra cada carregamento; módulo ausente ou inválido falha fechado. O `CommandsHandler` valida nomes duplicados, mantém o catálogo canônico, aplica a política de acesso antes do executor — negando fechado em slash e prefixo quando as permissões de contexto não estão disponíveis — e gera o payload de publicação. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; `clear` recebe quantidade de 1 a 200 e filtro opcional de usuário por options slash ou argumentos do prefixo. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto atual publica `clear` e `ping`; o deploy central substitui o conjunto global completo por `PUT`.
+O loader descobre automaticamente os módulos sob `apps/bot/src/commands`, exige nome, descrição não vazia, executor compartilhado, a política de acesso `access` (com `default_member_permissions` consistente) e o `scope` de publicação coerente — `dev/` ⇔ `dev-guild` ⇔ `staff` — e registra cada carregamento; módulo ausente ou inválido falha fechado. O `CommandsHandler` valida nomes duplicados e a coerência entre `scope` e política, mantém o catálogo canônico, aplica a política de acesso antes do executor — negando fechado em slash e prefixo quando as permissões de contexto não estão disponíveis — e gera o payload de publicação por escopo. Ambos são construídos explicitamente no startup/deploy, sem I/O durante importação. Slash permanece canônico, e todos os commands também são despachados automaticamente por `k!` ou `K!`, sem flag ou comando de ativação. Os adapters usam `CommandContext`, com `acknowledge()` para trabalho lento e `reply()` para concluir; `clear` recebe quantidade de 1 a 200 e filtro opcional de usuário por options slash ou argumentos do prefixo. Falhas de interaction recebem resposta sanitizada conforme o estado `deferred`/`replied`. O conjunto global publica `clear`, `emoji` e `ping`. O deploy central sincroniza separadamente o conjunto global e o conjunto `dev-guild` da guilda cadastrada, atualmente com `dev`, por `PUT`.
 
 O Client solicita `Guilds`, `GuildMessages`, `DirectMessages` e `MessageContent`, com partial de canal para receber DMs e cache de mensagens desabilitado. `Message Content Intent` deve estar habilitado no Developer Portal de cada aplicação ativa. Bots, webhooks, mensagens de sistema e nomes desconhecidos são ignorados pelo despacho por prefixo.
 
@@ -42,7 +45,7 @@ Há scripts npm explícitos por app (`build:bot`, `start:bot:*`, `dev:bot:*`) co
 
 ## Segurança e validação
 
-Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 155 testes em 12 arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, política de acesso e consistência do gate slash, estados de interaction, identidade, logger, manifesto de túnel, deployments, limpeza de mensagens, permissões efetivas, cliente R2 e sincronização de emojis; não há teste de integração Discord real.
+Gitleaks local/CI usa configuração versionada e v8.30.1 (binário local ou imagem Docker). O workflow de qualidade executa instalação pelo lockfile, typecheck, 216 testes em 17 arquivos e build do bot. Os testes cobrem configuração, allowlist de ambiente, catálogo/adapters de commands, política de acesso e consistência do gate slash, estados de interaction, identidade, logger, manifesto de túnel, deployments, limpeza de mensagens, permissões efetivas, cliente R2, sincronização de emojis e o núcleo de importação de emojis (validação, processamento, downloader, serviço com fila e adapter do Discord); não há teste de integração Discord real.
 
 A refatoração de limpeza (setembro 2026) removeu aliases R2 mortos, adicionou `r2:info`, renomeou a skill de infraestrutura para `docker-squarecloud-developer`, reorganizou o `.env.example` em seções obrigatória/opcional/reservada, consolidou a documentação R2 com descrições fiéis ao código, corrigiu a interpolação do scanner Docker para WSL e adicionou comandos `bash` no README. As decisões de evolução econômica e credenciais duplas foram preservadas como registradas.
 
@@ -52,14 +55,16 @@ A limpeza DRY consolidou as operações Cloudflare em `scripts/r2/client.mjs`, u
 
 **Validação da política de acesso (22 de setembro de 2026):** typecheck, 155 testes em 12 arquivos e build do bot aprovados. Como correção adjacente, as apresentações `clear_*` ausentes no `terminalFormatter.ts` foram incluídas para fechar quatro falhas pré-existentes de `logger.test.ts`; nenhum teste usa token Discord real.
 
+**Validação do núcleo de importação de emojis (22 de setembro de 2026):** typecheck, 216 testes em 17 arquivos e build do bot aprovados. Foram adicionadas as dependências `sharp` (processamento de imagem) e `gifenc` (redução de quadros de GIF, tipada em `apps/bot/src/types/gifenc.d.ts`); nenhum teste usa rede nem token Discord real — downloads e chamadas do Discord são simulados. Comandos, permissões e configurações permanecem fora do escopo, conforme [Importação de emojis](emoji-import.md).
+
 **Validações desta refatoração (20 de setembro de 2026):** typecheck, 68 testes em nove arquivos e build do bot aprovados; sintaxe dos scripts shell aprovada; Compose validado com credenciais fictícias para ambos os perfis, sem iniciar containers; links relativos e referências ao identificador antigo da skill examinados. A execução do scanner Docker (`npm run security:secrets:docker`) foi bloqueada por falta de permissão de acesso ao socket `/var/run/docker.sock`; o scanner não chegou a executar e a montagem do repositório no container não foi validada. Instalação equivalente à Square e tentativa anterior de build Docker são registros históricos desta validação; não foram repetidas nesta refatoração.
 
 ## Riscos e decisões em aberto
 
 - Credenciais duplas no mesmo ambiente ampliam o blast radius; manter seleção explícita, sem fallback, e rotação imediata após exposição.
-- O deploy global é implementado; deploys guild-specific são apenas extensão futura, não comportamento atual.
+- Deploy global e deploy por guilda da equipe são implementados; o conjunto de equipe (escopo `dev-guild`, pasta `commands/dev/`) contém `dev`, e o global contém `ping`, `clear` e `emoji`.
 - O shutdown é limitado e não há endpoint de health dedicado para o bot.
-- A direção futura está decidida como Square Cloud Hobby para `bot`/`site` e dois projetos Supabase Free isolados para development/production, mas esses componentes ainda não estão implementados; consulte o [ADR](../decisions/square-cloud-supabase.md).
+- A direção futura está decidida como Square Cloud Hobby para `bot`/`site` e dois projetos Supabase Free isolados para development/production, o site ainda não está implementado, e a primeira persistência Supabase está descrita em [Acesso do bot](bot-access.md); consulte o [ADR](../decisions/square-cloud-supabase.md).
 - O bucket R2 é a origem operacional das imagens; o backup externo e a futura troca de `r2.dev` por domínio próprio são responsabilidades operacionais registradas no [ADR de assets](../decisions/cloudflare-r2-assets.md).
 
 ## Cloudflare Tunnel e configuração compartilhada
@@ -69,3 +74,29 @@ A limpeza DRY consolidou as operações Cloudflare em `scripts/r2/client.mjs`, u
 Em 12/09/2026 foram recriados `kuruttina-development` e `kuruttina-production` na conta correta, com CNAMEs para `kuruttina.dev.athosmontarroyos.com` e `kuruttina.athosmontarroyos.com`, ambos roteados para `http://localhost:3666`. Permanecem inativos até iniciar seus connectors. O bucket R2 `kurrutina-bot-pictures` foi recriado, recebeu os 135 arquivos do backup e expõe provisoriamente `https://pub-271b6233fa924c46b0aa8664e8587f3f.r2.dev`. Inventário: [Cloudflare Tunnel](cloudflare-tunnel.md).
 
 **Histórico de validações anteriores (consolidação de 13 de setembro de 2026):** typecheck, build do bot e 58 testes em oito arquivos aprovados; instalação limpa com `npm ci --omit=dev` compilou o bot e confirmou disponibilidade de `typescript` e `@types/node` no ambiente equivalente ao instalador da Square; seleção de variáveis e manifesto dos dois túneis aprovados; Compose renderizado com allowlist esperada; contrato de engine validado com Node 26.7.0 local e Node 24.15.0 observado na Square; tentativa de build Docker bloqueada por daemon indisponível. A instalação equivalente à Square e a tentativa de build da imagem Docker não foram repetidas nesta refatoração. Os resultados das verificações atuais estão registrados na seção "Segurança e validação".
+
+
+## Persistência e equipe (23/09/2026)
+
+packages/database centraliza pg, configuração TLS, pool de três conexões, migrations,
+cadastro inicial e consultas sob RLS. O runtime usa somente DATABASE_URL do ambiente
+ativo; credenciais administrativas são exclusivas dos scripts de release.
+Creator inclui Dev, com checagem de guilda e permissões Discord em slash/prefixo.
+As definições concretas são ping e clear (globais), emoji (global, gerência de
+emojis do servidor) e dev (guilda da equipe, Application Emojis do bot).
+Startup exige banco configurado;
+shutdown drena comandos e fecha conexões com timeout. Configuração operacional,
+projetos Supabase, IDs e verificações estão em [Acesso do bot](bot-access.md).
+
+**Importação de emojis (23/09/2026):** um único `createEmojiImportService` (fila,
+limites, downloader do CDN e adapter Discord) é composto no `bootstrap.ts` e
+injetado no dispatcher, que resolve a rota `dev → emoji → add` (`dev-emoji-add`)
+ou `emoji → add` (`emoji-add`) antes de autorizar. O núcleo recusa origem
+ausente, tamanho declarado acima do limite e nome de arquivo inapropriado antes
+de qualquer download; `docs/project/emoji-import.md` registra contratos e códigos.
+
+Validação da importação de emojis: typecheck, 330 testes unitários e build do bot aprovados.
+
+**Validação da reorganização dos comandos de equipe (23 de setembro de 2026):** `dev` movido de `mod/devEmoji.ts` para `commands/dev/`; o loader exige `dev/` ⇔ `dev-guild` ⇔ `staff` e o payload global nunca recebe a pasta `dev/`. Typecheck, 335 testes unitários e build do bot aprovados.
+
+Validação da persistência: 258 testes unitários e sete testes de integração PostgreSQL, typecheck e build aprovados. Instalação de produção equivalente à Square e Compose validados. IDs cadastrados e consultas reais de runtime verificadas nos dois projetos Supabase, com TLS/CA e privilégios mínimos; Security Advisors sem alertas. .env local configurado e ignorado pelo Git. Container Docker não executado por permissão do socket.

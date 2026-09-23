@@ -61,10 +61,12 @@ describe('shared command adapters', () => {
     if (transport === 'slash') {
       let deferred = false;
       const interaction: InteractionCommandPort = {
+        userId: '666948364507545600',
         client, channel, commandName: 'clear', createdTimestamp: Date.now(), id: 'interaction',
         memberPermissions: denied, appPermissions: new PermissionsBitField(PermissionFlagsBits.Administrator),
         isDeferred: () => deferred, isReplied: () => false,
         deferReply: vi.fn(async () => { deferred = true; }), deleteReply: reply, editReply: reply, followUp: reply, reply,
+        routePath: [],
         optionsData: () => [{ name: 'quantidade', value: 1 }],
       };
       await handleChatInputCommand(interaction, handler);

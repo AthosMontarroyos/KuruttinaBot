@@ -213,5 +213,6 @@ export const command = {
       option.setName('usuario').setDescription('Usuario especifico para apagar mensagens (opcional)').setRequired(false),
     ),
   access,
+  scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

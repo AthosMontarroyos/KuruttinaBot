@@ -1,4 +1,11 @@
-import { MessageFlags, type ChatInputCommandInteraction, type Interaction, type InteractionReplyOptions } from 'discord.js';
+import {
+  ApplicationCommandOptionType,
+  MessageFlags,
+  type ChatInputCommandInteraction,
+  type CommandInteractionOption,
+  type Interaction,
+  type InteractionReplyOptions,
+} from 'discord.js';
 import type { CommandReply, CommandContext, HasPermission } from '#bot/commands/types.js';
 import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
@@ -14,6 +21,7 @@ export interface InteractionCommandPort {
   readonly isDeferred: () => boolean;
   readonly isReplied: () => boolean;
   readonly id: string;
+  readonly userId: string;
   readonly memberPermissions?: HasPermission | undefined;
   readonly appPermissions?: HasPermission | undefined;
   readonly channel?: ChatInputCommandInteraction['channel'];
@@ -24,10 +32,36 @@ export interface InteractionCommandPort {
   reply(content: string | InteractionReplyOptions): Promise<unknown>;
   /** Returns interaction options as a plain array. */
   optionsData(): NonNullable<CommandContext['options']>;
+  /** Slash route below the root command, e.g. `['emoji', 'add']`. */
+  readonly routePath: readonly string[];
+}
+
+/**
+ * Hoists the selected subcommand (and group) exactly like discord.js does, so
+ * the dispatcher receives the route and only the leaf options of that route.
+ */
+function splitRoute(options: readonly CommandInteractionOption[]): {
+  path: string[];
+  leaf: CommandInteractionOption[];
+} {
+  const path: string[] = [];
+  let leaf = [...options];
+  for (;;) {
+    const [first] = leaf;
+    if (
+      first === undefined ||
+      (first.type !== ApplicationCommandOptionType.SubcommandGroup &&
+        first.type !== ApplicationCommandOptionType.Subcommand)
+    ) break;
+    path.push(first.name);
+    leaf = [...(first.options ?? [])];
+  }
+  return { path, leaf };
 }
 
 /** Adapt a real ChatInputCommandInteraction to the InteractionCommandPort interface. */
 function adaptInteraction(interaction: ChatInputCommandInteraction): InteractionCommandPort {
+  const { path, leaf } = splitRoute(interaction.options.data);
   return {
     client: interaction.client,
     commandName: interaction.commandName,
@@ -36,6 +70,7 @@ function adaptInteraction(interaction: ChatInputCommandInteraction): Interaction
     isDeferred: () => interaction.deferred,
     isReplied: () => interaction.replied,
     id: interaction.id,
+    userId: interaction.user.id,
     memberPermissions: interaction.memberPermissions ?? undefined,
     appPermissions: interaction.appPermissions ?? undefined,
     channel: interaction.channel,
@@ -44,7 +79,8 @@ function adaptInteraction(interaction: ChatInputCommandInteraction): Interaction
     editReply: (content) => interaction.editReply(content),
     followUp: (content) => interaction.followUp(content),
     reply: (content) => interaction.reply(content),
-    optionsData: () => [...interaction.options.data],
+    routePath: path,
+    optionsData: () => leaf.map((option) => ({ name: option.name, value: option.value })),
   };
 }
 
@@ -70,6 +106,7 @@ export async function handleChatInputCommand(
 ): Promise<void> {
   try {
     const context: CommandContext = {
+      userId: interaction.userId,
       ...createChannelContext(interaction.channel, interaction.memberPermissions, interaction.appPermissions),
       acknowledge: async () => {
         if (!interaction.isDeferred() && !interaction.isReplied()) await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -90,7 +127,7 @@ export async function handleChatInputCommand(
       options: interaction.optionsData(),
     };
 
-    await commandsHandler.execute(interaction.commandName, context);
+    await commandsHandler.execute(interaction.commandName, context, interaction.routePath);
   } catch (error: unknown) {
     log('error', 'command_failed', {
       command: interaction.commandName,

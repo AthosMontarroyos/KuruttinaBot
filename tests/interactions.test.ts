@@ -20,6 +20,7 @@ function interactionPort() {
     commandName: 'example',
     createdTimestamp: Date.now() - 42,
     id: 'interaction-id',
+    userId: '666948364507545600',
     isDeferred: () => deferred,
     isReplied: () => replied,
     deferReply: vi.fn(async () => { deferred = true; }),
@@ -28,14 +29,16 @@ function interactionPort() {
     followUp: vi.fn(async (_content: string | InteractionReplyOptions) => undefined),
     reply: vi.fn(async (_content: string | InteractionReplyOptions) => { replied = true; }),
     optionsData: vi.fn(() => []),
+    routePath: [],
   };
   return port;
 }
 
-function command(execute: ChatInputCommand['execute']): ChatInputCommand {
+function command(execute: NonNullable<ChatInputCommand['execute']>): ChatInputCommand {
   return {
     data: new SlashCommandBuilder().setName('example').setDescription('Example'),
     access: { kind: 'public' },
+    scope: 'global',
     execute,
   };
 }

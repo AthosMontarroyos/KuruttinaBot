@@ -6,7 +6,7 @@ export function createCentralDeployment(commandsHandler: CommandsHandler): Deplo
   return {
     name: 'central',
     run: async ({ config, applicationId }) => {
-      await deployGlobalCommands(config.activeCredential.token, applicationId, commandsHandler.payload());
+      await deployGlobalCommands(config.activeCredential.token, applicationId, commandsHandler.payload('global'));
     },
   };
 }

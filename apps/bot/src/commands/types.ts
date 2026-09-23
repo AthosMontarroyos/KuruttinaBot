@@ -1,3 +1,4 @@
+import type { StaffRole } from '@kuruttina/database';
 import type { APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
 
 export type CommandReply = string | {
@@ -14,19 +15,19 @@ export interface HasPermission {
  * `guild` requires effective channel permissions; absent or invalid policy
  * prevents the module from loading.
  */
+export interface GuildAccessRequirements {
+  readonly userPermissions: readonly bigint[];
+  readonly botPermissions: readonly bigint[];
+  readonly requireChannelSend?: boolean;
+  readonly messages?: Partial<AccessDenialMessages>;
+}
 export type CommandAccess =
   | { readonly kind: 'public' }
-  | {
-      readonly kind: 'guild';
-      /** Permissions the invoking member must have in this channel. */
-      readonly userPermissions: readonly bigint[];
-      /** Permissions the bot must have in this channel. */
-      readonly botPermissions: readonly bigint[];
-      /** Additionally requires SendMessages or SendMessagesInThreads per channel kind. */
-      readonly requireChannelSend?: boolean;
-      /** Optional command-flavored denial copy overriding the generic defaults. */
-      readonly messages?: Partial<AccessDenialMessages>;
-    };
+  | ({ readonly kind: 'guild' } & GuildAccessRequirements)
+  | ({ readonly kind: 'staff'; readonly minimumRole: StaffRole } & GuildAccessRequirements);
+export interface StaffAccessPort {
+  getStaffRole(userId: string, guildId: string): Promise<StaffRole | null>;
+}
 
 /** Denial copy of a guild command; `{permissions}` is replaced by the missing names. */
 export interface AccessDenialMessages {
@@ -40,6 +41,8 @@ export interface AccessDenialMessages {
 export type CommandMessage = Readonly<{ id: string; createdTimestamp: number; author: { readonly id: string } }>;
 
 export interface CommandContext {
+  /** Trusted Discord author identity; missing identity always denies staff access. */
+  readonly userId?: string | undefined;
   readonly apiPing: number;
   readonly gatewayPing: number;
   acknowledge(): Promise<void>;
@@ -74,11 +77,39 @@ export interface BulkDeletePort {
   deleteMessage(messageId: string): Promise<boolean>;
 }
 
+/**
+ * Executable route of a subcommand. Slash addresses it by `path` below the
+ * root command; prefix messages address it by one exact `alias`.
+ */
+export interface CommandRoute {
+  /** Slash path below the root, e.g. `['emoji', 'add']`. Never empty. */
+  readonly path: readonly string[];
+  /** Exact prefix aliases, e.g. `['emoji-add']`. Never empty. */
+  readonly aliases: readonly string[];
+  execute(context: CommandContext): Promise<void>;
+}
+
+/**
+ * Publishing scope of a command. `global` goes only to the global deployment;
+ * `dev-guild` goes only to the development guild registered in the database
+ * (`bot_settings.devGuildId`), never to the global set.
+ */
+export type CommandScope = 'global' | 'dev-guild';
+
 export interface ChatInputCommand {
   readonly data: Pick<SlashCommandBuilder, 'name' | 'toJSON'>;
   /** Required even for open commands, so intent is always explicit. */
   readonly access: CommandAccess;
-  execute(context: CommandContext): Promise<void>;
+  /**
+   * Publishing scope. It must agree with the policy and with the folder: a
+   * module under `commands/dev/` (at any depth) is always `dev-guild` and
+   * always `staff`, and the loader rejects any divergence.
+   */
+  readonly scope: CommandScope;
+  /** Root executor; required exactly when `routes` is absent. */
+  execute?(context: CommandContext): Promise<void>;
+  /** Subcommand routes; when present they replace the root executor. */
+  readonly routes?: readonly CommandRoute[];
 }
 
 export type CommandPayload = RESTPostAPIApplicationCommandsJSONBody;

@@ -1,5 +1,5 @@
 import { PermissionFlagsBits } from 'discord.js';
-import type { AccessDenialMessages, CommandAccess, CommandContext } from './types.js';
+import type { AccessDenialMessages, CommandAccess, CommandContext, StaffAccessPort } from './types.js';
 
 /** Monta a fala unindo emojis do bot e texto, omitindo emoji que não pôde ser resolvido. */
 export function withEmojis(...parts: string[]): string {
@@ -52,8 +52,22 @@ async function denial(context: CommandContext, emojiName: string, text: string):
 export async function validateCommandAccess(
   access: CommandAccess,
   context: CommandContext,
+  staff?: StaffAccessPort,
 ): Promise<string | null> {
   if (access.kind === 'public') return null;
+  if (access.kind === 'staff') {
+    // Acknowledge before any database/network work, including denials.
+    await context.acknowledge();
+    if (!context.userId || !context.guildId || !staff) return 'Você não tem acesso a este comando neste servidor.';
+    try {
+      const role = await staff.getStaffRole(context.userId, context.guildId);
+      if (role !== 'creator' && !(role === 'dev' && access.minimumRole === 'dev')) {
+        return 'Você não tem acesso a este comando neste servidor.';
+      }
+    } catch {
+      return 'Não consegui verificar o acesso agora. Tente novamente mais tarde.';
+    }
+  }
   const messages: AccessDenialMessages = { ...defaultMessages, ...access.messages };
 
   if (!context.textChannel) return denial(context, 'ChannelBrowser', messages.guildOnly);

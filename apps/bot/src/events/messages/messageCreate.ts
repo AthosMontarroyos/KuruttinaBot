@@ -22,6 +22,7 @@ export async function handleMessageCreate(message: MessageCommandPort, commandsH
       ? message.member?.permissionsIn(message.channel)
       : undefined;
     await commandsHandler.execute(commandName, {
+      userId: message.author.id,
       ...createChannelContext(message.channel, memberPermissions),
       apiPing: Math.max(0, Date.now() - message.createdTimestamp),
       gatewayPing: Math.max(0, Math.round(message.client.ws.ping)),

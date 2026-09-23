@@ -46,11 +46,39 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
 describe('commands', () => {
   it('discovers and publishes the canonical commands automatically', async () => {
     const handler = new CommandsHandler(await loadCommands());
-    expect(handler.payload().map((command) => command.name)).toEqual(['clear', 'ping']);
+    expect(handler.payload('global').map((command) => command.name)).toEqual(['clear', 'ping']);
+    expect(handler.payload('dev-guild').map((command) => command.name)).toEqual([]);
   });
 
   it('rejects malformed command modules during discovery', async () => {
     await expect(loadCommands(new URL('./fixtures/', import.meta.url))).rejects.toMatchObject({ name: 'CommandLoadError' });
+  });
+
+  it('loads a staff command from a nested dev/ folder and deploys it only to the dev guild', async () => {
+    const commands = await loadCommands(new URL('./fixtures/scope-placement/valid/', import.meta.url));
+    expect(commands).toHaveLength(1);
+    const handler = new CommandsHandler(commands);
+    expect(handler.payload('global')).toEqual([]);
+    expect(handler.payload('dev-guild').map((command) => command.name)).toEqual(['equipe']);
+  });
+
+  it.each([
+    { fixture: 'outside', reason: 'dev-guild scope outside the dev/ folder' },
+    { fixture: 'staff-global', reason: 'staff policy outside the dev/ folder' },
+    { fixture: 'dev-open', reason: 'dev/ folder without the staff policy' },
+  ])('rejects a command with $reason', async ({ fixture }) => {
+    await expect(loadCommands(new URL(`./fixtures/scope-placement/${fixture}/`, import.meta.url))).rejects.toMatchObject({
+      name: 'CommandLoadError',
+      message: expect.stringContaining('Invalid command module'),
+    });
+  });
+
+  it('rejects a hand-registered command whose staff policy and scope diverge', () => {
+    expect(() => new CommandsHandler([pingCommand, {
+      ...pingCommand,
+      data: new SlashCommandBuilder().setName('divergente').setDescription('Divergente'),
+      access: { kind: 'staff' as const, minimumRole: 'dev' as const, userPermissions: [], botPermissions: [] },
+    }])).toThrow('scope mismatch');
   });
 
   it('rejects duplicate commands', () => {
@@ -105,12 +133,14 @@ describe('commands', () => {
     const handler = new CommandsHandler([{
       data: new SlashCommandBuilder().setName('example').setDescription('Example'),
       access: { kind: 'public' },
+      scope: 'global',
       execute,
     }]);
     await handler.execute('example', commandContext());
     await handleMessageCreate(message('K!example'), handler);
     expect(execute).toHaveBeenCalledTimes(2);
-    expect(handler.payload().map(({ name }) => name)).toEqual(['example']);
+    expect(handler.payload('global').map(({ name }) => name)).toEqual(['example']);
+    expect(handler.payload('dev-guild')).toEqual([]);
   });
 
   it('contains failed prefix replies at the event boundary', async () => {
@@ -120,7 +150,7 @@ describe('commands', () => {
 });
 
 describe('command access policy', () => {
-  function guardedCommand(execute: ChatInputCommand['execute']): ChatInputCommand {
+  function guardedCommand(execute: NonNullable<ChatInputCommand['execute']>): ChatInputCommand {
     return {
       data: new SlashCommandBuilder().setName('guardado').setDescription('Guardado'),
       access: {
@@ -129,6 +159,7 @@ describe('command access policy', () => {
         botPermissions: [],
         requireChannelSend: true,
       },
+      scope: 'global',
       execute,
     };
   }
@@ -185,6 +216,7 @@ describe('command access policy', () => {
   });
 
   function accessCommand(access: CommandAccess, defaultMemberPermissions: string | null): ChatInputCommand {
+    // scope derivado só para o fixture: a equivalência com a pasta dev/ é validada pelo loader.
     return {
       data: {
         name: 'exemplo',
@@ -195,6 +227,7 @@ describe('command access policy', () => {
         } as RESTPostAPIChatInputApplicationCommandsJSONBody),
       },
       access,
+      scope: access.kind === 'staff' ? 'dev-guild' : 'global',
       execute: async () => {},
     };
   }

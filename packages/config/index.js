@@ -17,16 +17,3 @@ export function loadAppConfig(env = process.env) {
   }
   return Object.freeze({ appEnv });
 }
-
-/**
- * @param {Record<string, string | undefined>} [env]
- * @returns {Readonly<{ appEnv: AppEnv, host: 'localhost', port: number, origin: string }>}
- */
-export function loadLocalWebConfig(env = process.env) {
-  const { appEnv } = loadAppConfig(env);
-  const value = env.PORT ?? '3666';
-  if (!/^[1-9][0-9]{0,4}$/.test(value) || Number(value) > 65535) {
-    throw configurationError('PORT must be an integer from 1 to 65535');
-  }
-  return Object.freeze({ appEnv, host: 'localhost', port: Number(value), origin: `http://localhost:${value}` });
-}

@@ -6,5 +6,5 @@
       "#bot/*": ["apps/bot/src/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "coverage", "Pictures", ".tools"]
+  "exclude": ["node_modules", "dist", "coverage", "Pictures", ".tools", "infra/n8n"]
 }

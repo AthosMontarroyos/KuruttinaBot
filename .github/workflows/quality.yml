@@ -38,4 +38,4 @@ jobs:
         run: npm run test:database
 
       - name: Build bot
-        run: npm run build:bot
+        run: npm run build

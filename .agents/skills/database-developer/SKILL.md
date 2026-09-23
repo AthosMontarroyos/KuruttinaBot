@@ -1,28 +1,12 @@
 ---
 name: database-developer
-description: Design, implement, migrate, or review application persistence, schemas, queries, and repositories; triggers on database, SQL, ORM, migrations, indexes, transactions, or data-access requests. Do not use for UI-only changes or static configuration.
+description: Projetar ou revisar persistência PostgreSQL do KuruttinaBot, incluindo migrations, RLS, privilégios, queries e repositories. Não usar para UI ou runtime Discord isolados.
 ---
 
-# Database Developer
+# Banco de dados
 
-## Quando usar
-Schemas, SQL, ORM, migrations, índices, transações e repositories.
-## Não usar quando
-Nenhum contrato de dados é afetado.
-## Responsabilidades
-Integridade, compatibilidade, desempenho e acesso isolado.
-## Fluxo operacional
-Ler AGENTS.md; localizar schema/migrations; usar pooling pequeno; revisar locks, índices e transações; testar em banco descartável.
-## Checklist de segurança
-- [ ] RLS deny-by-default, escopo usuário/guild e queries parametrizadas.
-## Checklist de recursos
-- [ ] Pool, timeouts, rows e índices são bounded.
-## Checklist de validação
-- [ ] Migrations repetíveis e testes de constraints, concorrência e falhas.
-## Referências
-- [PostgreSQL e database](../../../docs/agents/database.md)
-- [Validação proporcional](../../../docs/agents/testing.md)
-## Arquivos relevantes
-Migrations, schema, modelos, repositories, seeds e testes.
-## Integração com outras skills
-project-architect, security-reviewer, testing-auditor e discordbot-developer.
+Leia AGENTS.md e docs/agents/database.md antes de alterar schema, migration ou acesso. Preserve a API pública de packages/database, a separação entre roles de runtime/migration, os dois projetos Supabase por ambiente e testes em PostgreSQL descartável. Migrations aplicadas recebem correção nova e passam uma vez por release sob lock.
+
+Revise RLS, grants, search_path, transações, pooling e consultas parametrizadas. Teste casos de acesso negado com role runtime real, além do caminho positivo. Proteja URLs/senhas nos logs. Consulte docs/agents/security.md e docs/agents/testing.md somente quando a mudança cruzar essas regras; para operação de release, consulte project-operations.
+
+Arquivos: packages/database/**, tests/database.integration.test.ts e docs/project/bot-access.md.

@@ -8,7 +8,7 @@
 
 **Nível:** MUST
 
-**Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona o mount virtual `R2/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
+**Regra:** o bucket Cloudflare R2 `kurrutina-bot-pictures` é a origem operacional compartilhada das imagens reutilizáveis pelo bot, site e demais consumidores. O repositório não versiona `R2/` nem cópias divergentes dentro dos apps; backups ficam fora do repositório e possuem responsável humano.
 
 ### Regra: acesso via cloud (sem download)
 
@@ -16,18 +16,13 @@
 
 **Regra:** NENHUM arquivo do R2 deve ser baixado para o repositório. O projeto acessa os arquivos diretamente via URL pública quando necessário. O gerenciamento do bucket é feito por:
 
-- **CLI** (`scripts/r2/r2-cloud.mjs`): lista, consulta, faz upload e deleta via Cloudflare API.
-- **Montagem local** (`npm run r2:mount`): ferramenta manual de manutenção que monta o bucket como filesystem via rclone e ponte WebDAV. Requer Linux/WSL, rclone, jq e FUSE.
-
-- **Leitura:** Via `ASSETS_BASE_URL` quando existir uma feature consumidora; até lá, não integra o contrato do bot
-- **Escrita:** Via `npm run r2` (Cloudflare API com credenciais) ou montagem local
-- **NUNCA:** Baixar, copiar ou versionar arquivos do R2 no repositório
+As ferramentas CLI e de montagem local foram aposentadas. Os futuros workflows n8n usarão APIs remotas com credenciais isoladas; veja o [catálogo](../project/n8n-migration.md). Até lá, estas operações não estão disponíveis pelo projeto. Features consumidoras leem pela `ASSETS_BASE_URL` HTTPS quando existir, sem receber credenciais de escrita. Nunca baixe, copie ou versione arquivos do bucket no repositório.
 
 ### Regra: espelho de Application Emojis
 
 **Nível:** MUST
 
-**Regra:** `R2/emojis/` é um diretório plano, sem subpastas, e espelha integralmente os Application Emojis do bot principal. `npm run emoji:r2:sync` substitui arquivos de mesmo nome e remove objetos excedentes somente depois que todos os uploads terminarem com sucesso. `npm run emoji:sync` executa essa substituição e então espelha o mesmo conjunto no BotDev. A transferência usa memória e APIs remotas; não persiste cópias dos emojis no repositório. Uploads são sequenciais, respeitam `429` e rejeitam Application Emojis acima de 256 KiB antes de alterar os destinos.
+**Regra:** `R2/emojis/` é um diretório plano, sem subpastas, destinado a espelhar integralmente os Application Emojis do bot principal. Quando o workflow existir, ele substituirá objetos de mesmo nome e removerá excedentes somente após uploads e paginação completos; outro workflow espelhará o conjunto no BotDev. Transferências usam APIs remotas sem cópias no repositório, respeitam `429` e rejeitam emojis acima de 256 KiB antes de alterar destinos.
 
 ### Regra: integração com o site
 

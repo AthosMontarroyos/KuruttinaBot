@@ -76,7 +76,7 @@ O executor autoriza antes de resolver entradas ou iniciar qualquer download; as 
 
 ## Publicação e mudança da guilda
 
-`npm run deploy:central` e `AUTO_SYNC_COMMANDS=true` sincronizam, em sequência, o conjunto global e o conjunto de equipe da guilda configurada, somente para a aplicação ativa. O conjunto global exclui qualquer módulo de `apps/bot/src/commands/dev/` (`scope: 'dev-guild'`); a pasta `dev/` e seus subdiretórios entram somente no conjunto da guilda cadastrada. Um conjunto vazio limpa os comandos daquele escopo; PUT substitui o conjunto completo.
+`npm run deploy:commands` e `AUTO_SYNC_COMMANDS=true` sincronizam, em sequência, o conjunto global e o conjunto de equipe da guilda configurada, somente para a aplicação ativa. O conjunto global exclui qualquer módulo de `apps/bot/src/commands/dev/` (`scope: 'dev-guild'`); a pasta `dev/` e seus subdiretórios entram somente no conjunto da guilda cadastrada. Um conjunto vazio limpa os comandos daquele escopo; PUT substitui o conjunto completo.
 
 Ao trocar a guilda:
 1. Registre o ID antigo antes de editar o cadastro.
@@ -90,7 +90,7 @@ Mesmo antes da limpeza visual, a guilda antiga é recusada pelo gate. O bot não
 
 `npm run test:database` exige binários PostgreSQL (`initdb`, `pg_ctl`, `pg_config`). Cria cluster temporário em /tmp com socket privado e sem TCP, executa integração com login runtime real e encerra/remove o cluster no final. Não lê .env nem acessa Supabase. `npm test` executa os testes herméticos e omite essa integração quando não há o cluster criado pelo runner.
 
-O perfil Compose `local-database` disponibiliza PostgreSQL para desenvolvimento persistente em volume nomeado, publicado somente em 127.0.0.1:54329. Defina `LOCAL_DATABASE_PASSWORD` e execute `docker compose --profile local-database up -d postgres`; aplique migrations/cadastro usando a conexão administrativa local e defina a senha runtime. Para o bot no Compose use host `postgres:5432`; para scripts no WSL, `127.0.0.1:54329`.
+Para desenvolvimento persistente, instale PostgreSQL localmente com credenciais descartáveis e URLs distintas das do Supabase. O teste de integração cria seu próprio cluster temporário sem acessar o `.env`.
 
 A CI executa typecheck, testes unitários, PostgreSQL descartável e build. A dependência `pg` (MIT) implementa o protocolo PostgreSQL; `@types/pg` permanece em dependencies porque a Square compila após instalação sem devDependencies. Não há SDK Supabase no runtime.
 
@@ -117,4 +117,4 @@ Essa migration é aditiva. Em falha de rollout, mantenha as tabelas e volte ao c
 - Security Advisors Supabase sem alertas nos dois projetos após as migrations.
 - Nenhum Gateway Discord foi iniciado e nenhum comando foi publicado remotamente nesta implementação.
 
-Resultado final: 330 testes unitários + 7 testes PostgreSQL aprovados, typecheck e build aprovados. Instalação limpa com npm ci --omit=dev, build e importação do runtime aprovados em diretório temporário sem secrets. Compose validado; execução/build de container não verificados por falta de acesso ao socket Docker.
+O estado e as validações atuais devem ser conferidos no CI; resultados históricos pertencem ao Git.

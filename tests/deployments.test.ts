@@ -1,3 +1,4 @@
+import { readDatabaseConfig } from '@kuruttina/database';
 import { describe, expect, it, vi } from 'vitest';
 import { DeploymentsHandler } from '../apps/bot/src/handlers/DeploymentsHandler.js';
 import type { Deployment, DeploymentContext } from '../apps/bot/src/deployments/types.js';
@@ -10,6 +11,7 @@ const context: DeploymentContext = {
     credentials: { development: { token: 'fake-token', expectedBotId: '123456789012345678' }, production: { token: 'fake-prod-token', expectedBotId: '987654321098765432' } },
     activeCredential: { token: 'fake-token', expectedBotId: '123456789012345678' },
     autoSyncCommands: true,
+    database: readDatabaseConfig({ DATABASE_URL_DEVELOPMENT: 'postgresql://kuruttina_bot:test@localhost/postgres' }, 'development'),
   },
 };
 

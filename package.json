@@ -2,11 +2,16 @@
   "name": "kuruttina-bot",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/config"],
+  "workspaces": [
+    "packages/config",
+    "packages/database"
+  ],
   "imports": {
     "#bot/*": "./dist/apps/bot/src/*"
   },
-  "engines": { "node": "^22.14.0 || ^24.0.0 || ^26.0.0" },
+  "engines": {
+    "node": "^22.14.0 || ^24.0.0 || ^26.0.0"
+  },
   "scripts": {
     "tunnel": "node scripts/cloudflare/tunnel.mjs",
     "tunnel:development": "node scripts/cloudflare/tunnel.mjs development",
@@ -42,13 +47,19 @@
     "r2:info": "node scripts/r2/r2-cloud.mjs info",
     "r2:upload": "node scripts/r2/r2-cloud.mjs upload",
     "r2:delete": "node scripts/r2/r2-cloud.mjs delete",
-    "r2:size": "node scripts/r2/r2-cloud.mjs size"
+    "r2:size": "node scripts/r2/r2-cloud.mjs size",
+    "database:migrate": "node scripts/database/admin.mjs migrate",
+    "database:seed": "node scripts/database/admin.mjs seed",
+    "test:database": "bash scripts/database/test-postgres.sh"
   },
   "dependencies": {
     "@kuruttina/config": "*",
+    "@kuruttina/database": "*",
     "@types/node": "22.13.10",
+    "@types/pg": "8.23.1",
     "discord.js": "14.27.0",
     "dotenv": "16.4.7",
+    "pg": "8.23.0",
     "typescript": "5.8.2"
   },
   "devDependencies": {

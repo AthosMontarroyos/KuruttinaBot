@@ -31,5 +31,11 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Install PostgreSQL test binaries
+        run: sudo apt-get update && sudo apt-get install --yes postgresql
+
+      - name: Test PostgreSQL privileges and RLS
+        run: npm run test:database
+
       - name: Build bot
         run: npm run build:bot

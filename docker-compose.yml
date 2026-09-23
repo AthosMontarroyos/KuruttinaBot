@@ -6,6 +6,8 @@ services:
       dockerfile: infra/docker/bot.Dockerfile
     environment:
       APP_ENV: development
+      DATABASE_URL_DEVELOPMENT: ${DATABASE_URL_DEVELOPMENT:-}
+      DATABASE_CA_CERT_DEVELOPMENT: ${DATABASE_CA_CERT_DEVELOPMENT:-}
       AUTO_SYNC_COMMANDS: ${AUTO_SYNC_COMMANDS:-false}
       DISCORD_BOT_ID_DEVELOPMENT: ${DISCORD_BOT_ID_DEVELOPMENT:-}
       DISCORD_BOT_ID_PRODUCTION: ${DISCORD_BOT_ID_PRODUCTION:-}
@@ -22,6 +24,8 @@ services:
       dockerfile: infra/docker/bot.Dockerfile
     environment:
       APP_ENV: production
+      DATABASE_URL_PRODUCTION: ${DATABASE_URL_PRODUCTION:-}
+      DATABASE_CA_CERT_PRODUCTION: ${DATABASE_CA_CERT_PRODUCTION:-}
       AUTO_SYNC_COMMANDS: ${AUTO_SYNC_COMMANDS:-false}
       DISCORD_BOT_ID_DEVELOPMENT: ${DISCORD_BOT_ID_DEVELOPMENT:-}
       DISCORD_BOT_ID_PRODUCTION: ${DISCORD_BOT_ID_PRODUCTION:-}
@@ -31,3 +35,20 @@ services:
     restart: "no"
     mem_limit: 500m
     cpus: 1.0
+
+  postgres:
+    profiles: [local-database]
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${LOCAL_DATABASE_PASSWORD:-}
+      POSTGRES_DB: postgres
+    ports: ["127.0.0.1:54329:5432"]
+    volumes: [kuruttina-postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 256m
+volumes:
+  kuruttina-postgres:

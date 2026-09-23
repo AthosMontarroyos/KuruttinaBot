@@ -4,7 +4,7 @@
 
 ## 2. Arquitetura de referência
 
-O projeto implementado é um monorepo modular com apenas o bot Discord e `packages/config`, não uma coleção de microsserviços. A árvore abaixo é a arquitetura-alvo aprovada: `site`, PostgreSQL e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A decisão e seus gatilhos de evolução estão no [ADR Square Cloud + Supabase](../decisions/square-cloud-supabase.md); o inventário do presente fica em [Estado implementado](../project/current-state.md).
+O projeto implementado é um monorepo modular com o bot Discord, `packages/config` e `packages/database`, não uma coleção de microsserviços. A árvore abaixo é a arquitetura-alvo aprovada: `site`, PostgreSQL e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A decisão e seus gatilhos de evolução estão no [ADR Square Cloud + Supabase](../decisions/square-cloud-supabase.md); o inventário do presente fica em [Estado implementado](../project/current-state.md).
 
 ```text
 Arquitetura-alvo (itens ausentes não devem ser criados preventivamente):

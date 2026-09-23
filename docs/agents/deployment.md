@@ -2,7 +2,7 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
-O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict. O contrato de runtime aceita as linhas pares Node 22 a partir de 22.14, Node 24 e Node 26; a imagem Docker permanece fixada em 22.14.0, enquanto a Square usa a versão recomendada disponível. A direção de produção é Square Cloud Hobby para `bot`/`site` e Supabase para PostgreSQL; ainda não há configuração Square versionada, site ou banco implementados. Consulte o [snapshot](../project/current-state.md) e o [ADR](../decisions/square-cloud-supabase.md).
+O estado implementado atualmente é somente o bot Discord TypeScript/ESM strict. O contrato de runtime aceita as linhas pares Node 22 a partir de 22.14, Node 24 e Node 26; a imagem Docker permanece fixada em 22.14.0, enquanto a Square usa a versão recomendada disponível. A direção de produção é Square Cloud Hobby para `bot`/`site` e Supabase para PostgreSQL; ainda não há configuração Square versionada nem site. A primeira persistência PostgreSQL/Supabase está implementada em `packages/database`. Consulte o [snapshot](../project/current-state.md) e o [ADR](../decisions/square-cloud-supabase.md).
 
 ## 3. Serviços e execução
 

@@ -1,3 +1,4 @@
+import { readDatabaseConfig } from '@kuruttina/database';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parse } from 'dotenv';
@@ -10,6 +11,7 @@ export type BotConfig = Readonly<{
   credentials: Readonly<{ development: BotCredential; production: BotCredential }>;
   activeCredential: BotCredential;
   autoSyncCommands: boolean;
+  database: ReturnType<typeof readDatabaseConfig>;
 }>;
 
 const configurationError = (message: string): Error => Object.assign(new Error(message), { name: 'BotConfigurationError' });
@@ -24,8 +26,9 @@ const botEnvironmentNames = [
 ] as const;
 
 export function selectBotEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const suffix = env.APP_ENV === 'production' ? 'PRODUCTION' : 'DEVELOPMENT';
   return Object.fromEntries(
-    botEnvironmentNames.flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]])),
+    [...botEnvironmentNames, 'DATABASE_URL_' + suffix, 'DATABASE_CA_CERT_' + suffix].flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]])),
   );
 }
 
@@ -76,6 +79,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = loadBotEnvironment()): BotCo
     credentials,
     activeCredential: credentials[target],
     autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS),
+    database: readDatabaseConfig(env, target),
   });
 }
 

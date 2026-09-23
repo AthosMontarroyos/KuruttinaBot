@@ -1,5 +1,6 @@
 import { PermissionFlagsBits, PermissionsBitField, type GuildTextBasedChannel } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
+import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
 import { createChannelContext, createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commandContext.js';
 import { createClearChannelAdapter } from '../apps/bot/src/infrastructure/discord/clearAdapter.js';
 import { command as clear } from '../apps/bot/src/commands/mod/clear.js';
@@ -67,6 +68,7 @@ describe('shared command adapters', () => {
         isDeferred: () => deferred, isReplied: () => false,
         deferReply: vi.fn(async () => { deferred = true; }), deleteReply: reply, editReply: reply, followUp: reply, reply,
         routePath: [],
+        attachments: [],
         optionsData: () => [{ name: 'quantidade', value: 1 }],
       };
       await handleChatInputCommand(interaction, handler);
@@ -74,6 +76,7 @@ describe('shared command adapters', () => {
       await handleMessageCreate({
         client, channel, id: 'message', content: 'k!clear 1', createdTimestamp: Date.now(),
         author: { bot: false, id: 'user' }, system: false, webhookId: null,
+        attachments: new Map<string, EmojiAttachment>(),
         // Guild-wide permission is intentionally allowed while the channel overwrite denies it.
         member: { permissions: new PermissionsBitField(PermissionFlagsBits.ManageMessages), permissionsIn: () => denied } as unknown as NonNullable<Parameters<typeof handleMessageCreate>[0]['member']>,
         reply: vi.fn().mockResolvedValue(undefined),

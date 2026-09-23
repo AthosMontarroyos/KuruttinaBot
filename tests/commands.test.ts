@@ -2,6 +2,7 @@ import { PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type RES
 import { describe, expect, it, vi } from 'vitest';
 import { hasConsistentDefaultPermissions, loadCommands } from '../apps/bot/src/commands/loadCommands.js';
 import { command as pingCommand } from '../apps/bot/src/commands/public/ping.js';
+import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
 import type { BulkDeletePort, ChatInputCommand, CommandAccess, CommandContext } from '../apps/bot/src/commands/types.js';
 import { handleMessageCreate } from '../apps/bot/src/events/messages/messageCreate.js';
 import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
@@ -16,10 +17,15 @@ function commandContext(reply = vi.fn().mockResolvedValue(undefined)): CommandCo
   };
 }
 
+function attachmentsPort() {
+  return new Map<string, EmojiAttachment>();
+}
+
 function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) {
   return {
     content,
     id: 'message-id',
+    attachments: attachmentsPort(),
     author: { bot: false, id: 'author-id' },
     client: {
       application: {
@@ -46,8 +52,8 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
 describe('commands', () => {
   it('discovers and publishes the canonical commands automatically', async () => {
     const handler = new CommandsHandler(await loadCommands());
-    expect(handler.payload('global').map((command) => command.name)).toEqual(['clear', 'ping']);
-    expect(handler.payload('dev-guild').map((command) => command.name)).toEqual([]);
+    expect(handler.payload('global').map((command) => command.name)).toEqual(['clear', 'emoji', 'ping']);
+    expect(handler.payload('dev-guild').map((command) => command.name)).toEqual(['dev']);
   });
 
   it('rejects malformed command modules during discovery', async () => {

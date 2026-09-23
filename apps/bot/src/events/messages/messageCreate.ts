@@ -1,4 +1,5 @@
 import type { Message } from 'discord.js';
+import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
 import { log } from '#bot/infrastructure/logger.js';
@@ -8,7 +9,13 @@ type MessageCommandPort = Pick<Message, 'content' | 'createdTimestamp' | 'id' | 
   readonly client: CommandClientPort;
   readonly member?: Message['member'];
   readonly channel?: Message['channel'];
+  /** Files attached to the triggering message; a real `Message` exposes its Collection. */
+  readonly attachments: ReadonlyMap<string, EmojiAttachment>;
 };
+
+function attachmentsOf(message: MessageCommandPort): EmojiAttachment[] {
+  return [...message.attachments.values()].map(({ url, name, size }) => ({ url, name, size }));
+}
 
 export async function handleMessageCreate(message: MessageCommandPort, commandsHandler: CommandsHandler): Promise<void> {
   if (message.author.bot || message.webhookId || message.system) return;
@@ -24,6 +31,7 @@ export async function handleMessageCreate(message: MessageCommandPort, commandsH
     await commandsHandler.execute(commandName, {
       userId: message.author.id,
       ...createChannelContext(message.channel, memberPermissions),
+      attachments: attachmentsOf(message),
       apiPing: Math.max(0, Date.now() - message.createdTimestamp),
       gatewayPing: Math.max(0, Math.round(message.client.ws.ping)),
       acknowledge: async () => undefined,

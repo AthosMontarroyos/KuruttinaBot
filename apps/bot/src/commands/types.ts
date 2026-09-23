@@ -1,5 +1,7 @@
 import type { StaffRole } from '@kuruttina/database';
 import type { APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
+import type { EmojiAttachment } from '#bot/application/emojis/types.js';
+import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
 
 export type CommandReply = string | {
   content: string;
@@ -64,6 +66,10 @@ export interface CommandContext {
   readonly commandMessageId?: string | undefined;
   /** Channel ID for logging. */
   readonly channelId?: string | undefined;
+  /** Files attached to the invoking message or to the slash attachment option. */
+  readonly attachments?: readonly EmojiAttachment[] | undefined;
+  /** Shared import pipeline (queue, limits, Discord adapter) injected by the dispatcher. */
+  readonly emojiImport?: EmojiImportService | undefined;
 }
 
 /** Port for message fetch and delete operations. */

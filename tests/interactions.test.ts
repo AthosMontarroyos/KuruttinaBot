@@ -30,6 +30,7 @@ function interactionPort() {
     reply: vi.fn(async (_content: string | InteractionReplyOptions) => { replied = true; }),
     optionsData: vi.fn(() => []),
     routePath: [],
+    attachments: [],
   };
   return port;
 }

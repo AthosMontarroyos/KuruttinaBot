@@ -1,3 +1,4 @@
+import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
 import type { ChatInputCommand, CommandContext, CommandPayload, CommandRoute, CommandScope, StaffAccessPort } from '#bot/commands/types.js';
 import { validateCommandAccess } from '#bot/commands/access.js';
 
@@ -26,6 +27,7 @@ export class CommandsHandler {
   constructor(
     registeredCommands: readonly ChatInputCommand[],
     private readonly staff?: StaffAccessPort,
+    private readonly emojiImport?: EmojiImportService,
   ) {
     for (const command of registeredCommands) {
       // The payload split depends on it, so hand-registered commands must agree too.
@@ -101,7 +103,7 @@ export class CommandsHandler {
     }
 
     // Both transports receive the same capability, composed by the entrypoint.
-    const fullContext: CommandContext = context;
+    const fullContext: CommandContext = this.emojiImport ? { ...context, emojiImport: this.emojiImport } : context;
     const accessError = await validateCommandAccess(resolution.command.access, fullContext, this.staff);
     if (accessError) {
       await context.acknowledge();

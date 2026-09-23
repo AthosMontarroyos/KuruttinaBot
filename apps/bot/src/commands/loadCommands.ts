@@ -138,6 +138,7 @@ export async function loadCommands(
         entry.name !== `loadCommands${moduleExtension}` &&
         entry.name !== `types${moduleExtension}` &&
         entry.name !== `access${moduleExtension}` &&
+        entry.name !== `emojiAdd${moduleExtension}` &&
         extname(entry.name) === moduleExtension &&
         !entry.name.endsWith('.d.ts'),
     )

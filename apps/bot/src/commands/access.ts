@@ -13,6 +13,8 @@ const permissionLabels: Partial<Record<keyof typeof PermissionFlagsBits, string>
   ManageMessages: 'Gerenciar mensagens',
   SendMessages: 'Enviar mensagens',
   SendMessagesInThreads: 'Enviar mensagens',
+  ManageGuildExpressions: 'Gerenciar emojis',
+  CreateGuildExpressions: 'Criar emojis',
 };
 
 const labelsByPermission = new Map<bigint, string>(

@@ -1,6 +1,7 @@
 import { PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type GuildTextBasedChannel } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { StaffRole } from '@kuruttina/database';
+import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
 import type { ChatInputCommand, CommandContext } from '../apps/bot/src/commands/types.js';
 import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
 import { handleChatInputCommand, type InteractionCommandPort } from '../apps/bot/src/events/interactions/interactionCreate.js';
@@ -50,10 +51,12 @@ function transports(userId: string, location: string | null, memberPermissions =
     deferReply: vi.fn(async () => { deferred = true; }), deleteReply: reply, editReply: reply, followUp: reply, reply,
     optionsData: () => [],
     routePath: [],
+    attachments: [],
   };
   const prefix = {
     client, content: 'k!restricted', createdTimestamp: Date.now(), id: 'message',
     author: { bot: false, id: userId }, system: false, webhookId: null,
+    attachments: new Map<string, EmojiAttachment>(),
     ...(location ? { channel: channel(location, appPermissions) } : {}),
     member: { permissionsIn: () => memberPermissions } as unknown as NonNullable<Parameters<typeof handleMessageCreate>[0]['member']>,
     reply: vi.fn().mockResolvedValue(undefined),

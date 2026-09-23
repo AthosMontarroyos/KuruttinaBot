@@ -1,11 +1,13 @@
 import {
   ApplicationCommandOptionType,
   MessageFlags,
+  type Attachment,
   type ChatInputCommandInteraction,
   type CommandInteractionOption,
   type Interaction,
   type InteractionReplyOptions,
 } from 'discord.js';
+import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import type { CommandReply, CommandContext, HasPermission } from '#bot/commands/types.js';
 import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
@@ -34,6 +36,8 @@ export interface InteractionCommandPort {
   optionsData(): NonNullable<CommandContext['options']>;
   /** Slash route below the root command, e.g. `['emoji', 'add']`. */
   readonly routePath: readonly string[];
+  /** Attachments resolved from the selected subcommand's options. */
+  readonly attachments: readonly EmojiAttachment[];
 }
 
 /**
@@ -59,6 +63,10 @@ function splitRoute(options: readonly CommandInteractionOption[]): {
   return { path, leaf };
 }
 
+function toEmojiAttachment(attachment: Attachment): EmojiAttachment {
+  return { url: attachment.url, name: attachment.name, size: attachment.size };
+}
+
 /** Adapt a real ChatInputCommandInteraction to the InteractionCommandPort interface. */
 function adaptInteraction(interaction: ChatInputCommandInteraction): InteractionCommandPort {
   const { path, leaf } = splitRoute(interaction.options.data);
@@ -80,6 +88,7 @@ function adaptInteraction(interaction: ChatInputCommandInteraction): Interaction
     followUp: (content) => interaction.followUp(content),
     reply: (content) => interaction.reply(content),
     routePath: path,
+    attachments: leaf.flatMap((option) => (option.attachment ? [toEmojiAttachment(option.attachment)] : [])),
     optionsData: () => leaf.map((option) => ({ name: option.name, value: option.value })),
   };
 }
@@ -108,6 +117,7 @@ export async function handleChatInputCommand(
     const context: CommandContext = {
       userId: interaction.userId,
       ...createChannelContext(interaction.channel, interaction.memberPermissions, interaction.appPermissions),
+      attachments: interaction.attachments,
       acknowledge: async () => {
         if (!interaction.isDeferred() && !interaction.isReplied()) await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       },

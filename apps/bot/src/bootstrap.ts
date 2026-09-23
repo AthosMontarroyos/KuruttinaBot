@@ -20,7 +20,7 @@ export async function startBot(correlationId: string): Promise<void> {
   const config = loadConfig();
   configureLogger(config.target);
   log('success', 'config_loaded', { target: config.target, autoSyncCommands: config.autoSyncCommands });
-  const database = createDatabase(config.database, config.target, () => log('error', 'database_connection_failed', { correlationId }));
+  const database = createDatabase(config.database, config.target, (diagnostic) => log('error', 'database_connection_failed', { correlationId, ...diagnostic }));
   let client: Client | undefined;
   let shutdownListener: ((signal: string) => void) | undefined;
   try {

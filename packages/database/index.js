@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { databaseDiagnostic, DatabaseSettingsError } from './diagnostics.js';
 export { readDatabaseConfig } from './config.js';
 /** @typedef {'creator'|'dev'} StaffRole */
 /** @typedef {{devGuildId: string, environment: 'development'|'production'}} BotSettings */
@@ -7,15 +8,15 @@ const snowflake = /^[1-9]\d{16,19}$/u;
 export function isDiscordId(value) {
   return typeof value === 'string' && snowflake.test(value) && BigInt(value) <= 18446744073709551615n;
 }
-/** @param {import('pg').PoolConfig} config @param {'development'|'production'} environment @param {() => void} [onError] */
+/** @param {import('pg').PoolConfig} config @param {'development'|'production'} environment @param {(diagnostic: import('./diagnostics.js').DatabaseDiagnostic) => void} [onError] */
 export function createDatabase(config, environment, onError = () => {}) {
   const pool = new pg.Pool({ ...config, max: 3, idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 });
-  pool.on('error', () => onError());
+  pool.on('error', (error) => onError(databaseDiagnostic(error, 'pool', 'idle')));
   let closing = false;
   // Bound admitted work as well as connections, so an outage cannot grow the queue indefinitely.
   let pending = 0;
-  /** @template T @param {(client: import('pg').PoolClient) => Promise<T>} work */
-  async function connection(work) {
+  /** @template T @param {(client: import('pg').PoolClient) => Promise<T>} work @param {import('./diagnostics.js').DatabaseOperation} operation */
+  async function connection(work, operation) {
     if (closing || pending >= 12) throw new Error('Database unavailable');
     pending++;
     let client;
@@ -23,7 +24,7 @@ export function createDatabase(config, environment, onError = () => {}) {
       client = await pool.connect();
       return await work(client);
     } catch (error) {
-      onError();
+      onError(databaseDiagnostic(error, operation, client ? 'query' : 'connect'));
       client?.release(true);
       client = undefined;
       throw error;
@@ -36,13 +37,13 @@ export function createDatabase(config, environment, onError = () => {}) {
   async function settings(client) {
     const result = await client.query('SELECT dev_guild_id, environment FROM bot_private.bot_settings WHERE singleton = true');
     const row = result.rows[0];
-    if (result.rows.length !== 1 || !isDiscordId(row?.dev_guild_id) || row?.environment !== environment) {
-      throw new Error('Invalid database settings or environment');
-    }
+    if (result.rows.length === 0) throw new DatabaseSettingsError('SETTINGS_MISSING');
+    if (result.rows.length !== 1 || !isDiscordId(row?.dev_guild_id)) throw new DatabaseSettingsError('SETTINGS_INVALID');
+    if (row.environment !== environment) throw new DatabaseSettingsError('ENVIRONMENT_MISMATCH');
     return { devGuildId: row.dev_guild_id, environment };
   }
   return {
-    getSettings: () => connection(settings),
+    getSettings: () => connection(settings, 'get_settings'),
     /** @param {string} userId @param {string} guildId @returns {Promise<StaffRole|null>} */
     getStaffRole: async (userId, guildId) => {
       if (!isDiscordId(userId) || !isDiscordId(guildId)) return null;
@@ -67,7 +68,7 @@ export function createDatabase(config, environment, onError = () => {}) {
           try { await client.query('ROLLBACK'); } catch { /* connection() destroys the failed connection. */ }
           throw error;
         }
-      });
+      }, 'get_staff_role');
     },
     close: async () => { closing = true; await pool.end(); },
   };

@@ -1,5 +1,5 @@
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createDatabase } from '@kuruttina/database';
 import { initializeAccess, migrate } from '@kuruttina/database/admin';
 
@@ -25,9 +25,11 @@ describe.skipIf(!host)('PostgreSQL runtime isolation', () => {
     expect(await database.getSettings()).toEqual({ devGuildId: ids.guildId, environment: 'development' });
     expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBe('creator');
     expect(await database.getStaffRole(ids.devId, ids.guildId)).toBe('dev');
-    const wrong = createDatabase({ host, database: 'postgres', user: 'kuruttina_bot' }, 'production');
+    const report = vi.fn();
+    const wrong = createDatabase({ host, database: 'postgres', user: 'kuruttina_bot' }, 'production', report);
     try {
       await expect(wrong.getSettings()).rejects.toThrow('environment');
+      expect(report).toHaveBeenCalledExactlyOnceWith({ operation: 'get_settings', stage: 'validate_settings', errorCode: 'ENVIRONMENT_MISMATCH', reason: 'environment_mismatch' });
       expect(await wrong.getStaffRole(ids.creatorId, ids.guildId)).toBeNull();
     } finally { await wrong.close(); }
   });

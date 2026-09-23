@@ -12,7 +12,7 @@ import { createGuildDeployment } from './guild.js';
 const correlationId = randomUUID();
 async function deployCentral(): Promise<void> {
   const config = loadConfig();
-  const database = createDatabase(config.database, config.target, () => log('error', 'database_connection_failed', { correlationId }));
+  const database = createDatabase(config.database, config.target, (diagnostic) => log('error', 'database_connection_failed', { correlationId, ...diagnostic }));
   try {
     await database.getSettings();
     const handler = new CommandsHandler(await loadCommands(undefined, correlationId), database);

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   settings: vi.fn(), close: vi.fn(), login: vi.fn(), destroy: vi.fn(),
-  sync: vi.fn(), identity: vi.fn(), staffRole: vi.fn(),
+  sync: vi.fn(), identity: vi.fn(), staffRole: vi.fn(), database: vi.fn(),
 }));
 vi.mock('@kuruttina/database', () => ({
-  createDatabase: () => ({ getSettings: mocks.settings, close: mocks.close, getStaffRole: mocks.staffRole }),
+  createDatabase: mocks.database,
 }));
 vi.mock('../apps/bot/src/config.js', () => ({
   loadConfig: () => ({
@@ -23,6 +23,7 @@ vi.mock('discord.js', async (importOriginal) => {
   return { ...actual, Client: class { once = vi.fn(); on = vi.fn(); login = mocks.login; destroy = mocks.destroy; } };
 });
 import { startBot } from '../apps/bot/src/bootstrap.js';
+import { log } from '../apps/bot/src/infrastructure/logger.js';
 
 describe('database lifecycle at startup and shutdown', () => {
   let originalTerm: NodeJS.SignalsListener[];
@@ -31,6 +32,7 @@ describe('database lifecycle at startup and shutdown', () => {
     originalTerm = process.listeners('SIGTERM');
     originalInt = process.listeners('SIGINT');
     vi.clearAllMocks();
+    mocks.database.mockReturnValue({ getSettings: mocks.settings, close: mocks.close, getStaffRole: mocks.staffRole });
     mocks.settings.mockResolvedValue({ environment: 'development', devGuildId: '1422623678205657160' });
     mocks.close.mockResolvedValue(undefined);
     mocks.destroy.mockResolvedValue(undefined);
@@ -57,6 +59,19 @@ describe('database lifecycle at startup and shutdown', () => {
     expect(mocks.close).toHaveBeenCalledOnce();
     expect(mocks.destroy).toHaveBeenCalledOnce();
     expect(process.listeners('SIGTERM')).toEqual(originalTerm);
+  });
+  it('logs safe database diagnostics with the startup correlation ID', async () => {
+    const diagnostic = { operation: 'get_settings', stage: 'connect', errorCode: '28P01', reason: 'authentication_failed' };
+    mocks.settings.mockImplementation(async () => {
+      mocks.database.mock.calls[0]?.[2](diagnostic);
+      throw new Error('private driver detail');
+    });
+    await expect(startBot('startup-correlation')).rejects.toThrow('private driver detail');
+    expect(log).toHaveBeenCalledWith('error', 'database_connection_failed', { correlationId: 'startup-correlation', ...diagnostic });
+    expect(JSON.stringify(vi.mocked(log).mock.calls)).not.toContain('private driver detail');
+    expect(mocks.close).toHaveBeenCalledOnce();
+    expect(mocks.identity).not.toHaveBeenCalled();
+    expect(mocks.login).not.toHaveBeenCalled();
   });
   it('closes the pool and Discord on a signal after successful startup', async () => {
     await startBot('test');

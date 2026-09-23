@@ -96,6 +96,16 @@ A CI executa typecheck, testes unitários, PostgreSQL descartável e build. A de
 
 ## Recuperação
 
+Falhas de banco no startup e no deploy central exibem `Database — Falha no acesso ao banco`, com `correlationId`, `operation`, `stage`, `errorCode` e `reason`. `stage=connect` indica aquisição/conexão, `query` indica execução SQL, `validate_settings` indica validação do cadastro e `idle` indica falha em conexão ociosa. Somente códigos reconhecidos e descrições fixas são registrados; mensagens brutas, SQL, credenciais e detalhes do servidor não entram no diagnóstico. Códigos desconhecidos aparecem como `UNKNOWN`.
+
+Exemplos para diagnóstico na Square:
+
+- `SELF_SIGNED_CERT_IN_CHAIN` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE`: conferir a CA oficial em `DATABASE_CA_CERT_PRODUCTION`, como PEM com quebras de linha reais no campo de valor do painel, sem aspas externas nem `\n` literal. Não desative a verificação TLS.
+- `28P01`: conferir usuário runtime e senha do ambiente ativo na URL protegida.
+- `ENOTFOUND`, `ENETUNREACH`, `ECONNREFUSED` ou `CONNECTION_TIMEOUT`: conferir endpoint/pooler, conectividade e disponibilidade do projeto Supabase.
+- `42501` ou `42P01`: conferir permissões runtime e migrations aplicadas.
+- `SETTINGS_MISSING`, `SETTINGS_INVALID` ou `ENVIRONMENT_MISMATCH`: conferir cadastro inicial e correspondência entre banco e ambiente.
+
 Essa migration é aditiva. Em falha de rollout, mantenha as tabelas e volte ao código anterior; não remova os cadastros automaticamente. Revise alterações corretivas por nova migration. Os IDs iniciais podem ser reconstruídos pelo seed; alterações posteriores importantes exigem backup externo conforme a política de banco. Em pausa do Supabase, retome o projeto pelo painel antes do startup. Falhas durante a execução bloqueiam comandos restritos; comandos públicos/moderação não consultam o banco.
 
 ## Validação realizada

@@ -11,6 +11,7 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   build_completed: { emoji: '✅', category: 'Build', message: 'Bot compilado com sucesso' },
   build_failed: { emoji: '❌', category: 'Build', message: 'Falha ao compilar o bot' },
   config_loaded: { emoji: '⚙️', category: 'Config', message: 'Configuração validada' },
+  database_connection_failed: { emoji: '❌', category: 'Database', message: 'Falha no acesso ao banco' },
   command_loaded: { emoji: '📦', category: 'Commands', message: 'Comando carregado' },
   events_loaded: { emoji: '📡', category: 'Events', message: 'Eventos carregados' },
   identity_validation_started: { emoji: '🤖', category: 'Discord', message: 'Validando identidade do bot' },

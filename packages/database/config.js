@@ -1,3 +1,25 @@
+import { X509Certificate } from 'node:crypto';
+
+/** @param {string | undefined} value @param {string} name */
+function readCertificate(value, name) {
+  if (!value?.trim()) return undefined;
+  const invalid = () => Object.assign(new Error('Invalid ' + name), { name: 'DatabaseConfigurationError' });
+  if (value.length > 65536) throw invalid();
+  let pem = value.trim();
+  if ((pem.startsWith("'") && pem.endsWith("'")) || (pem.startsWith('"') && pem.endsWith('"'))) pem = pem.slice(1, -1).trim();
+  pem = pem.replace(/\\r\\n|\\n|\\r/gu, '\n');
+  const pattern = /-----BEGIN CERTIFICATE-----([A-Za-z0-9+/=\s]+)-----END CERTIFICATE-----/gu;
+  const blocks = [...pem.matchAll(pattern)];
+  if (!blocks.length || pem.replace(pattern, '').trim()) throw invalid();
+  return blocks.map((block) => {
+    if (block[1] === undefined) throw invalid();
+    const body = block[1].replace(/\s/gu, '');
+    if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(body)) throw invalid();
+    const normalized = '-----BEGIN CERTIFICATE-----\n' + (body.match(/.{1,64}/gu) ?? []).join('\n') + '\n-----END CERTIFICATE-----\n';
+    try { new X509Certificate(normalized); } catch { throw invalid(); }
+    return normalized;
+  }).join('');
+}
 /** @typedef {'development' | 'production'} Environment */
 /** @param {NodeJS.ProcessEnv} env @param {Environment} target @param {'runtime'|'migration'} [purpose] */
 export function readDatabaseConfig(env, target, purpose = 'runtime') {
@@ -18,8 +40,7 @@ export function readDatabaseConfig(env, target, purpose = 'runtime') {
   const local = ['localhost', '127.0.0.1', '[::1]', 'postgres'].includes(url.hostname);
   if (local && target !== 'development') throw invalid();
   const caValue = env[`DATABASE_CA_CERT_${suffix}`];
-  const ca = caValue?.trim() || undefined;
-  if (ca !== undefined && !ca.includes('-----BEGIN CERTIFICATE-----')) throw invalid();
+  const ca = readCertificate(caValue, `DATABASE_CA_CERT_${suffix}`);
   return Object.freeze({
     host: url.hostname.replace(/^\[|\]$/gu, ''), port: Number(url.port || 5432),
     user, password, database,

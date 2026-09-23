@@ -100,7 +100,7 @@ Falhas de banco no startup e no deploy central exibem `Database — Falha no ace
 
 Exemplos para diagnóstico na Square:
 
-- `SELF_SIGNED_CERT_IN_CHAIN` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE`: conferir a CA oficial em `DATABASE_CA_CERT_PRODUCTION`, como PEM com quebras de linha reais no campo de valor do painel, sem aspas externas nem `\n` literal. Não desative a verificação TLS.
+- `SELF_SIGNED_CERT_IN_CHAIN` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE`: conferir a CA oficial em `DATABASE_CA_CERT_PRODUCTION`, como PEM. O carregamento aceita quebras de linha reais, `\n` literal ou espaços entre blocos base64, com ou sem um par de aspas externas. Certificados malformados são rejeitados no startup, sem registrar seu conteúdo. Não desative a verificação TLS.
 - `28P01`: conferir usuário runtime e senha do ambiente ativo na URL protegida.
 - `ENOTFOUND`, `ENETUNREACH`, `ECONNREFUSED` ou `CONNECTION_TIMEOUT`: conferir endpoint/pooler, conectividade e disponibilidade do projeto Supabase.
 - `42501` ou `42P01`: conferir permissões runtime e migrations aplicadas.

@@ -1,8 +1,26 @@
+import { rootCertificates, createSecureContext } from 'node:tls';
 import { describe, expect, it } from 'vitest';
 import { isDiscordId, readDatabaseConfig } from '@kuruttina/database';
 import { selectBotEnvironment } from '../apps/bot/src/config.js';
 describe('database configuration', () => {
   const remote = 'postgresql://kuruttina_bot.abcdefghijklmnopqrst:fake@aws-1-sa-east-1.pooler.supabase.com:5432/postgres';
+  const certificate = rootCertificates[0]!;
+  it.each([
+    certificate,
+    "'" + certificate.replace(/\n/gu, ' ') + "'",
+    '"' + certificate.replace(/\n/gu, '\\n') + '"',
+    certificate.replace(/\n/gu, '\r\n'),
+    certificate + '\n' + certificate,
+  ])('normalizes supported PEM formats without disabling verification %#', (value) => {
+    const { ssl } = readDatabaseConfig({ DATABASE_URL_PRODUCTION: remote, DATABASE_CA_CERT_PRODUCTION: value }, 'production');
+    expect(ssl).toMatchObject({ rejectUnauthorized: true });
+    if (!ssl) throw new Error('TLS required');
+    expect(() => createSecureContext(ssl)).not.toThrow();
+    expect(ssl.ca).toContain('-----BEGIN CERTIFICATE-----\n');
+  });
+  it.each(['garbage', '-----BEGIN CERTIFICATE-----AAAA-----END CERTIFICATE-----', certificate + 'trailing', "'" + certificate, 'x'.repeat(65537)])('rejects invalid certificates without exposing their value %#', (value) => {
+    expect(() => readDatabaseConfig({ DATABASE_URL_PRODUCTION: remote, DATABASE_CA_CERT_PRODUCTION: value }, 'production')).toThrow('Invalid DATABASE_CA_CERT_PRODUCTION');
+  });
   it('requires the active environment without fallback', () => {
     expect(() => readDatabaseConfig({ DATABASE_URL_DEVELOPMENT: remote }, 'production')).toThrow('DATABASE_URL_PRODUCTION');
   });

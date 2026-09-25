@@ -1,32 +1,149 @@
+import { execFile } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { promisify } from 'node:util';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createDatabase } from '@kuruttina/database';
 import { initializeAccess, migrate } from '@kuruttina/database/admin';
 
-const host = process.env.KURUTTINA_TEST_POSTGRES_HOST;
+const run = promisify(execFile);
+const host = '127.0.0.1';
 const ids = { guildId: '1422623678205657160', creatorId: '666948364507545600', devId: '1509331533348212808' };
-describe.skipIf(!host)('PostgreSQL runtime isolation', () => {
-  const admin = new pg.Client({ host, database: 'postgres', user: 'postgres' });
-  const runtime = new pg.Client({ host, database: 'postgres', user: 'kuruttina_bot' });
-  const database = createDatabase({ host, database: 'postgres', user: 'kuruttina_bot' }, 'development');
+
+async function availablePort(): Promise<number> {
+  const server = createServer();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, host, resolve);
+    });
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Could not reserve a PostgreSQL test port');
+    return address.port;
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+}
+
+async function postgresBinaries(): Promise<{ initdb: string; pgCtl: string }> {
+  let binaries = { initdb: 'initdb', pgCtl: 'pg_ctl' };
+  try {
+    const { stdout } = await run('pg_config', ['--bindir']);
+    const bin = stdout.trim();
+    if (bin) binaries = { initdb: join(bin, 'initdb'), pgCtl: join(bin, 'pg_ctl') };
+  } catch { /* PostgreSQL binaries may already be on PATH without pg_config. */ }
+  try {
+    await Promise.all([run(binaries.initdb, ['--version']), run(binaries.pgCtl, ['--version'])]);
+  } catch (error) {
+    throw new Error('PostgreSQL is required for integration tests: add initdb and pg_ctl to PATH, or provide pg_config to locate them.', { cause: error });
+  }
+  return binaries;
+}
+
+async function startPostgres() {
+  const binaries = await postgresBinaries();
+  const root = await mkdtemp(join(tmpdir(), 'kuruttina-postgres-'));
+  const data = join(root, 'data');
+  const passwordFile = join(root, 'password');
+  const adminPassword = randomBytes(32).toString('hex');
+  const runtimePassword = randomBytes(32).toString('hex');
+  let initialized = false;
+  let started = false;
+  try {
+    await writeFile(passwordFile, `${adminPassword}\n`, { mode: 0o600 });
+    await run(binaries.initdb, [
+      '-D', data, '-U', 'postgres', '--auth-host=scram-sha-256',
+      '--auth-local=trust', '--no-locale', '--encoding=UTF8', '--pwfile', passwordFile,
+    ], { timeout: 30_000 });
+    initialized = true;
+    await rm(passwordFile, { force: true });
+    let port = 0;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      port = await availablePort();
+      try {
+        await run(binaries.pgCtl, [
+          '-D', data, '-l', join(root, 'server.log'), '-o', `-h ${host} -p ${port}`, '-w', 'start',
+        ], { timeout: 30_000 });
+        started = true;
+        break;
+      } catch (error) {
+        if (attempt === 2) throw error;
+      }
+    }
+    return {
+      adminConfig: { host, port, database: 'postgres', user: 'postgres', password: adminPassword },
+      runtimeConfig: { host, port, database: 'postgres', user: 'kuruttina_bot', password: runtimePassword },
+      async stop() {
+        try {
+          if (started) await run(binaries.pgCtl, ['-D', data, '-m', 'immediate', '-w', 'stop'], { timeout: 15_000 });
+        } finally {
+          await rm(root, { recursive: true, force: true });
+        }
+      },
+    };
+  } catch (error) {
+    try {
+      if (initialized) {
+        await run(binaries.pgCtl, ['-D', data, '-m', 'immediate', '-w', 'stop'], { timeout: 15_000 }).catch(() => {});
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+    throw error;
+  }
+}
+
+describe('PostgreSQL runtime isolation', () => {
+  let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
+  let admin: pg.Client;
+  let runtime: pg.Client;
+  let database: ReturnType<typeof createDatabase>;
+  let runtimeConfig: Awaited<ReturnType<typeof startPostgres>>['runtimeConfig'];
+
+  const stopOnInterrupt = () => { void dispose().finally(() => process.exit(130)); };
+  const stopOnTerminate = () => { void dispose().finally(() => process.exit(143)); };
+  async function dispose() {
+    process.removeListener('SIGINT', stopOnInterrupt);
+    process.removeListener('SIGTERM', stopOnTerminate);
+    const currentCluster = cluster;
+    cluster = undefined;
+    await Promise.allSettled([admin?.end(), runtime?.end(), database?.close()]);
+    await currentCluster?.stop();
+  }
 
   beforeAll(async () => {
-    if (!host?.startsWith('/tmp/kuruttina-postgres.')) throw new Error('Only disposable test clusters are allowed');
-    await admin.connect();
-    await migrate(admin);
-    await migrate(admin);
-    await initializeAccess(admin, 'development', ids);
-    await initializeAccess(admin, 'development', ids);
-    await runtime.connect();
-  });
-  afterAll(async () => { await Promise.allSettled([admin.end(), runtime.end(), database.close()]); });
+    cluster = await startPostgres();
+    process.once('SIGINT', stopOnInterrupt);
+    process.once('SIGTERM', stopOnTerminate);
+    admin = new pg.Client(cluster.adminConfig);
+    runtimeConfig = cluster.runtimeConfig;
+    runtime = new pg.Client(runtimeConfig);
+    database = createDatabase(runtimeConfig, 'development');
+    try {
+      await admin.connect();
+      await migrate(admin);
+      await migrate(admin);
+      await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(runtimeConfig.password)}`);
+      await initializeAccess(admin, 'development', ids);
+      await initializeAccess(admin, 'development', ids);
+      await runtime.connect();
+    } catch (error) {
+      await dispose();
+      throw error;
+    }
+  }, 120_000);
+  afterAll(dispose, 30_000);
 
   it('loads the singleton, validates environment and queries both roles', async () => {
     expect(await database.getSettings()).toEqual({ devGuildId: ids.guildId, environment: 'development' });
     expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBe('creator');
     expect(await database.getStaffRole(ids.devId, ids.guildId)).toBe('dev');
     const report = vi.fn();
-    const wrong = createDatabase({ host, database: 'postgres', user: 'kuruttina_bot' }, 'production', report);
+    const wrong = createDatabase(runtimeConfig, 'production', report);
     try {
       await expect(wrong.getSettings()).rejects.toThrow('environment');
       expect(report).toHaveBeenCalledExactlyOnceWith({ operation: 'get_settings', stage: 'validate_settings', errorCode: 'ENVIRONMENT_MISMATCH', reason: 'environment_mismatch' });

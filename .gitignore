@@ -8,8 +8,7 @@ node_modules/
 dist/
 coverage/
 *.log
-infra/n8n/.n8n/
-infra/n8n/data/
+
 
 # Assets are stored in Cloudflare R2; keep local backups out of deploys and Git.
 /R2/

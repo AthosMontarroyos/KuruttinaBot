@@ -30,7 +30,7 @@ Antes de alterar um artefato, leia integralmente cada documento diretamente apli
 - [Discord bot](docs/agents/discord-bot.md): discord.js, credenciais por ambiente, command sync, registry, memória e ciclo de vida.
 - [Dashboard Next.js e administração](docs/agents/nextjs.md): App Router, React, Tailwind, OAuth, sessões, CSRF, cache e operações administrativas.
 - [Segurança transversal](docs/agents/security.md): validação, autorização, secrets, XSS, SSRF, uploads, rate limit e resposta a erro.
-- [Deployment, operação e performance](docs/agents/deployment.md): aplicação Square Cloud, n8n, Supabase, recursos, observabilidade e resiliência.
+- [Deployment, operação e performance](docs/agents/deployment.md): aplicação Square Cloud, Supabase, recursos, observabilidade e resiliência.
 - [Assets](docs/agents/assets.md): armazenamento R2, integração, otimização, proveniência e limpeza.
 - [Desenvolvimento, testes e conclusão](docs/agents/testing.md): comandos, testes, Git, documentação, ambientes, divisão entre skills e Definition of Done.
 
@@ -38,7 +38,7 @@ Antes de alterar um artefato, leia integralmente cada documento diretamente apli
 
 - Uma mudança de banco também consulta segurança e testes quando envolver RLS, autorização, privilégios ou migration.
 - OAuth, sessão, autorização ou administração consulta Next.js, segurança e testes.
-- Deploy de bot/site ou operação n8n consulta deployment e o documento do app afetado.
+- Deploy de bot/site consulta deployment e o documento do app afetado.
 - Mudança transversal consulta arquitetura e todos os domínios afetados.
 - Assets externos consultam assets; sua exposição pelo site consulta também Next.js e deployment quando alterar build ou distribuição.
 

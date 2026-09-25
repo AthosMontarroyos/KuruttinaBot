@@ -16,13 +16,13 @@
 
 **Regra:** NENHUM arquivo do R2 deve ser baixado para o repositório. O projeto acessa os arquivos diretamente via URL pública quando necessário. O gerenciamento do bucket é feito por:
 
-As ferramentas CLI e de montagem local foram aposentadas. Os futuros workflows n8n usarão APIs remotas com credenciais isoladas; veja o [catálogo](../project/n8n-migration.md). Até lá, estas operações não estão disponíveis pelo projeto. Features consumidoras leem pela `ASSETS_BASE_URL` HTTPS quando existir, sem receber credenciais de escrita. Nunca baixe, copie ou versione arquivos do bucket no repositório.
+As ferramentas CLI e de montagem local foram aposentadas e não há automação de gerenciamento de bucket incluída no projeto; consulte o [registro de ferramentas aposentadas](../project/tooling-retirement.md). Features consumidoras leem pela `ASSETS_BASE_URL` HTTPS quando existir, sem receber credenciais de escrita. Nunca baixe, copie ou versione arquivos do bucket no repositório.
 
 ### Regra: espelho de Application Emojis
 
 **Nível:** MUST
 
-**Regra:** `R2/emojis/` é um diretório plano, sem subpastas, destinado a espelhar integralmente os Application Emojis do bot principal. Quando o workflow existir, ele substituirá objetos de mesmo nome e removerá excedentes somente após uploads e paginação completos; outro workflow espelhará o conjunto no BotDev. Transferências usam APIs remotas sem cópias no repositório, respeitam `429` e rejeitam emojis acima de 256 KiB antes de alterar destinos.
+**Regra:** `R2/emojis/` permanece como diretório plano destinado ao espelho dos Application Emojis do bot principal. O sincronizador foi aposentado e não há processo automatizado para atualizar ou remover objetos do espelho; qualquer operação administrativa ocorre fora deste projeto. O importador atual do bot aplica o limite de 256 KiB às criações no Discord.
 
 ### Regra: integração com o site
 

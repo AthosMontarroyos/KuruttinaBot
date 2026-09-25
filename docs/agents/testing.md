@@ -1,6 +1,6 @@
 # Desenvolvimento, testes e conclusão
 
-Leia este documento quando alterar código, CI, contratos ou automações. Execute os comandos npm essenciais do README e mantenha instalação pelo lockfile.
+Leia este documento quando alterar código, CI, contratos ou automações. Execute os comandos npm essenciais da [referência de desenvolvimento](../project/development.md) e mantenha instalação pelo lockfile.
 
 **MUST:** Rode typecheck, testes relevantes e build limpo dos módulos alterados. Regra de negócio recebe teste unitário; schema, migration e RLS recebem integração com PostgreSQL real descartável; boundary HTTP/auth recebe integração; fluxo crítico recebe ponta a ponta quando viável. Relate falhas não relacionadas.
 
@@ -8,7 +8,7 @@ Leia este documento quando alterar código, CI, contratos ou automações. Execu
 
 **SHOULD:** Testes são herméticos; mocks servem para APIs externas e integração real fica em ambiente development autorizado. Lint e format verificam imports, promises, tipos e fronteiras quando configurados. Não edite migration já aplicada; crie correção versionada.
 
-**SHOULD:** Atualize README, `.env.example` e documentação do contrato sempre que o modo de operar mudar. Registre decisão duradoura em ADR curto. Remova código morto e não versione outputs, segredos ou dumps. Commits pequenos não descartam mudanças alheias.
+**SHOULD:** Atualize a referência de desenvolvimento, `.env.example` e documentação do contrato sempre que o modo de operar mudar. O README apresenta o produto, suas funcionalidades e licença; atualize-o quando esses aspectos mudarem, mantendo instruções de execução e configuração na documentação de manutenção. Registre decisão duradoura em ADR curto. Remova código morto e não versione outputs, segredos ou dumps. Commits pequenos não descartam mudanças alheias.
 
 ## Skills locais
 

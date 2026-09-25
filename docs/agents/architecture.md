@@ -4,7 +4,7 @@
 
 ## 2. Arquitetura de referência
 
-O projeto implementado é um monorepo modular com o bot Discord, `packages/config` e `packages/database`. O site e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. Bot e futuro site serão processos na mesma aplicação Square Cloud. O n8n é independente e apenas para devs. Veja o [ADR](../decisions/square-cloud-supabase.md) e o [estado implementado](../project/current-state.md).
+O projeto implementado é um monorepo modular com o bot Discord, `packages/config` e `packages/database`. O site e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. Bot e futuro site serão processos na mesma aplicação Square Cloud. Veja o [ADR](../decisions/square-cloud-supabase.md) e o [estado implementado](../project/current-state.md).
 
 ```text
 Arquitetura-alvo (itens ausentes não devem ser criados preventivamente):
@@ -18,8 +18,6 @@ Arquitetura-alvo (itens ausentes não devem ser criados preventivamente):
 │   ├── config/              # leitura e validação de configuração
 │   ├── auth/                # somente se autenticação/autorização for reutilizada
 │   └── shared/              # utilitários puros e pequenos; não é depósito genérico
-├── infra/
-│   └── n8n/                 # pacote separado de operação dos devs
 ├── .agents/skills/          # procedimentos especializados para agentes
 ├── squarecloud.app          # manifesto único do produto
 └── AGENTS.md

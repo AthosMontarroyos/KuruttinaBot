@@ -88,7 +88,7 @@ Mesmo antes da limpeza visual, a guilda antiga é recusada pelo gate. O bot não
 
 ## Desenvolvimento e testes
 
-`npm run test:database` exige binários PostgreSQL (`initdb`, `pg_ctl`, `pg_config`). Cria cluster temporário em /tmp com socket privado e sem TCP, executa integração com login runtime real e encerra/remove o cluster no final. Não lê .env nem acessa Supabase. `npm test` executa os testes herméticos e omite essa integração quando não há o cluster criado pelo runner.
+`npm run test:database` exige binários PostgreSQL (`initdb` e `pg_ctl`); `pg_config` é usado para localizá-los quando disponível. A própria suíte cria um cluster temporário no diretório temporário do sistema, acessível somente por TCP em `127.0.0.1`, executa a integração com login runtime real e encerra/remove o cluster ao final. Não lê `.env` nem acessa Supabase. `npm test` executa somente os testes herméticos.
 
 Para desenvolvimento persistente, instale PostgreSQL localmente com credenciais descartáveis e URLs distintas das do Supabase. O teste de integração cria seu próprio cluster temporário sem acessar o `.env`.
 

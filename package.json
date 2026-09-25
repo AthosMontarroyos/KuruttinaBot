@@ -19,10 +19,10 @@
     "deploy:commands": "node dist/apps/bot/src/deployments/deploy-central.js",
     "dev": "tsx apps/bot/src/index.ts",
     "security:secrets": "gitleaks detect --source . --config .gitleaks.toml --redact --verbose",
-    "test": "vitest run",
+    "test": "vitest run --exclude tests/database.integration.test.ts",
     "database:migrate": "node packages/database/cli.js migrate",
     "database:seed": "node packages/database/cli.js seed",
-    "test:database": "bash tests/support/test-postgres.sh"
+    "test:database": "vitest run tests/database.integration.test.ts"
   },
   "dependencies": {
     "@kuruttina/config": "*",

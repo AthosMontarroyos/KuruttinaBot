@@ -14,15 +14,13 @@
 
 **Nível:** MUST
 
-**Regra:** NENHUM arquivo do R2 deve ser baixado para o repositório. O projeto acessa os arquivos diretamente via URL pública quando necessário. O gerenciamento do bucket é feito por:
-
-As ferramentas CLI e de montagem local foram aposentadas e não há automação de gerenciamento de bucket incluída no projeto; consulte o [registro de ferramentas aposentadas](../project/tooling-retirement.md). Features consumidoras leem pela `ASSETS_BASE_URL` HTTPS quando existir, sem receber credenciais de escrita. Nunca baixe, copie ou versione arquivos do bucket no repositório.
+**Regra:** NENHUM arquivo do R2 deve ser baixado para o repositório. O projeto acessa os arquivos diretamente via URL pública quando necessário. As ferramentas CLI e de montagem local foram aposentadas e não há automação de gerenciamento de bucket incluída no projeto; o gerenciamento ocorre fora deste repositório. Consulte o [registro de ferramentas aposentadas](../project/tooling-retirement.md). Features consumidoras leem pela `ASSETS_BASE_URL` HTTPS quando existir, sem receber credenciais de escrita. Nunca baixe, copie ou versione arquivos do bucket no repositório.
 
 ### Regra: espelho de Application Emojis
 
 **Nível:** MUST
 
-**Regra:** `R2/emojis/` permanece como diretório plano destinado ao espelho dos Application Emojis do bot principal. O sincronizador foi aposentado e não há processo automatizado para atualizar ou remover objetos do espelho; qualquer operação administrativa ocorre fora deste projeto. O importador atual do bot aplica o limite de 256 KiB às criações no Discord.
+**Regra:** `R2/emojis/` permanece como diretório plano destinado ao espelho dos Application Emojis do bot principal. Este repositório não é dono desse espelho: não o atualiza, não remove objetos e não confere divergência com o Discord. O sincronizador foi aposentado; qualquer operação administrativa ocorre fora deste projeto. O importador atual do bot aplica o limite de 256 KiB às criações no Discord e não lê o bucket.
 
 ### Regra: integração com o site
 

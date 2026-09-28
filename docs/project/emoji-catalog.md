@@ -6,19 +6,85 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 Os nomes abaixo já são referenciados pelo código. A disponibilidade nas aplicações Discord ainda precisa ser documentada pelo GrokBot; `pendente` não significa disponível nem ausente.
 
-Última conferência pelo GrokBot: pendente.
+Última conferência pelo GrokBot: Development 2026-09-28; Production 2026-09-28.
 
 | Nome | Uso na mensagem | Development | Production |
 | --- | --- | --- | --- |
-| `dancing` | Resposta animada do ping | pendente | pendente |
-| `stats` | Latência da API | pendente | pendente |
-| `gateway` | Latência do Gateway | pendente | pendente |
-| `warning` | Aviso ou entrada inválida | pendente | pendente |
-| `loading` | Operação em andamento | pendente | pendente |
-| `cleaning` | Limpeza de mensagens | pendente | pendente |
-| `slap` | Complemento expressivo da confirmação de limpeza | pendente | pendente |
-| `error` | Falha na operação | pendente | pendente |
-| `search` | Busca sem resultados | pendente | pendente |
+| `dancing` | Resposta animada do ping | disponível | disponível |
+| `stats` | Latência da API | disponível | disponível |
+| `gateway` | Latência do Gateway | disponível | disponível |
+| `warning` | Aviso ou entrada inválida | disponível | disponível |
+| `loading` | Operação em andamento | disponível | disponível |
+| `cleaning` | Limpeza de mensagens | disponível | disponível |
+| `slap` | Complemento expressivo da confirmação de limpeza | disponível | disponível |
+| `error` | Falha na operação | disponível | disponível |
+| `search` | Busca sem resultados | disponível | disponível |
+| `add` | pendente | disponível | disponível |
+| `AFFILIATE` | pendente | ausente | disponível |
+| `affiliate` | pendente | disponível | ausente |
+| `Anger` | pendente | ausente | disponível |
+| `anger` | pendente | disponível | ausente |
+| `API` | pendente | ausente | disponível |
+| `api` | pendente | disponível | ausente |
+| `ban` | pendente | disponível | disponível |
+| `book` | pendente | disponível | disponível |
+| `ChannelBrowser` | pendente | ausente | disponível |
+| `channelbrowser` | pendente | disponível | ausente |
+| `coffee` | pendente | disponível | disponível |
+| `crown` | pendente | disponível | disponível |
+| `cry` | pendente | disponível | disponível |
+| `developer` | pendente | disponível | disponível |
+| `Dice` | pendente | ausente | disponível |
+| `dice` | pendente | disponível | ausente |
+| `DiceRooling` | pendente | ausente | disponível |
+| `dicerooling` | pendente | disponível | ausente |
+| `Disappointed` | pendente | ausente | disponível |
+| `disappointed` | pendente | disponível | ausente |
+| `Disgusted` | pendente | ausente | disponível |
+| `disgusted` | pendente | disponível | ausente |
+| `Documentation` | pendente | ausente | disponível |
+| `documentation` | pendente | disponível | ausente |
+| `folder` | pendente | disponível | disponível |
+| `guild` | pendente | disponível | disponível |
+| `Heart` | pendente | ausente | disponível |
+| `heart` | pendente | disponível | ausente |
+| `home` | pendente | disponível | disponível |
+| `ID` | pendente | ausente | disponível |
+| `id` | pendente | disponível | ausente |
+| `info` | pendente | disponível | disponível |
+| `kick` | pendente | disponível | disponível |
+| `label` | pendente | disponível | disponível |
+| `left_arrow` | pendente | disponível | disponível |
+| `link` | pendente | disponível | disponível |
+| `lock` | pendente | disponível | disponível |
+| `logs` | pendente | disponível | disponível |
+| `moderation` | pendente | disponível | disponível |
+| `mute` | pendente | disponível | disponível |
+| `nitro` | pendente | disponível | disponível |
+| `ops` | pendente | disponível | disponível |
+| `photo` | pendente | disponível | disponível |
+| `pin` | pendente | disponível | disponível |
+| `right_arrow` | pendente | disponível | disponível |
+| `Server_Boost` | pendente | ausente | disponível |
+| `server_boost` | pendente | disponível | ausente |
+| `settings` | pendente | disponível | disponível |
+| `share` | pendente | disponível | disponível |
+| `ShareScreen` | pendente | ausente | disponível |
+| `sharescreen` | pendente | disponível | ausente |
+| `shield` | pendente | disponível | disponível |
+| `Stackofbooks` | pendente | ausente | disponível |
+| `stackofbooks` | pendente | disponível | ausente |
+| `Staff` | pendente | ausente | disponível |
+| `staff` | pendente | disponível | ausente |
+| `StaffPing` | pendente | ausente | disponível |
+| `staffping` | pendente | disponível | ausente |
+| `star` | pendente | disponível | disponível |
+| `sucess` | pendente | disponível | disponível |
+| `trash` | pendente | disponível | disponível |
+| `unlock` | pendente | disponível | disponível |
+| `unmute` | pendente | disponível | disponível |
+| `vault` | pendente | disponível | disponível |
+| `verified` | pendente | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

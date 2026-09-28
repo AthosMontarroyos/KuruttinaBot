@@ -12,12 +12,6 @@ import {
 const genericProcessingFailure = (): EmojiImportError =>
   emojiError('corrupt_image', 'Não foi possível processar a imagem enviada.');
 
-/**
- * Valida os limites técnicos da imagem de origem, comprime-a para o tamanho
- * máximo do Discord e revalida o resultado final (tamanho e animação).
- *
- * Não realiza download, não conhece destinos nem permissões.
- */
 export async function prepareEmojiImage(
   raw: RawEmojiImage,
   processor: EmojiImageProcessor,

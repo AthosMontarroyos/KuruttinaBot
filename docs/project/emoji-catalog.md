@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-Os nomes abaixo já são referenciados pelo código. A disponibilidade nas aplicações Discord ainda precisa ser documentada pelo GrokBot; `pendente` não significa disponível nem ausente.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). Só parte desses nomes é referenciada pelo código hoje. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-09-28; Production 2026-09-28.
 
@@ -19,56 +19,56 @@ Os nomes abaixo já são referenciados pelo código. A disponibilidade nas aplic
 | `slap` | Complemento expressivo da confirmação de limpeza | disponível | disponível |
 | `error` | Falha na operação | disponível | disponível |
 | `search` | Busca sem resultados | disponível | disponível |
-| `add` | pendente | disponível | disponível |
-| `AFFILIATE` | pendente | disponível | disponível |
-| `Anger` | pendente | disponível | disponível |
-| `API` | pendente | disponível | disponível |
-| `ban` | pendente | disponível | disponível |
-| `book` | pendente | disponível | disponível |
-| `ChannelBrowser` | pendente | disponível | disponível |
-| `coffee` | pendente | disponível | disponível |
-| `crown` | pendente | disponível | disponível |
-| `cry` | pendente | disponível | disponível |
-| `developer` | pendente | disponível | disponível |
-| `Dice` | pendente | disponível | disponível |
-| `DiceRooling` | pendente | disponível | disponível |
-| `Disappointed` | pendente | disponível | disponível |
-| `Disgusted` | pendente | disponível | disponível |
-| `Documentation` | pendente | disponível | disponível |
-| `folder` | pendente | disponível | disponível |
-| `guild` | pendente | disponível | disponível |
-| `Heart` | pendente | disponível | disponível |
-| `home` | pendente | disponível | disponível |
-| `ID` | pendente | disponível | disponível |
-| `info` | pendente | disponível | disponível |
-| `kick` | pendente | disponível | disponível |
-| `label` | pendente | disponível | disponível |
-| `left_arrow` | pendente | disponível | disponível |
-| `link` | pendente | disponível | disponível |
-| `lock` | pendente | disponível | disponível |
-| `logs` | pendente | disponível | disponível |
-| `moderation` | pendente | disponível | disponível |
-| `mute` | pendente | disponível | disponível |
-| `nitro` | pendente | disponível | disponível |
-| `ops` | pendente | disponível | disponível |
-| `photo` | pendente | disponível | disponível |
-| `pin` | pendente | disponível | disponível |
-| `right_arrow` | pendente | disponível | disponível |
-| `Server_Boost` | pendente | disponível | disponível |
-| `settings` | pendente | disponível | disponível |
-| `share` | pendente | disponível | disponível |
-| `ShareScreen` | pendente | disponível | disponível |
-| `shield` | pendente | disponível | disponível |
-| `Stackofbooks` | pendente | disponível | disponível |
-| `Staff` | pendente | disponível | disponível |
-| `StaffPing` | pendente | disponível | disponível |
-| `star` | pendente | disponível | disponível |
-| `sucess` | pendente | disponível | disponível |
-| `trash` | pendente | disponível | disponível |
-| `unlock` | pendente | disponível | disponível |
-| `unmute` | pendente | disponível | disponível |
-| `vault` | pendente | disponível | disponível |
-| `verified` | pendente | disponível | disponível |
+| `add` | Adição ou criação de item | disponível | disponível |
+| `AFFILIATE` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
+| `Anger` | Bot sem as permissões necessárias no canal | disponível | disponível |
+| `API` | Reação tímida ou carinhosa | disponível | disponível |
+| `ban` | Banimento de membro | disponível | disponível |
+| `book` | Guia, tutorial ou regras | disponível | disponível |
+| `ChannelBrowser` | Comando usado fora de canal de texto de servidor | disponível | disponível |
+| `coffee` | Pausa, espera tranquila ou momento descontraído | disponível | disponível |
+| `crown` | Dono do servidor ou posição de destaque | disponível | disponível |
+| `cry` | Tristeza ou lamento | disponível | disponível |
+| `developer` | Desenvolvimento ou recurso da equipe de dev | disponível | disponível |
+| `Dice` | Resultado aleatório ou sorteio | disponível | disponível |
+| `DiceRooling` | Sorteio ou rolagem de dados em andamento | disponível | disponível |
+| `Disappointed` | Membro sem a permissão exigida pelo comando | disponível | disponível |
+| `Disgusted` | Reprovação ou desagrado | disponível | disponível |
+| `Documentation` | Documentação ou referência | disponível | disponível |
+| `folder` | Pasta, categoria ou arquivos | disponível | disponível |
+| `guild` | Servidor ou informações da guilda | disponível | disponível |
+| `Heart` | Agradecimento ou carinho | disponível | disponível |
+| `home` | Início ou menu principal | disponível | disponível |
+| `ID` | Identificação ou ID de usuário | disponível | disponível |
+| `info` | Informação ou detalhe complementar | disponível | disponível |
+| `kick` | Expulsão de membro | disponível | disponível |
+| `label` | Etiqueta, tag ou categoria | disponível | disponível |
+| `left_arrow` | Voltar ou página anterior | disponível | disponível |
+| `link` | Link ou convite | disponível | disponível |
+| `lock` | Bloqueio ou acesso restrito | disponível | disponível |
+| `logs` | Registros ou auditoria | disponível | disponível |
+| `moderation` | Moderação ou ação da staff | disponível | disponível |
+| `mute` | Silenciamento de membro | disponível | disponível |
+| `nitro` | Discord Nitro | disponível | disponível |
+| `ops` | Falha ao conferir permissões do membro ou do bot | disponível | disponível |
+| `photo` | Imagem, foto ou avatar | disponível | disponível |
+| `pin` | Mensagem fixada | disponível | disponível |
+| `right_arrow` | Avançar ou próxima página | disponível | disponível |
+| `Server_Boost` | Impulso do servidor | disponível | disponível |
+| `settings` | Configurações | disponível | disponível |
+| `share` | Compartilhamento ou encaminhamento | disponível | disponível |
+| `ShareScreen` | Transmissão de tela | disponível | disponível |
+| `shield` | Proteção ou segurança | disponível | disponível |
+| `Stackofbooks` | Lista extensa, histórico ou coleção de conteúdos | disponível | disponível |
+| `Staff` | Equipe ou cargo da staff | disponível | disponível |
+| `StaffPing` | Chamado ou menção à staff | disponível | disponível |
+| `star` | Destaque ou favorito | disponível | disponível |
+| `sucess` | Operação concluída com sucesso | disponível | disponível |
+| `trash` | Exclusão ou remoção | disponível | disponível |
+| `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
+| `unmute` | Fim do silenciamento de membro | disponível | disponível |
+| `vault` | Cofre, armazenamento ou backup | disponível | disponível |
+| `verified` | Verificado ou confirmado | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

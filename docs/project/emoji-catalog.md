@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 24 desses nomes; os outros 35 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 24 desses nomes; os outros 34 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-09-28; Production 2026-09-28.
 
@@ -63,12 +63,11 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `Staff` | Equipe ou cargo da staff | disponível | disponível |
 | `StaffPing` | Chamado ou menção à staff | disponível | disponível |
 | `star` | Destaque ou favorito | disponível | disponível |
-| `sucess` | Conclusão da importação de emoji | disponível | disponível |
+| `sucess` | Conclusão da importação de emoji, verificado ou confirmado | disponível | disponível |
 | `trash` | Exclusão ou remoção | disponível | disponível |
 | `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
 | `unmute` | Fim do silenciamento de membro | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
-| `verified` | Verificado ou confirmado | ausente | ausente |
 
 ## Atualização pelo GrokBot
 

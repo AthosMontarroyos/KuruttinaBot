@@ -68,7 +68,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
 | `unmute` | Fim do silenciamento de membro | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
-| `verified` | Verificado ou confirmado | disponível | disponível |
+| `verified` | Verificado ou confirmado | ausente | ausente |
 
 ## Atualização pelo GrokBot
 

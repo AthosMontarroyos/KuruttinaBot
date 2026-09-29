@@ -9,8 +9,31 @@ export interface CommandClientPort {
   readonly ws: { readonly ping: number };
 }
 
+/** Alternativas Unicode. `slap` fica de fora: é complemento e some quando indisponível. */
 const emojiFallbacks: Readonly<Record<string, string>> = {
-  dancing: '💃', stats: '📊', gateway: '🌐',
+  dancing: '💃',
+  stats: '📊',
+  gateway: '🌐',
+  warning: '⚠️',
+  loading: '⏳',
+  cleaning: '🧹',
+  error: '❌',
+  search: '🔎',
+  add: '➕',
+  sucess: '✅',
+  Anger: '😠',
+  Disappointed: '😞',
+  ops: '😅',
+  ChannelBrowser: '🏘️',
+  guild: '🏘️',
+  ID: '🪪',
+  developer: '🧑‍💻',
+  lock: '🔒',
+  book: '📖',
+  coffee: '☕',
+  photo: '🖼️',
+  label: '🏷️',
+  shield: '🛡️',
 };
 
 export function createEmojiResolver(application: CommandClientPort['application']): CommandContext['emoji'] {

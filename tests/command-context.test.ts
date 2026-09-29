@@ -1,6 +1,7 @@
 import { PermissionFlagsBits, PermissionsBitField, type GuildTextBasedChannel } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
+import { withEmojis } from '../apps/bot/src/commands/access.js';
 import { createChannelContext, createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commandContext.js';
 import { createClearChannelAdapter } from '../apps/bot/src/infrastructure/discord/clearAdapter.js';
 import { command as clear } from '../apps/bot/src/commands/mod/clear.js';
@@ -37,10 +38,47 @@ describe('shared command adapters', () => {
       return { find: () => undefined };
     });
     const emoji = createEmojiResolver({ emojis: { fetch } });
-    expect(await Promise.all([emoji('dancing'), emoji('stats')])).toEqual(['💃', '📊']);
-    // clear uses only bot emojis: an unavailable emoji degrades to plain text.
-    expect(await emoji('cleaning')).toBe('');
-    expect(await emoji('unknown')).toBe('');
+    const [cleaning, slap, sucess, unknown] = await Promise.all([
+      emoji('cleaning'), emoji('slap'), emoji('sucess'), emoji('unknown'),
+    ]);
+    expect(await Promise.all([
+      emoji('dancing'), emoji('stats'), emoji('gateway'),
+      emoji('warning'), emoji('loading'), emoji('error'), emoji('search'), emoji('add'),
+      emoji('Anger'), emoji('Disappointed'), emoji('ops'),
+      emoji('ChannelBrowser'), emoji('guild'), emoji('ID'),
+      emoji('developer'), emoji('lock'), emoji('book'), emoji('coffee'),
+      emoji('photo'), emoji('label'), emoji('shield'),
+    ])).toEqual([
+      '💃', '📊', '🌐',
+      '⚠️', '⏳', '❌', '🔎', '➕',
+      '😠', '😞', '😅',
+      '🏘️', '🏘️', '🪪',
+      '🧑‍💻', '🔒', '📖', '☕',
+      '🖼️', '🏷️', '🛡️',
+    ]);
+    expect(cleaning).toBe('🧹');
+    expect(sucess).toBe('✅');
+    expect(slap).toBe('');
+    expect(unknown).toBe('');
+    expect(await emoji('success')).toBe('');
+    expect(await emoji('api')).toBe('');
+    expect(await emoji('API')).toBe('');
+    expect(withEmojis(cleaning, 'Foram apagadas 1 mensagens em <#channel>!', slap)).toBe(
+      '🧹 Foram apagadas 1 mensagens em <#channel>!',
+    );
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  it('prefers the application emoji over its unicode fallback', async () => {
+    const fetch = vi.fn(async () => ({
+      find: (predicate: (emoji: { name: string | null }) => boolean) =>
+        [
+          { name: 'sucess', toString: () => '<:sucess:9>' },
+          { name: 'Anger', toString: () => '<:Anger:1>' },
+        ].find(predicate),
+    }));
+    const emoji = createEmojiResolver({ emojis: { fetch } });
+    expect(await Promise.all([emoji('sucess'), emoji('Anger'), emoji('add')])).toEqual(['<:sucess:9>', '<:Anger:1>', '➕']);
     expect(fetch).toHaveBeenCalledOnce();
   });
 

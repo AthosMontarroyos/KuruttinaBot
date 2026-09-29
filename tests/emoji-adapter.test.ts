@@ -1,7 +1,8 @@
 import type { Client } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
+import { emojiError, type PreparedEmojiImage } from '../apps/bot/src/application/emojis/types.js';
 import { createDiscordEmojiAdapter } from '../apps/bot/src/infrastructure/discord/emojiAdapter.js';
-import type { PreparedEmojiImage } from '../apps/bot/src/application/emojis/types.js';
+import type { ProductionApplicationEmojiPort, ProductionEmojiAudit } from '../apps/bot/src/infrastructure/discord/productionApplicationEmojis.js';
 
 const IMAGE: PreparedEmojiImage = {
   bytes: Uint8Array.from([1, 2, 3]),
@@ -21,6 +22,16 @@ interface FakeClient {
   };
   readonly guildEmojis: { create: ReturnType<typeof vi.fn> };
   readonly guildsFetch: ReturnType<typeof vi.fn>;
+}
+
+function fakeProduction(): {
+  readonly port: ProductionApplicationEmojiPort;
+  readonly count: ReturnType<typeof vi.fn>;
+  readonly create: ReturnType<typeof vi.fn>;
+} {
+  const count = vi.fn(async () => 7);
+  const create = vi.fn(async (name: string, _image: PreparedEmojiImage, _audit?: ProductionEmojiAudit) => ({ id: '111', name }));
+  return { port: { count, create }, count, create };
 }
 
 function fakeClient(options?: { readonly withoutApplication?: boolean; readonly guildFetchFails?: boolean }): FakeClient {
@@ -48,47 +59,62 @@ async function expectErrorCode(promise: Promise<unknown>, code: string): Promise
 }
 
 describe('adapter Discord de emojis', () => {
-  it('conta os Application Emojis', async () => {
-    const fake = fakeClient();
-    const adapter = createDiscordEmojiAdapter(fake.client);
+  it('consulta Application Emojis no bot de produção, não no client conectado', async () => {
+    const fake = fakeClient({ withoutApplication: true });
+    const production = fakeProduction();
+    const adapter = createDiscordEmojiAdapter(fake.client, production.port);
+
     await expect(adapter.countApplicationEmojis()).resolves.toBe(7);
-    expect(fake.appEmojis.fetch).toHaveBeenCalledTimes(1);
+
+    expect(production.count).toHaveBeenCalledOnce();
+    expect(fake.appEmojis.fetch).not.toHaveBeenCalled();
   });
 
-  it('falha fechado sem aplicação disponível ou sem conseguila consultar', async () => {
-    const withoutApplication = createDiscordEmojiAdapter(fakeClient({ withoutApplication: true }).client);
-    await expectErrorCode(withoutApplication.countApplicationEmojis(), 'destination_unavailable');
+  it('repassa a falha ao consultar o bot de produção', async () => {
+    const production = fakeProduction();
+    production.count.mockRejectedValue(emojiError('destination_unavailable', 'Não foi possível consultar os Application Emojis do bot de produção.'));
+    const adapter = createDiscordEmojiAdapter(fakeClient().client, production.port);
 
-    const failing = fakeClient();
-    failing.appEmojis.fetch.mockRejectedValue(new Error('rate limited'));
-    await expectErrorCode(createDiscordEmojiAdapter(failing.client).countApplicationEmojis(), 'destination_unavailable');
+    await expectErrorCode(adapter.countApplicationEmojis(), 'destination_unavailable');
   });
 
-  it('cria emoji no bot com data URI no MIME correto', async () => {
+  it('cria Application Emoji só pela capability de produção', async () => {
     const fake = fakeClient();
-    const adapter = createDiscordEmojiAdapter(fake.client);
+    const production = fakeProduction();
+    const adapter = createDiscordEmojiAdapter(fake.client, production.port);
 
-    const created = await adapter.create({ kind: 'application' }, 'festinha', IMAGE);
+    const created = await adapter.create(
+      { kind: 'application', actorUserId: '123456789012345678', guildId: '223456789012345678' },
+      'festinha',
+      IMAGE,
+    );
 
     expect(created).toEqual({ id: '111', name: 'festinha' });
-    const payload = fake.appEmojis.create.mock.calls[0]?.[0] as { attachment: string; name: string };
-    expect(payload.attachment).toMatch(/^data:image\/gif;base64,/u);
-    expect(payload.name).toBe('festinha');
+    expect(production.create).toHaveBeenCalledWith('festinha', IMAGE, {
+      userId: '123456789012345678',
+      guildId: '223456789012345678',
+    });
+    expect(fake.appEmojis.create).not.toHaveBeenCalled();
+    expect(fake.appEmojis.fetch).not.toHaveBeenCalled();
   });
 
   it('cria emoji em servidor buscando a guild no Discord', async () => {
     const fake = fakeClient();
-    const adapter = createDiscordEmojiAdapter(fake.client);
+    const production = fakeProduction();
+    const adapter = createDiscordEmojiAdapter(fake.client, production.port);
 
     const created = await adapter.create({ kind: 'guild', guildId: '123456789012345678' }, 'stats', IMAGE);
 
     expect(fake.guildsFetch).toHaveBeenCalledWith('123456789012345678');
+    expect(production.create).not.toHaveBeenCalled();
+    const payload = fake.guildEmojis.create.mock.calls[0]?.[0] as { attachment: string; name: string };
+    expect(payload.attachment).toMatch(/^data:image\/gif;base64,/u);
     expect(created).toEqual({ id: '222', name: 'stats' });
   });
 
   it('mapeia guild inacessível para destino indisponível', async () => {
     const fake = fakeClient({ guildFetchFails: true });
-    const adapter = createDiscordEmojiAdapter(fake.client);
+    const adapter = createDiscordEmojiAdapter(fake.client, fakeProduction().port);
     await expectErrorCode(
       adapter.create({ kind: 'guild', guildId: '123456789012345678' }, 'stats', IMAGE),
       'destination_unavailable',
@@ -99,7 +125,7 @@ describe('adapter Discord de emojis', () => {
   it.each([30008, 30018, 30056])('mapeia o código %i de capacidade do Discord', async (code) => {
     const fake = fakeClient();
     fake.guildEmojis.create.mockRejectedValue(Object.assign(new Error('maximum reached'), { code }));
-    const adapter = createDiscordEmojiAdapter(fake.client);
+    const adapter = createDiscordEmojiAdapter(fake.client, fakeProduction().port);
 
     await expectErrorCode(
       adapter.create({ kind: 'guild', guildId: '123456789012345678' }, 'stats', IMAGE),
@@ -107,18 +133,20 @@ describe('adapter Discord de emojis', () => {
     );
   });
 
-  it('mapeia capacidade também na criação de Application Emojis', async () => {
-    const fake = fakeClient();
-    fake.appEmojis.create.mockRejectedValue(Object.assign(new Error('maximum reached'), { code: 30018 }));
-    const adapter = createDiscordEmojiAdapter(fake.client);
+  it('sanitiza falha de capacidade vinda da capability de produção', async () => {
+    const production = fakeProduction();
+    production.create.mockRejectedValue(Object.assign(new Error('maximum reached token=abc'), { code: 30018 }));
+    const adapter = createDiscordEmojiAdapter(fakeClient().client, production.port);
 
-    await expectErrorCode(adapter.create({ kind: 'application' }, 'stats', IMAGE), 'capacity_reached');
+    const error = await adapter.create({ kind: 'application' }, 'stats', IMAGE).catch((caught: unknown) => caught);
+    expect(error).toMatchObject({ code: 'capacity_reached' });
+    expect((error as Error).message).not.toContain('token=abc');
   });
 
   it('sanitiza outros erros da API do Discord', async () => {
     const fake = fakeClient();
     fake.guildEmojis.create.mockRejectedValue(new Error('Internal Server Error token=abc'));
-    const adapter = createDiscordEmojiAdapter(fake.client);
+    const adapter = createDiscordEmojiAdapter(fake.client, fakeProduction().port);
 
     const error = await adapter
       .create({ kind: 'guild', guildId: '123456789012345678' }, 'stats', IMAGE)

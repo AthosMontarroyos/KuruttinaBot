@@ -200,7 +200,7 @@ describe('emoji add command routing', () => {
     },
   );
 
-  it('sends /dev emoji add to the Application Emojis of the active bot', async () => {
+  it('sends /dev emoji add to the production application, without credentials', async () => {
     const { importEmoji, service } = importService();
     const staff = staffPort('creator');
     const ports = slash('dev', ['emoji', 'add'], { guildId: DEV_GUILD, attachments: [ATTACHMENT] });
@@ -208,9 +208,11 @@ describe('emoji add command routing', () => {
     await runSlash(ports, new CommandsHandler([devCommand], staff, service));
 
     expect(importEmoji).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      destination: { kind: 'application' },
+      destination: { kind: 'application', actorUserId: CREATOR, guildId: DEV_GUILD },
     }));
-    expect(texts(ports.reply)).toEqual(['🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot. ✅']);
+    const request = importEmoji.mock.calls[0]?.[0];
+    expect(JSON.stringify(request)).not.toContain('token');
+    expect(texts(ports.reply)).toEqual(['🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot de produção. ✅']);
     expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 
@@ -221,10 +223,10 @@ describe('emoji add command routing', () => {
     await runPrefix(message, new CommandsHandler([devCommand], staffPort('dev'), service));
 
     expect(importEmoji).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      destination: { kind: 'application' },
+      destination: { kind: 'application', actorUserId: CREATOR, guildId: DEV_GUILD },
     }));
     expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
-      '🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot. ✅',
+      '🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot de produção. ✅',
     ]);
   });
 

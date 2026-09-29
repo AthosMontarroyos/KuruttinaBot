@@ -61,10 +61,10 @@ export interface EmojiImportService {
 /**
  * Cria o caso de uso compartilhado de importação de emojis.
  *
- * O mesmo serviço atende os dois fluxos do plano: cadastro nos Application
- * Emojis do bot principal (`destination: 'application'`) e cadastro em um
- * servidor (`destination: 'guild'`). Permissões e configuração de acesso não
- * fazem parte deste módulo e serão tratadas em tarefa separada.
+ * O mesmo serviço atende os dois fluxos: cadastro nos Application Emojis do
+ * bot de produção (`destination: 'application'`) e cadastro em um servidor
+ * (`destination: 'guild'`). A escolha da aplicação de produção fica no
+ * adapter; este módulo não recebe credenciais.
  */
 export function createEmojiImportService(
   deps: EmojiImportDeps,

@@ -7,6 +7,7 @@ import {
   type EmojiDestination,
   type PreparedEmojiImage,
 } from '#bot/application/emojis/types.js';
+import type { ProductionApplicationEmojiPort } from './productionApplicationEmojis.js';
 
 /**
  * Códigos REST do Discord para destino sem capacidade
@@ -33,19 +34,13 @@ function mapCreateFailure(error: unknown): EmojiImportError {
   return emojiError('create_failed', 'O Discord recusou a criação do emoji.');
 }
 
-export function createDiscordEmojiAdapter(client: Client): EmojiCreationPort {
+export function createDiscordEmojiAdapter(
+  client: Client,
+  productionEmojis: ProductionApplicationEmojiPort,
+): EmojiCreationPort {
   return {
-    async countApplicationEmojis(): Promise<number> {
-      const application = client.application;
-      if (!application) {
-        throw emojiError('destination_unavailable', 'A aplicação do bot ainda não está disponível.');
-      }
-      try {
-        const emojis = await application.emojis.fetch();
-        return emojis.size;
-      } catch {
-        throw emojiError('destination_unavailable', 'Não foi possível consultar os Application Emojis.');
-      }
+    countApplicationEmojis(): Promise<number> {
+      return productionEmojis.count();
     },
 
     async create(
@@ -53,19 +48,18 @@ export function createDiscordEmojiAdapter(client: Client): EmojiCreationPort {
       name: string,
       image: PreparedEmojiImage,
     ): Promise<CreatedEmoji> {
-      const attachment = toDataUri(image);
       if (destination.kind === 'application') {
-        const application = client.application;
-        if (!application) {
-          throw emojiError('destination_unavailable', 'A aplicação do bot ainda não está disponível.');
-        }
         try {
-          const created = await application.emojis.create({ attachment, name });
-          return { id: created.id, name: created.name ?? name };
+          return await productionEmojis.create(name, image, {
+            userId: destination.actorUserId,
+            guildId: destination.guildId,
+          });
         } catch (error: unknown) {
           throw mapCreateFailure(error);
         }
       }
+
+      const attachment = toDataUri(image);
 
       let guild: Guild;
       try {

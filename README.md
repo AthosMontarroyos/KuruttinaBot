@@ -8,7 +8,7 @@ Projeto proprietário de Athos Montarroyos, apresentado como parte de seu portf�
 
 - Comandos de aplicação e por prefixo, com as mesmas políticas de autorização.
 - Limpeza de mensagens com verificação de permissões.
-- Importação de emojis para servidores e para a aplicação, com processamento de imagens estáticas e animadas.
+- Importação de emojis para servidores e para a aplicação de produção, com processamento de imagens estáticas e animadas.
 - Acesso restrito a ferramentas da equipe, com validação de identidade, papel e servidor.
 
 ## Engenharia

@@ -3,13 +3,15 @@ import { addEmojiAddOptions, createEmojiAddExecutor } from '#bot/commands/emojiA
 import type { ChatInputCommand } from '#bot/commands/types.js';
 
 /**
- * Adiciona um emoji aos Application Emojis do bot que recebeu o comando.
+ * Adiciona um emoji aos Application Emojis do bot de produção.
  *
  * O módulo fica em `commands/dev/`: o loader exige `scope: 'dev-guild'` e a
  * política `staff` para qualquer arquivo dessa pasta, então o comando é
  * publicado somente na guilda de desenvolvimento cadastrada e nunca no
  * payload global. A publicação restrita não substitui a autorização: nos dois
  * transports a política `staff` exige um usuário ativo como Dev ou Creator.
+ * O destino de produção é escolhido na composição do processo; este módulo
+ * não recebe tokens nem o objeto de credenciais.
  */
 export const command = {
   data: new SlashCommandBuilder()
@@ -23,7 +25,7 @@ export const command = {
           addEmojiAddOptions(
             subcommand
               .setName('add')
-              .setDescription('Adiciona um emoji aos Application Emojis do bot'),
+              .setDescription('Adiciona um emoji aos Application Emojis do bot de produção'),
           ),
         ),
     ),

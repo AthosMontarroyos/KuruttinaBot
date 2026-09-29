@@ -87,7 +87,7 @@ export function createEmojiAddExecutor(target: EmojiAddTarget): (context: Comman
     let request: EmojiImportRequest;
     try {
       const inputs = parseEmojiAddInputs(context);
-      const destination = destinationOf(target, context.guildId);
+      const destination = destinationOf(target, context);
       if (destination === undefined) {
         await replyWithEmoji(context, 'guild', noGuildMessage);
         return;
@@ -168,10 +168,12 @@ function attachmentSource(attachment: EmojiAttachment): EmojiSource {
 }
 
 /** O destino vem do contexto confiável da execução, nunca de argumentos do autor. */
-function destinationOf(target: EmojiAddTarget, guildId: string | undefined): EmojiDestination | undefined {
-  if (target === 'application') return { kind: 'application' };
-  if (guildId === undefined) return undefined;
-  return { kind: 'guild', guildId };
+function destinationOf(target: EmojiAddTarget, context: CommandContext): EmojiDestination | undefined {
+  if (target === 'application') {
+    return { kind: 'application', actorUserId: context.userId, guildId: context.guildId };
+  }
+  if (context.guildId === undefined) return undefined;
+  return { kind: 'guild', guildId: context.guildId };
 }
 
 async function replyWithEmoji(context: CommandContext, emojiName: string, text: string): Promise<void> {
@@ -184,7 +186,7 @@ async function successMessage(context: CommandContext, target: EmojiAddTarget, n
     context.emoji('sucess'),
   ]);
   const text = target === 'application'
-    ? `Emoji **${name}** adicionado aos Application Emojis do bot.`
+    ? `Emoji **${name}** adicionado aos Application Emojis do bot de produção.`
     : `Emoji **${name}** adicionado a este servidor.`;
   return withEmojis(opening, text, closing);
 }

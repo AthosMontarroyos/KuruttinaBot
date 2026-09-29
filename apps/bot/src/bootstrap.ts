@@ -12,6 +12,7 @@ import { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
 import { createDiscordEmojiAdapter } from '#bot/infrastructure/discord/emojiAdapter.js';
+import { createProductionApplicationEmojiWriter } from '#bot/infrastructure/discord/productionApplicationEmojis.js';
 import { createDiscordImageDownloader } from '#bot/infrastructure/images/downloadDiscordImage.js';
 import { createSharpEmojiProcessor } from '#bot/infrastructure/images/sharpEmojiProcessor.js';
 import { configureLogger, log } from '#bot/infrastructure/logger.js';
@@ -32,11 +33,13 @@ export async function startBot(correlationId: string): Promise<void> {
       makeCache: Options.cacheWithLimits({ ...Options.DefaultMakeCacheSettings, MessageManager: 0 }),
       allowedMentions: { parse: [], repliedUser: false },
     });
-    // Uma única fila e um único adapter para as duas operações de importação.
+    // Uma única fila. Emojis de servidor usam o client ativo; Application Emojis
+    // vão sempre para a aplicação de produção, sem Gateway dessa credencial.
+    const productionEmojis = createProductionApplicationEmojiWriter(config.credentials.production);
     const emojiImport = createEmojiImportService({
       download: createDiscordImageDownloader(),
       processor: createSharpEmojiProcessor(),
-      create: createDiscordEmojiAdapter(client),
+      create: createDiscordEmojiAdapter(client, productionEmojis),
     });
     const commandsHandler = new CommandsHandler(commands, database, emojiImport);
     const deploymentsHandler = new DeploymentsHandler([

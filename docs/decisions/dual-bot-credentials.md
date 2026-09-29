@@ -20,6 +20,10 @@ O primeiro command cross-bot deve introduzir uma capability explícita e estreit
 
 Responsável: AthosMontarroyos.
 
+## Atualização — 28 de setembro de 2026
+
+`/dev emoji add` é a primeira operação cross-bot. A composição entrega à capability somente a credencial de production. Ela confirma `/users/@me` antes de listar ou criar Application Emojis por REST e não abre Gateway para essa credencial. O command continua sem o objeto global de credenciais. Falha de identidade não é reaproveitada; sucesso fica em cache no processo. A auditoria registra a aplicação, o emoji criado e os snowflakes de autor e guilda, sem token nem imagem.
+
 ## Remoção
 
-Migrar para uma interface de capacidades e secret store quando os comandos cross-bot forem implementados; então remover o acesso conjunto ao `.env`.
+Quando existir um secret store para esta capability, remover o acesso conjunto ao `.env`. Até lá, o processo continua lendo os dois pares e a capability recebe só a credencial de production.

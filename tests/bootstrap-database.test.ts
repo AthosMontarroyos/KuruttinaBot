@@ -9,6 +9,10 @@ vi.mock('@kuruttina/database', () => ({
 vi.mock('../apps/bot/src/config.js', () => ({
   loadConfig: () => ({
     target: 'development', database: {}, autoSyncCommands: true,
+    credentials: {
+      development: { token: 'fake', expectedBotId: '123456789012345678' },
+      production: { token: 'fake-production', expectedBotId: '223456789012345678' },
+    },
     activeCredential: { token: 'fake', expectedBotId: '123456789012345678' },
   }),
 }));
@@ -75,6 +79,7 @@ describe('database lifecycle at startup and shutdown', () => {
   });
   it('closes the pool and Discord on a signal after successful startup', async () => {
     await startBot('test');
+    expect(mocks.login).toHaveBeenCalledWith('fake');
     expect(mocks.settings.mock.invocationCallOrder[0]).toBeLessThan(mocks.sync.mock.invocationCallOrder[0]!);
     const listener = process.listeners('SIGTERM').find((value) => !originalTerm.includes(value));
     expect(listener).toBeDefined();

@@ -181,7 +181,13 @@ export type EmojiSource =
     };
 
 export type EmojiDestination =
-  | { readonly kind: 'application' }
+  | {
+      readonly kind: 'application';
+      /** Autor da operação, só para auditoria. Não escolhe a aplicação de destino. */
+      readonly actorUserId?: string | undefined;
+      /** Guilda em que o comando foi executado, só para auditoria. */
+      readonly guildId?: string | undefined;
+    }
   | { readonly kind: 'guild'; readonly guildId: string };
 
 export interface CreatedEmoji {

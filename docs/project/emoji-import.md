@@ -1,8 +1,8 @@
 # Importação e processamento de imagens de emoji
 
-Última atualização: 23 de setembro de 2026.
+Última atualização: 28 de setembro de 2026.
 
-Este documento descreve o núcleo compartilhado de importação de emojis e a integração por trás de dois comandos: **Dev** (`/dev emoji add` → `k!dev-emoji-add`, nos Application Emojis do bot) e **Servidor** (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). Os dois usam a mesma fila, os mesmos limites, o mesmo downloader e o mesmo adapter; o que os separa são a política de acesso e o destino.
+Este documento descreve o núcleo compartilhado de importação de emojis e a integração por trás de dois comandos: **Dev** (`/dev emoji add` → `k!dev-emoji-add`, nos Application Emojis do bot de produção) e **Servidor** (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). Os dois usam a mesma fila, os mesmos limites e o mesmo downloader; o que os separa são a política de acesso e o destino. O destino `application` não usa a aplicação conectada ao Gateway: a composição injeta uma capability que autentica somente a credencial de production.
 
 ## Escopo desta etapa
 
@@ -13,7 +13,8 @@ Implementado:
 - `apps/bot/src/application/emojis/importEmoji.ts`: serviço com fila, parsing de referências, derivação de nome, verificação de capacidade e fallback GIF→PNG.
 - `apps/bot/src/infrastructure/images/downloadDiscordImage.ts`: download restrito ao CDN do Discord.
 - `apps/bot/src/infrastructure/images/sharpEmojiProcessor.ts`: escada de compressão com `sharp` e redução de quadros com `gifenc`.
-- `apps/bot/src/infrastructure/discord/emojiAdapter.ts`: criação de emojis via `discord.js` com mapeamento de erros.
+- `apps/bot/src/infrastructure/discord/emojiAdapter.ts`: criação de emojis de servidor via `discord.js`, com o destino `application` delegado à capability de produção.
+- `apps/bot/src/infrastructure/discord/productionApplicationEmojis.ts`: capability que lista e cria Application Emojis só na aplicação de production.
 - `apps/bot/src/commands/emojiAdd.ts`: executor e leitura de entradas compartilhados pelas duas operações, fora da descoberta de comandos.
 - `apps/bot/src/commands/dev/emoji.ts` e `apps/bot/src/commands/mod/emoji.ts`: definições slash (subcomando e grupo), rotas por prefixo e políticas `staff`/`guild`; o módulo em `dev/` declara `scope: 'dev-guild'` e só é publicado na guilda da equipe.
 - `apps/bot/src/bootstrap.ts`: uma única composição do serviço, injetada no dispatcher pelos dois transports.
@@ -61,7 +62,7 @@ Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=l
 
 ## Destinos e erros
 
-`createEmojiImportService` aceita origem (referência de emoji `<:nome:id>`/`<a:nome:id>`, ID puro ou URL de anexo) e destino (`application` ou `guild`). Para `application`, a capacidade é verificada antes (`DISCORD_APPLICATION_EMOJI_LIMIT` = 2000); para `guild`, a capacidade é deixada para o erro do Discord. O adapter envia data URI com MIME explícito (`image/png`/`image/gif`) e mapeia os códigos 30008/30018/30056 para `capacity_reached`.
+`createEmojiImportService` aceita origem (referência de emoji `<:nome:id>`/`<a:nome:id>`, ID puro ou URL de anexo) e destino (`application` ou `guild`). Para `application`, a capacidade é verificada antes (`DISCORD_APPLICATION_EMOJI_LIMIT` = 2000) na aplicação de produção; para `guild`, a capacidade é deixada para o erro do Discord. O adapter de servidor envia data URI com MIME explícito (`image/png`/`image/gif`) pelo client ativo. A capability de produção faz o mesmo por REST, em `POST /applications/{id}/emojis`, depois de confirmar `/users/@me` contra `DISCORD_BOT_ID_PRODUCTION`. Essa confirmação ocorre na primeira operação, fica em cache só se passar e não abre Gateway. Identidade divergente, timeout ou resposta inválida falha fechado, sem token em log ou resposta. Os códigos 30008/30018/30056 mapeiam para `capacity_reached`. O command não recebe o objeto de credenciais; a auditoria registra a aplicação de produção, o emoji e, quando são snowflakes, o autor e a guilda.
 
 O nome sai, nesta ordem, da opção `nome`, do nome real do arquivo (sem extensão), do segmento final da URL ou do nome embutido na referência do emoji. Antes de enfileirar, um tamanho declarado acima do limite de entrada falha com `input_too_large` sem consumir download — junto com a cota do destino, é a verificação de falha barata.
 

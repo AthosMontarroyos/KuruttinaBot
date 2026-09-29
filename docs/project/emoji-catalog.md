@@ -29,7 +29,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `coffee` | Bot ocupado ou fila de importação cheia | disponível | disponível |
 | `crown` | Dono do servidor ou posição de destaque | disponível | disponível |
 | `cry` | Tristeza ou lamento | disponível | disponível |
-| `developer` | Emoji adicionado aos Application Emojis do bot | disponível | disponível |
+| `developer` | Emoji adicionado aos Application Emojis do bot de produção | disponível | disponível |
 | `Dice` | Resultado aleatório ou sorteio | disponível | disponível |
 | `DiceRooling` | Sorteio ou rolagem de dados em andamento | disponível | disponível |
 | `Disappointed` | Membro sem a permissão exigida pelo comando | disponível | disponível |

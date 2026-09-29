@@ -5,9 +5,11 @@ import {
   emojiError,
   type EmojiAttachment,
   type EmojiDestination,
+  type EmojiImportErrorCode,
   type EmojiSource,
 } from '#bot/application/emojis/types.js';
 import { log } from '#bot/infrastructure/logger.js';
+import { withEmojis } from './access.js';
 import type { CommandContext } from './types.js';
 
 /** Destination of one import operation; the executor resolves it from trusted context. */
@@ -41,6 +43,31 @@ const tooManyFilesMessage = 'Envie apenas uma imagem por comando.';
 const notAvailableMessage = 'A importação de emojis não está disponível no momento.';
 const noGuildMessage = 'Este comando só pode ser usado em um servidor.';
 
+/** Seleção pelo código, sem comparar o texto. Cobre todos os valores de EmojiImportErrorCode. */
+const importErrorEmoji = {
+  missing_source: 'photo',
+  empty_input: 'photo',
+  unsupported_format: 'photo',
+  invalid_name: 'label',
+  invalid_source: 'warning',
+  invalid_input: 'warning',
+  input_too_large: 'warning',
+  too_many_pixels: 'warning',
+  too_many_frames: 'warning',
+  duration_exceeded: 'warning',
+  capacity_reached: 'warning',
+  download_blocked: 'shield',
+  source_missing: 'search',
+  queue_full: 'coffee',
+  destination_unavailable: 'ops',
+  download_failed: 'error',
+  corrupt_image: 'error',
+  processing_timeout: 'error',
+  size_unreachable: 'error',
+  animation_lost: 'error',
+  create_failed: 'error',
+} as const satisfies Record<EmojiImportErrorCode, string>;
+
 /**
  * Executor compartilhado das operações `dev emoji add` e `emoji add`.
  *
@@ -53,27 +80,33 @@ export function createEmojiAddExecutor(target: EmojiAddTarget): (context: Comman
     await context.acknowledge();
     const service = context.emojiImport;
     if (service === undefined) {
-      await context.reply(notAvailableMessage);
+      await replyWithEmoji(context, 'ops', notAvailableMessage);
       return;
     }
 
     let request: EmojiImportRequest;
     try {
-      request = { ...parseEmojiAddInputs(context), destination: destinationOf(target, context) };
+      const inputs = parseEmojiAddInputs(context);
+      const destination = destinationOf(target, context.guildId);
+      if (destination === undefined) {
+        await replyWithEmoji(context, 'guild', noGuildMessage);
+        return;
+      }
+      request = { ...inputs, destination };
     } catch (error: unknown) {
       // Entrada inválida não é incidente operacional: só o autor vê a razão.
       if (!(error instanceof EmojiImportError)) throw error;
-      await context.reply(error.message);
+      await replyWithEmoji(context, importErrorEmoji[error.code], error.message);
       return;
     }
 
     try {
       const { created } = await service.importEmoji(request);
-      await context.reply(successMessage(target, created.name));
+      await context.reply(await successMessage(context, target, created.name));
     } catch (error: unknown) {
       if (!(error instanceof EmojiImportError)) throw error;
       log('warn', 'emoji_import_failed', { destination: target, code: error.code });
-      await context.reply(error.message);
+      await replyWithEmoji(context, importErrorEmoji[error.code], error.message);
     }
   };
 }
@@ -135,15 +168,23 @@ function attachmentSource(attachment: EmojiAttachment): EmojiSource {
 }
 
 /** O destino vem do contexto confiável da execução, nunca de argumentos do autor. */
-function destinationOf(target: EmojiAddTarget, context: CommandContext): EmojiDestination {
+function destinationOf(target: EmojiAddTarget, guildId: string | undefined): EmojiDestination | undefined {
   if (target === 'application') return { kind: 'application' };
-  const guildId = context.guildId;
-  if (guildId === undefined) throw emojiError('invalid_input', noGuildMessage);
+  if (guildId === undefined) return undefined;
   return { kind: 'guild', guildId };
 }
 
-function successMessage(target: EmojiAddTarget, name: string): string {
-  return target === 'application'
+async function replyWithEmoji(context: CommandContext, emojiName: string, text: string): Promise<void> {
+  await context.reply(withEmojis(await context.emoji(emojiName), text));
+}
+
+async function successMessage(context: CommandContext, target: EmojiAddTarget, name: string): Promise<string> {
+  const [opening, closing] = await Promise.all([
+    context.emoji(target === 'application' ? 'developer' : 'add'),
+    context.emoji('sucess'),
+  ]);
+  const text = target === 'application'
     ? `Emoji **${name}** adicionado aos Application Emojis do bot.`
     : `Emoji **${name}** adicionado a este servidor.`;
+  return withEmojis(opening, text, closing);
 }

@@ -5,8 +5,10 @@ import type { EmojiImportService, EmojiImportRequest } from '../apps/bot/src/app
 import {
   emojiError,
   type EmojiAttachment,
+  type EmojiImportErrorCode,
   type PreparedEmojiImage,
 } from '../apps/bot/src/application/emojis/types.js';
+import { createEmojiAddExecutor } from '../apps/bot/src/commands/emojiAdd.js';
 import { command as devCommand } from '../apps/bot/src/commands/dev/emoji.js';
 import { command as emojiCommand } from '../apps/bot/src/commands/mod/emoji.js';
 import { loadCommands } from '../apps/bot/src/commands/loadCommands.js';
@@ -176,7 +178,8 @@ describe('emoji add command routing', () => {
       destination: { kind: 'guild', guildId: OTHER_GUILD },
       name: undefined,
     });
-    expect(texts(ports.reply)).toEqual(['Emoji **derived** adicionado a este servidor.']);
+    expect(texts(ports.reply)).toEqual(['➕ Emoji **derived** adicionado a este servidor. ✅']);
+    expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 
   it.each(['k!emoji-add', 'K!emoji-add', 'k!emoji-add ', 'K!emoji-add meu_nome'])(
@@ -189,6 +192,11 @@ describe('emoji add command routing', () => {
 
       expect(importEmoji).toHaveBeenCalledOnce();
       expect(importEmoji.mock.calls[0]?.[0].destination).toEqual({ kind: 'guild', guildId: DEV_GUILD });
+      const created = importEmoji.mock.calls[0]?.[0].name ?? 'derived';
+      expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
+        `➕ Emoji **${created}** adicionado a este servidor. ✅`,
+      ]);
+      expect(message.client.application.emojis.fetch).toHaveBeenCalledOnce();
     },
   );
 
@@ -202,6 +210,8 @@ describe('emoji add command routing', () => {
     expect(importEmoji).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
       destination: { kind: 'application' },
     }));
+    expect(texts(ports.reply)).toEqual(['🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot. ✅']);
+    expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 
   it.each(['k!dev-emoji-add', 'K!dev-emoji-add'])('routes prefix %s to the shared application executor', async (content) => {
@@ -213,6 +223,9 @@ describe('emoji add command routing', () => {
     expect(importEmoji).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
       destination: { kind: 'application' },
     }));
+    expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
+      '🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot. ✅',
+    ]);
   });
 
   it.each(['k!emoji', 'K!emoji', 'k!dev'])('answers %s with its usage instead of importing', async (content) => {
@@ -222,7 +235,8 @@ describe('emoji add command routing', () => {
     const replies = await runPrefix(message, new CommandsHandler([emojiCommand, devCommand], staffPort('creator'), service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies[0]).toContain('exige um subcomando');
+    const alias = content === 'k!dev' ? 'dev-emoji-add' : 'emoji-add';
+    expect(replies).toEqual([`📖 Este comando exige um subcomando. Use \`k!${alias}\`.`]);
   });
 
   it('rejects a prefix alias that collides with another command', () => {
@@ -237,7 +251,7 @@ describe('emoji add command routing', () => {
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies[0]).toContain('exige um subcomando');
+    expect(replies).toEqual(['📖 Este comando exige um subcomando. Use `k!emoji-add`.']);
   });
 
   it('keeps the import service optional so a missing composition fails closed', async () => {
@@ -245,7 +259,7 @@ describe('emoji add command routing', () => {
 
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand]));
 
-    expect(replies).toEqual(['A importação de emojis não está disponível no momento.']);
+    expect(replies).toEqual(['😅 A importação de emojis não está disponível no momento.']);
   });
 });
 
@@ -291,7 +305,7 @@ describe('dev emoji authorization in both transports', () => {
         : await runPrefix(prefix(transport + 'dev-emoji-add', spec).message, handler);
 
       expect(importEmoji).not.toHaveBeenCalled();
-      expect(replies).toEqual(['Você não tem acesso a este comando neste servidor.']);
+      expect(replies).toEqual(['🔒 Você não tem acesso a este comando neste servidor.']);
     });
 
     it(`${transport}: a staff lookup failure denies without leaking the error`, async () => {
@@ -305,7 +319,7 @@ describe('dev emoji authorization in both transports', () => {
         : await runPrefix(prefix(transport + 'dev-emoji-add', spec).message, handler);
 
       expect(importEmoji).not.toHaveBeenCalled();
-      expect(replies).toEqual(['Não consegui verificar o acesso agora. Tente novamente mais tarde.']);
+      expect(replies).toEqual(['😅 Não consegui verificar o acesso agora. Tente novamente mais tarde.']);
       expect(JSON.stringify(replies)).not.toContain('private SQL');
     });
 
@@ -342,7 +356,7 @@ describe('dev emoji authorization in both transports', () => {
         : await runPrefix(prefix(transport + 'dev-emoji-add', spec).message, handler);
 
       expect(importEmoji).not.toHaveBeenCalled();
-      expect(replies[0]).toContain('Preciso destas permissões');
+      expect(replies[0]).toMatch(/^😠 Preciso destas permissões/);
     });
   }
 });
@@ -376,7 +390,7 @@ describe('guild emoji authorization', () => {
       : await runPrefix(prefix(transport + 'emoji-add', spec).message, handler);
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies).toEqual(['Você precisa da permissão **Gerenciar emojis** para adicionar emojis.']);
+    expect(replies).toEqual(['😞 Você precisa da permissão **Gerenciar emojis** para adicionar emojis.']);
   });
 
   it.each(transports)('%s: denies when the bot cannot create emojis', async (transport) => {
@@ -397,7 +411,7 @@ describe('guild emoji authorization', () => {
       : await runPrefix(prefix(transport + 'emoji-add', spec).message, handler);
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies).toEqual(['Preciso destas permissões para adicionar o emoji: **Criar emojis**.']);
+    expect(replies).toEqual(['😠 Preciso destas permissões para adicionar o emoji: **Criar emojis**.']);
   });
 
   it('denies outside of a text channel', async () => {
@@ -407,7 +421,7 @@ describe('guild emoji authorization', () => {
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies[0]).toContain('canal de texto de servidor');
+    expect(replies).toEqual(['🏘️ Vamos adicionar emojis em um canal de texto de servidor!']);
   });
 });
 
@@ -517,25 +531,25 @@ describe('emoji add inputs', () => {
       label: 'nenhuma origem',
       spec: { guildId: OTHER_GUILD } as TransportSpec,
       content: 'k!emoji-add',
-      expected: 'Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.',
+      expected: '🖼️ Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.',
     },
     {
       label: 'só um nome',
       spec: { guildId: OTHER_GUILD } as TransportSpec,
       content: 'k!emoji-add so_nome',
-      expected: 'Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.',
+      expected: '🖼️ Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.',
     },
     {
       label: 'argumentos excedentes',
       spec: { guildId: OTHER_GUILD } as TransportSpec,
       content: 'k!emoji-add a b c',
-      expected: 'Entrada inválida: envie uma imagem anexada ou um emoji personalizado, com no máximo um nome opcional.',
+      expected: '⚠️ Entrada inválida: envie uma imagem anexada ou um emoji personalizado, com no máximo um nome opcional.',
     },
     {
       label: 'dois anexos',
       spec: { guildId: OTHER_GUILD, attachments: [ATTACHMENT, { ...ATTACHMENT, url: ATTACHMENT.url + 'x' }] } as TransportSpec,
       content: 'k!emoji-add',
-      expected: 'Envie apenas uma imagem por comando.',
+      expected: '⚠️ Envie apenas uma imagem por comando.',
     },
   ])('rejects %s before importing', async ({ spec, content, expected }) => {
     const { importEmoji, service } = importService();
@@ -554,7 +568,7 @@ describe('emoji add inputs', () => {
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies).toEqual(['Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.']);
+    expect(replies).toEqual(['🖼️ Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.']);
     expect(ports.deferReply).toHaveBeenCalledOnce();
     expect(ports.deferReply.mock.invocationCallOrder[0]).toBeLessThan(importEmoji.mock.invocationCallOrder[0] ?? Infinity);
   });
@@ -566,7 +580,7 @@ describe('emoji add inputs', () => {
 
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
-    expect(replies).toEqual(['Muitas importações em andamento; tente novamente em instantes.']);
+    expect(replies).toEqual(['☕ Muitas importações em andamento; tente novamente em instantes.']);
   });
 
   it('logs the failure code without echoing user input', async () => {
@@ -578,8 +592,110 @@ describe('emoji add inputs', () => {
 
     expect(importEmoji).toHaveBeenCalledOnce();
     expect(message.reply).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ content: 'O Discord recusou a criação do emoji.' }),
+      expect.objectContaining({ content: '❌ O Discord recusou a criação do emoji.' }),
     );
+  });
+
+  it.each(['k!emoji-add', 'K!emoji-add'])('reports a domain failure once on %s', async (content) => {
+    const { importEmoji, service } = importService();
+    importEmoji.mockRejectedValueOnce(emojiError('download_blocked', 'A URL de origem não pertence ao CDN do Discord.'));
+    const { message } = prefix(content, { guildId: OTHER_GUILD, attachments: [ATTACHMENT] });
+
+    const replies = await runPrefix(message, new CommandsHandler([emojiCommand], undefined, service));
+
+    expect(replies).toEqual(['🛡️ A URL de origem não pertence ao CDN do Discord.']);
+    expect(message.client.application.emojis.fetch).toHaveBeenCalledOnce();
+  });
+
+  it('uses the application emoji when it is available', async () => {
+    const { service } = importService();
+    const ports = slash('emoji', ['add'], { guildId: OTHER_GUILD, attachments: [ATTACHMENT] });
+    vi.mocked(ports.port.client.application.emojis.fetch).mockResolvedValue({
+      find: (predicate: (emoji: { name: string | null }) => boolean) =>
+        [
+          { name: 'add', toString: () => '<:add:1>' },
+          { name: 'sucess', toString: () => '<:sucess:2>' },
+        ].find(predicate),
+    });
+
+    const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
+
+    expect(replies).toEqual(['<:add:1> Emoji **derived** adicionado a este servidor. <:sucess:2>']);
+    expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the message when the emoji lookup fails', async () => {
+    const { importEmoji, service } = importService();
+    const ports = slash('emoji', ['add'], { guildId: OTHER_GUILD });
+    vi.mocked(ports.port.client.application.emojis.fetch).mockRejectedValue(new Error('Unavailable'));
+
+    const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
+
+    expect(importEmoji).not.toHaveBeenCalled();
+    expect(replies).toEqual(['🖼️ Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.']);
+    expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
+  });
+
+  const importErrorMarks = {
+    missing_source: '🖼️',
+    empty_input: '🖼️',
+    unsupported_format: '🖼️',
+    invalid_name: '🏷️',
+    invalid_source: '⚠️',
+    invalid_input: '⚠️',
+    input_too_large: '⚠️',
+    too_many_pixels: '⚠️',
+    too_many_frames: '⚠️',
+    duration_exceeded: '⚠️',
+    capacity_reached: '⚠️',
+    download_blocked: '🛡️',
+    source_missing: '🔎',
+    queue_full: '☕',
+    destination_unavailable: '😅',
+    download_failed: '❌',
+    corrupt_image: '❌',
+    processing_timeout: '❌',
+    size_unreachable: '❌',
+    animation_lost: '❌',
+    create_failed: '❌',
+  } as const satisfies Record<EmojiImportErrorCode, string>;
+
+  it.each(Object.entries(importErrorMarks))(
+    'maps %s to its catalog emoji without repeating the message',
+    async (code, mark) => {
+      const { importEmoji, service } = importService();
+      const message = `único ${code}`;
+      importEmoji.mockRejectedValueOnce(emojiError(code as EmojiImportErrorCode, message));
+      const ports = slash('emoji', ['add'], { guildId: OTHER_GUILD, attachments: [ATTACHMENT] });
+
+      const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
+
+      expect(replies).toEqual([`${mark} ${message}`]);
+      expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
+    },
+  );
+
+  it('uses the guild emoji when the guild executor has no server', async () => {
+    const { importEmoji, service } = importService();
+    const names: string[] = [];
+    const reply = vi.fn(async () => undefined);
+    await createEmojiAddExecutor('guild')({
+      apiPing: 0,
+      gatewayPing: 0,
+      acknowledge: async () => undefined,
+      emoji: async (name) => {
+        names.push(name);
+        return name === 'guild' ? '<:guild:1>' : '';
+      },
+      reply,
+      attachments: [ATTACHMENT],
+      options: [],
+      emojiImport: service,
+    });
+
+    expect(importEmoji).not.toHaveBeenCalled();
+    expect(names).toEqual(['guild']);
+    expect(reply).toHaveBeenCalledExactlyOnceWith('<:guild:1> Este comando só pode ser usado em um servidor.');
   });
 });
 

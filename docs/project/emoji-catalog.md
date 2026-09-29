@@ -6,7 +6,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 24 desses nomes; os outros 34 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
-Última conferência pelo GrokBot: Development 2026-09-28; Production 2026-09-28.
+Última conferência pelo GrokBot: Development 2026-09-29; Production 2026-09-29.
 
 | Nome | Uso na mensagem | Development | Production |
 | --- | --- | --- | --- |
@@ -60,7 +60,6 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `ShareScreen` | Transmissão de tela | disponível | disponível |
 | `shield` | URL de origem fora do CDN do Discord | disponível | disponível |
 | `Stackofbooks` | Lista extensa, histórico ou coleção de conteúdos | disponível | disponível |
-| `Staff` | Equipe ou cargo da staff | disponível | disponível |
 | `StaffPing` | Chamado ou menção à staff | disponível | disponível |
 | `star` | Destaque ou favorito | disponível | disponível |
 | `sucess` | Conclusão da importação de emoji, verificado ou confirmado | disponível | disponível |
@@ -68,6 +67,13 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
 | `unmute` | Fim do silenciamento de membro | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
+| `Angry` | pendente | disponível | disponível |
+| `Note` | pendente | disponível | disponível |
+| `ping` | pendente | disponível | disponível |
+| `question` | pendente | disponível | disponível |
+| `scared` | pendente | disponível | disponível |
+| `SpinningDancing` | pendente | disponível | disponível |
+| `staff` | pendente | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

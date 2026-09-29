@@ -33,19 +33,40 @@ export function createDiscordImageDownloader(
     } catch {
       throw emojiError('download_failed', 'Não foi possível baixar a imagem do Discord dentro do tempo limite.');
     }
-    if (response.status === 404) {
-      throw emojiError('source_missing', 'Imagem de origem não encontrada no Discord.');
-    }
     if (!response.ok) {
+      // O CDN responde 415 Invalid resource quando o .gif do emoji estático não existe.
+      const bodyPrefix = response.status === 415 ? await responsePreview(response) : '';
+      if (response.status === 404 || missingEmojiVariant(response.status, bodyPrefix)) {
+        throw emojiError('source_missing', 'Imagem de origem não encontrada no Discord.');
+      }
       throw emojiError('download_failed', `O Discord recusou a imagem de origem (HTTP ${response.status}).`);
     }
-
     const declared = Number(response.headers.get('content-length') ?? 0);
     if (Number.isFinite(declared) && declared > options.maxBytes) {
       throw emojiError('input_too_large', 'A imagem de origem excede o limite interno de entrada.');
     }
     return await readBounded(response, options.maxBytes);
   };
+}
+
+function missingEmojiVariant(status: number, bodyPrefix: string): boolean {
+  return status === 415 && bodyPrefix.includes('Invalid resource');
+}
+
+async function responsePreview(response: Response): Promise<string> {
+  try {
+    const reader = response.body?.getReader();
+    if (!reader) return '';
+    const { value } = await reader.read();
+    await reader.cancel();
+    if (!value) return '';
+    return new TextDecoder('utf-8', { fatal: false })
+      .decode(value.subarray(0, 180))
+      .replace(/[^\x20-\x7E]+/gu, ' ')
+      .slice(0, 180);
+  } catch {
+    return '';
+  }
 }
 
 function parseAllowedUrl(rawUrl: string): string {

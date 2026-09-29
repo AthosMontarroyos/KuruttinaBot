@@ -85,6 +85,35 @@ describe('download restrito ao CDN do Discord', () => {
     );
   });
 
+  it('trata GIF inexistente respondido como HTTP 415 como origem ausente', async () => {
+    const body = JSON.stringify({
+      message: 'Invalid resource "https://cdn.discordapp.com/emojis/799041451290918942.gif?size=128&quality=lossless"',
+    });
+    const download = createDiscordImageDownloader(async () => responseStub({
+      ok: false,
+      status: 415,
+      chunks: [new TextEncoder().encode(body)],
+    }));
+
+    await expectErrorCode(
+      download('https://cdn.discordapp.com/emojis/799041451290918942.gif?size=128&quality=lossless', OPTIONS),
+      'source_missing',
+    );
+  });
+
+  it('mantém outro HTTP 415 como falha de download', async () => {
+    const download = createDiscordImageDownloader(async () => responseStub({
+      ok: false,
+      status: 415,
+      chunks: [new TextEncoder().encode('unsupported media type')],
+    }));
+
+    await expectErrorCode(
+      download('https://cdn.discordapp.com/emojis/123456789012345678.gif', OPTIONS),
+      'download_failed',
+    );
+  });
+
   it('mapeia erro HTTP do Discord para falha de download', async () => {
     const download = createDiscordImageDownloader(async () => responseStub({ ok: false, status: 500, chunks: [] }));
     await expectErrorCode(

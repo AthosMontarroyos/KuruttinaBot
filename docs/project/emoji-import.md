@@ -57,7 +57,7 @@ Detalhes de implementação relevantes:
 
 `downloadDiscordImage` só aceita `https`, porta 443, sem credenciais, hosts `cdn.discordapp.com`/`media.discordapp.net`, paths `/emojis` ou `/attachments`, sem redirects (`redirect: 'error'`) e com stream limitado a `maxBytes`. **Limitação registrada:** não há pinning de DNS — um resolve falsificado para o mesmo host ainda passaria na allowlist; o transporte TLS continua obrigatório.
 
-Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=lossless` e, se ausente, como `.png`, para nunca perder animação por adivinhar o formato.
+Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=lossless` e, se ausente, como `.png`, para nunca perder animação por adivinhar o formato. Um GIF que não existe volta HTTP 415 com `Invalid resource`, não 404; essa resposta conta como ausência e a tentativa segue para PNG.
 
 ## Destinos e erros
 

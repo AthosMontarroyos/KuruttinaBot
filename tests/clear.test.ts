@@ -117,7 +117,7 @@ describe('clear command', () => {
   });
 
   describe('execute', () => {
-    it('continues deletion without emojis when Discord emoji lookup fails', async () => {
+    it('keeps deleting with the cleaning fallback and omits slap when emoji lookup fails', async () => {
       const port = mockBulkDeletePort({
         fetchMessages: vi.fn(async () => [{ id: 'msg-1', createdTimestamp: Date.now(), author: { id: 'user-1' } }]),
       });
@@ -128,7 +128,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(port.bulkDelete).toHaveBeenCalledOnce();
-      expect(ctx.sendMessage).toHaveBeenCalledWith('Foram apagadas 1 mensagens em <#channel-123>!');
+      expect(ctx.sendMessage).toHaveBeenCalledWith('🧹 Foram apagadas 1 mensagens em <#channel-123>!');
     });
 
     it('replies in Portuguese when no text channel', async () => {
@@ -370,7 +370,7 @@ describe('clear command', () => {
         ],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ID:ID-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!');
     });
 
     it('rejects overlapping operations on the same channel but allows another channel', async () => {
@@ -563,7 +563,7 @@ describe('clear command', () => {
     it.each(['', null, 123])('rejects malformed slash user filters: %s', async (value) => {
       const ctx = mockContext({ options: [{ name: 'quantidade', value: 1 }, { name: 'usuario', value }] });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ID:ID-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!');
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
   });

@@ -8,6 +8,7 @@ import {
   type InteractionReplyOptions,
 } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
+import { withEmojis } from '#bot/commands/access.js';
 import type { CommandReply, CommandContext, HasPermission } from '#bot/commands/types.js';
 import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
@@ -93,13 +94,21 @@ function adaptInteraction(interaction: ChatInputCommandInteraction): Interaction
   };
 }
 
-async function respondToFailure(interaction: InteractionCommandPort): Promise<void> {
+async function respondToFailure(
+  interaction: InteractionCommandPort,
+  emoji: CommandContext['emoji'],
+): Promise<void> {
+  // A consulta de emoji pode esperar a API; reconhece antes se a interação ainda está aberta.
+  if (!interaction.isDeferred() && !interaction.isReplied()) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  }
+  const content = withEmojis(await emoji('error'), failureMessage);
   if (interaction.isDeferred()) {
-    await interaction.editReply(failureMessage);
+    await interaction.editReply(content);
   } else if (interaction.isReplied()) {
-    await interaction.followUp({ content: failureMessage, flags: MessageFlags.Ephemeral });
+    await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
   } else {
-    await interaction.reply({ content: failureMessage, flags: MessageFlags.Ephemeral });
+    await interaction.reply({ content, flags: MessageFlags.Ephemeral });
   }
 }
 
@@ -113,6 +122,7 @@ export async function handleChatInputCommand(
   interaction: InteractionCommandPort,
   commandsHandler: CommandsHandler,
 ): Promise<void> {
+  const emoji = createEmojiResolver(interaction.client.application);
   try {
     const context: CommandContext = {
       userId: interaction.userId,
@@ -123,7 +133,7 @@ export async function handleChatInputCommand(
       },
       apiPing: Math.max(0, Date.now() - interaction.createdTimestamp),
       gatewayPing: Math.max(0, Math.round(interaction.client.ws.ping)),
-      emoji: createEmojiResolver(interaction.client.application),
+      emoji,
       reply: async (content: CommandReply) => {
         if (interaction.isDeferred()) await interaction.editReply(content);
         else if (interaction.isReplied()) await interaction.followUp(content);
@@ -146,7 +156,7 @@ export async function handleChatInputCommand(
     });
 
     try {
-      await respondToFailure(interaction);
+      await respondToFailure(interaction, emoji);
     } catch {
       log('error', 'command_failure_response_failed', {
         command: interaction.commandName,

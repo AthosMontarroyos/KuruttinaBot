@@ -60,14 +60,15 @@ export async function validateCommandAccess(
   if (access.kind === 'staff') {
     // Acknowledge before any database/network work, including denials.
     await context.acknowledge();
-    if (!context.userId || !context.guildId || !staff) return 'Você não tem acesso a este comando neste servidor.';
+    const staffDenied = 'Você não tem acesso a este comando neste servidor.';
+    if (!context.userId || !context.guildId || !staff) return denial(context, 'lock', staffDenied);
     try {
       const role = await staff.getStaffRole(context.userId, context.guildId);
       if (role !== 'creator' && !(role === 'dev' && access.minimumRole === 'dev')) {
-        return 'Você não tem acesso a este comando neste servidor.';
+        return denial(context, 'lock', staffDenied);
       }
     } catch {
-      return 'Não consegui verificar o acesso agora. Tente novamente mais tarde.';
+      return denial(context, 'ops', 'Não consegui verificar o acesso agora. Tente novamente mais tarde.');
     }
   }
   const messages: AccessDenialMessages = { ...defaultMessages, ...access.messages };

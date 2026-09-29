@@ -58,16 +58,21 @@ describe('interaction command boundary', () => {
     expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('Done');
   });
 
-  it('replies ephemerally when execution fails before acknowledgement', async () => {
+  it('acknowledges before querying emojis when execution fails early', async () => {
     const interaction = interactionPort();
+    const fetch = vi.mocked(interaction.client.application.emojis.fetch);
+    fetch.mockImplementation(async () => {
+      expect(interaction.isDeferred()).toBe(true);
+      return { find: () => undefined };
+    });
     const handler = new CommandsHandler([command(async () => { throw new Error('private detail'); })]);
 
     await handleChatInputCommand(interaction, handler);
 
-    expect(interaction.reply).toHaveBeenCalledExactlyOnceWith({
-      content: 'Algo deu errado ao executar este comando.',
-      flags: MessageFlags.Ephemeral,
-    });
+    expect(interaction.deferReply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral });
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Algo deu errado ao executar este comando.');
+    expect(interaction.reply).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledOnce();
   });
 
   it('edits the deferred response when execution fails after acknowledgement', async () => {
@@ -79,12 +84,45 @@ describe('interaction command boundary', () => {
 
     await handleChatInputCommand(interaction, handler);
 
-    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('Algo deu errado ao executar este comando.');
+    expect(interaction.deferReply).toHaveBeenCalledOnce();
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Algo deu errado ao executar este comando.');
+  });
+
+  it('reuses the shared emoji lookup when reporting an unexpected failure', async () => {
+    const interaction = interactionPort();
+    vi.mocked(interaction.client.application.emojis.fetch).mockResolvedValue({
+      find: (predicate: (emoji: { name: string | null }) => boolean) =>
+        [
+          { name: 'warning', toString: () => '<:warning:1>' },
+          { name: 'error', toString: () => '<:error:2>' },
+        ].find(predicate),
+    });
+    const handler = new CommandsHandler([command(async (context) => {
+      await context.acknowledge();
+      await context.emoji('warning');
+      throw new Error('private detail');
+    })]);
+
+    await handleChatInputCommand(interaction, handler);
+
+    expect(interaction.client.application.emojis.fetch).toHaveBeenCalledOnce();
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('<:error:2> Algo deu errado ao executar este comando.');
+  });
+
+  it('uses the error fallback when the emoji lookup fails during an unexpected error', async () => {
+    const interaction = interactionPort();
+    vi.mocked(interaction.client.application.emojis.fetch).mockRejectedValue(new Error('Unavailable'));
+    const handler = new CommandsHandler([command(async () => { throw new Error('private detail'); })]);
+
+    await handleChatInputCommand(interaction, handler);
+
+    expect(interaction.client.application.emojis.fetch).toHaveBeenCalledOnce();
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Algo deu errado ao executar este comando.');
   });
 
   it('contains a failure while sending the safe error response', async () => {
     const interaction = interactionPort();
-    interaction.reply = vi.fn().mockRejectedValue(new Error('Discord unavailable'));
+    interaction.editReply = vi.fn().mockRejectedValue(new Error('Discord unavailable'));
     const handler = new CommandsHandler([command(async () => { throw new Error('private detail'); })]);
 
     await expect(handleChatInputCommand(interaction, handler)).resolves.toBeUndefined();
@@ -99,7 +137,8 @@ describe('interaction command boundary', () => {
 
     await handleChatInputCommand(interaction, handler);
     expect(interaction.followUp).toHaveBeenCalledExactlyOnceWith({
-      content: 'Algo deu errado ao executar este comando.', flags: MessageFlags.Ephemeral,
+      content: '❌ Algo deu errado ao executar este comando.', flags: MessageFlags.Ephemeral,
     });
+    expect(interaction.deferReply).not.toHaveBeenCalled();
   });
 });

@@ -127,7 +127,7 @@ async function execute(context: CommandContext): Promise<void> {
   }
 
   if (args.userId !== undefined && (typeof args.userId !== 'string' || !/^\d{17,20}$/u.test(args.userId))) {
-    await context.reply(withEmojis(await context.emoji('warning'), 'Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!'));
+    await context.reply(withEmojis(await context.emoji('ID'), 'Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!'));
     return;
   }
 

@@ -1,6 +1,7 @@
 import { PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import { hasConsistentDefaultPermissions, loadCommands } from '../apps/bot/src/commands/loadCommands.js';
+import { command as emojiCommand } from '../apps/bot/src/commands/mod/emoji.js';
 import { command as pingCommand } from '../apps/bot/src/commands/public/ping.js';
 import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
 import type { BulkDeletePort, ChatInputCommand, CommandAccess, CommandContext } from '../apps/bot/src/commands/types.js';
@@ -152,6 +153,56 @@ describe('commands', () => {
   it('contains failed prefix replies at the event boundary', async () => {
     const reply = vi.fn().mockRejectedValue(new Error('Cannot send'));
     await expect(handleMessageCreate(message('k!ping', reply), new CommandsHandler([pingCommand]))).resolves.toBeUndefined();
+  });
+
+  it('guides a bare root command once with the book emoji', async () => {
+    const reply = vi.fn().mockResolvedValue(undefined);
+    await new CommandsHandler([emojiCommand]).execute('emoji', commandContext(reply));
+    expect(reply).toHaveBeenCalledExactlyOnceWith('<:book:book-id> Este comando exige um subcomando. Use `k!emoji-add`.');
+  });
+
+  it('guides a route without an alias once with the book emoji', async () => {
+    const reply = vi.fn().mockResolvedValue(undefined);
+    await new CommandsHandler([{
+      data: new SlashCommandBuilder().setName('grupo').setDescription('Grupo'),
+      access: { kind: 'public' },
+      scope: 'global',
+      routes: [{ path: ['add'], aliases: [], execute: vi.fn() }],
+    }]).execute('grupo', commandContext(reply));
+    expect(reply).toHaveBeenCalledExactlyOnceWith('<:book:book-id> Este comando exige um subcomando.');
+  });
+
+  it('answers a saturated queue once with the coffee emoji', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const execute = vi.fn(async () => { await gate; });
+    const handler = new CommandsHandler([{
+      data: new SlashCommandBuilder().setName('example').setDescription('Example'),
+      access: { kind: 'public' },
+      scope: 'global',
+      execute,
+    }]);
+    const hanging = Array.from({ length: 64 }, () => handler.execute('example', commandContext()));
+    const reply = vi.fn().mockResolvedValue(undefined);
+    const acknowledge = vi.fn().mockResolvedValue(undefined);
+    await handler.execute('example', { ...commandContext(reply), acknowledge });
+    expect(acknowledge).toHaveBeenCalledOnce();
+    expect(reply).toHaveBeenCalledExactlyOnceWith('<:coffee:coffee-id> Estou ocupado agora. Tente novamente em instantes.');
+    expect(execute).toHaveBeenCalledTimes(64);
+    release();
+    await Promise.all(hanging);
+  });
+
+  it.each(['k!example', 'K!example'])('stays quiet when %s throws', async (content) => {
+    const reply = vi.fn().mockResolvedValue(undefined);
+    const handler = new CommandsHandler([{
+      data: new SlashCommandBuilder().setName('example').setDescription('Example'),
+      access: { kind: 'public' },
+      scope: 'global',
+      execute: async () => { throw new Error('private detail'); },
+    }]);
+    await expect(handleMessageCreate(message(content, reply), handler)).resolves.toBeUndefined();
+    expect(reply).not.toHaveBeenCalled();
   });
 });
 

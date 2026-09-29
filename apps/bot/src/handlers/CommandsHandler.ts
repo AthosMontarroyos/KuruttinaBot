@@ -1,6 +1,6 @@
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
 import type { ChatInputCommand, CommandContext, CommandPayload, CommandRoute, CommandScope, StaffAccessPort } from '#bot/commands/types.js';
-import { validateCommandAccess } from '#bot/commands/access.js';
+import { validateCommandAccess, withEmojis } from '#bot/commands/access.js';
 
 type Resolution =
   | { readonly status: 'ready'; readonly command: ChatInputCommand; readonly route?: CommandRoute | undefined }
@@ -11,11 +11,12 @@ function samePath(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((segment, index) => segment === right[index]);
 }
 
-function missingRouteMessage(command: ChatInputCommand): string {
+async function missingRouteMessage(context: CommandContext, command: ChatInputCommand): Promise<string> {
   const alias = command.routes?.[0]?.aliases[0];
-  return alias === undefined
+  const text = alias === undefined
     ? 'Este comando exige um subcomando.'
     : `Este comando exige um subcomando. Use \`k!${alias}\`.`;
+  return withEmojis(await context.emoji('book'), text);
 }
 
 export class CommandsHandler {
@@ -67,7 +68,7 @@ export class CommandsHandler {
     const command = resolution.status === 'unknown' ? undefined : resolution.command;
     if (this.pending.size >= 64 || (command?.access.kind === 'staff' && this.pending.size >= 12)) {
       await context.acknowledge();
-      await context.reply('Estou ocupado agora. Tente novamente em instantes.');
+      await context.reply(withEmojis(await context.emoji('coffee'), 'Estou ocupado agora. Tente novamente em instantes.'));
       return;
     }
     const execution = this.run(commandName, routePath, context);
@@ -98,7 +99,7 @@ export class CommandsHandler {
     if (resolution.status === 'unknown') throw new Error(`Unknown command: ${commandName}`);
     if (resolution.status === 'missing-route') {
       await context.acknowledge();
-      await context.reply(missingRouteMessage(resolution.command));
+      await context.reply(await missingRouteMessage(context, resolution.command));
       return;
     }
 

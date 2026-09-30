@@ -1,6 +1,6 @@
 # Importação e processamento de imagens de emoji
 
-Última atualização: 28 de setembro de 2026.
+Última atualização: 29 de setembro de 2026.
 
 Este documento descreve o núcleo compartilhado de importação de emojis e a integração por trás de dois comandos: **Dev** (`/dev emoji add` → `k!dev-emoji-add`, nos Application Emojis do bot de produção) e **Servidor** (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). Os dois usam a mesma fila, os mesmos limites e o mesmo downloader; o que os separa são a política de acesso e o destino. O destino `application` não usa a aplicação conectada ao Gateway: a composição injeta uma capability que autentica somente a credencial de production.
 
@@ -9,7 +9,8 @@ Este documento descreve o núcleo compartilhado de importação de emojis e a in
 Implementado:
 
 - `apps/bot/src/application/emojis/types.ts`: contratos, limites, fila e códigos de erro.
-- `apps/bot/src/application/emojis/prepareEmojiImage.ts`: validação de entrada, chamada de compressão e defesas finais (limite de saída, preservação de animação, sanitização de erros genéricos).
+- `apps/bot/src/application/emojis/imageSignature.ts`: reconhecimento de PNG, JPEG, GIF, WebP e AVIF pela assinatura, sem decodificar.
+- `apps/bot/src/application/emojis/prepareEmojiImage.ts`: validação de entrada, assinatura antes do decodificador, chamada de compressão e defesas finais (limite de saída, preservação de animação, sanitização de erros genéricos).
 - `apps/bot/src/application/emojis/importEmoji.ts`: serviço com fila, parsing de referências, derivação de nome, verificação de capacidade e fallback GIF→PNG.
 - `apps/bot/src/infrastructure/images/downloadDiscordImage.ts`: download restrito ao CDN do Discord.
 - `apps/bot/src/infrastructure/images/sharpEmojiProcessor.ts`: escada de compressão com `sharp` e redução de quadros com `gifenc`.
@@ -56,7 +57,7 @@ Detalhes de implementação relevantes:
 
 ## Download
 
-`downloadDiscordImage` só aceita `https`, porta 443, sem credenciais, hosts `cdn.discordapp.com`/`media.discordapp.net`, paths `/emojis` ou `/attachments`, sem redirects (`redirect: 'error'`) e com stream limitado a `maxBytes`. **Limitação registrada:** não há pinning de DNS — um resolve falsificado para o mesmo host ainda passaria na allowlist; o transporte TLS continua obrigatório.
+`downloadDiscordImage` só aceita `https`, porta 443, sem credenciais, hosts `cdn.discordapp.com`/`media.discordapp.net`, paths `/emojis`, `/attachments` (arquivo de mensagem) ou `/ephemeral-attachments` (arquivo da opção de slash command), sem redirects (`redirect: 'error'`) e com stream limitado a `maxBytes`. A leitura fica só em memória: nada é gravado em disco e o arquivo original nunca é reenviado. O Discord recebe apenas a imagem recodificada, em data URI. **Limitação registrada:** não há pinning de DNS — um resolve falsificado para o mesmo host ainda passaria na allowlist; o transporte TLS continua obrigatório.
 
 Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=lossless` e, se ausente, como `.png`, para nunca perder animação por adivinhar o formato. Um GIF que não existe volta HTTP 415 com `Invalid resource`, não 404; essa resposta conta como ausência e a tentativa segue para PNG.
 
@@ -64,7 +65,9 @@ Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=l
 
 `createEmojiImportService` aceita origem (referência de emoji `<:nome:id>`/`<a:nome:id>`, ID puro ou URL de anexo) e destino (`application` ou `guild`). Para `application`, a capacidade é verificada antes (`DISCORD_APPLICATION_EMOJI_LIMIT` = 2000) na aplicação de produção; para `guild`, a capacidade é deixada para o erro do Discord. O adapter de servidor envia data URI com MIME explícito (`image/png`/`image/gif`) pelo client ativo. A capability de produção faz o mesmo por REST, em `POST /applications/{id}/emojis`, depois de confirmar `/users/@me` contra `DISCORD_BOT_ID_PRODUCTION`. Essa confirmação ocorre na primeira operação, fica em cache só se passar e não abre Gateway. Identidade divergente, timeout ou resposta inválida falha fechado, sem token em log ou resposta. Os códigos 30008/30018/30056 mapeiam para `capacity_reached`. O command não recebe o objeto de credenciais; a auditoria registra a aplicação de produção, o emoji e, quando são snowflakes, o autor e a guilda.
 
-O nome sai, nesta ordem, da opção `nome`, do nome real do arquivo (sem extensão), do segmento final da URL ou do nome embutido na referência do emoji. Antes de enfileirar, um tamanho declarado acima do limite de entrada falha com `input_too_large` sem consumir download — junto com a cota do destino, é a verificação de falha barata.
+O nome sai, nesta ordem, da opção `nome`, do nome real do arquivo (sem extensão), do segmento final da URL ou do nome embutido na referência do emoji. Antes de enfileirar, um tamanho declarado acima do limite de entrada falha com `input_too_large` sem consumir download — junto com a cota do destino, é a verificação de falha barata. Um `contentType` declarado fora de `image/` também recusa antes do download (`unsupported_format`); ausência, `null` e `image/*` não autorizam o arquivo.
+
+Depois do download, e antes de `sharp`, `sniffImageFormat` exige a assinatura real de PNG, JPEG, GIF, WebP ou AVIF. Sem essa assinatura o decodificador não é chamado. Se o formato que o `sharp` reporta divergir da assinatura, a entrada falha com `corrupt_image`. Extensão e `Content-Type` nunca escolhem o formato aceito.
 
 Todos os erros são `EmojiImportError` com `code` seguro para exibição: `empty_input`, `input_too_large`, `unsupported_format`, `corrupt_image`, `too_many_pixels`, `too_many_frames`, `duration_exceeded`, `processing_timeout`, `size_unreachable`, `animation_lost`, `queue_full`, `invalid_source`, `invalid_name`, `missing_source`, `invalid_input`, `download_blocked`, `download_failed`, `source_missing`, `destination_unavailable`, `capacity_reached`, `create_failed`. `missing_source` e `invalid_input` vêm da leitura das entradas pelo comando e nunca alcançam o download.
 

@@ -92,7 +92,7 @@ export async function validateCommandAccess(
     : access.botPermissions;
   const missingBot = requiredBotPermissions.filter((permission) => !botPermissions.has(permission, true));
   if (missingBot.length > 0) {
-    return denial(context, 'Anger', messages.botMissing.replaceAll('{permissions}', permissionList(missingBot)));
+    return denial(context, 'Angry', messages.botMissing.replaceAll('{permissions}', permissionList(missingBot)));
   }
 
   return null;

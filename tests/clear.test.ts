@@ -202,7 +202,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       const replyArg = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
-      expect(replyArg).toContain('<:Anger:Anger-id>');
+      expect(replyArg).toContain('<:Angry:Angry-id>');
       expect(replyArg).toContain('Preciso destas permissões para fazer a limpeza');
       expect(replyArg).toContain('Gerenciar mensagens');
       expect(replyArg).toContain('Ler histórico');

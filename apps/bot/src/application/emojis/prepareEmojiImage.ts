@@ -1,3 +1,4 @@
+import { sniffImageFormat } from './imageSignature.js';
 import {
   DEFAULT_EMOJI_IMAGE_LIMITS,
   EmojiImportError,
@@ -12,6 +13,9 @@ import {
 const genericProcessingFailure = (): EmojiImportError =>
   emojiError('corrupt_image', 'Não foi possível processar a imagem enviada.');
 
+const unsupportedFormat = (): EmojiImportError =>
+  emojiError('unsupported_format', 'Formato não suportado; use PNG, JPEG, GIF, WebP ou AVIF.');
+
 export async function prepareEmojiImage(
   raw: RawEmojiImage,
   processor: EmojiImageProcessor,
@@ -24,7 +28,12 @@ export async function prepareEmojiImage(
     throw inputTooLargeError(limits.maxInputBytes);
   }
 
+  // Assinatura antes de qualquer decodificador: extensão e Content-Type não autorizam o arquivo.
+  const sniffed = sniffImageFormat(raw.bytes);
+  if (sniffed === undefined) throw unsupportedFormat();
+
   const inspection = await inspect(processor, raw.bytes);
+  if (inspection.format !== sniffed) throw genericProcessingFailure();
   if (inspection.frames > limits.maxFrames) {
     throw emojiError('too_many_frames', `A animação excede ${limits.maxFrames} quadros.`);
   }

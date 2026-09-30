@@ -79,7 +79,8 @@ describe('processador de imagens de emoji (sharp)', () => {
   });
 
   it('rejeita arquivo corrompido', async () => {
-    await expectErrorCode(prepareEmojiImage({ bytes: Uint8Array.from([1, 2, 3, 4]) }, processor), 'corrupt_image');
+    const pngHeader = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0]);
+    await expectErrorCode(prepareEmojiImage({ bytes: pngHeader }, processor), 'corrupt_image');
   });
 
   it('preserva animação, transparência e duração de GIF', async () => {

@@ -12,6 +12,8 @@ import {
   type PreparedEmojiImage,
 } from '../apps/bot/src/application/emojis/types.js';
 
+const PNG_BYTES = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+
 const COMPRESSION: CompressedImage = {
   bytes: Uint8Array.from([9, 9]),
   contentType: 'image/png',
@@ -32,7 +34,7 @@ interface DepsStub {
 }
 
 function depsStub(): DepsStub {
-  const download = vi.fn(async () => Uint8Array.from([1, 2, 3]));
+  const download = vi.fn(async () => PNG_BYTES);
   const countApplicationEmojis = vi.fn(async () => 10);
   const createEmoji = vi.fn(
     async (_destination: EmojiDestination, name: string, _image: PreparedEmojiImage) => ({
@@ -78,14 +80,14 @@ describe('importação de emojis', () => {
     expect(stub.create.countApplicationEmojis).toHaveBeenCalledTimes(1);
     expect(stub.create.create).toHaveBeenCalledWith({ kind: 'application' }, 'festinha', expect.anything());
     expect(result.created).toEqual({ id: '41771983429993937', name: 'festinha' });
-    expect(result.image.sourceBytes).toBe(3);
+    expect(result.image.sourceBytes).toBe(PNG_BYTES.byteLength);
   });
 
   it('tenta o GIF animado antes e cai para PNG quando não existe', async () => {
     const stub = depsStub();
     stub.download
       .mockRejectedValueOnce(emojiError('source_missing', 'não achado'))
-      .mockResolvedValueOnce(Uint8Array.from([4]));
+      .mockResolvedValueOnce(PNG_BYTES);
     const service = createEmojiImportService(stub.deps);
 
     await service.importEmoji({
@@ -305,7 +307,7 @@ describe('importação de emojis', () => {
       'queue_full',
     );
 
-    release(Uint8Array.from([1, 2, 3]));
+    release(PNG_BYTES);
     await expect(first).resolves.toMatchObject({ created: { name: 'stats' } });
   });
 

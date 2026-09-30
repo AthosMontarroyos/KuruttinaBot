@@ -12,9 +12,12 @@ import {
  * resolução DNS controlável pelo atacante. O pinning de IP não é aplicado por
  * ausência de alvo resolvível fora do controle do Discord (limitação registrada
  * em docs/project/emoji-import.md).
+ *
+ * Paths: `/emojis` (emoji de outro servidor), `/attachments` (arquivo de
+ * mensagem) e `/ephemeral-attachments` (arquivo da opção de slash command).
  */
 const DISCORD_CDN_HOSTS: ReadonlySet<string> = new Set(['cdn.discordapp.com', 'media.discordapp.net']);
-const ALLOWED_PATH_PATTERN = /^\/(?:emojis|attachments)\//u;
+const ALLOWED_PATH_PATTERN = /^\/(?:emojis|attachments|ephemeral-attachments)\//u;
 
 export type DiscordImageFetch = (url: string, init?: RequestInit) => Promise<Response>;
 

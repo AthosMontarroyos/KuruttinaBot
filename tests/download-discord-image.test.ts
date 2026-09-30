@@ -62,6 +62,18 @@ describe('download restrito ao CDN do Discord', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('aceita anexos efêmeros de opção de slash command', async () => {
+    const fetchMock = vi.fn(async () => responseStub());
+    const download = createDiscordImageDownloader(fetchMock);
+
+    await download(
+      'https://cdn.discordapp.com/ephemeral-attachments/1/2/party_cat.png?ex=65d903de&is=65c68ede&hm=abc',
+      OPTIONS,
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     ['protocolo não-HTTPS', 'http://cdn.discordapp.com/emojis/123456789012345678.png'],
     ['host fora da allowlist', 'https://evil.example/emojis/123456789012345678.png'],

@@ -73,7 +73,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `scared` | Susto, medo ou alerta assustador | disponível | disponível |
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
 | `staff` | Equipe ou cargo da staff | disponível | disponível |
-| `affiliate` | pendente | disponível | disponível |
+| `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

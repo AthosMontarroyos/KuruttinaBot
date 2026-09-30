@@ -11,3 +11,7 @@ O monorepo implementa um bot Discord em TypeScript/ESM, `packages/config` e `pac
 A raiz contém o único `squarecloud.app`, com bot como processo atual. O comando de build compila o bot antes do start. O futuro site compartilhará essa aplicação como processo separado após implementação e medição de recursos. Docker, Compose e o pacote opcional de automação foram retirados.
 
 Execução local: Node 22.14+/24/26 para o bot, `npm ci`, `.env` na raiz, `npm run dev`; para produção equivalente, `npm run build` e `npm start`. O CI faz typecheck, testes, integração PostgreSQL, build e Gitleaks. A referência operacional atual é a [documentação de desenvolvimento](development.md), e a arquitetura decidida está no [ADR](../decisions/square-cloud-supabase.md).
+
+## Lacunas conhecidas
+
+A [personalidade do bot](bot-personality.md) está documentada e ainda não foi aplicada às mensagens dos comandos. O texto que o usuário recebe continua o que o código envia hoje.

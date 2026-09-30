@@ -33,6 +33,7 @@ Antes de alterar um artefato, leia integralmente cada documento diretamente apli
 - [Deployment, operação e performance](docs/agents/deployment.md): aplicação Square Cloud, Supabase, recursos, observabilidade e resiliência.
 - [Assets](docs/agents/assets.md): armazenamento R2, integração, otimização, proveniência e limpeza.
 - [Catálogo de emojis para agentes](docs/project/emoji-catalog.md): documentação mantida pelo DevOps do GrokBot neste repositório; consulte aqui os nomes e usos, sem buscar o catálogo no R2.
+- [Personalidade do bot](docs/project/bot-personality.md): voz das respostas ao usuário; consulte ao escrever ou revisar esse texto.
 - [Desenvolvimento, testes e conclusão](docs/agents/testing.md): comandos, testes, Git, documentação, ambientes, divisão entre skills e Definition of Done.
 
 ## Uso conjunto

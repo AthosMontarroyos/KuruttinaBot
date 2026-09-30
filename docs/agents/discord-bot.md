@@ -53,3 +53,9 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 **Nível:** MUST
 
 **Regra:** No startup, valide config e conexão antes de declarar readiness. No shutdown, pare de aceitar trabalho, encerre timers/collectors, destrua client Discord e feche pool com timeout.
+
+### Regra: voz das respostas
+
+**Nível:** SHOULD
+
+**Regra:** Texto de resposta ao usuário segue [a personalidade do bot](../project/bot-personality.md). O tom não reduz a clareza, não estoura o limite de mensagem do Discord e não altera o contrato de autorização nem a copy que explica a negação. Logs de terminal e mensagens operacionais para a equipe ficam fora desse tom.

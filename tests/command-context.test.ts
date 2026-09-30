@@ -44,7 +44,7 @@ describe('shared command adapters', () => {
     expect(await Promise.all([
       emoji('dancing'), emoji('stats'), emoji('gateway'),
       emoji('warning'), emoji('loading'), emoji('error'), emoji('search'), emoji('add'),
-      emoji('Anger'), emoji('Disappointed'), emoji('ops'),
+      emoji('Angry'), emoji('Disappointed'), emoji('ops'),
       emoji('ChannelBrowser'), emoji('guild'), emoji('ID'),
       emoji('developer'), emoji('lock'), emoji('book'), emoji('coffee'),
       emoji('photo'), emoji('label'), emoji('shield'),
@@ -63,6 +63,8 @@ describe('shared command adapters', () => {
     expect(await emoji('success')).toBe('');
     expect(await emoji('api')).toBe('');
     expect(await emoji('API')).toBe('');
+    expect(await emoji('anger')).toBe('');
+    expect(await emoji('Anger')).toBe('');
     expect(withEmojis(cleaning, 'Foram apagadas 1 mensagens em <#channel>!', slap)).toBe(
       '🧹 Foram apagadas 1 mensagens em <#channel>!',
     );
@@ -74,11 +76,11 @@ describe('shared command adapters', () => {
       find: (predicate: (emoji: { name: string | null }) => boolean) =>
         [
           { name: 'sucess', toString: () => '<:sucess:9>' },
-          { name: 'Anger', toString: () => '<:Anger:1>' },
+          { name: 'Angry', toString: () => '<:Angry:1>' },
         ].find(predicate),
     }));
     const emoji = createEmojiResolver({ emojis: { fetch } });
-    expect(await Promise.all([emoji('sucess'), emoji('Anger'), emoji('add')])).toEqual(['<:sucess:9>', '<:Anger:1>', '➕']);
+    expect(await Promise.all([emoji('sucess'), emoji('Angry'), emoji('add')])).toEqual(['<:sucess:9>', '<:Angry:1>', '➕']);
     expect(fetch).toHaveBeenCalledOnce();
   });
 

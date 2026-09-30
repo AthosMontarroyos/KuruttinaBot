@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 24 desses nomes; os outros 34 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 24 desses nomes; os outros 39 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-09-30; Production 2026-09-30.
 
@@ -20,7 +20,6 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `error` | Falha ao buscar, apagar, importar ou erro inesperado no slash | disponível | disponível |
 | `search` | Nenhuma mensagem encontrada ou emoji de origem ausente | disponível | disponível |
 | `add` | Emoji adicionado a este servidor | disponível | disponível |
-| `Anger` | Bot sem as permissões necessárias no canal | ausente | ausente |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
 | `ban` | Banimento de membro | disponível | disponível |
 | `book` | Orientação quando o comando exige um subcomando | disponível | disponível |
@@ -66,7 +65,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
 | `unmute` | Fim do silenciamento de membro | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
-| `Angry` | Raiva, bronca ou irritação forte | disponível | disponível |
+| `Angry` | Bot sem as permissões necessárias no canal | disponível | disponível |
 | `Note` | Anotação, lembrete ou registro | disponível | disponível |
 | `ping` | Latência, conexão ou comando de ping | disponível | disponível |
 | `question` | Dúvida, pergunta ou ajuda | disponível | disponível |
@@ -99,7 +98,7 @@ await context.reply(withEmojis(warning, 'Confira os dados informados.'));
 | `dancing`, `stats`, `gateway` | 💃, 📊, 🌐 |
 | `warning`, `loading`, `cleaning` | ⚠️, ⏳, 🧹 |
 | `error`, `search`, `add`, `sucess` | ❌, 🔎, ➕, ✅ |
-| `Anger`, `Disappointed`, `ops` | 😠, 😞, 😅 |
+| `Angry`, `Disappointed`, `ops` | 😠, 😞, 😅 |
 | `ChannelBrowser`, `guild`, `ID` | 🏘️, 🏘️, 🪪 |
 | `developer`, `lock`, `book`, `coffee` | 🧑‍💻, 🔒, 📖, ☕ |
 | `photo`, `label`, `shield` | 🖼️, 🏷️, 🛡️ |

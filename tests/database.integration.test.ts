@@ -66,7 +66,7 @@ async function startPostgres() {
       port = await availablePort();
       try {
         await run(binaries.pgCtl, [
-          '-D', data, '-l', join(root, 'server.log'), '-o', `-h ${host} -p ${port}`, '-w', 'start',
+          '-D', data, '-l', join(root, 'server.log'), '-o', `-h ${host} -p ${port} -k ${root}`, '-w', 'start',
         ], { timeout: 30_000 });
         started = true;
         break;

@@ -96,6 +96,9 @@ async function execute(
       request.source.size > limits.maxInputBytes) {
     throw inputTooLargeError(limits.maxInputBytes);
   }
+  if (request.source.kind === 'attachment' && rejectsDeclaredContentType(request.source.contentType)) {
+    throw emojiError('unsupported_format', 'Formato não suportado; use PNG, JPEG, GIF, WebP ou AVIF.');
+  }
   if (request.destination.kind === 'application') {
     const count = await deps.create.countApplicationEmojis();
     if (count >= DISCORD_APPLICATION_EMOJI_LIMIT) {
@@ -150,6 +153,12 @@ function deriveName(filename: string | undefined): string | undefined {
   if (filename === undefined || filename === '') return undefined;
   const stem = filename.replace(/\.[A-Za-z0-9]{1,8}$/u, '');
   return EMOJI_NAME_PATTERN.test(stem) ? stem : undefined;
+}
+
+/** O tipo declarado só recusa. Ausência, `null` e `image/*` seguem para a assinatura dos bytes. */
+function rejectsDeclaredContentType(contentType: string | null | undefined): boolean {
+  if (contentType == null) return false;
+  return !contentType.trim().toLowerCase().startsWith('image/');
 }
 
 function urlFilename(rawUrl: string): string | undefined {

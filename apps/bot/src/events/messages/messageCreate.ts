@@ -14,7 +14,12 @@ type MessageCommandPort = Pick<Message, 'content' | 'createdTimestamp' | 'id' | 
 };
 
 function attachmentsOf(message: MessageCommandPort): EmojiAttachment[] {
-  return [...message.attachments.values()].map(({ url, name, size }) => ({ url, name, size }));
+  return [...message.attachments.values()].map(({ url, name, size, contentType }) => ({
+    url,
+    name,
+    size,
+    contentType,
+  }));
 }
 
 export async function handleMessageCreate(message: MessageCommandPort, commandsHandler: CommandsHandler): Promise<void> {

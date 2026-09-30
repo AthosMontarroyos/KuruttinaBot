@@ -169,6 +169,11 @@ export interface EmojiAttachment {
   readonly name?: string | undefined;
   /** Tamanho declarado pelo Discord; permite recusar antes de baixar. */
   readonly size?: number | undefined;
+  /**
+   * MIME declarado pelo Discord. `null` e ausência não autorizam o formato;
+   * só um valor fora de `image/` recusa antes do download.
+   */
+  readonly contentType?: string | null | undefined;
 }
 
 export type EmojiSource =
@@ -178,6 +183,8 @@ export type EmojiSource =
       readonly url: string;
       readonly filename?: string | undefined;
       readonly size?: number | undefined;
+      /** MIME declarado. Só recusa cedo; a assinatura dos bytes é quem autoriza. */
+      readonly contentType?: string | null | undefined;
     };
 
 export type EmojiDestination =

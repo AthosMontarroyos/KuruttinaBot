@@ -1,8 +1,16 @@
-import { MessageFlags, SlashCommandBuilder, type InteractionReplyOptions } from 'discord.js';
+import {
+  ApplicationCommandOptionType,
+  MessageFlags,
+  SlashCommandBuilder,
+  type Interaction,
+  type InteractionReplyOptions,
+} from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
+import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
 import type { ChatInputCommand } from '../apps/bot/src/commands/types.js';
 import {
   handleChatInputCommand,
+  handleInteractionCreate,
   type InteractionCommandPort,
 } from '../apps/bot/src/events/interactions/interactionCreate.js';
 import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
@@ -140,5 +148,55 @@ describe('interaction command boundary', () => {
       content: '❌ Algo deu errado ao executar este comando.', flags: MessageFlags.Ephemeral,
     });
     expect(interaction.deferReply).not.toHaveBeenCalled();
+  });
+
+  it('copies the slash attachment content type into the command context', async () => {
+    let seen: readonly EmojiAttachment[] | undefined;
+    const handler = new CommandsHandler([command(async (context) => {
+      seen = context.attachments;
+    })]);
+    const interaction = {
+      isChatInputCommand: () => true,
+      client: interactionPort().client,
+      commandName: 'example',
+      createdTimestamp: Date.now(),
+      deferred: false,
+      replied: false,
+      id: 'interaction-id',
+      user: { id: '666948364507545600' },
+      memberPermissions: undefined,
+      appPermissions: undefined,
+      channel: null,
+      deferReply: async () => undefined,
+      deleteReply: async () => undefined,
+      editReply: async () => undefined,
+      followUp: async () => undefined,
+      reply: async () => undefined,
+      options: {
+        data: [
+          {
+            name: 'arquivo',
+            type: ApplicationCommandOptionType.Attachment,
+            attachment: {
+              url: 'https://cdn.discordapp.com/ephemeral-attachments/1/2/party_cat.png',
+              name: 'party_cat.png',
+              size: 2048,
+              contentType: 'image/png',
+            },
+          },
+        ],
+      },
+    } as unknown as Interaction;
+
+    await handleInteractionCreate(interaction, handler);
+
+    expect(seen).toEqual([
+      {
+        url: 'https://cdn.discordapp.com/ephemeral-attachments/1/2/party_cat.png',
+        name: 'party_cat.png',
+        size: 2048,
+        contentType: 'image/png',
+      },
+    ]);
   });
 });

@@ -236,6 +236,48 @@ describe('importação de emojis', () => {
     expect(stub.download).not.toHaveBeenCalled();
   });
 
+  it('recusa anexo com tipo declarado fora de imagem antes do download', async () => {
+    const stub = depsStub();
+    const service = createEmojiImportService(stub.deps);
+
+    await expectErrorCode(
+      service.importEmoji({
+        source: {
+          kind: 'attachment',
+          url: 'https://media.discordapp.net/attachments/1/2/party_cat.png',
+          filename: 'party_cat.png',
+          contentType: 'application/pdf',
+        },
+        destination: { kind: 'application' },
+      }),
+      'unsupported_format',
+    );
+    expect(stub.download).not.toHaveBeenCalled();
+    expect(stub.processor.inspect).not.toHaveBeenCalled();
+  });
+
+  it('não trata image/* declarado como autorização e ainda exige a assinatura', async () => {
+    const stub = depsStub();
+    stub.download.mockResolvedValue(Uint8Array.from([1, 2, 3, 4]));
+    const service = createEmojiImportService(stub.deps);
+
+    await expectErrorCode(
+      service.importEmoji({
+        source: {
+          kind: 'attachment',
+          url: 'https://media.discordapp.net/attachments/1/2/icon.svg',
+          filename: 'icon.svg',
+          contentType: 'image/svg+xml',
+        },
+        destination: { kind: 'application' },
+        name: 'icon',
+      }),
+      'unsupported_format',
+    );
+    expect(stub.download).toHaveBeenCalledTimes(1);
+    expect(stub.processor.inspect).not.toHaveBeenCalled();
+  });
+
   it('falha barato quando o bot principal está no limite de Application Emojis', async () => {
     const stub = depsStub();
     stub.create.countApplicationEmojis.mockResolvedValue(DISCORD_APPLICATION_EMOJI_LIMIT);

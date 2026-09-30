@@ -36,6 +36,7 @@ const ATTACHMENT: EmojiAttachment = {
   url: 'https://cdn.discordapp.com/attachments/1/2/party_cat.png',
   name: 'party_cat.png',
   size: 1024,
+  contentType: 'image/png',
 };
 const EMOJI_REF = '<a:festinha:41771983429993937>';
 
@@ -174,7 +175,13 @@ describe('emoji add command routing', () => {
     await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
     expect(importEmoji).toHaveBeenCalledExactlyOnceWith({
-      source: { kind: 'attachment', url: ATTACHMENT.url, filename: 'party_cat.png', size: 1024 },
+      source: {
+        kind: 'attachment',
+        url: ATTACHMENT.url,
+        filename: 'party_cat.png',
+        size: 1024,
+        contentType: 'image/png',
+      },
       destination: { kind: 'guild', guildId: OTHER_GUILD },
       name: undefined,
     });
@@ -441,6 +448,7 @@ describe('emoji add inputs', () => {
       url: ATTACHMENT.url,
       filename: 'party_cat.png',
       size: 1024,
+      contentType: 'image/png',
     });
     expect(importEmoji.mock.calls[0]?.[0].name).toBeUndefined();
   });

@@ -164,6 +164,7 @@ function attachmentSource(attachment: EmojiAttachment): EmojiSource {
     url: attachment.url,
     filename: attachment.name,
     size: attachment.size,
+    contentType: attachment.contentType,
   };
 }
 

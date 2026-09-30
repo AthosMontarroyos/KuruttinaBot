@@ -65,7 +65,12 @@ function splitRoute(options: readonly CommandInteractionOption[]): {
 }
 
 function toEmojiAttachment(attachment: Attachment): EmojiAttachment {
-  return { url: attachment.url, name: attachment.name, size: attachment.size };
+  return {
+    url: attachment.url,
+    name: attachment.name,
+    size: attachment.size,
+    contentType: attachment.contentType,
+  };
 }
 
 /** Adapt a real ChatInputCommandInteraction to the InteractionCommandPort interface. */

@@ -6,7 +6,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 24 desses nomes; os outros 34 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
-Última conferência pelo GrokBot: Development 2026-09-29; Production 2026-09-29.
+Última conferência pelo GrokBot: Development 2026-09-30; Production 2026-09-30.
 
 | Nome | Uso na mensagem | Development | Production |
 | --- | --- | --- | --- |
@@ -20,8 +20,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `error` | Falha ao buscar, apagar, importar ou erro inesperado no slash | disponível | disponível |
 | `search` | Nenhuma mensagem encontrada ou emoji de origem ausente | disponível | disponível |
 | `add` | Emoji adicionado a este servidor | disponível | disponível |
-| `AFFILIATE` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
-| `Anger` | Bot sem as permissões necessárias no canal | disponível | disponível |
+| `Anger` | Bot sem as permissões necessárias no canal | ausente | ausente |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
 | `ban` | Banimento de membro | disponível | disponível |
 | `book` | Orientação quando o comando exige um subcomando | disponível | disponível |
@@ -74,6 +73,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `scared` | Susto, medo ou alerta assustador | disponível | disponível |
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
 | `staff` | Equipe ou cargo da staff | disponível | disponível |
+| `affiliate` | pendente | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

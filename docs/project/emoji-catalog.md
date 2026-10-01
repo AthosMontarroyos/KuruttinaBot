@@ -91,7 +91,7 @@ const warning = await context.emoji('warning');
 await context.reply(withEmojis(warning, 'Confira os dados informados.'));
 ```
 
-Toda mensagem dirigida ao usuário precisa de pelo menos um nome desta tabela de alternativas. O resolver devolve esse Unicode quando o emoji personalizado está ausente ou a consulta falha, e a resposta não sai sem emoji. Emojis complementares podem ficar de fora: `slap` não tem alternativa Unicode e some da confirmação de limpeza quando indisponível, sem retirar `cleaning`. `withEmojis()` omite partes vazias, então não sobra espaço quando um emoji não pode ser exibido. Nomes fora da tabela de alternativas, inclusive grafia diferente da coluna Nome, retornam uma string vazia. Preserve `sucess`, `DiceRooling` e `API`, inclusive a capitalização.
+Toda mensagem dirigida ao usuário precisa de pelo menos um nome desta tabela de alternativas. O resolver devolve esse Unicode quando o emoji personalizado está ausente ou a consulta falha, e a resposta não sai sem emoji. Emojis complementares podem ficar de fora: `slap` não tem alternativa Unicode e some da confirmação de limpeza quando indisponível, sem retirar `cleaning`. `withEmojis()` omite partes vazias, então não sobra espaço quando um emoji não pode ser exibido. Nomes fora da tabela de alternativas devolvem o emoji personalizado quando disponível e uma string vazia quando ele está ausente ou a consulta falha. Grafia diferente da coluna Nome sempre retorna vazio. Preserve `sucess`, `DiceRooling` e `API`, inclusive a capitalização.
 
 | Emojis | Alternativas |
 | --- | --- |

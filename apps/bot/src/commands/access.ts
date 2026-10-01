@@ -36,9 +36,9 @@ function permissionList(permissions: readonly bigint[]): string {
 /** Generic denial copy; a command may override parts of it in its own policy. */
 const defaultMessages: AccessDenialMessages = {
   guildOnly: 'Este comando só pode ser usado em canais de texto de servidor.',
-  userUnavailable: 'Não consegui conferir suas permissões. Tente novamente!',
+  userUnavailable: 'Não consegui conferir suas permissões. Tente de novo.',
   userMissing: 'Você precisa da permissão **{permissions}** neste canal.',
-  botUnavailable: 'Não consegui conferir minhas permissões neste canal. Tente novamente!',
+  botUnavailable: 'Não consegui conferir minhas permissões neste canal. Tente de novo.',
   botMissing: 'Preciso destas permissões para executar este comando: **{permissions}**.',
 };
 
@@ -68,7 +68,7 @@ export async function validateCommandAccess(
         return denial(context, 'lock', staffDenied);
       }
     } catch {
-      return denial(context, 'ops', 'Não consegui verificar o acesso agora. Tente novamente mais tarde.');
+      return denial(context, 'ops', 'Não consegui verificar o acesso agora. Tente de novo mais tarde.');
     }
   }
   const messages: AccessDenialMessages = { ...defaultMessages, ...access.messages };

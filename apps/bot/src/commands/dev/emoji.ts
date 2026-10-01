@@ -36,7 +36,7 @@ export const command = {
     botPermissions: [PermissionFlagsBits.ViewChannel],
     requireChannelSend: true,
     messages: {
-      guildOnly: 'Vamos usar os comandos de equipe em um canal de texto de servidor!',
+      guildOnly: 'Use um canal de texto de servidor para os comandos de equipe.',
       botMissing: 'Preciso destas permissões para executar este comando: **{permissions}**.',
     },
   },

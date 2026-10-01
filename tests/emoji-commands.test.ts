@@ -185,7 +185,7 @@ describe('emoji add command routing', () => {
       destination: { kind: 'guild', guildId: OTHER_GUILD },
       name: undefined,
     });
-    expect(texts(ports.reply)).toEqual(['➕ Emoji **derived** adicionado a este servidor. ✅']);
+    expect(texts(ports.reply)).toEqual(['➕ Pronto. O emoji **derived** agora está neste servidor. ✅']);
     expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 
@@ -201,7 +201,7 @@ describe('emoji add command routing', () => {
       expect(importEmoji.mock.calls[0]?.[0].destination).toEqual({ kind: 'guild', guildId: DEV_GUILD });
       const created = importEmoji.mock.calls[0]?.[0].name ?? 'derived';
       expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
-        `➕ Emoji **${created}** adicionado a este servidor. ✅`,
+        `➕ Pronto. O emoji **${created}** agora está neste servidor. ✅`,
       ]);
       expect(message.client.application.emojis.fetch).toHaveBeenCalledOnce();
     },
@@ -219,7 +219,7 @@ describe('emoji add command routing', () => {
     }));
     const request = importEmoji.mock.calls[0]?.[0];
     expect(JSON.stringify(request)).not.toContain('token');
-    expect(texts(ports.reply)).toEqual(['🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot de produção. ✅']);
+    expect(texts(ports.reply)).toEqual(['🧑‍💻 Pronto. O emoji **derived** agora está nos Application Emojis do bot de produção. ✅']);
     expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 
@@ -233,7 +233,7 @@ describe('emoji add command routing', () => {
       destination: { kind: 'application', actorUserId: CREATOR, guildId: DEV_GUILD },
     }));
     expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
-      '🧑‍💻 Emoji **derived** adicionado aos Application Emojis do bot de produção. ✅',
+      '🧑‍💻 Pronto. O emoji **derived** agora está nos Application Emojis do bot de produção. ✅',
     ]);
   });
 
@@ -268,7 +268,7 @@ describe('emoji add command routing', () => {
 
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand]));
 
-    expect(replies).toEqual(['😅 A importação de emojis não está disponível no momento.']);
+    expect(replies).toEqual(['😅 Não consigo importar emojis agora. Tente de novo daqui a pouco.']);
   });
 });
 
@@ -328,7 +328,7 @@ describe('dev emoji authorization in both transports', () => {
         : await runPrefix(prefix(transport + 'dev-emoji-add', spec).message, handler);
 
       expect(importEmoji).not.toHaveBeenCalled();
-      expect(replies).toEqual(['😅 Não consegui verificar o acesso agora. Tente novamente mais tarde.']);
+      expect(replies).toEqual(['😅 Não consegui verificar o acesso agora. Tente de novo mais tarde.']);
       expect(JSON.stringify(replies)).not.toContain('private SQL');
     });
 
@@ -430,7 +430,7 @@ describe('guild emoji authorization', () => {
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies).toEqual(['🏘️ Vamos adicionar emojis em um canal de texto de servidor!']);
+    expect(replies).toEqual(['🏘️ Use um canal de texto de servidor para adicionar emojis.']);
   });
 });
 
@@ -553,7 +553,7 @@ describe('emoji add inputs', () => {
       label: 'argumentos excedentes',
       spec: { guildId: OTHER_GUILD } as TransportSpec,
       content: 'k!emoji-add a b c',
-      expected: '⚠️ Entrada inválida: envie uma imagem anexada ou um emoji personalizado, com no máximo um nome opcional.',
+      expected: '⚠️ Envie uma imagem anexada ou um emoji personalizado. O nome é opcional e só pode haver um.',
     },
     {
       label: 'dois anexos',
@@ -585,12 +585,12 @@ describe('emoji add inputs', () => {
 
   it('surfaces a domain failure instead of the generic error reply', async () => {
     const { importEmoji, service } = importService();
-    importEmoji.mockRejectedValueOnce(emojiError('queue_full', 'Muitas importações em andamento; tente novamente em instantes.'));
+    importEmoji.mockRejectedValueOnce(emojiError('queue_full', 'A fila de importação está cheia. Tente de novo em instantes.'));
     const ports = slash('emoji', ['add'], { guildId: OTHER_GUILD, attachments: [ATTACHMENT] });
 
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
-    expect(replies).toEqual(['☕ Muitas importações em andamento; tente novamente em instantes.']);
+    expect(replies).toEqual(['☕ A fila de importação está cheia. Tente de novo em instantes.']);
   });
 
   it('logs the failure code without echoing user input', async () => {
@@ -630,7 +630,7 @@ describe('emoji add inputs', () => {
 
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
-    expect(replies).toEqual(['<:add:1> Emoji **derived** adicionado a este servidor. <:sucess:2>']);
+    expect(replies).toEqual(['<:add:1> Pronto. O emoji **derived** agora está neste servidor. <:sucess:2>']);
     expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 

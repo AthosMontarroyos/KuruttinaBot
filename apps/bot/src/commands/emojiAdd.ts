@@ -38,9 +38,9 @@ interface EmojiAddInputs {
 
 const noSourceMessage = 'Envie uma imagem anexada ou informe um emoji personalizado de outro servidor.';
 const invalidInputMessage =
-  'Entrada inválida: envie uma imagem anexada ou um emoji personalizado, com no máximo um nome opcional.';
+  'Envie uma imagem anexada ou um emoji personalizado. O nome é opcional e só pode haver um.';
 const tooManyFilesMessage = 'Envie apenas uma imagem por comando.';
-const notAvailableMessage = 'A importação de emojis não está disponível no momento.';
+const notAvailableMessage = 'Não consigo importar emojis agora. Tente de novo daqui a pouco.';
 const noGuildMessage = 'Este comando só pode ser usado em um servidor.';
 
 /** Seleção pelo código, sem comparar o texto. Cobre todos os valores de EmojiImportErrorCode. */
@@ -187,7 +187,7 @@ async function successMessage(context: CommandContext, target: EmojiAddTarget, n
     context.emoji('sucess'),
   ]);
   const text = target === 'application'
-    ? `Emoji **${name}** adicionado aos Application Emojis do bot de produção.`
-    : `Emoji **${name}** adicionado a este servidor.`;
+    ? `Pronto. O emoji **${name}** agora está nos Application Emojis do bot de produção.`
+    : `Pronto. O emoji **${name}** agora está neste servidor.`;
   return withEmojis(opening, text, closing);
 }

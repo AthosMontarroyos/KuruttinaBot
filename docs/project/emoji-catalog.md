@@ -19,7 +19,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `slap` | Complemento da confirmação de limpeza; omitido quando indisponível | disponível | disponível |
 | `error` | Falha ao buscar, apagar, importar ou erro inesperado no slash | disponível | disponível |
 | `search` | Nenhuma mensagem encontrada ou emoji de origem ausente | disponível | disponível |
-| `add` | Emoji adicionado a este servidor | disponível | disponível |
+| `add` | Confirmação de que o emoji agora está neste servidor | disponível | disponível |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
 | `ban` | Banimento de membro | disponível | disponível |
 | `book` | Orientação quando o comando exige um subcomando | disponível | disponível |
@@ -27,7 +27,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `coffee` | Bot ocupado ou fila de importação cheia | disponível | disponível |
 | `crown` | Dono do servidor ou posição de destaque | disponível | disponível |
 | `cry` | Tristeza ou lamento | disponível | disponível |
-| `developer` | Emoji adicionado aos Application Emojis do bot de produção | disponível | disponível |
+| `developer` | Confirmação de que o emoji agora está nos Application Emojis do bot de produção | disponível | disponível |
 | `Dice` | Resultado aleatório ou sorteio | disponível | disponível |
 | `DiceRooling` | Sorteio ou rolagem de dados em andamento | disponível | disponível |
 | `Disappointed` | Membro sem a permissão exigida pelo comando | disponível | disponível |
@@ -91,7 +91,7 @@ const warning = await context.emoji('warning');
 await context.reply(withEmojis(warning, 'Confira os dados informados.'));
 ```
 
-`withEmojis()` omite partes vazias, então não sobra espaço quando um emoji não pode ser exibido. `slap` não tem alternativa Unicode e some da confirmação de limpeza quando indisponível. Nomes fora da tabela de alternativas, inclusive grafia diferente da coluna Nome, retornam uma string vazia. Preserve `sucess`, `DiceRooling` e `API`, inclusive a capitalização.
+Toda mensagem dirigida ao usuário precisa de pelo menos um nome desta tabela de alternativas. O resolver devolve esse Unicode quando o emoji personalizado está ausente ou a consulta falha, e a resposta não sai sem emoji. Emojis complementares podem ficar de fora: `slap` não tem alternativa Unicode e some da confirmação de limpeza quando indisponível, sem retirar `cleaning`. `withEmojis()` omite partes vazias, então não sobra espaço quando um emoji não pode ser exibido. Nomes fora da tabela de alternativas, inclusive grafia diferente da coluna Nome, retornam uma string vazia. Preserve `sucess`, `DiceRooling` e `API`, inclusive a capitalização.
 
 | Emojis | Alternativas |
 | --- | --- |

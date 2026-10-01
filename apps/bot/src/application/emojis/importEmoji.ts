@@ -86,7 +86,7 @@ async function execute(
 ): Promise<EmojiImportResult> {
   const ref = request.source.kind === 'guild-emoji' ? parseEmojiRef(request.source.ref) : undefined;
   if (request.source.kind === 'guild-emoji' && !ref) {
-    throw emojiError('invalid_source', 'Referência de emoji personalizado inválida.');
+    throw emojiError('invalid_source', 'A referência do emoji personalizado não é válida.');
   }
   const name = resolveName(request, ref);
 
@@ -97,7 +97,7 @@ async function execute(
     throw inputTooLargeError(limits.maxInputBytes);
   }
   if (request.source.kind === 'attachment' && rejectsDeclaredContentType(request.source.contentType)) {
-    throw emojiError('unsupported_format', 'Formato não suportado; use PNG, JPEG, GIF, WebP ou AVIF.');
+    throw emojiError('unsupported_format', 'O formato não é suportado. Use PNG, JPEG, GIF, WebP ou AVIF.');
   }
   if (request.destination.kind === 'application') {
     const count = await deps.create.countApplicationEmojis();
@@ -135,17 +135,17 @@ function resolveName(request: EmojiImportRequest, ref: ParsedEmojiRef | undefine
   const explicit = request.name;
   if (explicit !== undefined) {
     if (!EMOJI_NAME_PATTERN.test(explicit)) {
-      throw emojiError('invalid_name', 'O nome deve ter de 2 a 32 caracteres entre A–Z, a–z, 0–9 ou _.');
+      throw emojiError('invalid_name', 'O nome precisa ter de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _.');
     }
     return explicit;
   }
   if (request.source.kind === 'guild-emoji') {
     if (ref?.name) return ref.name;
-    throw emojiError('invalid_name', 'Esta origem não tem nome aproveitável; informe um nome para o emoji.');
+    throw emojiError('invalid_name', 'Esta origem não tem um nome aproveitável. Informe um nome para o emoji.');
   }
   const derived = deriveName(request.source.filename) ?? deriveName(urlFilename(request.source.url));
   if (derived) return derived;
-  throw emojiError('invalid_name', 'O nome do arquivo não serve como nome de emoji; informe um nome.');
+  throw emojiError('invalid_name', 'O nome do arquivo não serve como nome de emoji. Informe um nome.');
 }
 
 /** Remove a extensão final e só aceita o resultado dentro do padrão de nome de emoji. */
@@ -186,7 +186,7 @@ async function resolveSource(
   if (source.kind === 'attachment') {
     return await download(source.url, options);
   }
-  if (!ref) throw emojiError('invalid_source', 'Referência de emoji personalizado inválida.');
+  if (!ref) throw emojiError('invalid_source', 'A referência do emoji personalizado não é válida.');
   const id = ref.id;
   for (const extension of EMOJI_CDN_EXTENSIONS) {
     const url = `${EMOJI_CDN}/${id}.${extension}?size=128&quality=lossless`;
@@ -197,7 +197,7 @@ async function resolveSource(
       throw error;
     }
   }
-  throw emojiError('source_missing', 'Emoji de origem não encontrado no Discord.');
+  throw emojiError('source_missing', 'Não encontrei esse emoji no Discord.');
 }
 
 function createRunSlot(queue: EmojiQueueLimits): <T>(task: () => Promise<T>) => Promise<T> {
@@ -212,7 +212,7 @@ function createRunSlot(queue: EmojiQueueLimits): <T>(task: () => Promise<T>) => 
   return async function run<T>(task: () => Promise<T>): Promise<T> {
     if (active >= queue.concurrency) {
       if (waiting.length >= queue.maxQueued) {
-        throw emojiError('queue_full', 'Muitas importações em andamento; tente novamente em instantes.');
+        throw emojiError('queue_full', 'A fila de importação está cheia. Tente de novo em instantes.');
       }
       await new Promise<void>((release) => {
         waiting.push(release);

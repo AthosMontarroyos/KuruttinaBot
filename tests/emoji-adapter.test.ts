@@ -72,7 +72,7 @@ describe('adapter Discord de emojis', () => {
 
   it('repassa a falha ao consultar o bot de produção', async () => {
     const production = fakeProduction();
-    production.count.mockRejectedValue(emojiError('destination_unavailable', 'Não foi possível consultar os Application Emojis do bot de produção.'));
+    production.count.mockRejectedValue(emojiError('destination_unavailable', 'Não consegui consultar os Application Emojis do bot de produção.'));
     const adapter = createDiscordEmojiAdapter(fakeClient().client, production.port);
 
     await expectErrorCode(adapter.countApplicationEmojis(), 'destination_unavailable');

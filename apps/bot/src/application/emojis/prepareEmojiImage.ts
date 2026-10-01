@@ -11,10 +11,10 @@ import {
 } from './types.js';
 
 const genericProcessingFailure = (): EmojiImportError =>
-  emojiError('corrupt_image', 'Não foi possível processar a imagem enviada.');
+  emojiError('corrupt_image', 'Não consegui processar a imagem enviada.');
 
 const unsupportedFormat = (): EmojiImportError =>
-  emojiError('unsupported_format', 'Formato não suportado; use PNG, JPEG, GIF, WebP ou AVIF.');
+  emojiError('unsupported_format', 'O formato não é suportado. Use PNG, JPEG, GIF, WebP ou AVIF.');
 
 export async function prepareEmojiImage(
   raw: RawEmojiImage,
@@ -38,7 +38,7 @@ export async function prepareEmojiImage(
     throw emojiError('too_many_frames', `A animação excede ${limits.maxFrames} quadros.`);
   }
   if (inspection.width * inspection.height * inspection.frames > limits.maxDecodedPixels) {
-    throw emojiError('too_many_pixels', 'A imagem excede o volume de pixels que o bot pode decodificar.');
+    throw emojiError('too_many_pixels', 'A imagem excede o volume de pixels que consigo decodificar.');
   }
   if (inspection.totalDurationMs > limits.maxDurationMs) {
     throw emojiError('duration_exceeded', `A animação excede ${limits.maxDurationMs} ms de duração.`);
@@ -53,13 +53,13 @@ export async function prepareEmojiImage(
 
   // Validação final defensiva: o Discord recusa qualquer coisa acima do limite.
   if (compressed.bytes.byteLength === 0 || compressed.bytes.byteLength > limits.maxOutputBytes) {
-    throw emojiError('size_unreachable', 'A imagem comprimida continua acima do limite do Discord.');
+    throw emojiError('size_unreachable', 'A imagem continua acima do limite do Discord.');
   }
   const sourceAnimated = inspection.frames > 1;
   if (compressed.animated !== sourceAnimated) {
     throw emojiError(
       'animation_lost',
-      'A animação não pôde ser preservada dentro do limite do Discord.',
+      'Não consegui preservar a animação dentro do limite do Discord.',
     );
   }
 

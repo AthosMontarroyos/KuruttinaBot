@@ -68,7 +68,7 @@ export class CommandsHandler {
     const command = resolution.status === 'unknown' ? undefined : resolution.command;
     if (this.pending.size >= 64 || (command?.access.kind === 'staff' && this.pending.size >= 12)) {
       await context.acknowledge();
-      await context.reply(withEmojis(await context.emoji('coffee'), 'Estou ocupado agora. Tente novamente em instantes.'));
+      await context.reply(withEmojis(await context.emoji('coffee'), 'Já estou ocupada. Tente de novo em instantes.'));
       return;
     }
     const execution = this.run(commandName, routePath, context);

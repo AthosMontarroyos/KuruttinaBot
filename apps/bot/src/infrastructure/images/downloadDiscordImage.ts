@@ -34,19 +34,19 @@ export function createDiscordImageDownloader(
         signal: AbortSignal.timeout(options.timeoutMs),
       });
     } catch {
-      throw emojiError('download_failed', 'Não foi possível baixar a imagem do Discord dentro do tempo limite.');
+      throw emojiError('download_failed', 'Não consegui baixar a imagem do Discord dentro do tempo limite.');
     }
     if (!response.ok) {
       // O CDN responde 415 Invalid resource quando o .gif do emoji estático não existe.
       const bodyPrefix = response.status === 415 ? await responsePreview(response) : '';
       if (response.status === 404 || missingEmojiVariant(response.status, bodyPrefix)) {
-        throw emojiError('source_missing', 'Imagem de origem não encontrada no Discord.');
+        throw emojiError('source_missing', 'Não encontrei a imagem no Discord.');
       }
-      throw emojiError('download_failed', `O Discord recusou a imagem de origem (HTTP ${response.status}).`);
+      throw emojiError('download_failed', 'O Discord recusou a imagem.');
     }
     const declared = Number(response.headers.get('content-length') ?? 0);
     if (Number.isFinite(declared) && declared > options.maxBytes) {
-      throw emojiError('input_too_large', 'A imagem de origem excede o limite interno de entrada.');
+      throw emojiError('input_too_large', 'A imagem excede o limite de entrada.');
     }
     return await readBounded(response, options.maxBytes);
   };
@@ -77,7 +77,7 @@ function parseAllowedUrl(rawUrl: string): string {
   try {
     url = new URL(rawUrl);
   } catch {
-    throw emojiError('download_blocked', 'URL de imagem de origem inválida.');
+    throw emojiError('download_blocked', 'A URL da imagem não é válida.');
   }
   const allowed =
     url.protocol === 'https:' &&
@@ -92,7 +92,7 @@ function parseAllowedUrl(rawUrl: string): string {
 
 async function readBounded(response: Response, maxBytes: number): Promise<Uint8Array> {
   const body = response.body;
-  if (!body) throw emojiError('download_failed', 'O Discord não enviou o conteúdo da imagem.');
+  if (!body) throw emojiError('download_failed', 'Não recebi a imagem do Discord.');
   const reader = body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -104,13 +104,13 @@ async function readBounded(response: Response, maxBytes: number): Promise<Uint8A
       total += value.byteLength;
       if (total > maxBytes) {
         await reader.cancel();
-        throw emojiError('input_too_large', 'A imagem de origem excede o limite interno de entrada.');
+        throw emojiError('input_too_large', 'A imagem excede o limite de entrada.');
       }
       chunks.push(value);
     }
   } catch (error: unknown) {
     if (error instanceof EmojiImportError) throw error;
-    throw emojiError('download_failed', 'A leitura da imagem baixada falhou.');
+    throw emojiError('download_failed', 'Não consegui ler a imagem baixada.');
   }
 
   const bytes = new Uint8Array(total);

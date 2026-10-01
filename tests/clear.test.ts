@@ -128,13 +128,13 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(port.bulkDelete).toHaveBeenCalledOnce();
-      expect(ctx.sendMessage).toHaveBeenCalledWith('🧹 Foram apagadas 1 mensagens em <#channel-123>!');
+      expect(ctx.sendMessage).toHaveBeenCalledWith('🧹 Pronto. Apaguei 1 mensagem em <#channel-123>.');
     });
 
     it('replies in Portuguese when no text channel', async () => {
       const ctx = mockContext({ textChannel: undefined });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:ChannelBrowser:ChannelBrowser-id> Vamos fazer essa limpeza em um canal de texto de servidor!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ChannelBrowser:ChannelBrowser-id> A limpeza só pode ser feita em um canal de texto de servidor.');
     });
 
     it.each([PermissionFlagsBits.ManageMessages, PermissionFlagsBits.Administrator])('allows a user with permission %s to fetch messages', async (permission) => {
@@ -151,7 +151,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(ctx.reply).toHaveBeenCalledWith(
-        '<:Disappointed:Disappointed-id> Para usar a vassoura, você precisa da permissão **Gerenciar mensagens** neste canal!',
+        '<:Disappointed:Disappointed-id> Você precisa da permissão **Gerenciar mensagens** neste canal.',
       );
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
@@ -161,7 +161,7 @@ describe('clear command', () => {
         memberPermissions: undefined,
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:ops:ops-id> Não consegui conferir suas permissões. Tente novamente!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ops:ops-id> Não consegui conferir suas permissões. Tente de novo.');
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
 
@@ -191,7 +191,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(ctx.reply).toHaveBeenCalledWith(
-        '<:ops:ops-id> Não consegui conferir minhas permissões neste canal. Tente novamente!',
+        '<:ops:ops-id> Não consegui conferir minhas permissões neste canal. Tente de novo.',
       );
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
@@ -241,7 +241,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(port.bulkDelete).toHaveBeenCalledOnce();
-      expect(ctx.sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Foram apagadas 2 mensagens em <#channel-123>! <:slap:slap-id>');
+      expect(ctx.sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Pronto. Apaguei 2 mensagens em <#channel-123>. <:slap:slap-id>');
       expect(ctx.deleteReply).toHaveBeenCalledOnce();
       expect(ctx.reply).not.toHaveBeenCalled();
     });
@@ -260,7 +260,7 @@ describe('clear command', () => {
       await clearCommand.execute(ctx);
       expect(port.bulkDelete).toHaveBeenCalledWith([expect.objectContaining({ id: 'msg-1' })]);
       expect(port.deleteMessage).toHaveBeenCalledWith('msg-cmd');
-      expect(ctx.sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Foram apagadas 1 mensagens em <#channel-123>! <:slap:slap-id>');
+      expect(ctx.sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Pronto. Apaguei 1 mensagem em <#channel-123>. <:slap:slap-id>');
     });
 
     it('excludes the command message from deletion and deletes it after confirmation', async () => {
@@ -315,7 +315,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 5 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Foram apagadas 0 mensagens em <#channel-123>! <:slap:slap-id>');
+      expect(ctx.sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Pronto. Apaguei 0 mensagens em <#channel-123>. <:slap:slap-id>');
     });
 
     it('reports no eligible messages in Portuguese', async () => {
@@ -327,7 +327,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 10 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:search:search-id> Não encontrei mensagens para apagar! Só consigo limpar mensagens enviadas há menos de 14 dias.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:search:search-id> Não encontrei mensagens para apagar. Só consigo limpar mensagens enviadas há menos de 14 dias.');
       expect(port.bulkDelete).not.toHaveBeenCalled();
     });
 
@@ -341,7 +341,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(ctx.reply).toHaveBeenCalledWith(
-        '<:search:search-id> Não encontrei mensagens de <@123456789012345678> para apagar! Só consigo limpar mensagens enviadas há menos de 14 dias.',
+        '<:search:search-id> Não encontrei mensagens de <@123456789012345678> para apagar. Só consigo limpar mensagens enviadas há menos de 14 dias.',
       );
       expect(port.bulkDelete).not.toHaveBeenCalled();
     });
@@ -351,7 +351,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 0 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Quantas mensagens vamos apagar? Escolha um número de **1 a 200**!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Diga quantas mensagens apagar: um número de **1 a 200**.');
     });
 
     it('rejects invalid count from prefix in Portuguese', async () => {
@@ -359,7 +359,7 @@ describe('clear command', () => {
         rawArgs: '0',
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Quantas mensagens vamos apagar? Escolha um número de **1 a 200**!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Diga quantas mensagens apagar: um número de **1 a 200**.');
     });
 
     it('rejects invalid user ID in Portuguese', async () => {
@@ -370,7 +370,7 @@ describe('clear command', () => {
         ],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:ID:ID-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ID:ID-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza.');
     });
 
     it('rejects overlapping operations on the same channel but allows another channel', async () => {
@@ -384,7 +384,7 @@ describe('clear command', () => {
         await fetching;
         const second = mockContext({ rawArgs: '1' });
         await clearCommand.execute(second);
-        expect(second.reply).toHaveBeenCalledWith('<:loading:loading-id> Já estou limpando este canal! Espere eu terminar para começar outra limpeza.');
+        expect(second.reply).toHaveBeenCalledWith('<:loading:loading-id> Já estou limpando este canal. Espere eu terminar para começar outra limpeza.');
         expect(second.textChannel!.fetchMessages).not.toHaveBeenCalled();
         const other = mockContext({ rawArgs: '1', channelId: 'other-channel' });
         await clearCommand.execute(other);
@@ -406,7 +406,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 10 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui buscar as mensagens. Tente novamente daqui a pouco!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui buscar as mensagens. Tente de novo daqui a pouco.');
 
       const port2 = mockBulkDeletePort({
         fetchMessages: vi.fn(async () => []),
@@ -416,7 +416,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 5 }],
       });
       await clearCommand.execute(ctx2);
-      expect(ctx2.reply).toHaveBeenCalledWith('<:search:search-id> Não encontrei mensagens para apagar! Só consigo limpar mensagens enviadas há menos de 14 dias.');
+      expect(ctx2.reply).toHaveBeenCalledWith('<:search:search-id> Não encontrei mensagens para apagar. Só consigo limpar mensagens enviadas há menos de 14 dias.');
     });
 
     it('calls acknowledge before any work', async () => {
@@ -472,7 +472,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 1 }],
       });
       await clearCommand.execute(ctx);
-      expect(sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Foram apagadas 1 mensagens em <#channel-123>! <:slap:slap-id>');
+      expect(sendMessage).toHaveBeenCalledWith('<:cleaning:cleaning-id> Pronto. Apaguei 1 mensagem em <#channel-123>. <:slap:slap-id>');
       expect(deleteReply).toHaveBeenCalledOnce();
       expect(ctx.reply).not.toHaveBeenCalled();
     });
@@ -488,7 +488,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 10 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui buscar as mensagens. Tente novamente daqui a pouco!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui buscar as mensagens. Tente de novo daqui a pouco.');
       const replyArg = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
       expect(replyArg).not.toContain('secret internal detail');
     });
@@ -524,7 +524,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(port.bulkDelete).toHaveBeenCalledOnce();
-      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui concluir a limpeza. Confira o histórico antes de tentar novamente!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.');
       expect(ctx.sendMessage).not.toHaveBeenCalled();
     });
 
@@ -563,7 +563,7 @@ describe('clear command', () => {
     it.each(['', null, 123])('rejects malformed slash user filters: %s', async (value) => {
       const ctx = mockContext({ options: [{ name: 'quantidade', value: 1 }, { name: 'usuario', value }] });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:ID:ID-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ID:ID-id> Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza.');
       expect(ctx.textChannel!.fetchMessages).not.toHaveBeenCalled();
     });
   });

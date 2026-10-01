@@ -65,12 +65,12 @@ export function createProductionApplicationEmojiWriter(
         const id = await applicationId();
         const body = await rest.get(Routes.applicationEmojis(id));
         if (!isEmojiList(body)) {
-          throw emojiError('destination_unavailable', 'Não foi possível consultar os Application Emojis do bot de produção.');
+          throw emojiError('destination_unavailable', 'Não consegui consultar os Application Emojis do bot de produção.');
         }
         return body.items.length;
       } catch (error: unknown) {
         if (error instanceof EmojiImportError) throw error;
-        throw emojiError('destination_unavailable', 'Não foi possível consultar os Application Emojis do bot de produção.');
+        throw emojiError('destination_unavailable', 'Não consegui consultar os Application Emojis do bot de produção.');
       }
     },
 
@@ -103,11 +103,11 @@ async function confirmIdentity(
     resolved = await verifyIdentity(credential.token, credential.expectedBotId);
   } catch {
     log('warn', 'production_application_identity_rejected', { applicationId: credential.expectedBotId });
-    throw emojiError('destination_unavailable', 'Não foi possível confirmar a identidade do bot de produção.');
+    throw emojiError('destination_unavailable', 'Não consegui confirmar a identidade do bot de produção.');
   }
   if (resolved !== credential.expectedBotId) {
     log('warn', 'production_application_identity_rejected', { applicationId: credential.expectedBotId });
-    throw emojiError('destination_unavailable', 'Não foi possível confirmar a identidade do bot de produção.');
+    throw emojiError('destination_unavailable', 'Não consegui confirmar a identidade do bot de produção.');
   }
   return resolved;
 }

@@ -27,7 +27,7 @@ export const command = {
     botPermissions: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.CreateGuildExpressions],
     requireChannelSend: true,
     messages: {
-      guildOnly: 'Vamos adicionar emojis em um canal de texto de servidor!',
+      guildOnly: 'Use um canal de texto de servidor para adicionar emojis.',
       userMissing: 'Você precisa da permissão **{permissions}** para adicionar emojis.',
       botMissing: 'Preciso destas permissões para adicionar o emoji: **{permissions}**.',
     },

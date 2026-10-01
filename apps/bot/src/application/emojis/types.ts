@@ -62,7 +62,7 @@ export function emojiError(code: EmojiImportErrorCode, message: string): EmojiIm
 
 /** Origem com falha barata: recusa antes do download quando o tamanho já declarado estoura. */
 export function inputTooLargeError(maxInputBytes: number): EmojiImportError {
-  return emojiError('input_too_large', `A imagem de origem excede o limite interno de ${maxInputBytes} bytes.`);
+  return emojiError('input_too_large', `A imagem excede o limite de ${maxInputBytes} bytes.`);
 }
 
 /** Limites técnicos internos; não confundir com os limites do Discord. */

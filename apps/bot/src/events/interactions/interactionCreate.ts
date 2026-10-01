@@ -14,7 +14,7 @@ import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
 import { log } from '#bot/infrastructure/logger.js';
 
-const failureMessage = 'Algo deu errado ao executar este comando.';
+const failureMessage = 'Não consegui executar este comando. Tente de novo daqui a pouco.';
 
 export interface InteractionCommandPort {
   readonly client: CommandClientPort;

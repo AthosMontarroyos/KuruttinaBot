@@ -65,8 +65,8 @@ describe('shared command adapters', () => {
     expect(await emoji('API')).toBe('');
     expect(await emoji('anger')).toBe('');
     expect(await emoji('Anger')).toBe('');
-    expect(withEmojis(cleaning, 'Foram apagadas 1 mensagens em <#channel>!', slap)).toBe(
-      '🧹 Foram apagadas 1 mensagens em <#channel>!',
+    expect(withEmojis(cleaning, 'Pronto. Apaguei 1 mensagem em <#channel>.', slap)).toBe(
+      '🧹 Pronto. Apaguei 1 mensagem em <#channel>.',
     );
     expect(fetch).toHaveBeenCalledOnce();
   });

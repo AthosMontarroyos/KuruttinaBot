@@ -66,7 +66,7 @@ export function createDiscordEmojiAdapter(
         // Cache miss não prova inexistência: sempre busca no Discord.
         guild = await client.guilds.fetch(destination.guildId);
       } catch {
-        throw emojiError('destination_unavailable', 'O bot não encontrou o servidor de destino.');
+        throw emojiError('destination_unavailable', 'Não encontrei o servidor de destino.');
       }
       try {
         const created = await guild.emojis.create({ attachment, name });

@@ -56,6 +56,6 @@ Desenvolvimento específico do bot pertence à skill existente `.agents/skills/d
 
 ### Regra: voz das respostas
 
-**Nível:** SHOULD
+**Nível:** MUST
 
-**Regra:** Texto de resposta ao usuário segue [a personalidade do bot](../project/bot-personality.md). O tom não reduz a clareza, não estoura o limite de mensagem do Discord e não altera o contrato de autorização nem a copy que explica a negação. Logs de terminal e mensagens operacionais para a equipe ficam fora desse tom.
+**Regra:** Toda resposta ao usuário segue as regras obrigatórias [Personalidade das falas](../project/bot-personality.md#personalidade-das-falas) e [Emojis nas falas](../project/bot-personality.md#emojis-nas-falas), inclusive o escopo que elas deixam de fora. O tom não reduz a clareza, não estoura o limite de mensagem do Discord e não altera o contrato de autorização nem a copy que explica a negação.

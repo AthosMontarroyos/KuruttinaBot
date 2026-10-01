@@ -13,7 +13,7 @@ export const command = {
       context.emoji('gateway'),
     ]);
     await context.reply({
-      content: withEmojis(dancing, 'Pong!'),
+      content: withEmojis(dancing, 'Pong. Ainda estou aqui.'),
       embeds: [{
         color: 0x2b2d31,
         fields: [

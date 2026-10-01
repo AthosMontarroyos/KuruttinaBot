@@ -100,7 +100,7 @@ describe('commands', () => {
     const reply = vi.fn().mockResolvedValue(undefined);
     await new CommandsHandler([pingCommand]).execute('ping', commandContext(reply));
     expect(reply).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      content: '<:dancing:dancing-id> Pong!',
+      content: '<:dancing:dancing-id> Pong. Ainda estou aqui.',
       embeds: [expect.objectContaining({
         fields: [
           expect.objectContaining({ name: '<:stats:stats-id> API', value: '`42ms`' }),
@@ -114,7 +114,7 @@ describe('commands', () => {
     const reply = vi.fn().mockResolvedValue(undefined);
     await handleMessageCreate(message(content, reply), new CommandsHandler([pingCommand]));
     expect(reply).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      content: '<a:dancing:dancing-id> Pong!',
+      content: '<a:dancing:dancing-id> Pong. Ainda estou aqui.',
       embeds: [expect.objectContaining({ fields: expect.any(Array) })],
     }));
   });
@@ -187,7 +187,7 @@ describe('commands', () => {
     const acknowledge = vi.fn().mockResolvedValue(undefined);
     await handler.execute('example', { ...commandContext(reply), acknowledge });
     expect(acknowledge).toHaveBeenCalledOnce();
-    expect(reply).toHaveBeenCalledExactlyOnceWith('<:coffee:coffee-id> Estou ocupado agora. Tente novamente em instantes.');
+    expect(reply).toHaveBeenCalledExactlyOnceWith('<:coffee:coffee-id> Já estou ocupada. Tente de novo em instantes.');
     expect(execute).toHaveBeenCalledTimes(64);
     release();
     await Promise.all(hanging);
@@ -248,7 +248,7 @@ describe('command access policy', () => {
     });
     expect(execute).not.toHaveBeenCalled();
     expect(acknowledge).toHaveBeenCalledOnce();
-    expect(reply).toHaveBeenCalledExactlyOnceWith('<:ops:ops-id> Não consegui conferir suas permissões. Tente novamente!');
+    expect(reply).toHaveBeenCalledExactlyOnceWith('<:ops:ops-id> Não consegui conferir suas permissões. Tente de novo.');
   });
 
   it('blocks a guild command whose member lacks the declared permission', async () => {

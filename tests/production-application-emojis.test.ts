@@ -91,7 +91,7 @@ describe('Application Emojis de produção', () => {
 
     await expect(port.count()).rejects.toMatchObject({
       code: 'destination_unavailable',
-      message: 'Não foi possível confirmar a identidade do bot de produção.',
+      message: 'Não consegui confirmar a identidade do bot de produção.',
     });
     expect(get).not.toHaveBeenCalled();
     expect(output()).not.toContain(TOKEN);
@@ -127,7 +127,7 @@ describe('Application Emojis de produção', () => {
     const error = await port.count().catch((caught: unknown) => caught);
     expect(error).toMatchObject({
       code: 'destination_unavailable',
-      message: 'Não foi possível consultar os Application Emojis do bot de produção.',
+      message: 'Não consegui consultar os Application Emojis do bot de produção.',
     });
   });
 
@@ -139,7 +139,7 @@ describe('Application Emojis de produção', () => {
 
     expect(error).toMatchObject({
       code: 'destination_unavailable',
-      message: 'Não foi possível consultar os Application Emojis do bot de produção.',
+      message: 'Não consegui consultar os Application Emojis do bot de produção.',
     });
     expect((error as Error).message).not.toContain(TOKEN);
   });

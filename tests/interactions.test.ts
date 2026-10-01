@@ -78,7 +78,7 @@ describe('interaction command boundary', () => {
     await handleChatInputCommand(interaction, handler);
 
     expect(interaction.deferReply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral });
-    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Algo deu errado ao executar este comando.');
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Não consegui executar este comando. Tente de novo daqui a pouco.');
     expect(interaction.reply).not.toHaveBeenCalled();
     expect(fetch).toHaveBeenCalledOnce();
   });
@@ -93,7 +93,7 @@ describe('interaction command boundary', () => {
     await handleChatInputCommand(interaction, handler);
 
     expect(interaction.deferReply).toHaveBeenCalledOnce();
-    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Algo deu errado ao executar este comando.');
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Não consegui executar este comando. Tente de novo daqui a pouco.');
   });
 
   it('reuses the shared emoji lookup when reporting an unexpected failure', async () => {
@@ -114,7 +114,7 @@ describe('interaction command boundary', () => {
     await handleChatInputCommand(interaction, handler);
 
     expect(interaction.client.application.emojis.fetch).toHaveBeenCalledOnce();
-    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('<:error:2> Algo deu errado ao executar este comando.');
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('<:error:2> Não consegui executar este comando. Tente de novo daqui a pouco.');
   });
 
   it('uses the error fallback when the emoji lookup fails during an unexpected error', async () => {
@@ -125,7 +125,7 @@ describe('interaction command boundary', () => {
     await handleChatInputCommand(interaction, handler);
 
     expect(interaction.client.application.emojis.fetch).toHaveBeenCalledOnce();
-    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Algo deu errado ao executar este comando.');
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith('❌ Não consegui executar este comando. Tente de novo daqui a pouco.');
   });
 
   it('contains a failure while sending the safe error response', async () => {
@@ -145,7 +145,7 @@ describe('interaction command boundary', () => {
 
     await handleChatInputCommand(interaction, handler);
     expect(interaction.followUp).toHaveBeenCalledExactlyOnceWith({
-      content: '❌ Algo deu errado ao executar este comando.', flags: MessageFlags.Ephemeral,
+      content: '❌ Não consegui executar este comando. Tente de novo daqui a pouco.', flags: MessageFlags.Ephemeral,
     });
     expect(interaction.deferReply).not.toHaveBeenCalled();
   });

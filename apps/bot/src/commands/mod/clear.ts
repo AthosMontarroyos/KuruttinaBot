@@ -12,9 +12,8 @@ const access: CommandAccess = {
   botPermissions: [ViewChannel, ReadMessageHistory, ManageMessages],
   requireChannelSend: true,
   messages: {
-    guildOnly: 'Vamos fazer essa limpeza em um canal de texto de servidor!',
-    userMissing: 'Para usar a vassoura, você precisa da permissão **{permissions}** neste canal!',
-    botMissing: 'Preciso destas permissões para fazer a limpeza: **{permissions}**!',
+    guildOnly: 'A limpeza só pode ser feita em um canal de texto de servidor.',
+    botMissing: 'Preciso destas permissões para fazer a limpeza: **{permissions}**.',
   },
 };
 
@@ -122,18 +121,18 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parsePrefixArgs(context.rawArgs ?? '');
 
   if (!validCount(args.count)) {
-    await context.reply(withEmojis(await context.emoji('warning'), `Quantas mensagens vamos apagar? Escolha um número de **1 a ${MAX_COUNT}**!`));
+    await context.reply(withEmojis(await context.emoji('warning'), `Diga quantas mensagens apagar: um número de **1 a ${MAX_COUNT}**.`));
     return;
   }
 
   if (args.userId !== undefined && (typeof args.userId !== 'string' || !/^\d{17,20}$/u.test(args.userId))) {
-    await context.reply(withEmojis(await context.emoji('ID'), 'Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza!'));
+    await context.reply(withEmojis(await context.emoji('ID'), 'Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza.'));
     return;
   }
 
   const lockKey = `${context.guildId}:${context.channelId}`;
   if (!tryAcquireLock(lockKey)) {
-    await context.reply(withEmojis(await context.emoji('loading'), 'Já estou limpando este canal! Espere eu terminar para começar outra limpeza.'));
+    await context.reply(withEmojis(await context.emoji('loading'), 'Já estou limpando este canal. Espere eu terminar para começar outra limpeza.'));
     return;
   }
 
@@ -149,13 +148,13 @@ async function execute(context: CommandContext): Promise<void> {
       eligible = await fetchEligibleMessages(channel, args.count, args.userId, deadline, commandMessageId);
     } catch (error: unknown) {
       log('error', 'clear_fetch_failed', { channelId, ...errorDetails(error) });
-      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui buscar as mensagens. Tente novamente daqui a pouco!')); } catch { /* best effort */ }
+      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui buscar as mensagens. Tente de novo daqui a pouco.')); } catch { /* best effort */ }
       return;
     }
 
     if (eligible.length === 0) {
       const filter = args.userId ? ` de <@${args.userId}>` : '';
-      await context.reply(withEmojis(await context.emoji('search'), `Não encontrei mensagens${filter} para apagar! Só consigo limpar mensagens enviadas há menos de 14 dias.`));
+      await context.reply(withEmojis(await context.emoji('search'), `Não encontrei mensagens${filter} para apagar. Só consigo limpar mensagens enviadas há menos de 14 dias.`));
       return;
     }
 
@@ -164,12 +163,13 @@ async function execute(context: CommandContext): Promise<void> {
       deleted = await channel.bulkDelete(eligible);
     } catch (error: unknown) {
       log('error', 'clear_delete_failed', { channelId, ...errorDetails(error) });
-      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar novamente!')); } catch { /* best effort */ }
+      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.')); } catch { /* best effort */ }
       return;
     }
 
     const channelMention = channelId ? `<#${channelId}>` : 'canal';
-    const confirmationText = withEmojis(cleaning, `Foram apagadas ${deleted} mensagens em ${channelMention}!`, slap);
+    const noun = deleted === 1 ? 'mensagem' : 'mensagens';
+    const confirmationText = withEmojis(cleaning, `Pronto. Apaguei ${deleted} ${noun} em ${channelMention}.`, slap);
 
     try {
       if (context.sendMessage) await context.sendMessage(confirmationText);
@@ -195,7 +195,7 @@ async function execute(context: CommandContext): Promise<void> {
       channelId,
       ...errorDetails(error),
     });
-    try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar novamente!')); } catch { /* best effort */ }
+    try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.')); } catch { /* best effort */ }
   } finally {
     activeChannels.delete(lockKey);
   }

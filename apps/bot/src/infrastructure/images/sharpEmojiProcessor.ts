@@ -78,7 +78,7 @@ async function readMetadata(bytes: Uint8Array): Promise<Metadata> {
   try {
     return await sharp(asBuffer(bytes), { limitInputPixels: false }).metadata();
   } catch {
-    throw emojiError('corrupt_image', 'Não foi possível decodificar a imagem enviada.');
+    throw emojiError('corrupt_image', 'Não consegui decodificar a imagem enviada.');
   }
 }
 
@@ -86,12 +86,12 @@ async function inspect(bytes: Uint8Array): Promise<ImageInspection> {
   const metadata = await readMetadata(bytes);
   const format = metadata.format;
   if (!format || !isSupportedFormat(format)) {
-    throw emojiError('unsupported_format', 'Formato não suportado; use PNG, JPEG, GIF, WebP ou AVIF.');
+    throw emojiError('unsupported_format', 'O formato não é suportado. Use PNG, JPEG, GIF, WebP ou AVIF.');
   }
   const width = metadata.width ?? 0;
   const height = metadata.height ?? 0;
   if (width < 1 || height < 1) {
-    throw emojiError('corrupt_image', 'A imagem enviada não possui dimensões válidas.');
+    throw emojiError('corrupt_image', 'A imagem enviada não tem dimensões válidas.');
   }
   const frames = metadata.pages !== undefined && metadata.pages > 0 ? metadata.pages : 1;
   const delays = metadata.delay;
@@ -120,7 +120,7 @@ async function compress(bytes: Uint8Array, options: EmojiCompressionOptions): Pr
     if (!step) break;
     const remainingMs = options.timeoutMs - (Date.now() - startedAt);
     if (remainingMs <= 0) {
-      throw emojiError('processing_timeout', 'O processamento da imagem excedeu o tempo limite.');
+      throw emojiError('processing_timeout', 'Não consegui processar a imagem dentro do tempo limite.');
     }
 
     let encoded: EncodedAttempt | null;
@@ -129,7 +129,7 @@ async function compress(bytes: Uint8Array, options: EmojiCompressionOptions): Pr
     } catch (error: unknown) {
       if (error instanceof EmojiImportError) throw error;
       if (error instanceof Error && /timeout/iu.test(error.message)) {
-        throw emojiError('processing_timeout', 'O processamento da imagem excedeu o tempo limite.');
+        throw emojiError('processing_timeout', 'Não consegui processar a imagem dentro do tempo limite.');
       }
       throw error;
     }
@@ -140,7 +140,7 @@ async function compress(bytes: Uint8Array, options: EmojiCompressionOptions): Pr
     if (animated) {
       const produced = await inspect(encoded.bytes);
       if (produced.frames < 2) {
-        throw emojiError('animation_lost', 'A animação não pôde ser preservada dentro do limite do Discord.');
+        throw emojiError('animation_lost', 'Não consegui preservar a animação dentro do limite do Discord.');
       }
       return finish(encoded, 'image/gif', true, transformations);
     }
@@ -148,7 +148,7 @@ async function compress(bytes: Uint8Array, options: EmojiCompressionOptions): Pr
   }
   throw emojiError(
     'size_unreachable',
-    `Não foi possível comprimir a imagem para até ${options.maxOutputBytes} bytes.`,
+    `Não consegui comprimir a imagem para até ${options.maxOutputBytes} bytes.`,
   );
 }
 
@@ -292,11 +292,11 @@ export async function reduceGifFrames(
   const frameCount = info.pages !== undefined && info.pages > 0 ? info.pages : 1;
   const channels = info.channels;
   if (channels !== 3 && channels !== 4) {
-    throw emojiError('corrupt_image', 'A animação não pôde ser convertida para redução de quadros.');
+    throw emojiError('corrupt_image', 'Não consegui converter a animação.');
   }
   const totalRows = data.length / (info.width * channels);
   if (!Number.isInteger(totalRows) || frameCount < 1 || totalRows % frameCount !== 0) {
-    throw emojiError('corrupt_image', 'A animação não pôde ser convertida para redução de quadros.');
+    throw emojiError('corrupt_image', 'Não consegui converter a animação.');
   }
   const frameHeight = totalRows / frameCount;
   const rgba = channels === 4 ? data : expandToRgba(data, data.length / channels);

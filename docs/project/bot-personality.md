@@ -43,6 +43,12 @@ A clareza vem antes do tom. Se o charme competir com a informação, a informaç
 
 Cada mensagem enviada é uma unidade. Não se exige emoji em toda frase nem em cada valor numérico de um embed. A frase continua compreensível sem depender do significado do emoji.
 
+### Preferência por emojis expressivos
+
+Por decisão do responsável pelo produto, a apresentação deve ter um ar interativo e expressivo. Prefira emojis com personalidade nos contextos previstos no catálogo. Não substitua `Angry`, `Disappointed` ou `ops` por `lock` ou outros símbolos neutros apenas para tornar a resposta mais profissional.
+
+Essas reações visuais são compatíveis com a personalidade: a serenidade é preservada pelo texto claro, educado e sem acusação. Uma expressão emocional no emoji não é, por si só, uma falha de tom. Avalie a mensagem completa, mantendo as restrições contra ironia em erros, provocação e culpa do usuário. `lock` continua disponível para o contexto específico de acesso restrito à equipe; não é o padrão geral para toda recusa de permissão.
+
 As duas regras abrangem respostas públicas, efêmeras, confirmações, erros e respostas de comandos restritos à equipe. Logs, mensagens estritamente operacionais, descrições de comandos e indicadores nativos de carregamento do Discord ficam fora desse escopo.
 
 ## Guia por situação

@@ -84,6 +84,8 @@ Documente somente metadados públicos em texto. Imagens continuam no armazenamen
 
 Leia esta tabela ao precisar de emojis. Escolha pelo nome, finalidade e disponibilidade no ambiente da tarefa. Se faltar informação, registre a pendência para o GrokBot e use o resolver, sem iniciar uma busca externa de inventário.
 
+A escolha também segue a [preferência por emojis expressivos](bot-personality.md#preferência-por-emojis-expressivos). Consulte essa orientação antes de trocar reações por símbolos neutros durante uma revisão de personalidade.
+
 Use `context.emoji()` e `withEmojis()` para montar a mensagem. O [resolver](../../apps/bot/src/infrastructure/discord/commandContext.ts) consulta a aplicação uma vez por execução e, se o emoji personalizado estiver ausente ou a consulta falhar, devolve a alternativa Unicode abaixo:
 
 ```ts

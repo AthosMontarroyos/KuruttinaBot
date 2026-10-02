@@ -4,7 +4,7 @@ import type { PreparedEmojiImage } from '../apps/bot/src/application/emojis/type
 import {
   createProductionApplicationEmojiWriter,
   type DiscordApplicationEmojiRest,
-} from '../apps/bot/src/infrastructure/discord/productionApplicationEmojis.js';
+} from '../apps/bot/src/infrastructure/discord/emojis/productionApplicationEmojis.js';
 
 const PRODUCTION_ID = '111111111111111111';
 const DEVELOPMENT_ID = '222222222222222222';

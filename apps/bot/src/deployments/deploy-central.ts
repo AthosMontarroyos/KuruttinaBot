@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { createDatabase } from '@kuruttina/database';
-import { loadCommands } from '#bot/commands/loadCommands.js';
+import { loadCommands } from '#bot/command-system/loadCommands.js';
 import { loadConfig } from '#bot/config.js';
-import { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
+import { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
-import { log } from '#bot/infrastructure/logger.js';
+import { log } from '#bot/infrastructure/logging/logger.js';
 import { createCentralDeployment } from './central.js';
 import { createGuildDeployment } from './guild.js';
 

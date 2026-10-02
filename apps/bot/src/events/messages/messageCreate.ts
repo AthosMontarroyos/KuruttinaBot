@@ -1,8 +1,8 @@
 import type { Message } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
-import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
-import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
-import { log } from '#bot/infrastructure/logger.js';
+import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
+import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
+import { log } from '#bot/infrastructure/logging/logger.js';
 
 type MessageCommandPort = Pick<Message, 'content' | 'createdTimestamp' | 'id' | 'reply' | 'system' | 'webhookId'> & {
   readonly author: Pick<Message['author'], 'bot' | 'id'>;

@@ -14,9 +14,9 @@ Implementado:
 - `apps/bot/src/application/emojis/importEmoji.ts`: serviço com fila, parsing de referências, derivação de nome, verificação de capacidade e fallback GIF→PNG.
 - `apps/bot/src/infrastructure/images/downloadDiscordImage.ts`: download restrito ao CDN do Discord.
 - `apps/bot/src/infrastructure/images/sharpEmojiProcessor.ts`: escada de compressão com `sharp` e redução de quadros com `gifenc`.
-- `apps/bot/src/infrastructure/discord/emojiAdapter.ts`: criação de emojis de servidor via `discord.js`, com o destino `application` delegado à capability de produção.
-- `apps/bot/src/infrastructure/discord/productionApplicationEmojis.ts`: capability que lista e cria Application Emojis só na aplicação de production.
-- `apps/bot/src/commands/emojiAdd.ts`: executor e leitura de entradas compartilhados pelas duas operações, fora da descoberta de comandos.
+- `apps/bot/src/infrastructure/discord/emojis/emojiAdapter.ts`: criação de emojis de servidor via `discord.js`, com o destino `application` delegado à capability de produção.
+- `apps/bot/src/infrastructure/discord/emojis/productionApplicationEmojis.ts`: capability que lista e cria Application Emojis só na aplicação de production.
+- `apps/bot/src/infrastructure/discord/emojis/emojiAdd.ts`: executor e leitura de entradas compartilhados pelas duas operações, fora da descoberta de comandos.
 - `apps/bot/src/commands/dev/emoji.ts` e `apps/bot/src/commands/mod/emoji.ts`: definições slash (subcomando e grupo), rotas por prefixo e políticas `staff`/`guild`; o módulo em `dev/` declara `scope: 'dev-guild'` e só é publicado na guilda da equipe.
 - `apps/bot/src/bootstrap.ts`: uma única composição do serviço, injetada no dispatcher pelos dois transports.
 

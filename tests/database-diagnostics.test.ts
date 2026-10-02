@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDatabase } from '@kuruttina/database';
-import { formatTerminalLog } from '../apps/bot/src/infrastructure/terminalFormatter.js';
+import { formatTerminalLog } from '../apps/bot/src/infrastructure/logging/terminalFormatter.js';
 
 const mocks = vi.hoisted(() => ({ connect: vi.fn(), query: vi.fn(), release: vi.fn(), on: vi.fn(), end: vi.fn() }));
 vi.mock('pg', () => ({ default: { Pool: class {

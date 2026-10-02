@@ -1,5 +1,5 @@
-import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
-import { deployGlobalCommands } from '#bot/infrastructure/discord/commands.js';
+import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
+import { deployGlobalCommands } from '#bot/infrastructure/discord/commands/deployCommands.js';
 import type { Deployment } from './types.js';
 
 export function createCentralDeployment(commandsHandler: CommandsHandler): Deployment {

@@ -1,7 +1,8 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { validateCommandAccess, withEmojis } from '#bot/commands/access.js';
-import type { ChatInputCommand, BulkDeletePort, CommandAccess, CommandContext, CommandMessage } from '#bot/commands/types.js';
-import { log } from '#bot/infrastructure/logger.js';
+import { validateCommandAccess } from '#bot/command-system/access.js';
+import { withEmojis } from '#bot/command-system/responses.js';
+import type { ChatInputCommand, BulkDeletePort, CommandAccess, CommandContext, CommandMessage } from '#bot/command-system/types.js';
+import { log } from '#bot/infrastructure/logging/logger.js';
 
 const { ManageMessages, ViewChannel, ReadMessageHistory } = PermissionFlagsBits;
 

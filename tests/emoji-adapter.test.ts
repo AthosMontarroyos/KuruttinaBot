@@ -1,8 +1,8 @@
 import type { Client } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import { emojiError, type PreparedEmojiImage } from '../apps/bot/src/application/emojis/types.js';
-import { createDiscordEmojiAdapter } from '../apps/bot/src/infrastructure/discord/emojiAdapter.js';
-import type { ProductionApplicationEmojiPort, ProductionEmojiAudit } from '../apps/bot/src/infrastructure/discord/productionApplicationEmojis.js';
+import { createDiscordEmojiAdapter } from '../apps/bot/src/infrastructure/discord/emojis/emojiAdapter.js';
+import type { ProductionApplicationEmojiPort, ProductionEmojiAudit } from '../apps/bot/src/infrastructure/discord/emojis/productionApplicationEmojis.js';
 
 const IMAGE: PreparedEmojiImage = {
   bytes: Uint8Array.from([1, 2, 3]),

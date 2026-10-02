@@ -1,21 +1,21 @@
 import { Client, Events, GatewayIntentBits, Options, Partials } from 'discord.js';
 import { createDatabase } from '@kuruttina/database';
 import { createEmojiImportService } from '#bot/application/emojis/importEmoji.js';
-import { loadCommands } from '#bot/commands/loadCommands.js';
+import { loadCommands } from '#bot/command-system/loadCommands.js';
 import { loadConfig } from '#bot/config.js';
 import { createCentralDeployment } from '#bot/deployments/central.js';
 import { createGuildDeployment } from '#bot/deployments/guild.js';
 import { handleClientReady } from '#bot/events/client/clientReady.js';
 import { handleInteractionCreate } from '#bot/events/interactions/interactionCreate.js';
 import { handleMessageCreate } from '#bot/events/messages/messageCreate.js';
-import { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
+import { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
-import { createDiscordEmojiAdapter } from '#bot/infrastructure/discord/emojiAdapter.js';
-import { createProductionApplicationEmojiWriter } from '#bot/infrastructure/discord/productionApplicationEmojis.js';
+import { createDiscordEmojiAdapter } from '#bot/infrastructure/discord/emojis/emojiAdapter.js';
+import { createProductionApplicationEmojiWriter } from '#bot/infrastructure/discord/emojis/productionApplicationEmojis.js';
 import { createDiscordImageDownloader } from '#bot/infrastructure/images/downloadDiscordImage.js';
 import { createSharpEmojiProcessor } from '#bot/infrastructure/images/sharpEmojiProcessor.js';
-import { configureLogger, log } from '#bot/infrastructure/logger.js';
+import { configureLogger, log } from '#bot/infrastructure/logging/logger.js';
 
 export async function startBot(correlationId: string): Promise<void> {
   const config = loadConfig();

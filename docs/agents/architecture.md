@@ -60,6 +60,8 @@ apps (composition roots)
 
 **Motivo:** preserva testabilidade e evita acoplamento entre runtimes.
 
+Dentro de `apps/bot`, a separação entre comandos registráveis, mecanismo de execução e integrações segue o [guia de organização dos arquivos do bot](../project/bot-file-organization.md).
+
 **Exceções:** nenhuma dependência reversa; mova o contrato comum para um package coeso.
 
 ### Regra: API pública de package

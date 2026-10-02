@@ -1,6 +1,6 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { addEmojiAddOptions, createEmojiAddExecutor } from '#bot/commands/emojiAdd.js';
-import type { ChatInputCommand } from '#bot/commands/types.js';
+import type { ChatInputCommand } from '#bot/command-system/types.js';
+import { addEmojiAddOptions, createEmojiAddExecutor } from '#bot/infrastructure/discord/emojis/emojiAdd.js';
 
 /**
  * Adiciona um emoji ao servidor onde o comando foi executado.

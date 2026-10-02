@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { configureLogger, log } from '../apps/bot/src/infrastructure/logger.js';
-import { formatTerminalLog, shouldUseTerminalColors } from '../apps/bot/src/infrastructure/terminalFormatter.js';
+import { configureLogger, log } from '../apps/bot/src/infrastructure/logging/logger.js';
+import { formatTerminalLog, shouldUseTerminalColors } from '../apps/bot/src/infrastructure/logging/terminalFormatter.js';
 
 afterEach(() => {
   configureLogger('production');

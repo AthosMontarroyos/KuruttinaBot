@@ -8,21 +8,21 @@ import {
   type EmojiImportErrorCode,
   type PreparedEmojiImage,
 } from '../apps/bot/src/application/emojis/types.js';
-import { createEmojiAddExecutor } from '../apps/bot/src/commands/emojiAdd.js';
+import { createEmojiAddExecutor } from '../apps/bot/src/infrastructure/discord/emojis/emojiAdd.js';
 import { command as devCommand } from '../apps/bot/src/commands/dev/emoji.js';
 import { command as emojiCommand } from '../apps/bot/src/commands/mod/emoji.js';
-import { loadCommands } from '../apps/bot/src/commands/loadCommands.js';
-import type { CommandContext } from '../apps/bot/src/commands/types.js';
+import { loadCommands } from '../apps/bot/src/command-system/loadCommands.js';
+import type { CommandContext } from '../apps/bot/src/command-system/types.js';
 import { createCentralDeployment } from '../apps/bot/src/deployments/central.js';
 import { createGuildDeployment } from '../apps/bot/src/deployments/guild.js';
 import { handleChatInputCommand, type InteractionCommandPort } from '../apps/bot/src/events/interactions/interactionCreate.js';
 import { handleMessageCreate } from '../apps/bot/src/events/messages/messageCreate.js';
-import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
+import { CommandsHandler } from '../apps/bot/src/command-system/CommandsHandler.js';
 import { DeploymentsHandler } from '../apps/bot/src/handlers/DeploymentsHandler.js';
-import type { CommandClientPort } from '../apps/bot/src/infrastructure/discord/commandContext.js';
+import type { CommandClientPort } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 const discord = vi.hoisted(() => ({ deployGuildCommands: vi.fn(), deployGlobalCommands: vi.fn() }));
-vi.mock('../apps/bot/src/infrastructure/discord/commands.js', () => discord);
+vi.mock('../apps/bot/src/infrastructure/discord/commands/deployCommands.js', () => discord);
 
 /** Identidades e guildas sintéticas: os cadastros reais não pertencem aos testes. */
 const DEV_GUILD = '910000000000000001';

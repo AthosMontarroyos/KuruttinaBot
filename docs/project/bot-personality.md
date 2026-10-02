@@ -70,7 +70,7 @@ Negação de permissão permanece quase igual de propósito: o tom não suaviza 
 
 ## Fora deste escopo
 
-Logs de terminal em `apps/bot/src/infrastructure/terminalFormatter.ts` e as demais mensagens estritamente operacionais continuam neutros, conforme os [logs humanos do bot](../decisions/human-readable-bot-logs.md). A descrição de slash command (`setDescription`) também fica neutra e curta: a personalidade vale para a resposta, não para o catálogo de comandos. `acknowledge()` só aciona o indicador nativo de carregamento do Discord.
+Logs de terminal em `apps/bot/src/infrastructure/logging/terminalFormatter.ts` e as demais mensagens estritamente operacionais continuam neutros, conforme os [logs humanos do bot](../decisions/human-readable-bot-logs.md). A descrição de slash command (`setDescription`) também fica neutra e curta: a personalidade vale para a resposta, não para o catálogo de comandos. `acknowledge()` só aciona o indicador nativo de carregamento do Discord.
 
 ## Estado
 

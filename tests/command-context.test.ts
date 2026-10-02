@@ -1,11 +1,11 @@
 import { PermissionFlagsBits, PermissionsBitField, type GuildTextBasedChannel } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
-import { withEmojis } from '../apps/bot/src/commands/access.js';
-import { createChannelContext, createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commandContext.js';
-import { createClearChannelAdapter } from '../apps/bot/src/infrastructure/discord/clearAdapter.js';
+import { withEmojis } from '../apps/bot/src/command-system/responses.js';
+import { createChannelContext, createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
+import { createClearChannelAdapter } from '../apps/bot/src/infrastructure/discord/moderation/clearAdapter.js';
 import { command as clear } from '../apps/bot/src/commands/mod/clear.js';
-import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
+import { CommandsHandler } from '../apps/bot/src/command-system/CommandsHandler.js';
 import { handleMessageCreate } from '../apps/bot/src/events/messages/messageCreate.js';
 import { handleChatInputCommand, type InteractionCommandPort } from '../apps/bot/src/events/interactions/interactionCreate.js';
 

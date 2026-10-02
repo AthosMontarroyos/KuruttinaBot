@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import type { ChatInputCommand } from '#bot/commands/types.js';
+import type { ChatInputCommand } from '#bot/command-system/types.js';
 
 // Inválido: dentro de `dev/` mas sem a política staff obrigatória da pasta.
 export const command = {

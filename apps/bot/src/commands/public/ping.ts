@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { withEmojis } from '#bot/commands/access.js';
-import type { ChatInputCommand, CommandContext } from '#bot/commands/types.js';
+import { withEmojis } from '#bot/command-system/responses.js';
+import type { ChatInputCommand, CommandContext } from '#bot/command-system/types.js';
 
 export const command = {
   data: new SlashCommandBuilder().setName('ping').setDescription('Mostra a latencia da API e do Gateway'),

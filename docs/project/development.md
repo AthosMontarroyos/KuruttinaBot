@@ -29,4 +29,4 @@ O único [manifesto Square Cloud](../../squarecloud.app) executa atualmente o bo
 
 Não há serviço de automação local ou remoto incluído no projeto. Ferramentas aposentadas de R2, espelhamento de emojis e Cloudflare Tunnel constam no [registro](tooling-retirement.md); os IDs e rotas históricas dos túneis estão no [inventário](cloudflare-tunnel.md).
 
-As regras para agentes começam em [AGENTS.md](../../AGENTS.md); leia somente os documentos de domínio necessários à tarefa.
+As regras para agentes começam em [AGENTS.md](../../AGENTS.md); leia somente os documentos de domínio necessários à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

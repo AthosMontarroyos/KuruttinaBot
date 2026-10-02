@@ -31,6 +31,7 @@ Antes de concluir a tarefa, confira cada mensagem afetada contra as regras de pe
 ## Índice sob demanda
 
 - [Estado implementado](docs/project/current-state.md): snapshot verificável do que existe hoje, comandos, runtime, deploys, segurança, testes e lacunas conhecidas.
+- [Organização dos arquivos do bot](docs/project/bot-file-organization.md): onde colocar comando, executor, adapter, caso de uso e teste no runtime Discord.
 - [Arquitetura e contratos](docs/agents/architecture.md): estrutura do monorepo, dependências, composição, TypeScript, contratos e configuração tipada.
 - [PostgreSQL e acesso a dados](docs/agents/database.md): schema, migrations, queries, repositories, RLS, roles, pooling e transações.
 - [Discord bot](docs/agents/discord-bot.md): discord.js, credenciais por ambiente, command sync, registry, memória e ciclo de vida.

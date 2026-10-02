@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { startBot } from '#bot/bootstrap.js';
-import { log } from '#bot/infrastructure/logger.js';
+import { log } from '#bot/infrastructure/logging/logger.js';
 
 const correlationId = randomUUID();
 

@@ -86,7 +86,7 @@ Leia esta tabela ao precisar de emojis. Escolha pelo nome, finalidade e disponib
 
 A escolha também segue a [preferência por emojis expressivos](bot-personality.md#preferência-por-emojis-expressivos). Consulte essa orientação antes de trocar reações por símbolos neutros durante uma revisão de personalidade.
 
-Use `context.emoji()` e `withEmojis()` para montar a mensagem. O [resolver](../../apps/bot/src/infrastructure/discord/commandContext.ts) consulta a aplicação uma vez por execução e, se o emoji personalizado estiver ausente ou a consulta falhar, devolve a alternativa Unicode abaixo:
+Use `context.emoji()` e `withEmojis()` (`apps/bot/src/command-system/responses.ts`) para montar a mensagem. O [resolver](../../apps/bot/src/infrastructure/discord/commands/commandContext.ts) consulta a aplicação uma vez por execução e, se o emoji personalizado estiver ausente ou a consulta falhar, devolve a alternativa Unicode abaixo:
 
 ```ts
 const warning = await context.emoji('warning');

@@ -1,8 +1,8 @@
 import { PermissionFlagsBits, PermissionsBitField } from 'discord.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { command as clearCommand, parsePrefixArgs } from '../apps/bot/src/commands/mod/clear.js';
-import { createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commandContext.js';
-import type { CommandContext, BulkDeletePort } from '../apps/bot/src/commands/types.js';
+import { createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
+import type { CommandContext, BulkDeletePort } from '../apps/bot/src/command-system/types.js';
 
 afterEach(() => vi.restoreAllMocks());
 

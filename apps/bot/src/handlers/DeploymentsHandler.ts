@@ -1,5 +1,5 @@
 import type { Deployment, DeploymentContext } from '#bot/deployments/types.js';
-import { log } from '#bot/infrastructure/logger.js';
+import { log } from '#bot/infrastructure/logging/logger.js';
 
 export class DeploymentsHandler {
   constructor(private readonly registeredDeployments: readonly Deployment[]) {}

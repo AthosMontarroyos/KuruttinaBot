@@ -16,18 +16,18 @@ vi.mock('../apps/bot/src/config.js', () => ({
     activeCredential: { token: 'fake', expectedBotId: '123456789012345678' },
   }),
 }));
-vi.mock('../apps/bot/src/commands/loadCommands.js', () => ({ loadCommands: async () => [] }));
+vi.mock('../apps/bot/src/command-system/loadCommands.js', () => ({ loadCommands: async () => [] }));
 vi.mock('../apps/bot/src/infrastructure/discord/identity.js', () => ({ verifyBotIdentity: mocks.identity }));
 vi.mock('../apps/bot/src/handlers/DeploymentsHandler.js', () => ({
   DeploymentsHandler: class { run = mocks.sync; },
 }));
-vi.mock('../apps/bot/src/infrastructure/logger.js', () => ({ configureLogger: vi.fn(), log: vi.fn() }));
+vi.mock('../apps/bot/src/infrastructure/logging/logger.js', () => ({ configureLogger: vi.fn(), log: vi.fn() }));
 vi.mock('discord.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('discord.js')>();
   return { ...actual, Client: class { once = vi.fn(); on = vi.fn(); login = mocks.login; destroy = mocks.destroy; } };
 });
 import { startBot } from '../apps/bot/src/bootstrap.js';
-import { log } from '../apps/bot/src/infrastructure/logger.js';
+import { log } from '../apps/bot/src/infrastructure/logging/logger.js';
 
 describe('database lifecycle at startup and shutdown', () => {
   let originalTerm: NodeJS.SignalsListener[];

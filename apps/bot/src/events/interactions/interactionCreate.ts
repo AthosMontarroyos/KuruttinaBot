@@ -8,11 +8,11 @@ import {
   type InteractionReplyOptions,
 } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
-import { withEmojis } from '#bot/commands/access.js';
-import type { CommandReply, CommandContext, HasPermission } from '#bot/commands/types.js';
-import type { CommandsHandler } from '#bot/handlers/CommandsHandler.js';
-import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commandContext.js';
-import { log } from '#bot/infrastructure/logger.js';
+import { withEmojis } from '#bot/command-system/responses.js';
+import type { CommandReply, CommandContext, HasPermission } from '#bot/command-system/types.js';
+import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
+import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
+import { log } from '#bot/infrastructure/logging/logger.js';
 
 const failureMessage = 'Não consegui executar este comando. Tente de novo daqui a pouco.';
 

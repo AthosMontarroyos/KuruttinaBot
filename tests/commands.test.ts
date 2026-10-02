@@ -1,12 +1,12 @@
 import { PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
-import { hasConsistentDefaultPermissions, loadCommands } from '../apps/bot/src/commands/loadCommands.js';
+import { hasConsistentDefaultPermissions, loadCommands } from '../apps/bot/src/command-system/loadCommands.js';
 import { command as emojiCommand } from '../apps/bot/src/commands/mod/emoji.js';
 import { command as pingCommand } from '../apps/bot/src/commands/public/ping.js';
 import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
-import type { BulkDeletePort, ChatInputCommand, CommandAccess, CommandContext } from '../apps/bot/src/commands/types.js';
+import type { BulkDeletePort, ChatInputCommand, CommandAccess, CommandContext } from '../apps/bot/src/command-system/types.js';
 import { handleMessageCreate } from '../apps/bot/src/events/messages/messageCreate.js';
-import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
+import { CommandsHandler } from '../apps/bot/src/command-system/CommandsHandler.js';
 
 function commandContext(reply = vi.fn().mockResolvedValue(undefined)): CommandContext {
   return {
@@ -58,14 +58,17 @@ describe('commands', () => {
   });
 
   it('rejects malformed command modules during discovery', async () => {
-    await expect(loadCommands(new URL('./fixtures/', import.meta.url))).rejects.toMatchObject({ name: 'CommandLoadError' });
+    await expect(loadCommands(new URL('./fixtures/malformed/', import.meta.url))).rejects.toMatchObject({
+      name: 'CommandLoadError',
+      message: expect.stringContaining('Invalid command module'),
+    });
   });
 
-  it('loads a staff command from a nested dev/ folder and deploys it only to the dev guild', async () => {
+  it('loads nested commands and keeps the category as the first path segment', async () => {
     const commands = await loadCommands(new URL('./fixtures/scope-placement/valid/', import.meta.url));
-    expect(commands).toHaveLength(1);
+    expect(commands.map((command) => command.data.name)).toEqual(['equipe', 'aninhado', 'aberto']);
     const handler = new CommandsHandler(commands);
-    expect(handler.payload('global')).toEqual([]);
+    expect(handler.payload('global').map((command) => command.name)).toEqual(['aninhado', 'aberto']);
     expect(handler.payload('dev-guild').map((command) => command.name)).toEqual(['equipe']);
   });
 
@@ -78,6 +81,56 @@ describe('commands', () => {
       name: 'CommandLoadError',
       message: expect.stringContaining('Invalid command module'),
     });
+  });
+
+  it.each([
+    'public-guild',
+    'public-dev-scope',
+    'mod-public',
+    'mod-dev-scope',
+    'dev-guild-policy',
+    'dev-staff-global',
+  ])('rejects category, policy and scope divergence in %s', async (fixture) => {
+    await expect(loadCommands(new URL(`./fixtures/placement/${fixture}/`, import.meta.url))).rejects.toMatchObject({
+      name: 'CommandLoadError',
+      message: expect.stringContaining('Invalid command module'),
+    });
+  });
+
+  it.each([
+    { fixture: 'root-file', marker: 'boom.ts' },
+    { fixture: 'unknown-category', marker: 'extras' },
+    { fixture: 'root-helper-name', marker: 'types.ts' },
+  ])('rejects $fixture before importing the module', async ({ fixture, marker }) => {
+    await expect(loadCommands(new URL(`./fixtures/layout/${fixture}/`, import.meta.url))).rejects.toMatchObject({
+      name: 'CommandLoadError',
+      message: expect.stringContaining(marker),
+    });
+    await expect(loadCommands(new URL(`./fixtures/layout/${fixture}/`, import.meta.url))).rejects.toMatchObject({
+      message: expect.stringContaining('Expected dev/, mod/ or public/'),
+    });
+    await expect(loadCommands(new URL(`./fixtures/layout/${fixture}/`, import.meta.url))).rejects.toMatchObject({
+      message: expect.not.stringContaining('should not import'),
+    });
+  });
+
+  it.each(['types.ts', 'access.ts', 'emojiAdd.ts', 'loadCommands.ts'])(
+    'no longer ignores a helper named %s inside a category',
+    async (fileName) => {
+      const folder = fileName === 'emojiAdd.ts' ? 'emoji-add' : fileName === 'loadCommands.ts' ? 'load-commands' : fileName.replace(/\.ts$/u, '');
+      await expect(loadCommands(new URL(`./fixtures/layout/helper-names/${folder}/`, import.meta.url))).rejects.toMatchObject({
+        name: 'CommandLoadError',
+        message: expect.stringContaining(`Invalid command module`),
+      });
+      await expect(loadCommands(new URL(`./fixtures/layout/helper-names/${folder}/`, import.meta.url))).rejects.toMatchObject({
+        message: expect.stringContaining(fileName),
+      });
+    },
+  );
+
+  it('ignores markdown, declarations and source maps', async () => {
+    const commands = await loadCommands(new URL('./fixtures/ignored-files/', import.meta.url));
+    expect(commands.map((command) => command.data.name)).toEqual(['visivel']);
   });
 
   it('rejects a hand-registered command whose staff policy and scope diverge', () => {

@@ -7,13 +7,13 @@ import {
 } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
-import type { ChatInputCommand } from '../apps/bot/src/commands/types.js';
+import type { ChatInputCommand } from '../apps/bot/src/command-system/types.js';
 import {
   handleChatInputCommand,
   handleInteractionCreate,
   type InteractionCommandPort,
 } from '../apps/bot/src/events/interactions/interactionCreate.js';
-import { CommandsHandler } from '../apps/bot/src/handlers/CommandsHandler.js';
+import { CommandsHandler } from '../apps/bot/src/command-system/CommandsHandler.js';
 
 function interactionPort() {
   let deferred = false;

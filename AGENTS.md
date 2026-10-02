@@ -22,6 +22,12 @@ Toda exceção a uma regra `MUST` ou a uma fronteira arquitetural precisa de jus
 
 Antes de alterar um artefato, leia integralmente cada documento diretamente aplicável. Quando a tarefa cruzar domínios, leia todos os documentos correspondentes. As regras modulares complementam este roteador e continuam obrigatórias dentro do próprio escopo.
 
+### Falas do bot: leitura e conferência — MUST
+
+Antes de criar, alterar ou revisar qualquer mensagem do bot dirigida ao usuário, leia integralmente [Personalidade do bot](docs/project/bot-personality.md) e [Catálogo de emojis](docs/project/emoji-catalog.md). Isso também vale para mensagens montadas em handlers, adapters e helpers compartilhados, além dos commands, em slash e prefixo. Não dependa de memória de outra conversa nem apenas dos exemplos existentes no código.
+
+Antes de concluir a tarefa, confira cada mensagem afetada contra as regras de personalidade, emojis e escopo desses documentos, incluindo os caminhos de erro, recusa e indisponibilidade de emojis personalizados. Informe no resultado os documentos consultados, a validação realizada e qualquer caminho não verificado. Essa obrigação vale igualmente para Codex, Cursor e outros agentes que trabalhem neste repositório.
+
 ## Índice sob demanda
 
 - [Estado implementado](docs/project/current-state.md): snapshot verificável do que existe hoje, comandos, runtime, deploys, segurança, testes e lacunas conhecidas.

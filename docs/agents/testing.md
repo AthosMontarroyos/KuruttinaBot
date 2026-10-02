@@ -17,3 +17,5 @@ As três skills são `discordbot-developer`, `database-developer` e `project-ope
 ## Definition of Done
 
 Confirme, conforme o risco: escopo proporcional; dependências sem ciclo; entrada validada; autorização server-side; secrets fora de artefatos/logs; queries e pools limitados; startup/shutdown corretos; testes e build aprovados; documentação e ADR atualizados; resultado com validação e riscos materiais.
+
+Quando a tarefa envolver mensagens do bot ao usuário, cumpra também a [leitura e conferência obrigatórias das falas](../../AGENTS.md#falas-do-bot-leitura-e-conferência--must), registrando no resultado a validação e as limitações encontradas.

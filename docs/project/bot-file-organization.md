@@ -23,7 +23,8 @@ apps/bot/src/
 │   │   │   ├── deployCommands.ts
 │   │   │   └── commandContext.ts
 │   │   ├── moderation/
-│   │   │   └── clearAdapter.ts
+│   │   │   ├── clearAdapter.ts
+│   │   │   └── memberModerationAdapter.ts
 │   │   ├── emojis/
 │   │   │   ├── emojiAdapter.ts
 │   │   │   ├── emojiAdd.ts

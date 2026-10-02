@@ -43,6 +43,21 @@ export interface AccessDenialMessages {
 
 export type CommandMessage = Readonly<{ id: string; createdTimestamp: number; author: { readonly id: string } }>;
 
+/** Member data needed to authorize and describe a moderation action. */
+export interface GuildMemberProfile {
+  readonly id: string;
+  readonly displayName: string;
+  readonly highestRolePosition: number;
+}
+
+/** Guild moderation operations shared by slash and prefix. Cache miss is not absence. */
+export interface MemberModerationPort {
+  readonly ownerId: string;
+  readonly botUserId: string | null;
+  fetchMember(userId: string): Promise<GuildMemberProfile | null>;
+  kick(userId: string, reason: string): Promise<'kicked' | 'missing'>;
+}
+
 export interface CommandContext {
   /** Trusted Discord author identity; missing identity always denies staff access. */
   readonly userId?: string | undefined;
@@ -56,9 +71,11 @@ export interface CommandContext {
   // Optional properties for commands that need guild/channel context.
   readonly memberPermissions?: HasPermission | undefined;
   readonly appPermissions?: HasPermission | undefined;
-  sendMessage?(content: string): Promise<unknown>;
+  sendMessage?(content: CommandReply): Promise<unknown>;
   readonly guildId?: string | undefined;
   readonly textChannel?: BulkDeletePort | undefined;
+  /** Kick and later moderation actions; absent outside a guild text channel. */
+  readonly memberModeration?: MemberModerationPort | undefined;
   /** Slash command interaction options. */
   readonly options?: ReadonlyArray<{ readonly name: string; readonly value?: unknown }> | undefined;
   /** Raw arguments from prefix commands. */

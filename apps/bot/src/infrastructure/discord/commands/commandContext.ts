@@ -1,6 +1,7 @@
 import type { GuildTextBasedChannel, TextBasedChannel } from 'discord.js';
 import type { CommandContext, HasPermission } from '#bot/command-system/types.js';
 import { createClearChannelAdapter } from '../moderation/clearAdapter.js';
+import { createMemberModerationAdapter } from '../moderation/memberModerationAdapter.js';
 
 export interface CommandClientPort {
   readonly application: { readonly emojis: {
@@ -24,6 +25,7 @@ const emojiFallbacks: Readonly<Record<string, string>> = {
   Angry: '😠',
   Disappointed: '😞',
   ops: '😅',
+  question: '❓',
   ChannelBrowser: '🏘️',
   guild: '🏘️',
   ID: '🪪',
@@ -57,7 +59,7 @@ export function createChannelContext(
   channel: TextBasedChannel | null | undefined,
   memberPermissions?: HasPermission,
   appPermissions?: HasPermission,
-): Pick<CommandContext, 'textChannel' | 'channelId' | 'guildId' | 'memberPermissions' | 'appPermissions' | 'sendMessage'> {
+): Pick<CommandContext, 'textChannel' | 'channelId' | 'guildId' | 'memberPermissions' | 'appPermissions' | 'sendMessage' | 'memberModeration'> {
   if (!isGuildTextChannel(channel)) return {};
   const botMember = channel.guild.members.me;
   return {
@@ -67,5 +69,6 @@ export function createChannelContext(
     memberPermissions,
     appPermissions: appPermissions ?? (botMember ? channel.permissionsFor(botMember) ?? undefined : undefined),
     sendMessage: (content) => channel.send(content),
+    memberModeration: createMemberModerationAdapter(channel.guild),
   };
 }

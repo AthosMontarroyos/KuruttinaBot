@@ -58,16 +58,32 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Situação | Emoji | Texto |
 | --- | --- | --- |
 | Sucesso | `add` e `sucess` | ➕ Pronto. O emoji **nome** agora está neste servidor. ✅ |
-| Erro | `error` | ❌ Não consegui buscar as mensagens. Tente de novo daqui a pouco. |
+| Erro | `ops` | 😅 Não consegui buscar as mensagens. Tente de novo daqui a pouco. |
 | Permissão negada | `Disappointed` | 😞 Você precisa da permissão **Gerenciar mensagens** neste canal. |
-| Entrada inválida | `warning` | ⚠️ Diga quantas mensagens apagar: um número de **1 a 200**. |
+| Entrada inválida | `question` | ❓ Diga quantas mensagens apagar: um número de **1 a 200**. |
 | Consulta de emoji | `ID` e `photo` | Sem texto acima do embed. Os campos são Identidade e Menção, com a imagem à direita e o botão Abrir no navegador. |
 | Marcação inválida | `warning` | ⚠️ Envie somente a marcação de um emoji personalizado, como `<:nome:id>` ou `<a:nome:id>`. |
 | Consulta indisponível | `ops` | 😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco. |
 | Bot ocupado | `coffee` | ☕ Já estou ocupada. Tente de novo em instantes. |
 | Ping | `dancing` | 💃 Pong. Ainda estou aqui. |
+| Expulsão concluída | `sucess` | ✅ Pronto. `Nome` foi expulso deste servidor. |
+| Expulsão fora de canal | `ChannelBrowser` | 🏘️ A expulsão só pode ser feita em um canal de texto de servidor. |
+| Sem permissão para expulsar | `Disappointed` | 😞 Você precisa da permissão **Expulsar membros** neste servidor. |
+| Bot sem permissão para expulsar | `Angry` | 😠 Preciso destas permissões para expulsar um membro: **Expulsar membros**. |
+| Expulsão sem membro | `question` | ❓ Diga quem expulsar. Mencione o membro ou digite o ID! |
+| Membro inválido | `search` | 🔎 Não consegui identificar esse membro. Mencione alguém ou informe um ID válido. |
+| Motivo longo | `warning` | ⚠️ O motivo pode ter no máximo **200** caracteres. |
+| Autoexpulsão | `Disappointed` | 😞 Você não pode se expulsar!! |
+| Expulsar o bot | `Angry` | 😠 Ei! Você não pode me expulsar!!! |
+| Falha na expulsão | `ops` | 😅 Não consegui expulsar esse membro. Tente de novo daqui a pouco. |
+| Dono do servidor | `Disappointed` | 😞 Não consigo expulsar o dono deste servidor. |
+| Cargo do autor | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Não consigo expulsá-lo. |
+| Cargo do bot | `Angry` | 😠 Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo expulsá-lo. |
+| Membro ausente | `search` | 🔎 Não encontrei esse membro neste servidor. |
 
 No ping, os campos do embed nomeiam as latências com `stats` e `gateway`. Os valores em milissegundos não levam emoji: a mensagem já tem `dancing`.
+
+Na expulsão, a frase usa `sucess`. O embed usa a cor `0x2b2d31`, a mesma das outras respostas. `kick` nomeia Membro, `staff` nomeia Responsável e `Note` nomeia Motivo. Esses três podem ficar de fora quando o emoji personalizado não está disponível; a frase continua com `sucess`. O nome e o motivo aparecem em código, para o texto informado não virar formatação. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando.
 
 Na consulta de emoji, a resposta é só o embed. `ID` nomeia Identidade e `photo` nomeia Menção. A imagem fica à direita, e o botão **Abrir no navegador** aponta para ela.
 

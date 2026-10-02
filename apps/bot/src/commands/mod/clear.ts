@@ -122,7 +122,7 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parsePrefixArgs(context.rawArgs ?? '');
 
   if (!validCount(args.count)) {
-    await context.reply(withEmojis(await context.emoji('warning'), `Diga quantas mensagens apagar: um número de **1 a ${MAX_COUNT}**.`));
+    await context.reply(withEmojis(await context.emoji('question'), `Diga quantas mensagens apagar: um número de **1 a ${MAX_COUNT}**.`));
     return;
   }
 
@@ -149,7 +149,7 @@ async function execute(context: CommandContext): Promise<void> {
       eligible = await fetchEligibleMessages(channel, args.count, args.userId, deadline, commandMessageId);
     } catch (error: unknown) {
       log('error', 'clear_fetch_failed', { channelId, ...errorDetails(error) });
-      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui buscar as mensagens. Tente de novo daqui a pouco.')); } catch { /* best effort */ }
+      try { await context.reply(withEmojis(await context.emoji('ops'), 'Não consegui buscar as mensagens. Tente de novo daqui a pouco.')); } catch { /* best effort */ }
       return;
     }
 
@@ -164,7 +164,7 @@ async function execute(context: CommandContext): Promise<void> {
       deleted = await channel.bulkDelete(eligible);
     } catch (error: unknown) {
       log('error', 'clear_delete_failed', { channelId, ...errorDetails(error) });
-      try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.')); } catch { /* best effort */ }
+      try { await context.reply(withEmojis(await context.emoji('ops'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.')); } catch { /* best effort */ }
       return;
     }
 
@@ -196,7 +196,7 @@ async function execute(context: CommandContext): Promise<void> {
       channelId,
       ...errorDetails(error),
     });
-    try { await context.reply(withEmojis(await context.emoji('error'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.')); } catch { /* best effort */ }
+    try { await context.reply(withEmojis(await context.emoji('ops'), 'Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.')); } catch { /* best effort */ }
   } finally {
     activeChannels.delete(lockKey);
   }

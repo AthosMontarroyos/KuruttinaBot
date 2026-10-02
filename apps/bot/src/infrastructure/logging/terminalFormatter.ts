@@ -32,6 +32,8 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   clear_delete_failed: { emoji: '❌', category: 'Clear', message: 'Falha ao apagar mensagens' },
   clear_confirm_failed: { emoji: '❌', category: 'Clear', message: 'Exclusão concluída; falha ao enviar confirmação' },
   clear_unexpected_error: { emoji: '❌', category: 'Clear', message: 'Erro inesperado na limpeza de mensagens' },
+  kick_failed: { emoji: '❌', category: 'Kick', message: 'Falha ao expulsar o membro' },
+  kick_confirm_failed: { emoji: '❌', category: 'Kick', message: 'Expulsão concluída; falha ao enviar confirmação' },
   central_command_deployment_failed: { emoji: '❌', category: 'Sync', message: 'Falha ao sincronizar comandos globais' },
   production_application_emoji_created: { emoji: '✅', category: 'Emoji', message: 'Emoji criado no bot de produção' },
   production_application_identity_rejected: { emoji: '⚠️', category: 'Emoji', message: 'Identidade do bot de produção rejeitada' },

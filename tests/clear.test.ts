@@ -351,7 +351,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 0 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Diga quantas mensagens apagar: um número de **1 a 200**.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:question:question-id> Diga quantas mensagens apagar: um número de **1 a 200**.');
     });
 
     it('rejects invalid count from prefix in Portuguese', async () => {
@@ -359,7 +359,7 @@ describe('clear command', () => {
         rawArgs: '0',
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:warning:warning-id> Diga quantas mensagens apagar: um número de **1 a 200**.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:question:question-id> Diga quantas mensagens apagar: um número de **1 a 200**.');
     });
 
     it('rejects invalid user ID in Portuguese', async () => {
@@ -406,7 +406,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 10 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui buscar as mensagens. Tente de novo daqui a pouco.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ops:ops-id> Não consegui buscar as mensagens. Tente de novo daqui a pouco.');
 
       const port2 = mockBulkDeletePort({
         fetchMessages: vi.fn(async () => []),
@@ -488,7 +488,7 @@ describe('clear command', () => {
         options: [{ name: 'quantidade', value: 10 }],
       });
       await clearCommand.execute(ctx);
-      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui buscar as mensagens. Tente de novo daqui a pouco.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ops:ops-id> Não consegui buscar as mensagens. Tente de novo daqui a pouco.');
       const replyArg = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
       expect(replyArg).not.toContain('secret internal detail');
     });
@@ -524,7 +524,7 @@ describe('clear command', () => {
       });
       await clearCommand.execute(ctx);
       expect(port.bulkDelete).toHaveBeenCalledOnce();
-      expect(ctx.reply).toHaveBeenCalledWith('<:error:error-id> Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.');
+      expect(ctx.reply).toHaveBeenCalledWith('<:ops:ops-id> Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.');
       expect(ctx.sendMessage).not.toHaveBeenCalled();
     });
 

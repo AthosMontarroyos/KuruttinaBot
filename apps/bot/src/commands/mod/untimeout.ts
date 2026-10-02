@@ -104,11 +104,11 @@ async function confirmation(
   moderator: GuildMemberProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, unmute, identity, staff, note] = await Promise.all([
+  const [done, unmute, identity, police, note] = await Promise.all([
     context.emoji('sucess'),
     context.emoji('unmute'),
     context.emoji('ID'),
-    context.emoji('staff'),
+    context.emoji('police'),
     context.emoji('Note'),
   ]);
   return {
@@ -122,7 +122,7 @@ async function confirmation(
           inline: true,
         },
         {
-          name: withEmojis(staff, 'Responsável'),
+          name: withEmojis(police, 'Responsável'),
           value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
           inline: true,
         },
@@ -157,7 +157,7 @@ async function authorizeClear(
   target: GuildMemberProfile,
 ): Promise<GuildMemberProfile | undefined> {
   if (target.id === guild.ownerId) {
-    await say(context, 'Disappointed', 'Não consigo alterar o castigo do dono deste servidor.');
+    await say(context, 'Disappointed', 'Ei! Não consigo alterar o castigo do dono deste servidor...');
     return undefined;
   }
 
@@ -167,7 +167,7 @@ async function authorizeClear(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele.');
+    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele!');
     return undefined;
   }
 
@@ -181,11 +181,11 @@ async function authorizeClear(
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Angry', 'Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.');
+    await say(context, 'cry', 'Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.');
     return undefined;
   }
   if (target.administrator) {
-    await say(context, 'Disappointed', 'Não consigo alterar o castigo de um membro com a permissão **Administrador**.');
+    await say(context, 'cry', 'Ei! Não consigo alterar o castigo de um membro com a permissão **Administrador**.');
     return undefined;
   }
   return actor;

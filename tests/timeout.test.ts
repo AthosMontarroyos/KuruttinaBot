@@ -152,12 +152,12 @@ describe('timeout command', () => {
     expect(guild.timeout).toHaveBeenCalledWith(TARGET, TEN_MINUTES, `Moderador ${ACTOR} por 10 minutos: motivo claro`);
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '<:sucess:sucess-id> Pronto. `Alvo` foi castigado por **10 minutos**. <:mute:mute-id>',
+      content: '<:police:police-id> <:sucess:sucess-id> Pronto. `Alvo` foi castigado por **10 minutos**. <:jail:jail-id>',
       embeds: [{
         color: 0x2b2d31,
         fields: [
           { name: '<:ID:ID-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
-          { name: '<:staff:staff-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
+          { name: '<:police:police-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
           { name: '<:info:info-id> Duração', value: '10 minutos', inline: false },
           { name: '<:Note:Note-id> Motivo', value: '`motivo claro`', inline: false },
         ],
@@ -232,23 +232,23 @@ describe('timeout command', () => {
 
   it('refuses the author, the bot, the owner, a higher role and an administrator', async () => {
     const cases: Array<{ rawArgs: string; members?: Record<string, GuildMemberProfile>; text: string }> = [
-      { rawArgs: `<@${ACTOR}> 10m`, text: '<:Disappointed:Disappointed-id> Você não pode se castigar.' },
-      { rawArgs: `<@${BOT}> 10m`, text: '<:Angry:Angry-id> Você não pode me castigar.' },
+      { rawArgs: `<@${ACTOR}> 10m`, text: '<:Disappointed:Disappointed-id> Você não pode se castigar...' },
+      { rawArgs: `<@${BOT}> 10m`, text: '<:Angry:Angry-id> Ei! Você não pode me castigar...' },
       { rawArgs: `<@${OWNER}> 10m`, text: '<:Disappointed:Disappointed-id> Não consigo castigar o dono deste servidor.' },
       {
         rawArgs: `<@${TARGET}> 10m`,
         members: { [TARGET]: profile(TARGET, 'Alvo', 5) },
-        text: '<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo.',
+        text: '<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo!',
       },
       {
         rawArgs: `<@${TARGET}> 10m`,
         members: { [BOT]: profile(BOT, 'Kuruttina', 2) },
-        text: '<:Angry:Angry-id> Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo.',
+        text: '<:Angry:Angry-id> Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo. <:cry:cry-id>',
       },
       {
         rawArgs: `<@${TARGET}> 10m`,
         members: { [TARGET]: profile(TARGET, 'Alvo', 2, { administrator: true }) },
-        text: '<:Disappointed:Disappointed-id> Não consigo castigar um membro com a permissão **Administrador**.',
+        text: '<:cry:cry-id> Não consigo castigar um membro com a permissão **Administrador**.',
       },
     ];
     for (const entry of cases) {
@@ -258,6 +258,27 @@ describe('timeout command', () => {
       expect(replyText(ctx.reply)).toBe(entry.text);
       expect(guild.timeout).not.toHaveBeenCalled();
     }
+  });
+
+  it('keeps the hierarchy refusals readable when custom emojis are unavailable', async () => {
+    const emoji = createEmojiResolver({ emojis: { fetch: vi.fn().mockRejectedValue(new Error('Unavailable')) } });
+    const admin = context({
+      rawArgs: `<@${TARGET}> 10m`,
+      emoji,
+      memberModeration: moderation({
+        members: { [TARGET]: profile(TARGET, 'Alvo', 2, { administrator: true }) },
+      }),
+    });
+    await timeoutCommand.execute(admin);
+    expect(replyText(admin.reply)).toBe('😢 Não consigo castigar um membro com a permissão **Administrador**.');
+
+    const lowBot = context({
+      rawArgs: `<@${TARGET}> 10m`,
+      emoji,
+      memberModeration: moderation({ members: { [BOT]: profile(BOT, 'Kuruttina', 2) } }),
+    });
+    await timeoutCommand.execute(lowBot);
+    expect(replyText(lowBot.reply)).toBe('😠 Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo. 😢');
   });
 
   it('lets the server owner time out a member above their highest role', async () => {
@@ -369,7 +390,7 @@ describe('untimeout command', () => {
         color: 0x2b2d31,
         fields: [
           { name: '<:ID:ID-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
-          { name: '<:staff:staff-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
+          { name: '<:police:police-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
           { name: '<:Note:Note-id> Motivo', value: '`motivo claro`', inline: false },
         ],
       }],
@@ -415,12 +436,12 @@ describe('untimeout command', () => {
       {
         rawArgs: `<@${OWNER}>`,
         members: { [OWNER]: profile(OWNER, 'Dono', 20, active) },
-        text: '<:Disappointed:Disappointed-id> Não consigo alterar o castigo do dono deste servidor.',
+        text: '<:Disappointed:Disappointed-id> Ei! Não consigo alterar o castigo do dono deste servidor...',
       },
       {
         rawArgs: `<@${TARGET}>`,
         members: { [TARGET]: profile(TARGET, 'Alvo', 5, active) },
-        text: '<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele.',
+        text: '<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele!',
       },
       {
         rawArgs: `<@${TARGET}>`,
@@ -428,12 +449,12 @@ describe('untimeout command', () => {
           [TARGET]: profile(TARGET, 'Alvo', 2, active),
           [BOT]: profile(BOT, 'Kuruttina', 2),
         },
-        text: '<:Angry:Angry-id> Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.',
+        text: '<:cry:cry-id> Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.',
       },
       {
         rawArgs: `<@${TARGET}>`,
         members: { [TARGET]: profile(TARGET, 'Alvo', 2, { ...active, administrator: true }) },
-        text: '<:Disappointed:Disappointed-id> Não consigo alterar o castigo de um membro com a permissão **Administrador**.',
+        text: '<:cry:cry-id> Ei! Não consigo alterar o castigo de um membro com a permissão **Administrador**.',
       },
     ];
     for (const entry of cases) {
@@ -443,6 +464,33 @@ describe('untimeout command', () => {
       expect(replyText(ctx.reply)).toBe(entry.text);
       expect(guild.clearTimeout).not.toHaveBeenCalled();
     }
+  });
+
+  it('keeps the removal refusals readable when custom emojis are unavailable', async () => {
+    const emoji = createEmojiResolver({ emojis: { fetch: vi.fn().mockRejectedValue(new Error('Unavailable')) } });
+    const active = { timedOutUntil: Date.now() + 60_000 };
+    const admin = context({
+      rawArgs: `<@${TARGET}>`,
+      emoji,
+      memberModeration: moderation({
+        members: { [TARGET]: profile(TARGET, 'Alvo', 2, { ...active, administrator: true }) },
+      }),
+    });
+    await untimeoutCommand.execute(admin);
+    expect(replyText(admin.reply)).toBe('😢 Ei! Não consigo alterar o castigo de um membro com a permissão **Administrador**.');
+
+    const lowBot = context({
+      rawArgs: `<@${TARGET}>`,
+      emoji,
+      memberModeration: moderation({
+        members: {
+          [TARGET]: profile(TARGET, 'Alvo', 2, active),
+          [BOT]: profile(BOT, 'Kuruttina', 2),
+        },
+      }),
+    });
+    await untimeoutCommand.execute(lowBot);
+    expect(replyText(lowBot.reply)).toBe('😢 Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.');
   });
 
   it('keeps the failure calm when Discord rejects the removal', async () => {

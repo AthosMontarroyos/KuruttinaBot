@@ -54,7 +54,7 @@ const DURATION_PART = new RegExp(
   'iu',
 );
 
-const cannotTimeoutBot = 'Você não pode me castigar.';
+const cannotTimeoutBot = 'Ei! Você não pode me castigar...';
 const timeoutFailed = 'Não consegui castigar esse membro. Tente de novo daqui a pouco.';
 const memberMissing = 'Não encontrei esse membro neste servidor.';
 const SNOWFLAKE = /^\d{17,20}$/u;
@@ -213,8 +213,9 @@ function errorDetails(error: unknown): { errorName: string; errorCode?: string |
   };
 }
 
-async function say(context: CommandContext, emojiName: string, text: string): Promise<void> {
-  await context.reply(withEmojis(await context.emoji(emojiName), text));
+async function say(context: CommandContext, emojiName: string, text: string, ...extraEmojiNames: string[]): Promise<void> {
+  const [primary, ...extra] = await Promise.all([emojiName, ...extraEmojiNames].map((name) => context.emoji(name)));
+  await context.reply(withEmojis(primary ?? '', text, ...extra));
 }
 
 async function sayTimeoutFailed(context: CommandContext): Promise<void> {
@@ -233,20 +234,21 @@ async function confirmation(
   durationMs: number,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, mute, identity, staff, duration, note] = await Promise.all([
+  const [done, jail, identity, police, duration, note] = await Promise.all([
     context.emoji('sucess'),
-    context.emoji('mute'),
+    context.emoji('jail'),
     context.emoji('ID'),
-    context.emoji('staff'),
+    context.emoji('police'),
     context.emoji('info'),
     context.emoji('Note'),
   ]);
   const length = formatTimeoutDuration(durationMs);
   return {
     content: withEmojis(
+      police,
       done,
       `Pronto. ${asCode(target.displayName, 'Membro')} foi castigado por **${length}**.`,
-      mute,
+      jail,
     ),
     embeds: [{
       color: 0x2b2d31,
@@ -257,7 +259,7 @@ async function confirmation(
           inline: true,
         },
         {
-          name: withEmojis(staff, 'Responsável'),
+          name: withEmojis(police, 'Responsável'),
           value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
           inline: true,
         },
@@ -307,7 +309,7 @@ async function authorizeTimeout(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo.');
+    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo!');
     return undefined;
   }
 
@@ -321,11 +323,11 @@ async function authorizeTimeout(
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Angry', 'Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo.');
+    await say(context, 'Angry', 'Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo.', 'cry');
     return undefined;
   }
   if (target.administrator) {
-    await say(context, 'Disappointed', 'Não consigo castigar um membro com a permissão **Administrador**.');
+    await say(context, 'cry', 'Não consigo castigar um membro com a permissão **Administrador**.');
     return undefined;
   }
   return actor;
@@ -378,7 +380,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Você não pode se castigar.');
+    await say(context, 'Disappointed', 'Você não pode se castigar...');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {

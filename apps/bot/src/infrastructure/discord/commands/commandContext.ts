@@ -24,6 +24,7 @@ const emojiFallbacks: Readonly<Record<string, string>> = {
   sucess: '✅',
   Angry: '😠',
   Disappointed: '😞',
+  cry: '😢',
   ops: '😅',
   question: '❓',
   ChannelBrowser: '🏘️',

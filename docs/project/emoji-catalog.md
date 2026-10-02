@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 31 desses nomes; os outros 34 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 33 desses nomes; os outros 32 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-10-02; Production 2026-10-02.
 
@@ -26,7 +26,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `ChannelBrowser` | Comando usado fora de canal de texto de servidor | disponível | disponível |
 | `coffee` | Bot ocupado ou fila de importação cheia | disponível | disponível |
 | `crown` | Dono do servidor ou posição de destaque | disponível | disponível |
-| `cry` | Tristeza ou lamento | disponível | disponível |
+| `cry` | Recusa de castigo e de remoção quando o alvo tem Administrador; complemento no castigo e emoji da recusa na remoção quando o cargo do bot não alcança | disponível | disponível |
 | `developer` | Confirmação de que o emoji agora está nos Application Emojis do bot de produção | disponível | disponível |
 | `Dice` | Resultado aleatório ou sorteio | disponível | disponível |
 | `DiceRooling` | Sorteio ou rolagem de dados em andamento | disponível | disponível |
@@ -46,7 +46,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `lock` | Acesso restrito à equipe | disponível | disponível |
 | `logs` | Registros ou auditoria | disponível | disponível |
 | `moderation` | Moderação ou ação da staff | disponível | disponível |
-| `mute` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
+| `mute` | Silenciamento de membro | disponível | disponível |
 | `nitro` | Discord Nitro | disponível | disponível |
 | `ops` | Falha ao buscar ou apagar mensagens, consultar permissões, acesso da equipe, importação ou destino | disponível | disponível |
 | `photo` | Imagem ausente, vazia, em formato não suportado ou dados de um emoji consultado | disponível | disponível |
@@ -73,8 +73,8 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
 | `staff` | Campo Responsável na confirmação de moderação | disponível | disponível |
 | `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
-| `jail` | Punição, castigo ou usuário preso (ex.: timeout ou ban) | disponível | disponível |
-| `police` | Moderação, aviso de regra ou fiscalização | disponível | disponível |
+| `jail` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
+| `police` | Abre a confirmação de castigo e nomeia o campo Responsável no castigo e na remoção; omitido quando indisponível | disponível | disponível |
 
 ## Atualização pelo GrokBot
 
@@ -102,7 +102,7 @@ Toda mensagem dirigida ao usuário precisa de pelo menos um nome desta tabela de
 | `dancing`, `stats`, `gateway` | 💃, 📊, 🌐 |
 | `warning`, `loading`, `cleaning` | ⚠️, ⏳, 🧹 |
 | `error`, `search`, `add`, `sucess` | ❌, 🔎, ➕, ✅ |
-| `Angry`, `Disappointed`, `ops`, `question` | 😠, 😞, 😅, ❓ |
+| `Angry`, `Disappointed`, `cry`, `ops`, `question` | 😠, 😞, 😢, 😅, ❓ |
 | `ChannelBrowser`, `guild`, `ID` | 🏘️, 🏘️, 🪪 |
 | `developer`, `lock`, `book`, `coffee` | 🧑‍💻, 🔒, 📖, ☕ |
 | `photo`, `label`, `shield` | 🖼️, 🏷️, 🛡️ |

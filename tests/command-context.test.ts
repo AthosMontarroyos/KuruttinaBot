@@ -44,14 +44,14 @@ describe('shared command adapters', () => {
     expect(await Promise.all([
       emoji('dancing'), emoji('stats'), emoji('gateway'),
       emoji('warning'), emoji('loading'), emoji('error'), emoji('search'), emoji('add'),
-      emoji('Angry'), emoji('Disappointed'), emoji('ops'), emoji('question'),
+      emoji('Angry'), emoji('Disappointed'), emoji('cry'), emoji('ops'), emoji('question'),
       emoji('ChannelBrowser'), emoji('guild'), emoji('ID'),
       emoji('developer'), emoji('lock'), emoji('book'), emoji('coffee'),
       emoji('photo'), emoji('label'), emoji('shield'),
     ])).toEqual([
       '💃', '📊', '🌐',
       '⚠️', '⏳', '❌', '🔎', '➕',
-      '😠', '😞', '😅', '❓',
+      '😠', '😞', '😢', '😅', '❓',
       '🏘️', '🏘️', '🪪',
       '🧑‍💻', '🔒', '📖', '☕',
       '🖼️', '🏷️', '🛡️',

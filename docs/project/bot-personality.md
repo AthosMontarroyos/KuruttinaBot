@@ -96,7 +96,7 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Cargo do autor no castigo | `Disappointed` | 😞 Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo! |
 | Cargo do bot no castigo | `Angry` e `cry` | 😠 Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo. 😢 |
 | Administrador | `cry` | 😢 Não consigo castigar um membro com a permissão **Administrador**. |
-| Castigo removido | `sucess` e `unmute` | ✅ Pronto. O castigo de `Nome` foi removido. |
+| Castigo removido | `happy`, `sucess` e `unmute` | ✅ Pronto. O castigo de `Nome` foi removido. |
 | Remoção fora de canal | `ChannelBrowser` | 🏘️ A remoção do castigo só pode ser feita em um canal de texto de servidor. |
 | Bot sem permissão para remover | `Angry` | 😠 Preciso destas permissões para remover um castigo: **Castigar membros**. |
 | Remoção sem membro | `question` | ❓ Diga de quem remover o castigo. Mencione o membro ou digite o ID! |
@@ -115,7 +115,7 @@ Na expulsão, a frase usa `sucess` e, quando disponível, `kick`. O embed usa a 
 
 No castigo, a frase abre com `police` quando ele está disponível, segue com `sucess` e fecha com `jail`. O embed repete a cor `0x2b2d31`. `ID` nomeia Membro, `police` nomeia Responsável, `info` nomeia Duração e `Note` nomeia Motivo. `police`, `jail`, `info` e `Note` podem ficar de fora; a frase continua com `sucess` e o campo Membro continua com `ID`. A duração sai na frase e no campo, em português e pela unidade maior: **10 minutos**, **1 hora e 30 minutos**, **4 semanas** para 28 dias. O nome e o motivo continuam em código. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando. Membro inválido, motivo longo e membro ausente usam as mesmas falas da expulsão.
 
-Na remoção do castigo, a frase usa `sucess` e, quando disponível, `unmute`. O embed traz Membro, Responsável e Motivo, sem Duração. `police` nomeia Responsável. `unmute` e `police` podem ficar de fora; a frase continua com `sucess`. Quem não está castigado recebe a recusa antes de qualquer alteração. A permissão negada a quem chama é a mesma do castigo.
+Na remoção do castigo, a frase abre com `happy` quando ele está disponível, segue com `sucess` e fecha com `unmute`. O embed traz Membro, Responsável e Motivo, sem Duração. `police` nomeia Responsável. `happy`, `unmute` e `police` podem ficar de fora; a frase continua com `sucess`. Quem não está castigado recebe a recusa antes de qualquer alteração. A permissão negada a quem chama é a mesma do castigo.
 
 Na consulta de emoji, a resposta é só o embed. `ID` nomeia Identidade e `photo` nomeia Menção. A imagem fica à direita, e o botão **Abrir no navegador** aponta para ela.
 

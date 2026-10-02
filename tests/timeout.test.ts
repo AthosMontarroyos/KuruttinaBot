@@ -385,7 +385,7 @@ describe('untimeout command', () => {
     expect(guild.timeout).not.toHaveBeenCalled();
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '<:sucess:sucess-id> Pronto. O castigo de `Alvo` foi removido. <:unmute:unmute-id>',
+      content: '<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de `Alvo` foi removido. <:unmute:unmute-id>',
       embeds: [{
         color: 0x2b2d31,
         fields: [

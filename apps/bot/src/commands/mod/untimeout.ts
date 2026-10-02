@@ -104,15 +104,16 @@ async function confirmation(
   moderator: GuildMemberProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, unmute, identity, police, note] = await Promise.all([
+  const [done, happy, unmute, identity, police, note] = await Promise.all([
     context.emoji('sucess'),
+    context.emoji('happy'),
     context.emoji('unmute'),
     context.emoji('ID'),
     context.emoji('police'),
     context.emoji('Note'),
   ]);
   return {
-    content: withEmojis(done, `Pronto. O castigo de ${asCode(target.displayName, 'Membro')} foi removido.`, unmute),
+    content: withEmojis(happy, `Pronto. O castigo de ${asCode(target.displayName, 'Membro')} foi removido.`, unmute),
     embeds: [{
       color: 0x2b2d31,
       fields: [

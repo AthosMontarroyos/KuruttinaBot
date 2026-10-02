@@ -27,6 +27,8 @@ apps/bot/src/
 │   │   ├── emojis/
 │   │   │   ├── emojiAdapter.ts
 │   │   │   ├── emojiAdd.ts
+│   │   │   ├── emojiInfo.ts
+│   │   │   ├── emojiLookup.ts
 │   │   │   └── productionApplicationEmojis.ts
 │   │   └── identity.ts
 │   ├── images/
@@ -43,7 +45,7 @@ apps/bot/src/
 
 - `commands/`: só módulos registráveis. Cada arquivo executável exporta um comando.
 - `command-system/`: contrato, autorização, descoberta, despacho e montagem de resposta (`withEmojis`).
-- `infrastructure/`: Discord, imagens e logs. `deployCommands.ts` só publica. `emojiAdd.ts` é o executor compartilhado das duas operações de importação.
+- `infrastructure/`: Discord, imagens e logs. `deployCommands.ts` só publica. `emojiAdd.ts` é o executor compartilhado das duas operações de importação. `emojiInfo.ts` e `emojiLookup.ts` consultam um emoji sem importá-lo.
 - `application/`: casos de uso, sem conhecer commands nem adapters.
 - `events/` e `deployments/`: composição dos transports e dos deploys. `bootstrap.ts` continua sendo o composition root.
 

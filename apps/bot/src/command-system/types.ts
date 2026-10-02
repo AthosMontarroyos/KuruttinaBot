@@ -1,11 +1,12 @@
 import type { StaffRole } from '@kuruttina/database';
-import type { APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
+import type { APIActionRowComponent, APIButtonComponent, APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
 
 export type CommandReply = string | {
-  content: string;
+  content?: string;
   embeds: APIEmbed[];
+  components?: readonly APIActionRowComponent<APIButtonComponent>[];
 };
 
 export interface HasPermission {
@@ -70,6 +71,8 @@ export interface CommandContext {
   readonly attachments?: readonly EmojiAttachment[] | undefined;
   /** Shared import pipeline (queue, limits, Discord adapter) injected by the dispatcher. */
   readonly emojiImport?: EmojiImportService | undefined;
+  /** Guild emoji lookup injected by the dispatcher. */
+  readonly emojiInfo?: EmojiInfoPort | undefined;
 }
 
 /** Port for message fetch and delete operations. */
@@ -92,7 +95,28 @@ export interface CommandRoute {
   readonly path: readonly string[];
   /** Exact prefix aliases, e.g. `['emoji-add']`. Never empty. */
   readonly aliases: readonly string[];
+  /**
+   * Extra guild requirements for this route. They are added to the root
+   * policy and cannot replace or weaken it.
+   */
+  readonly access?: GuildAccessRequirements;
   execute(context: CommandContext): Promise<void>;
+}
+
+/** Result of a guild emoji lookup. A cache miss is not proof that the emoji was deleted. */
+export type EmojiInfoLookup =
+  | {
+      readonly status: 'confirmed';
+      readonly name: string | null;
+      readonly animated: boolean | null;
+      readonly guildName: string;
+    }
+  | { readonly status: 'unconfirmed' }
+  | { readonly status: 'unavailable' };
+
+/** Discord lookup injected by the dispatcher. Both transports share the same port. */
+export interface EmojiInfoPort {
+  lookup(currentGuildId: string, emojiId: string): Promise<EmojiInfoLookup>;
 }
 
 /**

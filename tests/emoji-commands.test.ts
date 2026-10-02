@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type GuildTextBasedChannel } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type APIEmbed, type GuildTextBasedChannel } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import { readDatabaseConfig, type StaffRole } from '@kuruttina/database';
 import type { EmojiImportService, EmojiImportRequest } from '../apps/bot/src/application/emojis/importEmoji.js';
@@ -12,7 +12,7 @@ import { createEmojiAddExecutor } from '../apps/bot/src/infrastructure/discord/e
 import { command as devCommand } from '../apps/bot/src/commands/dev/emoji.js';
 import { command as emojiCommand } from '../apps/bot/src/commands/mod/emoji.js';
 import { loadCommands } from '../apps/bot/src/command-system/loadCommands.js';
-import type { CommandContext } from '../apps/bot/src/command-system/types.js';
+import type { ChatInputCommand, CommandContext, EmojiInfoLookup } from '../apps/bot/src/command-system/types.js';
 import { createCentralDeployment } from '../apps/bot/src/deployments/central.js';
 import { createGuildDeployment } from '../apps/bot/src/deployments/guild.js';
 import { handleChatInputCommand, type InteractionCommandPort } from '../apps/bot/src/events/interactions/interactionCreate.js';
@@ -54,13 +54,23 @@ function client(): CommandClientPort {
   return { application: { emojis: { fetch: vi.fn(async () => ({ find: () => undefined })) } }, ws: { ping: 0 } };
 }
 
-function channel(guildId: string, appPermissions: PermissionsBitField = full): GuildTextBasedChannel {
+function permissionsOf(value: PermissionsBitField | null | undefined): PermissionsBitField | undefined {
+  if (value === null) return undefined;
+  return value ?? full;
+}
+
+function channel(
+  guildId: string,
+  appPermissions: PermissionsBitField | null | undefined = full,
+  isThread = false,
+): GuildTextBasedChannel {
+  const resolved = permissionsOf(appPermissions);
   return {
     id: '910000000000000099',
     guild: { id: guildId, members: { me: { id: 'bot' } } },
     isDMBased: () => false,
-    isThread: () => false,
-    permissionsFor: () => appPermissions,
+    isThread: () => isThread,
+    permissionsFor: () => resolved,
     bulkDelete: vi.fn(),
     messages: { fetch: vi.fn(), delete: vi.fn() },
     send: vi.fn(),
@@ -71,8 +81,10 @@ interface TransportSpec {
   readonly userId?: string;
   /** `null` simula uma conversa direta com o bot. */
   readonly guildId?: string | null;
-  readonly memberPermissions?: PermissionsBitField;
-  readonly appPermissions?: PermissionsBitField;
+  /** `null` omite o contexto de permissão, para a política falhar fechada. */
+  readonly memberPermissions?: PermissionsBitField | null;
+  readonly appPermissions?: PermissionsBitField | null;
+  readonly isThread?: boolean;
   readonly options?: NonNullable<CommandContext['options']>;
   readonly attachments?: readonly EmojiAttachment[];
   readonly rawArgs?: string;
@@ -94,9 +106,9 @@ function slash(commandName: string, routePath: readonly string[], spec: Transpor
     createdTimestamp: Date.now(),
     id: 'interaction-id',
     userId: spec.userId ?? CREATOR,
-    channel: spec.guildId ? channel(spec.guildId, spec.appPermissions) : null,
-    memberPermissions: spec.memberPermissions ?? full,
-    appPermissions: spec.appPermissions ?? full,
+    channel: spec.guildId ? channel(spec.guildId, spec.appPermissions, spec.isThread) : null,
+    memberPermissions: permissionsOf(spec.memberPermissions),
+    appPermissions: permissionsOf(spec.appPermissions),
     isDeferred: () => deferred,
     isReplied: () => false,
     deferReply: deferReply.mockImplementation(async () => { deferred = true; }),
@@ -122,8 +134,8 @@ function prefix(content: string, spec: TransportSpec = {}) {
     system: false,
     webhookId: null,
     attachments: new Map((spec.attachments ?? []).map((attachment, index) => [String(index), attachment])),
-    ...(spec.guildId ? { channel: channel(spec.guildId, spec.appPermissions) } : {}),
-    member: { permissionsIn: () => spec.memberPermissions ?? full } as unknown as NonNullable<
+    ...(spec.guildId ? { channel: channel(spec.guildId, spec.appPermissions, spec.isThread) } : {}),
+    member: { permissionsIn: () => permissionsOf(spec.memberPermissions) } as unknown as NonNullable<
       Parameters<typeof handleMessageCreate>[0]['member']
     >,
     reply,
@@ -244,8 +256,10 @@ describe('emoji add command routing', () => {
     const replies = await runPrefix(message, new CommandsHandler([emojiCommand, devCommand], staffPort('creator'), service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    const alias = content === 'k!dev' ? 'dev-emoji-add' : 'emoji-add';
-    expect(replies).toEqual([`📖 Este comando exige um subcomando. Use \`k!${alias}\`.`]);
+    const usage = content === 'k!dev'
+      ? '📖 Este comando exige um subcomando. Use `k!dev-emoji-add`.'
+      : '📖 Este comando exige um subcomando. Use `k!emoji-add` ou `k!emoji-info`.';
+    expect(replies).toEqual([usage]);
   });
 
   it('rejects a prefix alias that collides with another command', () => {
@@ -260,7 +274,7 @@ describe('emoji add command routing', () => {
     const replies = await runSlash(ports, new CommandsHandler([emojiCommand], undefined, service));
 
     expect(importEmoji).not.toHaveBeenCalled();
-    expect(replies).toEqual(['📖 Este comando exige um subcomando. Use `k!emoji-add`.']);
+    expect(replies).toEqual(['📖 Este comando exige um subcomando. Use `k!emoji-add` ou `k!emoji-info`.']);
   });
 
   it('keeps the import service optional so a missing composition fails closed', async () => {
@@ -758,5 +772,254 @@ describe('emoji command deployment scopes', () => {
     expect(discord.deployGlobalCommands.mock.invocationCallOrder[0]).toBeLessThan(
       discord.deployGuildCommands.mock.invocationCallOrder[0]!,
     );
+  });
+
+  it('publishes /emoji without a default member gate and leaves /dev unchanged', () => {
+    const emoji = emojiCommand.data.toJSON();
+    const dev = devCommand.data.toJSON();
+    expect(emoji.default_member_permissions ?? null).toBeNull();
+    expect(emoji.options?.map((option) => option.name)).toEqual(['add', 'info']);
+    const info = emoji.options?.find((option) => option.name === 'info');
+    expect(info && 'options' in info ? info.options : []).toEqual([
+      expect.objectContaining({ name: 'emoji', type: 3, required: true }),
+    ]);
+    expect(dev.default_member_permissions ?? null).toBeNull();
+    expect(dev.options?.map((option) => option.name)).toEqual(['emoji']);
+    const group = dev.options?.[0];
+    expect(group && 'options' in group ? group.options?.map((option) => option.name) : []).toEqual(['add']);
+    expect(devCommand.access).toEqual({
+      kind: 'staff',
+      minimumRole: 'dev',
+      userPermissions: [],
+      botPermissions: [PermissionFlagsBits.ViewChannel],
+      requireChannelSend: true,
+      messages: {
+        guildOnly: 'Use um canal de texto de servidor para os comandos de equipe.',
+        botMissing: 'Preciso destas permissões para executar este comando: **{permissions}**.',
+      },
+    });
+    const devRoutes: ChatInputCommand['routes'] = devCommand.routes;
+    expect(devRoutes?.map((route) => ({ path: [...route.path], aliases: [...route.aliases], access: route.access }))).toEqual([
+      { path: ['emoji', 'add'], aliases: ['dev-emoji-add'], access: undefined },
+    ]);
+  });
+});
+
+const STATIC_ID = '90071992547409921';
+const STATIC_MARKUP = `<:wave:${STATIC_ID}>`;
+const ANIMATED_MARKUP = '<a:festinha:41771983429993937>';
+const INFO_BOT = new PermissionsBitField([
+  PermissionFlagsBits.ViewChannel,
+  PermissionFlagsBits.SendMessages,
+  PermissionFlagsBits.EmbedLinks,
+]);
+
+function confirmed(animated: boolean, name = 'wave', guildName = 'Atual'): EmojiInfoLookup {
+  return { status: 'confirmed', name, animated, guildName };
+}
+
+interface ReplyPayload {
+  readonly content?: string;
+  readonly embeds?: APIEmbed[];
+  readonly components?: readonly { readonly components: readonly { readonly label?: string; readonly url?: string; readonly style?: number }[] }[];
+  readonly allowedMentions?: unknown;
+}
+
+function embedOf(payload: ReplyPayload | undefined): APIEmbed {
+  const embed = payload?.embeds?.[0];
+  if (embed === undefined) throw new Error('expected an embed');
+  return embed;
+}
+
+describe('emoji info', () => {
+  const openMember = new PermissionsBitField();
+  const usage = '⚠️ Envie somente a marcação de um emoji personalizado, como `<:nome:id>` ou `<a:nome:id>`.';
+
+  function handlerFor(result: EmojiInfoLookup | 'missing' = confirmed(false)) {
+    const lookup = vi.fn(async (): Promise<EmojiInfoLookup> => (
+      result === 'missing' ? { status: 'unconfirmed' } : result
+    ));
+    return { lookup, handler: new CommandsHandler([emojiCommand], undefined, undefined, { lookup }) };
+  }
+
+  async function runInfo(
+    transport: (typeof transports)[number],
+    markup: string,
+    spec: TransportSpec,
+    result: EmojiInfoLookup | 'missing' = confirmed(false),
+  ) {
+    const { lookup, handler } = handlerFor(result);
+    if (transport === 'slash') {
+      const ports = slash('emoji', ['info'], { ...spec, options: spec.options ?? [{ name: 'emoji', value: markup }] });
+      const replies = await runSlash(ports, handler);
+      return { replies, payload: ports.reply.mock.calls[0]?.[0] as ReplyPayload | undefined, deferReply: ports.deferReply, lookup };
+    }
+    const content = markup === '' ? `${transport}emoji-info` : `${transport}emoji-info ${markup}`;
+    const { message, reply } = prefix(content, spec);
+    const replies = await runPrefix(message, handler);
+    return { replies, payload: reply.mock.calls[0]?.[0] as ReplyPayload | undefined, deferReply: undefined, lookup };
+  }
+
+  function openSpec(overrides: TransportSpec = {}): TransportSpec {
+    return { guildId: OTHER_GUILD, memberPermissions: openMember, appPermissions: INFO_BOT, ...overrides };
+  }
+
+  it.each(transports)('%s: shows confirmed static data and the original markup', async (transport) => {
+    const markup = transport === 'slash' ? `  ${STATIC_MARKUP}  ` : STATIC_MARKUP;
+    const { replies, payload, deferReply, lookup } = await runInfo(transport, markup, openSpec());
+    if (transport === 'slash') expect(deferReply).toHaveBeenCalledWith({ flags: MessageFlags.Ephemeral });
+    expect(lookup).toHaveBeenCalledExactlyOnceWith(OTHER_GUILD, STATIC_ID);
+    expect(replies).toEqual([undefined]);
+    expect(payload?.content).toBeUndefined();
+    expect(payload?.allowedMentions).toBeUndefined();
+    const embed = embedOf(payload);
+    expect(embed.description).toBeUndefined();
+    expect(embed).toMatchObject({
+      color: 0x2b2d31,
+      thumbnail: { url: `https://cdn.discordapp.com/emojis/${STATIC_ID}.png` },
+    });
+    expect(embed.image).toBeUndefined();
+    expect(embed.fields).toEqual([
+      { name: '🪪 Identidade', value: `\`${STATIC_ID}\``, inline: true },
+      { name: '🖼️ Menção', value: `\`\`\`\n${STATIC_MARKUP}\n\`\`\``, inline: true },
+    ]);
+    expect(payload?.components?.[0]?.components[0]).toMatchObject({
+      label: 'Abrir no navegador',
+      url: `https://cdn.discordapp.com/emojis/${STATIC_ID}.png`,
+    });
+  });
+
+  it.each(transports)('%s: prefers the confirmed animated emoji and keeps the sent markup', async (transport) => {
+    const { payload, lookup } = await runInfo(
+      transport,
+      STATIC_MARKUP,
+      openSpec(),
+      confirmed(true, 'nova_festa', 'Guilda *externa*'),
+    );
+    expect(lookup).toHaveBeenCalledWith(OTHER_GUILD, STATIC_ID);
+    const embed = embedOf(payload);
+    expect(embed.description).toBeUndefined();
+    expect(embed.thumbnail).toEqual({ url: `https://cdn.discordapp.com/emojis/${STATIC_ID}.gif` });
+    expect(embed.fields).toEqual([
+      { name: '🪪 Identidade', value: `\`${STATIC_ID}\``, inline: true },
+      { name: '🖼️ Menção', value: `\`\`\`\n${STATIC_MARKUP}\n\`\`\``, inline: true },
+    ]);
+    expect(payload?.components?.[0]?.components[0]?.url).toBe(`https://cdn.discordapp.com/emojis/${STATIC_ID}.gif`);
+  });
+
+  it.each(transports)('%s: reports an unconfirmed animated emoji without treating it as deleted', async (transport) => {
+    const { replies, payload } = await runInfo(transport, ANIMATED_MARKUP, openSpec(), { status: 'unconfirmed' });
+    expect(replies).toEqual([undefined]);
+    const embed = embedOf(payload);
+    expect(embed.description).toBeUndefined();
+    expect(embed.thumbnail).toEqual({ url: 'https://cdn.discordapp.com/emojis/41771983429993937.gif' });
+    expect(embed.fields).toEqual([
+      { name: '🪪 Identidade', value: '`41771983429993937`', inline: true },
+      { name: '🖼️ Menção', value: `\`\`\`\n${ANIMATED_MARKUP}\n\`\`\``, inline: true },
+    ]);
+    expect(payload?.components?.[0]?.components[0]?.url).toBe('https://cdn.discordapp.com/emojis/41771983429993937.gif');
+  });
+
+  it.each(transports)('%s: rejects empty, unicode, bare id, url, malformed, markdown and extra input', async (transport) => {
+    const cases = ['', '😀', '90071992547409921', 'https://cdn.discordapp.com/emojis/1.png', '<:a:1>', '<:na*me:90071992547409921>', `${STATIC_MARKUP} ${STATIC_MARKUP}`, `${STATIC_MARKUP} extra`];
+    for (const markup of cases) {
+      const { replies, lookup } = await runInfo(transport, markup, openSpec());
+      expect(replies).toEqual([usage]);
+      expect(lookup).not.toHaveBeenCalled();
+    }
+  });
+
+  it.each(transports)('%s: rejects an attachment even when the markup is valid', async (transport) => {
+    const { replies, lookup } = await runInfo(transport, STATIC_MARKUP, openSpec({ attachments: [ATTACHMENT] }));
+    expect(replies).toEqual([usage]);
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it.each(transports)('%s: reports a lookup failure once', async (transport) => {
+    const { replies, lookup } = await runInfo(transport, STATIC_MARKUP, openSpec(), { status: 'unavailable' });
+    expect(lookup).toHaveBeenCalledOnce();
+    expect(replies).toEqual(['😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco.']);
+  });
+
+  it.each(transports)('%s: lets a member without emoji management consult, and still blocks add', async (transport) => {
+    const { lookup, handler } = handlerFor(confirmed(false));
+    const spec = openSpec();
+    if (transport === 'slash') await runSlash(slash('emoji', ['info'], { ...spec, options: [{ name: 'emoji', value: STATIC_MARKUP }] }), handler);
+    else await runPrefix(prefix(`${transport}emoji-info ${STATIC_MARKUP}`, spec).message, handler);
+    expect(lookup).toHaveBeenCalledOnce();
+
+    const { importEmoji, service } = importService();
+    const addReplies = transport === 'slash'
+      ? await runSlash(slash('emoji', ['add'], { ...spec, attachments: [ATTACHMENT] }), new CommandsHandler([emojiCommand], undefined, service))
+      : await runPrefix(prefix(`${transport}emoji-add`, { ...spec, attachments: [ATTACHMENT] }).message, new CommandsHandler([emojiCommand], undefined, service));
+    expect(importEmoji).not.toHaveBeenCalled();
+    expect(addReplies).toEqual(['😞 Você precisa da permissão **Gerenciar emojis** para adicionar emojis.']);
+  });
+
+  it.each(transports)('%s: requires Embed Links only for info', async (transport) => {
+    const spec = openSpec({
+      memberPermissions: new PermissionsBitField(PermissionFlagsBits.ManageGuildExpressions),
+      appPermissions: new PermissionsBitField([
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.CreateGuildExpressions,
+      ]),
+    });
+    const { replies, lookup } = await runInfo(transport, STATIC_MARKUP, spec);
+    expect(lookup).not.toHaveBeenCalled();
+    expect(replies).toEqual(['😠 Preciso destas permissões para executar este comando: **Inserir links**.']);
+
+    const { importEmoji, service } = importService();
+    const addHandler = new CommandsHandler([emojiCommand], undefined, service);
+    if (transport === 'slash') await runSlash(slash('emoji', ['add'], { ...spec, attachments: [ATTACHMENT] }), addHandler);
+    else await runPrefix(prefix(`${transport}emoji-add`, { ...spec, attachments: [ATTACHMENT] }).message, addHandler);
+    expect(importEmoji).toHaveBeenCalledOnce();
+  });
+
+  it.each(transports)('%s: fails closed when permission context is missing', async (transport) => {
+    for (const missing of ['member', 'app'] as const) {
+      const spec = openSpec(missing === 'member' ? { memberPermissions: null } : { appPermissions: null });
+      const { replies, lookup } = await runInfo(transport, STATIC_MARKUP, spec);
+      expect(lookup).not.toHaveBeenCalled();
+      expect(replies[0]).toMatch(missing === 'member' ? /^😅 Não consegui conferir suas permissões/ : /^😅 Não consegui conferir minhas permissões/);
+    }
+  });
+
+  it.each(transports)('%s: refuses info in a direct message', async (transport) => {
+    const { replies, lookup } = await runInfo(transport, STATIC_MARKUP, openSpec({ guildId: null }));
+    expect(lookup).not.toHaveBeenCalled();
+    expect(replies).toEqual(['🏘️ Use um canal de texto de servidor para consultar emojis.']);
+  });
+
+  it.each(transports)('%s: accepts info in a thread when the bot can send there and embed links', async (transport) => {
+    const spec = openSpec({
+      isThread: true,
+      appPermissions: new PermissionsBitField([
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessagesInThreads,
+        PermissionFlagsBits.EmbedLinks,
+      ]),
+    });
+    const { lookup } = await runInfo(transport, STATIC_MARKUP, spec);
+    expect(lookup).toHaveBeenCalledOnce();
+  });
+
+  it.each(transports)('%s: refuses a thread when the bot can only send in regular channels', async (transport) => {
+    const { replies, lookup } = await runInfo(transport, STATIC_MARKUP, openSpec({ isThread: true }));
+    expect(lookup).not.toHaveBeenCalled();
+    expect(replies).toEqual(['😠 Preciso destas permissões para executar este comando: **Enviar mensagens**.']);
+  });
+
+  it('keeps an emoji in the reply when the resolver fails', async () => {
+    const { handler } = handlerFor({ status: 'unconfirmed' });
+    const ports = slash('emoji', ['info'], {
+      ...openSpec(),
+      options: [{ name: 'emoji', value: STATIC_MARKUP }],
+    });
+    vi.mocked(ports.port.client.application.emojis.fetch).mockRejectedValue(new Error('emoji catalog down'));
+    const replies = await runSlash(ports, handler);
+    expect(replies).toEqual([undefined]);
+    const payload = ports.reply.mock.calls[0]?.[0] as ReplyPayload | undefined;
+    expect(embedOf(payload).fields?.map((field) => field.name)).toEqual(['🪪 Identidade', '🖼️ Menção']);
   });
 });

@@ -70,9 +70,9 @@ O mesmo gate protege slash, `k!` e `K!`: guilda cadastrada + usuário ativo + pa
 
 A identidade vem de `interaction.user.id` ou `message.author.id`, nunca de argumentos do comando. A consulta aplica contexto RLS por transação, sem deixar a identidade em conexões reutilizadas. Falha de consulta nega o comando, com resposta sanitizada. Slash é reconhecido antes da consulta.
 
-O executor autoriza antes de resolver entradas ou iniciar qualquer download; as rotas `dev → emoji → add` (`dev-emoji-add`) e `emoji → add` (`emoji-add`) compartilham o mesmo executor por operação e a mesma injeção de serviço.
+O dispatcher autoriza a política raiz e, em seguida, os requisitos adicionais da rota, antes de resolver entradas ou iniciar download ou consulta. As rotas `dev → emoji → add` (`dev-emoji-add`) e `emoji → add` (`emoji-add`) compartilham o executor de importação. A rota `emoji → info` (`emoji-info`) usa outro executor e uma porta de consulta injetada no mesmo dispatcher. Requisitos da rota somam permissões; não substituem nem enfraquecem a raiz.
 
-`ping` e `clear` mantêm suas políticas. `emoji add` usa `guild`, com `ManageGuildExpressions` para o membro e `CreateGuildExpressions` para o bot, sem restrição de guilda e sem consultar a equipe. IDs de guilda e equipe não aparecem nos comandos: cada ambiente lê o seu cadastro.
+`ping` e `clear` mantêm suas políticas. `/emoji` continua `guild` e global, sem permissão administrativa na raiz e sem `default_member_permissions`: a raiz exige do bot visualização e envio no canal. A rota `add` soma `ManageGuildExpressions` para o membro e `CreateGuildExpressions` para o bot. A rota `info` soma `EmbedLinks` para o bot e fica aberta aos membros do servidor. Nenhuma das duas consulta a equipe. `/dev emoji add` permanece `staff` com escopo `dev-guild`. IDs de guilda e equipe não aparecem nos comandos: cada ambiente lê o seu cadastro.
 
 ## Publicação e mudança da guilda
 

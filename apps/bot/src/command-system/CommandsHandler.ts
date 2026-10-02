@@ -1,7 +1,16 @@
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
-import { validateCommandAccess } from './access.js';
+import { validateAdditionalAccess, validateCommandAccess } from './access.js';
 import { withEmojis } from './responses.js';
-import type { ChatInputCommand, CommandContext, CommandPayload, CommandRoute, CommandScope, StaffAccessPort } from './types.js';
+import type {
+  ChatInputCommand,
+  CommandAccess,
+  CommandContext,
+  CommandPayload,
+  CommandRoute,
+  CommandScope,
+  EmojiInfoPort,
+  StaffAccessPort,
+} from './types.js';
 
 type Resolution =
   | { readonly status: 'ready'; readonly command: ChatInputCommand; readonly route?: CommandRoute | undefined }
@@ -12,12 +21,26 @@ function samePath(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((segment, index) => segment === right[index]);
 }
 
+function formatAliasList(aliases: readonly string[]): string {
+  const formatted = aliases.map((alias) => `\`k!${alias}\``);
+  if (formatted.length < 2) return formatted[0] ?? '';
+  const last = formatted[formatted.length - 1];
+  return `${formatted.slice(0, -1).join(', ')} ou ${last}`;
+}
+
 async function missingRouteMessage(context: CommandContext, command: ChatInputCommand): Promise<string> {
-  const alias = command.routes?.[0]?.aliases[0];
-  const text = alias === undefined
+  const aliases = (command.routes ?? []).flatMap((route) => route.aliases);
+  const text = aliases.length === 0
     ? 'Este comando exige um subcomando.'
-    : `Este comando exige um subcomando. Use \`k!${alias}\`.`;
+    : `Este comando exige um subcomando. Use ${formatAliasList(aliases)}.`;
   return withEmojis(await context.emoji('book'), text);
+}
+
+/** The route may specialize the out-of-channel sentence. It does not change the root permission bits. */
+function accessForDenial(access: CommandAccess, route?: CommandRoute): CommandAccess {
+  const guildOnly = route?.access?.messages?.guildOnly;
+  if (guildOnly === undefined || access.kind === 'public') return access;
+  return { ...access, messages: { ...access.messages, guildOnly } };
 }
 
 export class CommandsHandler {
@@ -30,6 +53,7 @@ export class CommandsHandler {
     registeredCommands: readonly ChatInputCommand[],
     private readonly staff?: StaffAccessPort,
     private readonly emojiImport?: EmojiImportService,
+    private readonly emojiInfo?: EmojiInfoPort,
   ) {
     for (const command of registeredCommands) {
       // The payload split depends on it, so hand-registered commands must agree too.
@@ -104,13 +128,29 @@ export class CommandsHandler {
       return;
     }
 
-    // Both transports receive the same capability, composed by the entrypoint.
-    const fullContext: CommandContext = this.emojiImport ? { ...context, emojiImport: this.emojiImport } : context;
-    const accessError = await validateCommandAccess(resolution.command.access, fullContext, this.staff);
+    // Both transports receive the same capabilities, composed by the entrypoint.
+    const fullContext: CommandContext = {
+      ...context,
+      ...(this.emojiImport ? { emojiImport: this.emojiImport } : {}),
+      ...(this.emojiInfo ? { emojiInfo: this.emojiInfo } : {}),
+    };
+    const accessError = await validateCommandAccess(
+      accessForDenial(resolution.command.access, resolution.route),
+      fullContext,
+      this.staff,
+    );
     if (accessError) {
       await context.acknowledge();
       await context.reply(accessError);
       return;
+    }
+    if (resolution.route?.access) {
+      const routeError = await validateAdditionalAccess(resolution.route.access, fullContext);
+      if (routeError) {
+        await context.acknowledge();
+        await context.reply(routeError);
+        return;
+      }
     }
 
     const executor = resolution.route?.execute ?? resolution.command.execute;

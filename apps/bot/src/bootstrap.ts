@@ -12,6 +12,7 @@ import { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
 import { createDiscordEmojiAdapter } from '#bot/infrastructure/discord/emojis/emojiAdapter.js';
+import { createEmojiLookup } from '#bot/infrastructure/discord/emojis/emojiLookup.js';
 import { createProductionApplicationEmojiWriter } from '#bot/infrastructure/discord/emojis/productionApplicationEmojis.js';
 import { createDiscordImageDownloader } from '#bot/infrastructure/images/downloadDiscordImage.js';
 import { createSharpEmojiProcessor } from '#bot/infrastructure/images/sharpEmojiProcessor.js';
@@ -41,7 +42,7 @@ export async function startBot(correlationId: string): Promise<void> {
       processor: createSharpEmojiProcessor(),
       create: createDiscordEmojiAdapter(client, productionEmojis),
     });
-    const commandsHandler = new CommandsHandler(commands, database, emojiImport);
+    const commandsHandler = new CommandsHandler(commands, database, emojiImport, createEmojiLookup(client));
     const deploymentsHandler = new DeploymentsHandler([
       createCentralDeployment(commandsHandler), createGuildDeployment(commandsHandler, database.getSettings),
     ]);

@@ -49,7 +49,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `mute` | Silenciamento de membro | disponível | disponível |
 | `nitro` | Discord Nitro | disponível | disponível |
 | `ops` | Falha ao consultar permissões, acesso da equipe, importação ou destino | disponível | disponível |
-| `photo` | Imagem ausente, vazia ou em formato não suportado | disponível | disponível |
+| `photo` | Imagem ausente, vazia, em formato não suportado ou dados de um emoji consultado | disponível | disponível |
 | `pin` | Mensagem fixada | disponível | disponível |
 | `right_arrow` | Avançar ou próxima página | disponível | disponível |
 | `Server_Boost` | Impulso do servidor | disponível | disponível |

@@ -211,7 +211,9 @@ describe('commands', () => {
   it('guides a bare root command once with the book emoji', async () => {
     const reply = vi.fn().mockResolvedValue(undefined);
     await new CommandsHandler([emojiCommand]).execute('emoji', commandContext(reply));
-    expect(reply).toHaveBeenCalledExactlyOnceWith('<:book:book-id> Este comando exige um subcomando. Use `k!emoji-add`.');
+    expect(reply).toHaveBeenCalledExactlyOnceWith(
+      '<:book:book-id> Este comando exige um subcomando. Use `k!emoji-add` ou `k!emoji-info`.',
+    );
   });
 
   it('guides a route without an alias once with the book emoji', async () => {
@@ -369,5 +371,71 @@ describe('command access policy', () => {
   it('rejects a guild command whose default gate diverges from its policy', () => {
     const divergent = accessCommand(guildPolicy, String(PermissionFlagsBits.ManageGuild));
     expect(hasConsistentDefaultPermissions(divergent)).toBe(false);
+  });
+
+  it('rejects a route access block that tries to replace the root policy', async () => {
+    await expect(loadCommands(new URL('./fixtures/route-access/', import.meta.url))).rejects.toMatchObject({
+      name: 'CommandLoadError',
+      message: expect.stringContaining('Invalid command module'),
+    });
+  });
+
+  it('keeps root permissions when the route adds an empty list', async () => {
+    const execute = vi.fn().mockResolvedValue(undefined);
+    const reply = vi.fn().mockResolvedValue(undefined);
+    const routed: ChatInputCommand = {
+      data: new SlashCommandBuilder().setName('guardado').setDescription('Guardado'),
+      access: {
+        kind: 'guild',
+        userPermissions: [PermissionFlagsBits.ManageMessages],
+        botPermissions: [],
+        requireChannelSend: true,
+      },
+      scope: 'global',
+      routes: [{
+        path: ['info'],
+        aliases: ['guardado-info'],
+        access: { userPermissions: [], botPermissions: [], requireChannelSend: false },
+        execute,
+      }],
+    };
+    await new CommandsHandler([routed]).execute('guardado', {
+      ...guildContext(reply),
+      memberPermissions: new PermissionsBitField(),
+    }, ['info']);
+    expect(execute).not.toHaveBeenCalled();
+    expect(reply).toHaveBeenCalledExactlyOnceWith(
+      '<:Disappointed:Disappointed-id> Você precisa da permissão **Gerenciar mensagens** neste canal.',
+    );
+  });
+
+  it('still requires the root send permission when the route does not', async () => {
+    const execute = vi.fn().mockResolvedValue(undefined);
+    const reply = vi.fn().mockResolvedValue(undefined);
+    const routed: ChatInputCommand = {
+      data: new SlashCommandBuilder().setName('guardado').setDescription('Guardado'),
+      access: {
+        kind: 'guild',
+        userPermissions: [PermissionFlagsBits.ManageMessages],
+        botPermissions: [PermissionFlagsBits.ViewChannel],
+        requireChannelSend: true,
+      },
+      scope: 'global',
+      routes: [{
+        path: ['info'],
+        aliases: ['guardado-info'],
+        access: { userPermissions: [], botPermissions: [], requireChannelSend: false },
+        execute,
+      }],
+    };
+    await new CommandsHandler([routed]).execute('guardado', {
+      ...guildContext(reply),
+      textChannel: { isThread: true } as unknown as BulkDeletePort,
+      appPermissions: new PermissionsBitField(PermissionFlagsBits.ViewChannel | PermissionFlagsBits.SendMessages),
+    }, ['info']);
+    expect(execute).not.toHaveBeenCalled();
+    expect(reply).toHaveBeenCalledExactlyOnceWith(
+      '<:Angry:Angry-id> Preciso destas permissões para executar este comando: **Enviar mensagens**.',
+    );
   });
 });

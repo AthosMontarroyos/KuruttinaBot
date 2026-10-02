@@ -31,25 +31,40 @@ function isDenialMessages(value: unknown): boolean {
   return Object.entries(value).every(([key, text]) => denialMessageKeys.includes(key) && typeof text === 'string');
 }
 
-function isCommandAccess(value: unknown): value is CommandAccess {
-  if (typeof value !== 'object' || value === null) return false;
+function isGuildPermissionRequirements(value: object): boolean {
   const access = value as {
-    readonly kind?: unknown;
-    readonly minimumRole?: unknown;
     readonly userPermissions?: unknown;
     readonly botPermissions?: unknown;
     readonly requireChannelSend?: unknown;
     readonly messages?: unknown;
   };
-  if (access.kind === 'public') return true;
-  if (access.kind !== 'guild' && access.kind !== 'staff') return false;
-  if (access.kind === 'staff' && access.minimumRole !== 'creator' && access.minimumRole !== 'dev') return false;
   return (
     isPermissionList(access.userPermissions) &&
     isPermissionList(access.botPermissions) &&
     (access.requireChannelSend === undefined || typeof access.requireChannelSend === 'boolean') &&
     isDenialMessages(access.messages)
   );
+}
+
+function isCommandAccess(value: unknown): value is CommandAccess {
+  if (typeof value !== 'object' || value === null) return false;
+  const access = value as {
+    readonly kind?: unknown;
+    readonly minimumRole?: unknown;
+  };
+  if (access.kind === 'public') return true;
+  if (access.kind !== 'guild' && access.kind !== 'staff') return false;
+  if (access.kind === 'staff' && access.minimumRole !== 'creator' && access.minimumRole !== 'dev') return false;
+  return isGuildPermissionRequirements(value);
+}
+
+/** Route access adds guild requirements. A `kind` would look like a replacement policy, so it is rejected. */
+const routeAccessKeys = new Set(['userPermissions', 'botPermissions', 'requireChannelSend', 'messages']);
+
+function isRouteAccess(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  if (!Object.keys(value).every((key) => routeAccessKeys.has(key))) return false;
+  return isGuildPermissionRequirements(value);
 }
 
 /**
@@ -72,7 +87,13 @@ function isStringList(value: unknown, pattern: RegExp): value is readonly string
 
 function isCommandRoute(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false;
-  const route = value as { readonly path?: unknown; readonly aliases?: unknown; readonly execute?: unknown };
+  const route = value as {
+    readonly path?: unknown;
+    readonly aliases?: unknown;
+    readonly execute?: unknown;
+    readonly access?: unknown;
+  };
+  if (route.access !== undefined && !isRouteAccess(route.access)) return false;
   return (
     typeof route.execute === 'function' &&
     isStringList(route.path, routeSegmentPattern) &&

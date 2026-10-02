@@ -1,6 +1,6 @@
 import { PermissionFlagsBits } from 'discord.js';
 import { withEmojis } from './responses.js';
-import type { AccessDenialMessages, CommandAccess, CommandContext, StaffAccessPort } from './types.js';
+import type { AccessDenialMessages, CommandAccess, CommandContext, GuildAccessRequirements, StaffAccessPort } from './types.js';
 
 /** Portuguese names for permission bits shown in denial messages. */
 const permissionLabels: Partial<Record<keyof typeof PermissionFlagsBits, string>> = {
@@ -11,6 +11,7 @@ const permissionLabels: Partial<Record<keyof typeof PermissionFlagsBits, string>
   SendMessagesInThreads: 'Enviar mensagens',
   ManageGuildExpressions: 'Gerenciar emojis',
   CreateGuildExpressions: 'Criar emojis',
+  EmbedLinks: 'Inserir links',
 };
 
 const labelsByPermission = new Map<bigint, string>(
@@ -89,6 +90,43 @@ export async function validateCommandAccess(
   const missingBot = requiredBotPermissions.filter((permission) => !botPermissions.has(permission, true));
   if (missingBot.length > 0) {
     return denial(context, 'Angry', messages.botMissing.replaceAll('{permissions}', permissionList(missingBot)));
+  }
+
+  return null;
+}
+
+/**
+ * Checks requirements added by a route after the root policy has already passed.
+ * Empty lists add nothing: they do not remove permissions required by the root.
+ */
+export async function validateAdditionalAccess(
+  requirements: GuildAccessRequirements,
+  context: CommandContext,
+): Promise<string | null> {
+  const messages: AccessDenialMessages = { ...defaultMessages, ...requirements.messages };
+
+  if (requirements.userPermissions.length > 0) {
+    const userPermissions = context.memberPermissions;
+    if (!userPermissions) return denial(context, 'ops', messages.userUnavailable);
+    const missingUser = requirements.userPermissions.filter((permission) => !userPermissions.has(permission, true));
+    if (missingUser.length > 0) {
+      return denial(context, 'Disappointed', messages.userMissing.replaceAll('{permissions}', permissionList(missingUser)));
+    }
+  }
+
+  const requiredBotPermissions = requirements.requireChannelSend
+    ? [
+        ...requirements.botPermissions,
+        context.textChannel?.isThread ? PermissionFlagsBits.SendMessagesInThreads : PermissionFlagsBits.SendMessages,
+      ]
+    : requirements.botPermissions;
+  if (requiredBotPermissions.length > 0) {
+    const botPermissions = context.appPermissions;
+    if (!botPermissions) return denial(context, 'ops', messages.botUnavailable);
+    const missingBot = requiredBotPermissions.filter((permission) => !botPermissions.has(permission, true));
+    if (missingBot.length > 0) {
+      return denial(context, 'Angry', messages.botMissing.replaceAll('{permissions}', permissionList(missingBot)));
+    }
   }
 
   return null;

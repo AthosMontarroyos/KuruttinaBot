@@ -61,10 +61,15 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Erro | `error` | ❌ Não consegui buscar as mensagens. Tente de novo daqui a pouco. |
 | Permissão negada | `Disappointed` | 😞 Você precisa da permissão **Gerenciar mensagens** neste canal. |
 | Entrada inválida | `warning` | ⚠️ Diga quantas mensagens apagar: um número de **1 a 200**. |
+| Consulta de emoji | `ID` e `photo` | Sem texto acima do embed. Os campos são Identidade e Menção, com a imagem à direita e o botão Abrir no navegador. |
+| Marcação inválida | `warning` | ⚠️ Envie somente a marcação de um emoji personalizado, como `<:nome:id>` ou `<a:nome:id>`. |
+| Consulta indisponível | `ops` | 😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco. |
 | Bot ocupado | `coffee` | ☕ Já estou ocupada. Tente de novo em instantes. |
 | Ping | `dancing` | 💃 Pong. Ainda estou aqui. |
 
 No ping, os campos do embed nomeiam as latências com `stats` e `gateway`. Os valores em milissegundos não levam emoji: a mensagem já tem `dancing`.
+
+Na consulta de emoji, a resposta é só o embed. `ID` nomeia Identidade e `photo` nomeia Menção. A imagem fica à direita, e o botão **Abrir no navegador** aponta para ela.
 
 Negação de permissão permanece quase igual de propósito: o tom não suaviza nem provoca quando o acesso é recusado.
 

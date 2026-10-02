@@ -2,7 +2,7 @@
 
 Última atualização: 29 de setembro de 2026.
 
-Este documento descreve o núcleo compartilhado de importação de emojis e a integração por trás de dois comandos: **Dev** (`/dev emoji add` → `k!dev-emoji-add`, nos Application Emojis do bot de produção) e **Servidor** (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). Os dois usam a mesma fila, os mesmos limites e o mesmo downloader; o que os separa são a política de acesso e o destino. O destino `application` não usa a aplicação conectada ao Gateway: a composição injeta uma capability que autentica somente a credencial de production.
+Este documento descreve o núcleo compartilhado de importação de emojis e a integração por trás de dois comandos: **Dev** (`/dev emoji add` → `k!dev-emoji-add`, nos Application Emojis do bot de produção) e **Servidor** (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). Os dois usam a mesma fila, os mesmos limites e o mesmo downloader; o que os separa são a política de acesso e o destino. As permissões de `emoji add` ficam na rota e se somam à política raiz de `/emoji`. A consulta `/emoji info` não usa este pipeline e não baixa nem reenvia arquivos. O destino `application` não usa a aplicação conectada ao Gateway: a composição injeta uma capability que autentica somente a credencial de production.
 
 ## Escopo desta etapa
 

@@ -77,13 +77,13 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Expulsar o bot | `Angry` | 😠 Ei! Você não pode me expulsar!!! |
 | Falha na expulsão | `ops` | 😅 Não consegui expulsar esse membro. Tente de novo daqui a pouco. |
 | Dono do servidor | `Disappointed` | 😞 Não consigo expulsar o dono deste servidor. |
-| Cargo do autor | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Não consigo expulsá-lo. |
+| Cargo do autor | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Você não pode expulsá-lo. |
 | Cargo do bot | `Angry` | 😠 Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo expulsá-lo. |
 | Membro ausente | `search` | 🔎 Não encontrei esse membro neste servidor. |
 
 No ping, os campos do embed nomeiam as latências com `stats` e `gateway`. Os valores em milissegundos não levam emoji: a mensagem já tem `dancing`.
 
-Na expulsão, a frase usa `sucess`. O embed usa a cor `0x2b2d31`, a mesma das outras respostas. `kick` nomeia Membro, `staff` nomeia Responsável e `Note` nomeia Motivo. Esses três podem ficar de fora quando o emoji personalizado não está disponível; a frase continua com `sucess`. O nome e o motivo aparecem em código, para o texto informado não virar formatação. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando.
+Na expulsão, a frase usa `sucess` e, quando disponível, `kick`. O embed usa a cor `0x2b2d31`, a mesma das outras respostas. `ID` nomeia Membro, `staff` nomeia Responsável e `Note` nomeia Motivo. `kick`, `staff` e `Note` podem ficar de fora quando o emoji personalizado não está disponível; a frase continua com `sucess` e o campo Membro continua com `ID`. O nome e o motivo aparecem em código, para o texto informado não virar formatação. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando.
 
 Na consulta de emoji, a resposta é só o embed. `ID` nomeia Identidade e `photo` nomeia Menção. A imagem fica à direita, e o botão **Abrir no navegador** aponta para ela.
 

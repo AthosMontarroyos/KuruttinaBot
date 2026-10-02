@@ -37,9 +37,9 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `guild` | Importação de emoji sem servidor de destino | disponível | disponível |
 | `Heart` | Agradecimento ou carinho | disponível | disponível |
 | `home` | Início ou menu principal | disponível | disponível |
-| `ID` | Usuário inválido na limpeza | disponível | disponível |
+| `ID` | Usuário inválido na limpeza e campo Membro na confirmação de expulsão | disponível | disponível |
 | `info` | Informação ou detalhe complementar | disponível | disponível |
-| `kick` | Campo Membro na confirmação de expulsão | disponível | disponível |
+| `kick` | Complemento da confirmação de expulsão; omitido quando indisponível | disponível | disponível |
 | `label` | Nome de emoji inválido | disponível | disponível |
 | `left_arrow` | Voltar ou página anterior | disponível | disponível |
 | `link` | Link ou convite | disponível | disponível |

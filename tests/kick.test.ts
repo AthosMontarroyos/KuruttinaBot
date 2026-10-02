@@ -104,11 +104,11 @@ describe('kick command', () => {
     expect(guild.kick).toHaveBeenCalledWith(TARGET, `Moderador ${ACTOR}: motivo claro`);
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '<:sucess:sucess-id> Pronto. `Alvo` foi expulso deste servidor.',
+      content: '<:sucess:sucess-id> Pronto. `Alvo` foi expulso deste servidor. <:kick:kick-id>',
       embeds: [{
         color: 0x2b2d31,
         fields: [
-          { name: '<:kick:kick-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
+          { name: '<:ID:ID-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
           { name: '<:staff:staff-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
           { name: '<:Note:Note-id> Motivo', value: '`motivo claro`', inline: false },
         ],
@@ -129,7 +129,7 @@ describe('kick command', () => {
       content: '✅ Pronto. `Alvo` foi expulso deste servidor.',
       embeds: [{
         fields: [
-          { name: 'Membro', value: '`Alvo`\n`222222222222222222`' },
+          { name: '🪪 Membro', value: '`Alvo`\n`222222222222222222`' },
           { name: 'Responsável' },
           { name: 'Motivo', value: 'Nenhum motivo informado.' },
         ],
@@ -168,7 +168,7 @@ describe('kick command', () => {
       {
         rawArgs: `<@${TARGET}>`,
         members: { [TARGET]: profile(TARGET, 'Alvo', 5) },
-        text: '<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Não consigo expulsá-lo.',
+        text: '<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Você não pode expulsá-lo.',
       },
       {
         rawArgs: `<@${TARGET}>`,

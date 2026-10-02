@@ -104,20 +104,20 @@ async function confirmation(
   moderator: GuildMemberProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, ID, kick, staff, note] = await Promise.all([
+  const [done, kick, identity, staff, note] = await Promise.all([
     context.emoji('sucess'),
     context.emoji('kick'),
+    context.emoji('ID'),
     context.emoji('staff'),
     context.emoji('Note'),
-    context.emoji('ID'),
   ]);
   return {
-    content: withEmojis(kick, `Pronto. ${asCode(target.displayName, 'Membro')} foi expulso deste servidor.`),
+    content: withEmojis(done, `Pronto. ${asCode(target.displayName, 'Membro')} foi expulso deste servidor.`, kick),
     embeds: [{
       color: 0x2b2d31,
       fields: [
         {
-          name: withEmojis(ID, 'Membro'),
+          name: withEmojis(identity, 'Membro'),
           value: `${asCode(target.displayName, 'Membro')}\n\`${target.id}\``,
           inline: true,
         },
@@ -167,7 +167,7 @@ async function authorizeKick(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'O cargo desse membro está acima do seu ou no mesmo nível. Não consigo expulsá-lo.');
+    await say(context, 'Disappointed', 'O cargo desse membro está acima do seu ou no mesmo nível. Você não pode expulsá-lo.');
     return undefined;
   }
 

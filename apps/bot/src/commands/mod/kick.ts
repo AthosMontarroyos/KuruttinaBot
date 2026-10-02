@@ -104,19 +104,20 @@ async function confirmation(
   moderator: GuildMemberProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, kick, staff, note] = await Promise.all([
+  const [done, ID, kick, staff, note] = await Promise.all([
     context.emoji('sucess'),
     context.emoji('kick'),
     context.emoji('staff'),
     context.emoji('Note'),
+    context.emoji('ID'),
   ]);
   return {
-    content: withEmojis(done, `Pronto. ${asCode(target.displayName, 'Membro')} foi expulso deste servidor.`),
+    content: withEmojis(kick, `Pronto. ${asCode(target.displayName, 'Membro')} foi expulso deste servidor.`),
     embeds: [{
       color: 0x2b2d31,
       fields: [
         {
-          name: withEmojis(kick, 'Membro'),
+          name: withEmojis(ID, 'Membro'),
           value: `${asCode(target.displayName, 'Membro')}\n\`${target.id}\``,
           inline: true,
         },

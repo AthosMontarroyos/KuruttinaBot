@@ -6,7 +6,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 28 desses nomes; os outros 35 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
-Última conferência pelo GrokBot: Development 2026-09-30; Production 2026-09-30.
+Última conferência pelo GrokBot: Development 2026-10-02; Production 2026-10-02.
 
 | Nome | Uso na mensagem | Development | Production |
 | --- | --- | --- | --- |
@@ -73,6 +73,8 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
 | `staff` | Campo Responsável na confirmação de expulsão | disponível | disponível |
 | `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
+| `jail` | pendente | disponível | disponível |
+| `police` | pendente | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

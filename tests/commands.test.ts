@@ -53,7 +53,7 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
 describe('commands', () => {
   it('discovers and publishes the canonical commands automatically', async () => {
     const handler = new CommandsHandler(await loadCommands());
-    expect(handler.payload('global').map((command) => command.name)).toEqual(['clear', 'emoji', 'kick', 'ping']);
+    expect(handler.payload('global').map((command) => command.name)).toEqual(['clear', 'emoji', 'kick', 'timeout', 'untimeout', 'ping']);
     expect(handler.payload('dev-guild').map((command) => command.name)).toEqual(['dev']);
   });
 

@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 28 desses nomes; os outros 35 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 31 desses nomes; os outros 32 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-09-30; Production 2026-09-30.
 
@@ -18,7 +18,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `cleaning` | Confirmação da limpeza de mensagens | disponível | disponível |
 | `slap` | Complemento da confirmação de limpeza; omitido quando indisponível | disponível | disponível |
 | `error` | Falha ao importar emoji ou erro inesperado no slash | disponível | disponível |
-| `search` | Nenhuma mensagem encontrada, membro inválido na expulsão ou emoji de origem ausente | disponível | disponível |
+| `search` | Nenhuma mensagem encontrada, membro inválido ou ausente na moderação, ou emoji de origem ausente | disponível | disponível |
 | `add` | Confirmação de que o emoji agora está neste servidor | disponível | disponível |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
 | `ban` | Banimento de membro | disponível | disponível |
@@ -37,8 +37,8 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `guild` | Importação de emoji sem servidor de destino | disponível | disponível |
 | `Heart` | Agradecimento ou carinho | disponível | disponível |
 | `home` | Início ou menu principal | disponível | disponível |
-| `ID` | Usuário inválido na limpeza e campo Membro na confirmação de expulsão | disponível | disponível |
-| `info` | Informação ou detalhe complementar | disponível | disponível |
+| `ID` | Usuário inválido na limpeza e campo Membro na confirmação de moderação | disponível | disponível |
+| `info` | Campo Duração na confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `kick` | Complemento da confirmação de expulsão; omitido quando indisponível | disponível | disponível |
 | `label` | Nome de emoji inválido | disponível | disponível |
 | `left_arrow` | Voltar ou página anterior | disponível | disponível |
@@ -46,7 +46,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `lock` | Acesso restrito à equipe | disponível | disponível |
 | `logs` | Registros ou auditoria | disponível | disponível |
 | `moderation` | Moderação ou ação da staff | disponível | disponível |
-| `mute` | Silenciamento de membro | disponível | disponível |
+| `mute` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `nitro` | Discord Nitro | disponível | disponível |
 | `ops` | Falha ao buscar ou apagar mensagens, consultar permissões, acesso da equipe, importação ou destino | disponível | disponível |
 | `photo` | Imagem ausente, vazia, em formato não suportado ou dados de um emoji consultado | disponível | disponível |
@@ -63,15 +63,15 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `sucess` | Conclusão da importação de emoji, verificado ou confirmado | disponível | disponível |
 | `trash` | Exclusão ou remoção | disponível | disponível |
 | `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
-| `unmute` | Fim do silenciamento de membro | disponível | disponível |
+| `unmute` | Complemento da confirmação de remoção do castigo; omitido quando indisponível | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
 | `Angry` | Bot sem as permissões necessárias no canal | disponível | disponível |
-| `Note` | Campo Motivo na confirmação de expulsão | disponível | disponível |
+| `Note` | Campo Motivo na confirmação de moderação | disponível | disponível |
 | `ping` | Latência, conexão ou comando de ping | disponível | disponível |
-| `question` | Quantidade inválida na limpeza ou expulsão sem membro | disponível | disponível |
+| `question` | Quantidade inválida na limpeza, expulsão ou castigo sem membro ou sem duração | disponível | disponível |
 | `scared` | Susto, medo ou alerta assustador | disponível | disponível |
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
-| `staff` | Campo Responsável na confirmação de expulsão | disponível | disponível |
+| `staff` | Campo Responsável na confirmação de moderação | disponível | disponível |
 | `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
 
 ## Atualização pelo GrokBot

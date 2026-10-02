@@ -750,7 +750,7 @@ describe('emoji command deployment scopes', () => {
 
     const globalNames = discord.deployGlobalCommands.mock.calls[0]?.[2].map(({ name }: { name: string }) => name);
     const guildNames = discord.deployGuildCommands.mock.calls[0]?.[3].map(({ name }: { name: string }) => name);
-    expect(globalNames).toEqual(['clear', 'emoji', 'kick', 'ping']);
+    expect(globalNames).toEqual(['clear', 'emoji', 'kick', 'timeout', 'untimeout', 'ping']);
     expect(guildNames).toEqual(['dev']);
     expect(discord.deployGuildCommands).toHaveBeenCalledExactlyOnceWith('fake-token', CREATOR, DEV_GUILD, expect.any(Array));
     expect(globalNames).not.toContain('dev');

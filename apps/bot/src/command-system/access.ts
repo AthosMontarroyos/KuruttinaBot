@@ -13,6 +13,7 @@ const permissionLabels: Partial<Record<keyof typeof PermissionFlagsBits, string>
   CreateGuildExpressions: 'Criar emojis',
   EmbedLinks: 'Inserir links',
   KickMembers: 'Expulsar membros',
+  ModerateMembers: 'Castigar membros',
 };
 
 const labelsByPermission = new Map<bigint, string>(

@@ -11,7 +11,7 @@ const BOT = '333333333333333333';
 const OWNER = '444444444444444444';
 
 function profile(id: string, name: string, position: number): GuildMemberProfile {
-  return { id, displayName: name, highestRolePosition: position };
+  return { id, displayName: name, highestRolePosition: position, administrator: false, timedOutUntil: null };
 }
 
 function moderation(options: {
@@ -32,6 +32,8 @@ function moderation(options: {
     botUserId: options.botUserId === undefined ? BOT : options.botUserId,
     fetchMember: async (userId: string) => members[userId] ?? null,
     kick: options.kick ?? vi.fn(async () => 'kicked' as const),
+    timeout: vi.fn(async () => 'timed-out' as const),
+    clearTimeout: vi.fn(async () => 'cleared' as const),
   };
 }
 
@@ -265,6 +267,8 @@ describe('member moderation adapter', () => {
             id: userId,
             displayName: 'Presente',
             roles: { highest: { position: 3 } },
+            permissions: { has: () => false },
+            communicationDisabledUntilTimestamp: null,
             kick,
           };
         }),

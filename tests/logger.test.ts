@@ -15,9 +15,13 @@ describe('terminal logger', () => {
     ['clear_unexpected_error', 'Erro inesperado na limpeza de mensagens'],
     ['kick_failed', 'Falha ao expulsar o membro'],
     ['kick_confirm_failed', 'Expulsão concluída; falha ao enviar confirmação'],
+    ['timeout_failed', 'Falha ao castigar o membro'],
+    ['timeout_confirm_failed', 'Castigo concluído; falha ao enviar confirmação'],
+    ['untimeout_failed', 'Falha ao remover o castigo'],
+    ['untimeout_confirm_failed', 'Castigo removido; falha ao enviar confirmação'],
   ])('identifies the moderation stage for %s', (event, message) => {
     const output = formatTerminalLog('error', event!, { channelId: 'channel-123', errorCode: 50013 }, false);
-    const category = event?.startsWith('kick_') ? '❌ Kick' : '❌ Clear';
+    const category = event?.startsWith('kick_') ? '❌ Kick' : event?.includes('timeout') ? '❌ Timeout' : '❌ Clear';
     expect(output).toContain(category);
     expect(output).toContain(message);
     expect(output).toContain('channelId: channel-123');

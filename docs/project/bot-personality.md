@@ -80,10 +80,42 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Cargo do autor | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Você não pode expulsá-lo. |
 | Cargo do bot | `Angry` | 😠 Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo expulsá-lo. |
 | Membro ausente | `search` | 🔎 Não encontrei esse membro neste servidor. |
+| Castigo concluído | `sucess` e `mute` | ✅ Pronto. `Nome` foi castigado por **10 minutos**. |
+| Castigo fora de canal | `ChannelBrowser` | 🏘️ O castigo só pode ser feito em um canal de texto de servidor. |
+| Sem permissão para castigar | `Disappointed` | 😞 Você precisa da permissão **Castigar membros** neste servidor. |
+| Bot sem permissão para castigar | `Angry` | 😠 Preciso destas permissões para castigar um membro: **Castigar membros**. |
+| Castigo sem membro | `question` | ❓ Diga quem castigar. Mencione o membro ou digite o ID! |
+| Castigo sem duração | `question` | ❓ Diga por quanto tempo. Use **10m**, **2h** ou **1d**. |
+| Duração inválida | `warning` | ⚠️ Não entendi essa duração. Use **10m**, **2h**, **1d** ou **1 semana**. |
+| Duração curta | `warning` | ⚠️ O castigo precisa durar pelo menos **1 segundo**. |
+| Duração longa | `warning` | ⚠️ O castigo pode durar no máximo **28 dias**. |
+| Autocastigo | `Disappointed` | 😞 Você não pode se castigar. |
+| Castigar o bot | `Angry` | 😠 Você não pode me castigar. |
+| Falha no castigo | `ops` | 😅 Não consegui castigar esse membro. Tente de novo daqui a pouco. |
+| Dono no castigo | `Disappointed` | 😞 Não consigo castigar o dono deste servidor. |
+| Cargo do autor no castigo | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo. |
+| Cargo do bot no castigo | `Angry` | 😠 Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo. |
+| Administrador | `Disappointed` | 😞 Não consigo castigar um membro com a permissão **Administrador**. |
+| Castigo removido | `sucess` e `unmute` | ✅ Pronto. O castigo de `Nome` foi removido. |
+| Remoção fora de canal | `ChannelBrowser` | 🏘️ A remoção do castigo só pode ser feita em um canal de texto de servidor. |
+| Bot sem permissão para remover | `Angry` | 😠 Preciso destas permissões para remover um castigo: **Castigar membros**. |
+| Remoção sem membro | `question` | ❓ Diga de quem remover o castigo. Mencione o membro ou digite o ID! |
+| Remover o próprio castigo | `Disappointed` | 😞 Você não pode remover o próprio castigo. |
+| Remover o castigo do bot | `Angry` | 😠 Você não pode remover o meu castigo. |
+| Falha ao remover o castigo | `ops` | 😅 Não consegui remover o castigo desse membro. Tente de novo daqui a pouco. |
+| Dono na remoção | `Disappointed` | 😞 Não consigo alterar o castigo do dono deste servidor. |
+| Cargo do autor na remoção | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele. |
+| Cargo do bot na remoção | `Angry` | 😠 Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele. |
+| Administrador na remoção | `Disappointed` | 😞 Não consigo alterar o castigo de um membro com a permissão **Administrador**. |
+| Sem castigo ativo | `search` | 🔎 Esse membro não está castigado. |
 
 No ping, os campos do embed nomeiam as latências com `stats` e `gateway`. Os valores em milissegundos não levam emoji: a mensagem já tem `dancing`.
 
 Na expulsão, a frase usa `sucess` e, quando disponível, `kick`. O embed usa a cor `0x2b2d31`, a mesma das outras respostas. `ID` nomeia Membro, `staff` nomeia Responsável e `Note` nomeia Motivo. `kick`, `staff` e `Note` podem ficar de fora quando o emoji personalizado não está disponível; a frase continua com `sucess` e o campo Membro continua com `ID`. O nome e o motivo aparecem em código, para o texto informado não virar formatação. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando.
+
+No castigo, a frase usa `sucess` e, quando disponível, `mute`. O embed repete a cor `0x2b2d31`. `ID` nomeia Membro, `staff` nomeia Responsável, `info` nomeia Duração e `Note` nomeia Motivo. `mute`, `staff`, `info` e `Note` podem ficar de fora; a frase continua com `sucess` e o campo Membro continua com `ID`. A duração sai na frase e no campo, em português e pela unidade maior: **10 minutos**, **1 hora e 30 minutos**, **4 semanas** para 28 dias. O nome e o motivo continuam em código. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando. Membro inválido, motivo longo e membro ausente usam as mesmas falas da expulsão.
+
+Na remoção do castigo, a frase usa `sucess` e, quando disponível, `unmute`. O embed traz Membro, Responsável e Motivo, sem Duração. `unmute` pode ficar de fora; a frase continua com `sucess`. Quem não está castigado recebe a recusa antes de qualquer alteração. A permissão negada a quem chama é a mesma do castigo.
 
 Na consulta de emoji, a resposta é só o embed. `ID` nomeia Identidade e `photo` nomeia Menção. A imagem fica à direita, e o botão **Abrir no navegador** aponta para ela.
 
@@ -95,4 +127,4 @@ Logs de terminal em `apps/bot/src/infrastructure/logging/terminalFormatter.ts` e
 
 ## Estado
 
-Documentado em 1º de outubro de 2026. As regras de personalidade das falas e de emojis nas falas são obrigatórias. As respostas visíveis dos comandos já seguem este tom. Descrições de comando, logs, mensagens operacionais e o indicador nativo de carregamento continuam fora deste escopo.
+Documentado em 2 de outubro de 2026. As regras de personalidade das falas e de emojis nas falas são obrigatórias. As respostas visíveis dos comandos já seguem este tom. Descrições de comando, logs, mensagens operacionais e o indicador nativo de carregamento continuam fora deste escopo.

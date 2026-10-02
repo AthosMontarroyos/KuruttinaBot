@@ -48,6 +48,10 @@ export interface GuildMemberProfile {
   readonly id: string;
   readonly displayName: string;
   readonly highestRolePosition: number;
+  /** Discord refuses timeouts for members with Administrator. */
+  readonly administrator: boolean;
+  /** Epoch milliseconds when the current timeout ends; null when the member is not timed out. */
+  readonly timedOutUntil: number | null;
 }
 
 /** Guild moderation operations shared by slash and prefix. Cache miss is not absence. */
@@ -56,6 +60,9 @@ export interface MemberModerationPort {
   readonly botUserId: string | null;
   fetchMember(userId: string): Promise<GuildMemberProfile | null>;
   kick(userId: string, reason: string): Promise<'kicked' | 'missing'>;
+  /** `durationMs` is from 1 second through 28 days, Discord's timeout limit. */
+  timeout(userId: string, durationMs: number, reason: string): Promise<'timed-out' | 'missing'>;
+  clearTimeout(userId: string, reason: string): Promise<'cleared' | 'missing'>;
 }
 
 export interface CommandContext {
@@ -74,7 +81,7 @@ export interface CommandContext {
   sendMessage?(content: CommandReply): Promise<unknown>;
   readonly guildId?: string | undefined;
   readonly textChannel?: BulkDeletePort | undefined;
-  /** Kick and later moderation actions; absent outside a guild text channel. */
+  /** Kick, timeout and later moderation actions; absent outside a guild text channel. */
   readonly memberModeration?: MemberModerationPort | undefined;
   /** Slash command interaction options. */
   readonly options?: ReadonlyArray<{ readonly name: string; readonly value?: unknown }> | undefined;

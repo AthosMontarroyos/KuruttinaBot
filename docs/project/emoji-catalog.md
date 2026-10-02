@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 33 desses nomes; os outros 32 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 33 desses nomes; os outros 33 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-10-02; Production 2026-10-02.
 
@@ -75,7 +75,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
 | `jail` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `police` | Abre a confirmação de castigo e nomeia o campo Responsável no castigo e na remoção; omitido quando indisponível | disponível | disponível |
-| `happy` | pendente | disponível | disponível |
+| `happy` | Alegria, comemoração ou resposta animada | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

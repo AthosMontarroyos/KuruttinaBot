@@ -75,6 +75,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
 | `jail` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `police` | Abre a confirmação de castigo e nomeia o campo Responsável no castigo e na remoção; omitido quando indisponível | disponível | disponível |
+| `happy` | pendente | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 34 desses nomes; os outros 32 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 36 desses nomes; os outros 30 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-10-02; Production 2026-10-02.
 
@@ -18,10 +18,10 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `cleaning` | Confirmação da limpeza de mensagens | disponível | disponível |
 | `slap` | Complemento da confirmação de limpeza; omitido quando indisponível | disponível | disponível |
 | `error` | Falha ao importar emoji ou erro inesperado no slash | disponível | disponível |
-| `search` | Nenhuma mensagem encontrada, membro inválido ou ausente na moderação, ou emoji de origem ausente | disponível | disponível |
+| `search` | Nenhuma mensagem encontrada, membro inválido ou ausente, usuário desconhecido, banimento já registrado ou inexistente, ou emoji de origem ausente | disponível | disponível |
 | `add` | Confirmação de que o emoji agora está neste servidor | disponível | disponível |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
-| `ban` | Banimento de membro | disponível | disponível |
+| `ban` | Complemento da confirmação de banimento; omitido quando indisponível | disponível | disponível |
 | `book` | Orientação quando o comando exige um subcomando | disponível | disponível |
 | `ChannelBrowser` | Comando usado fora de canal de texto de servidor | disponível | disponível |
 | `coffee` | Bot ocupado ou fila de importação cheia | disponível | disponível |
@@ -37,7 +37,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `guild` | Importação de emoji sem servidor de destino | disponível | disponível |
 | `Heart` | Agradecimento ou carinho | disponível | disponível |
 | `home` | Início ou menu principal | disponível | disponível |
-| `ID` | Usuário inválido na limpeza e campo Membro na confirmação de moderação | disponível | disponível |
+| `ID` | Usuário inválido na limpeza e campo Membro ou Usuário na confirmação de moderação | disponível | disponível |
 | `info` | Campo Duração na confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `kick` | Complemento da confirmação de expulsão; omitido quando indisponível | disponível | disponível |
 | `label` | Nome de emoji inválido | disponível | disponível |
@@ -62,20 +62,20 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `star` | Destaque ou favorito | disponível | disponível |
 | `sucess` | Conclusão da importação de emoji, verificado ou confirmado | disponível | disponível |
 | `trash` | Exclusão ou remoção | disponível | disponível |
-| `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
+| `unlock` | Complemento da confirmação de revogação do banimento; omitido quando indisponível | disponível | disponível |
 | `unmute` | Complemento da confirmação de remoção do castigo; omitido quando indisponível | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
 | `Angry` | Bot sem as permissões necessárias no canal | disponível | disponível |
 | `Note` | Campo Motivo na confirmação de moderação | disponível | disponível |
 | `ping` | Latência, conexão ou comando de ping | disponível | disponível |
-| `question` | Quantidade inválida na limpeza, expulsão ou castigo sem membro ou sem duração | disponível | disponível |
+| `question` | Quantidade inválida na limpeza, expulsão, castigo ou banimento sem o alvo ou sem duração | disponível | disponível |
 | `scared` | Susto, medo ou alerta assustador | disponível | disponível |
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
 | `staff` | Campo Responsável na confirmação de moderação | disponível | disponível |
 | `affiliate` | Afiliados, parcerias ou vantagem premium | disponível | disponível |
 | `jail` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `police` | Abre a confirmação de castigo e nomeia o campo Responsável no castigo e na remoção; omitido quando indisponível | disponível | disponível |
-| `happy` | Abre a confirmação de remoção do castigo; omitido quando indisponível | disponível | disponível |
+| `happy` | Abre a confirmação de remoção do castigo e da revogação do banimento; omitido quando indisponível | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

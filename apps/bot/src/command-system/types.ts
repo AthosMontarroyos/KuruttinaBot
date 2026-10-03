@@ -54,6 +54,12 @@ export interface GuildMemberProfile {
   readonly timedOutUntil: number | null;
 }
 
+/** Account shown in a ban confirmation. Membership is not required. */
+export interface ModeratedUserProfile {
+  readonly id: string;
+  readonly displayName: string;
+}
+
 /** Guild moderation operations shared by slash and prefix. Cache miss is not absence. */
 export interface MemberModerationPort {
   readonly ownerId: string;
@@ -63,6 +69,13 @@ export interface MemberModerationPort {
   /** `durationMs` is from 1 second through 28 days, Discord's timeout limit. */
   timeout(userId: string, durationMs: number, reason: string): Promise<'timed-out' | 'missing'>;
   clearTimeout(userId: string, reason: string): Promise<'cleared' | 'missing'>;
+  /** An unknown account is `null`. Other failures propagate. */
+  fetchUser(userId: string): Promise<ModeratedUserProfile | null>;
+  /** A user who is not banned is `null`. Other failures propagate. */
+  fetchBan(userId: string): Promise<ModeratedUserProfile | null>;
+  /** Does not delete message history. `unknown-user` means Discord has no such account. */
+  ban(userId: string, reason: string): Promise<'banned' | 'unknown-user'>;
+  unban(userId: string, reason: string): Promise<'unbanned' | 'not-banned'>;
 }
 
 export interface CommandContext {
@@ -81,7 +94,7 @@ export interface CommandContext {
   sendMessage?(content: CommandReply): Promise<unknown>;
   readonly guildId?: string | undefined;
   readonly textChannel?: BulkDeletePort | undefined;
-  /** Kick, timeout and later moderation actions; absent outside a guild text channel. */
+  /** Kick, timeout, ban and their reversals; absent outside a guild text channel. */
   readonly memberModeration?: MemberModerationPort | undefined;
   /** Slash command interaction options. */
   readonly options?: ReadonlyArray<{ readonly name: string; readonly value?: unknown }> | undefined;

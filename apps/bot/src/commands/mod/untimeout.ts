@@ -113,7 +113,7 @@ async function confirmation(
     context.emoji('Note'),
   ]);
   return {
-    content: withEmojis(happy, `Pronto. O castigo de ${asCode(target.displayName, 'Membro')} foi removido.`, unmute),
+    content: withEmojis(happy, done, `Pronto. O castigo de ${asCode(target.displayName, 'Membro')} foi removido.`, unmute),
     embeds: [{
       color: 0x2b2d31,
       fields: [

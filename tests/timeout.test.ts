@@ -49,6 +49,10 @@ function moderation(options: {
     kick: vi.fn(async () => 'kicked' as const),
     timeout: options.timeout ?? vi.fn(async () => 'timed-out' as const),
     clearTimeout: options.clearTimeout ?? vi.fn(async () => 'cleared' as const),
+    fetchUser: vi.fn(async () => null),
+    fetchBan: vi.fn(async () => null),
+    ban: vi.fn(async () => 'banned' as const),
+    unban: vi.fn(async () => 'unbanned' as const),
   };
 }
 

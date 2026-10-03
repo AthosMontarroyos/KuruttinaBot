@@ -1,9 +1,12 @@
 import { PermissionFlagsBits, type Guild } from 'discord.js';
 import type { GuildMemberProfile, MemberModerationPort } from '#bot/command-system/types.js';
 
+function hasDiscordCode(error: unknown, code: number): boolean {
+  return error !== null && typeof error === 'object' && 'code' in error && error.code === code;
+}
+
 function isUnknownMember(error: unknown): boolean {
-  if (error === null || typeof error !== 'object' || !('code' in error)) return false;
-  return error.code === 10007 || error.code === 10013;
+  return hasDiscordCode(error, 10007) || hasDiscordCode(error, 10013);
 }
 
 function profileOf(member: {
@@ -67,6 +70,43 @@ export function createMemberModerationAdapter(guild: Guild): MemberModerationPor
         return 'cleared';
       } catch (error: unknown) {
         if (isUnknownMember(error)) return 'missing';
+        throw error;
+      }
+    },
+    async fetchUser(userId) {
+      try {
+        const user = await guild.client.users.fetch(userId);
+        return { id: user.id, displayName: user.displayName };
+      } catch (error: unknown) {
+        if (hasDiscordCode(error, 10013)) return null;
+        throw error;
+      }
+    },
+    async fetchBan(userId) {
+      try {
+        const ban = await guild.bans.fetch(userId);
+        return { id: ban.user.id, displayName: ban.user.displayName };
+      } catch (error: unknown) {
+        if (hasDiscordCode(error, 10026) || hasDiscordCode(error, 10013)) return null;
+        throw error;
+      }
+    },
+    /** `deleteMessageSeconds: 0` keeps the message history. Discord allows up to seven days. */
+    async ban(userId, reason) {
+      try {
+        await guild.members.ban(userId, { deleteMessageSeconds: 0, reason });
+        return 'banned';
+      } catch (error: unknown) {
+        if (hasDiscordCode(error, 10013)) return 'unknown-user';
+        throw error;
+      }
+    },
+    async unban(userId, reason) {
+      try {
+        await guild.members.unban(userId, reason);
+        return 'unbanned';
+      } catch (error: unknown) {
+        if (hasDiscordCode(error, 10026) || hasDiscordCode(error, 10013)) return 'not-banned';
         throw error;
       }
     },

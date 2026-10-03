@@ -19,9 +19,19 @@ describe('terminal logger', () => {
     ['timeout_confirm_failed', 'Castigo concluído; falha ao enviar confirmação'],
     ['untimeout_failed', 'Falha ao remover o castigo'],
     ['untimeout_confirm_failed', 'Castigo removido; falha ao enviar confirmação'],
+    ['ban_failed', 'Falha ao banir o usuário'],
+    ['ban_confirm_failed', 'Banimento concluído; falha ao enviar confirmação'],
+    ['unban_failed', 'Falha ao revogar o banimento'],
+    ['unban_confirm_failed', 'Banimento revogado; falha ao enviar confirmação'],
   ])('identifies the moderation stage for %s', (event, message) => {
     const output = formatTerminalLog('error', event!, { channelId: 'channel-123', errorCode: 50013 }, false);
-    const category = event?.startsWith('kick_') ? '❌ Kick' : event?.includes('timeout') ? '❌ Timeout' : '❌ Clear';
+    const category = event?.startsWith('kick_')
+      ? '❌ Kick'
+      : event?.includes('timeout')
+        ? '❌ Timeout'
+        : event?.includes('ban')
+          ? '❌ Ban'
+          : '❌ Clear';
     expect(output).toContain(category);
     expect(output).toContain(message);
     expect(output).toContain('channelId: channel-123');

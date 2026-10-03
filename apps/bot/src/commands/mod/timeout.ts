@@ -246,6 +246,7 @@ async function confirmation(
   return {
     content: withEmojis(
       police,
+      done,
       `Pronto. ${asCode(target.displayName, 'Membro')} foi castigado por **${length}**.`,
       jail,
     ),

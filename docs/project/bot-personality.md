@@ -108,27 +108,27 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Cargo do bot na remoção | `cry` | 😢 Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele. |
 | Administrador na remoção | `cry` | 😢 Ei! Não consigo alterar o castigo de um membro com a permissão **Administrador**. |
 | Sem castigo ativo | `search` | 🔎 Esse membro não está castigado. |
-| Banimento concluído | `sucess` e `ban` | ✅ Pronto. `Nome` foi banido deste servidor. |
+| Banimento concluído | `ban` e `coffee` | Pronto. `Nome` foi banido deste servidor. ☕ |
 | Banimento fora de canal | `ChannelBrowser` | 🏘️ O banimento só pode ser feito em um canal de texto de servidor. |
 | Sem permissão para banir | `Disappointed` | 😞 Você precisa da permissão **Banir membros** neste servidor. |
 | Bot sem permissão para banir | `Angry` | 😠 Preciso destas permissões para banir um usuário: **Banir membros**. |
 | Banimento sem usuário | `question` | ❓ Diga quem banir. Mencione o membro ou digite o ID! |
-| Autobanimento | `Disappointed` | 😞 Você não pode se banir. |
-| Banir o bot | `Angry` | 😠 Você não pode me banir. |
+| Autobanimento | `Disappointed` | 😞 Você não pode se banir... Por que você estaria tentando banir você mesmo? |
+| Banir o bot | `cry` | 😢 Ei! Por que você está tentando banir? |
 | Falha no banimento | `ops` | 😅 Não consegui banir esse usuário. Tente de novo daqui a pouco. |
 | Dono no banimento | `Disappointed` | 😞 Não consigo banir o dono deste servidor. |
-| Cargo do autor no banimento | `Disappointed` | 😞 O cargo desse membro está acima do seu ou no mesmo nível. Você não pode bani-lo. |
-| Cargo do bot no banimento | `Angry` | 😠 Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo bani-lo. |
+| Cargo do autor no banimento | `Disappointed` | 😞 Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo. |
+| Cargo do bot no banimento | `Angry` | 😠 Ei! Meu cargo está abaixo desse membro ou no mesmo nível. Eu não consigo simplesmente bani-lo desse servidor. |
 | Usuário desconhecido | `search` | 🔎 Não encontrei esse usuário. |
 | Já banido | `search` | 🔎 Esse usuário já está banido. |
-| Banimento revogado | `happy`, `sucess` e `unlock` | ✅ Pronto. O banimento de `Nome` foi revogado. |
+| Banimento revogado | `happy` e `sucess` | ✅ Pronto. O banimento de `Nome` foi revogado. |
 | Revogação fora de canal | `ChannelBrowser` | 🏘️ A revogação do banimento só pode ser feita em um canal de texto de servidor. |
 | Bot sem permissão para revogar | `Angry` | 😠 Preciso destas permissões para revogar um banimento: **Banir membros**. |
 | Revogação sem usuário | `question` | ❓ Diga de quem revogar o banimento. Mencione o usuário ou digite o ID! |
-| Revogar o próprio banimento | `Disappointed` | 😞 Você não pode revogar o próprio banimento. |
-| Revogar o banimento do bot | `Angry` | 😠 Você não pode revogar o meu banimento. |
+| Revogar o próprio banimento | `Disappointed` | 😞 Como você estaria tentando revogar o seu próprio banimento? |
+| Revogar o banimento do bot | `Disappointed` | 😞 Ei! Eu nem estou banida, então como você estaria tentando revogar o meu banimento? |
 | Falha ao revogar | `ops` | 😅 Não consegui revogar o banimento desse usuário. Tente de novo daqui a pouco. |
-| Sem banimento ativo | `search` | 🔎 Esse usuário não está banido. |
+| Sem banimento ativo | `search` | 🔎 Ei! Esse usuário não está nem sequer banido. |
 
 No ping, os campos do embed nomeiam as latências com `stats` e `gateway`. Os valores em milissegundos não levam emoji: a mensagem já tem `dancing`.
 
@@ -138,9 +138,9 @@ No castigo, a frase abre com `police` quando ele está disponível, segue com `s
 
 Na remoção do castigo, a frase abre com `happy` quando ele está disponível, segue com `sucess` e fecha com `unmute`. O embed traz Membro, Responsável e Motivo, sem Duração. `police` nomeia Responsável. `happy`, `unmute` e `police` podem ficar de fora; a frase continua com `sucess`. Quem não está castigado recebe a recusa antes de qualquer alteração. A permissão negada a quem chama é a mesma do castigo.
 
-No banimento, a frase usa `sucess` e, quando disponível, `ban`. O embed usa a cor `0x2b2d31`. `ID` nomeia Usuário, `staff` nomeia Responsável e `Note` nomeia Motivo. `ban`, `staff` e `Note` podem ficar de fora; a frase continua com `sucess` e o campo Usuário continua com `ID`. O nome e o motivo aparecem em código. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando. Quem está no servidor passa pela hierarquia de cargos. Quem não está pode ser banido pelo ID, desde que a conta exista e ainda não esteja banida. O comando não apaga o histórico de mensagens. Membro inválido e motivo longo usam as mesmas falas da expulsão.
+No banimento, a frase abre com `ban` quando ele está disponível e fecha com `coffee`. O embed usa a cor `0x2b2d31`. `ID` nomeia Usuário, `staff` nomeia Responsável e `Note` nomeia Motivo. `ban`, `staff` e `Note` podem ficar de fora; a frase continua com `coffee` e o campo Usuário continua com `ID`. O nome e o motivo aparecem em código. Sem motivo, o campo diz "Nenhum motivo informado." A confirmação vai ao canal. O erro e a recusa ficam na resposta do comando. Quem está no servidor passa pela hierarquia de cargos. Quem não está pode ser banido pelo ID, desde que a conta exista e ainda não esteja banida. O comando não apaga o histórico de mensagens. Membro inválido e motivo longo usam as mesmas falas da expulsão.
 
-Na revogação do banimento, a frase abre com `happy` quando ele está disponível, segue com `sucess` e fecha com `unlock`. O embed traz Usuário, Responsável e Motivo. `happy`, `unlock` e `staff` podem ficar de fora; a frase continua com `sucess`. Quem não está banido recebe a recusa antes de qualquer alteração. A permissão é a mesma do banimento. Não há comparação de cargos, porque o usuário banido não está no servidor.
+Na revogação do banimento, a frase abre com `happy` quando ele está disponível e segue com `sucess`. O embed traz Usuário, Responsável e Motivo. `happy` e `staff` podem ficar de fora; a frase continua com `sucess`. Quem não está banido recebe a recusa antes de qualquer alteração. A permissão é a mesma do banimento. Não há comparação de cargos, porque o usuário banido não está no servidor.
 
 Na consulta de emoji, a resposta é só o embed. `ID` nomeia Identidade e `photo` nomeia Menção. A imagem fica à direita, e o botão **Abrir no navegador** aponta para ela.
 
@@ -152,4 +152,4 @@ Logs de terminal em `apps/bot/src/infrastructure/logging/terminalFormatter.ts` e
 
 ## Estado
 
-Documentado em 3 de outubro de 2026. As regras de personalidade das falas e de emojis nas falas são obrigatórias. As respostas visíveis dos comandos já seguem este tom. Descrições de comando, logs, mensagens operacionais e o indicador nativo de carregamento continuam fora deste escopo.
+Documentado em 4 de outubro de 2026. As regras de personalidade das falas e de emojis nas falas são obrigatórias. As respostas visíveis dos comandos já seguem este tom. Descrições de comando, logs, mensagens operacionais e o indicador nativo de carregamento continuam fora deste escopo.

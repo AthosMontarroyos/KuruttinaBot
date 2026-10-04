@@ -126,7 +126,7 @@ describe('ban command', () => {
     expect(guild.fetchUser).not.toHaveBeenCalled();
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '<:sucess:sucess-id> Pronto. `Alvo` foi banido deste servidor. <:ban:ban-id>',
+      content: '<:ban:ban-id> Pronto. `Alvo` foi banido deste servidor. <:coffee:coffee-id>',
       embeds: [{
         color: 0x2b2d31,
         fields: [
@@ -148,7 +148,7 @@ describe('ban command', () => {
     await banCommand.execute(ctx);
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '✅ Pronto. `Alvo` foi banido deste servidor.',
+      content: 'Pronto. `Alvo` foi banido deste servidor. ☕',
       embeds: [{
         fields: [
           { name: '🪪 Usuário', value: '`Alvo`\n`222222222222222222`' },
@@ -182,7 +182,7 @@ describe('ban command', () => {
     expect(guild.ban).toHaveBeenCalledWith(TARGET, `Moderador ${ACTOR}`);
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '<:sucess:sucess-id> Pronto. `Fora` foi banido deste servidor. <:ban:ban-id>',
+      content: '<:ban:ban-id> Pronto. `Fora` foi banido deste servidor. <:coffee:coffee-id>',
     });
   });
 
@@ -220,7 +220,7 @@ describe('ban command', () => {
     const ctx = context({ memberModeration: guild, rawArgs: TARGET });
     await banCommand.execute(ctx);
 
-    expect(replyText(ctx.reply)).toBe('<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Você não pode bani-lo.');
+    expect(replyText(ctx.reply)).toBe('<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo.');
     expect(guild.ban).not.toHaveBeenCalled();
   });
 
@@ -238,18 +238,18 @@ describe('ban command', () => {
 
   it('refuses to ban the author, the bot, the owner or a higher role', async () => {
     const cases: Array<{ rawArgs: string; members?: Record<string, GuildMemberProfile>; text: string }> = [
-      { rawArgs: `<@${ACTOR}>`, text: '<:Disappointed:Disappointed-id> Você não pode se banir.' },
-      { rawArgs: `<@${BOT}>`, text: '<:Angry:Angry-id> Você não pode me banir.' },
+      { rawArgs: `<@${ACTOR}>`, text: '<:Disappointed:Disappointed-id> Você não pode se banir... Por que você estaria tentando banir você mesmo?' },
+      { rawArgs: `<@${BOT}>`, text: '<:cry:cry-id> Ei! Por que você está tentando banir?' },
       { rawArgs: `<@${OWNER}>`, text: '<:Disappointed:Disappointed-id> Não consigo banir o dono deste servidor.' },
       {
         rawArgs: `<@${TARGET}>`,
         members: { [TARGET]: profile(TARGET, 'Alvo', 5) },
-        text: '<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Você não pode bani-lo.',
+        text: '<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo.',
       },
       {
         rawArgs: `<@${TARGET}>`,
         members: { [BOT]: profile(BOT, 'Kuruttina', 2) },
-        text: '<:Angry:Angry-id> Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo bani-lo.',
+        text: '<:Angry:Angry-id> Ei! Meu cargo está abaixo desse membro ou no mesmo nível. Eu não consigo simplesmente bani-lo desse servidor.',
       },
     ];
     for (const entry of cases) {
@@ -344,7 +344,7 @@ describe('unban command', () => {
     expect(guild.ban).not.toHaveBeenCalled();
     const message = sentMessage(ctx);
     expect(message).toMatchObject({
-      content: '<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de `Fora` foi revogado. <:unlock:unlock-id>',
+      content: '<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de `Fora` foi revogado.',
       embeds: [{
         color: 0x2b2d31,
         fields: [
@@ -404,17 +404,17 @@ describe('unban command', () => {
     const self = moderation();
     const selfCtx = context({ memberModeration: self, rawArgs: `<@${ACTOR}>` });
     await unbanCommand.execute(selfCtx);
-    expect(replyText(selfCtx.reply)).toBe('<:Disappointed:Disappointed-id> Você não pode revogar o próprio banimento.');
+    expect(replyText(selfCtx.reply)).toBe('<:Disappointed:Disappointed-id> Como você estaria tentando revogar o seu próprio banimento?');
 
     const bot = moderation();
     const botCtx = context({ memberModeration: bot, rawArgs: `<@${BOT}>` });
     await unbanCommand.execute(botCtx);
-    expect(replyText(botCtx.reply)).toBe('<:Angry:Angry-id> Você não pode revogar o meu banimento.');
+    expect(replyText(botCtx.reply)).toBe('<:Disappointed:Disappointed-id> Ei! Eu nem estou banida, então como você estaria tentando revogar o meu banimento?');
 
     const clear = moderation();
     const clearCtx = context({ memberModeration: clear, rawArgs: TARGET });
     await unbanCommand.execute(clearCtx);
-    expect(replyText(clearCtx.reply)).toBe('<:search:search-id> Esse usuário não está banido.');
+    expect(replyText(clearCtx.reply)).toBe('<:search:search-id> Ei! Esse usuário não está nem sequer banido.');
     expect(clear.unban).not.toHaveBeenCalled();
     expect(self.unban).not.toHaveBeenCalled();
     expect(bot.unban).not.toHaveBeenCalled();
@@ -427,7 +427,7 @@ describe('unban command', () => {
     });
     const ctx = context({ memberModeration: guild, rawArgs: TARGET });
     await unbanCommand.execute(ctx);
-    expect(replyText(ctx.reply)).toBe('<:search:search-id> Esse usuário não está banido.');
+    expect(replyText(ctx.reply)).toBe('<:search:search-id> Ei! Esse usuário não está nem sequer banido.');
     expect(ctx.sendMessage).not.toHaveBeenCalled();
   });
 

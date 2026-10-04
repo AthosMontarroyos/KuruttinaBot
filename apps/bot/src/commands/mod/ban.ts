@@ -17,7 +17,7 @@ const { BanMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotBanBot = 'Ei! Porque voce estar tentando banir?';
+const cannotBanBot = 'Ei! Por que você está tentando banir?';
 const banFailed = 'Não consegui banir esse usuário. Tente de novo daqui a pouco.';
 const userMissing = 'Não encontrei esse usuário.';
 const alreadyBanned = 'Esse usuário já está banido.';
@@ -106,14 +106,12 @@ async function confirmation(
   moderator: ModeratedUserProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, ban, identity, staff, note, coffee, cry] = await Promise.all([
-    context.emoji('sucess'),
+  const [ban, identity, staff, note, coffee] = await Promise.all([
     context.emoji('ban'),
     context.emoji('ID'),
     context.emoji('staff'),
     context.emoji('Note'),
     context.emoji('coffee'),
-    context.emoji('cry'),
   ]);
   return {
     content: withEmojis(ban, `Pronto. ${asCode(target.displayName, 'Usuário')} foi banido deste servidor.`, coffee),
@@ -171,7 +169,7 @@ async function authorizeBan(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente banir-lo.');
+    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo.');
     return undefined;
   }
 
@@ -181,11 +179,11 @@ async function authorizeBan(
     return undefined;
   }
   if (target.id === bot.id) {
-    await say(context, cannotBanBot, 'cry');
+    await say(context, 'cry', cannotBanBot);
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Angry', 'Ei! Meu cargo está abaixo desse membro ou no mesmo nível. Eu não consigo simplesmente banir-lo desse servidor.');
+    await say(context, 'Angry', 'Ei! Meu cargo está abaixo desse membro ou no mesmo nível. Eu não consigo simplesmente bani-lo desse servidor.');
     return undefined;
   }
   return actor;
@@ -251,11 +249,11 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Você não pode se banir... Por que voce estaria tentando banir você mesmo?');
+    await say(context, 'Disappointed', 'Você não pode se banir... Por que você estaria tentando banir você mesmo?');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {
-    await say(context, cannotBanBot, 'cry');
+    await say(context, 'cry', cannotBanBot);
     return;
   }
 

@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 36 desses nomes; os outros 30 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 35 desses nomes; os outros 31 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-10-02; Production 2026-10-02.
 
@@ -21,16 +21,16 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `search` | Nenhuma mensagem encontrada, membro inválido ou ausente, usuário desconhecido, banimento já registrado ou inexistente, ou emoji de origem ausente | disponível | disponível |
 | `add` | Confirmação de que o emoji agora está neste servidor | disponível | disponível |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
-| `ban` | Complemento da confirmação de banimento; omitido quando indisponível | disponível | disponível |
+| `ban` | Abre a confirmação de banimento; omitido quando indisponível | disponível | disponível |
 | `book` | Orientação quando o comando exige um subcomando | disponível | disponível |
 | `ChannelBrowser` | Comando usado fora de canal de texto de servidor | disponível | disponível |
-| `coffee` | Bot ocupado ou fila de importação cheia | disponível | disponível |
+| `coffee` | Bot ocupado, fila de importação cheia ou fechamento da confirmação de banimento | disponível | disponível |
 | `crown` | Dono do servidor ou posição de destaque | disponível | disponível |
-| `cry` | Recusa de castigo e de remoção quando o alvo tem Administrador; complemento no castigo e emoji da recusa na remoção quando o cargo do bot não alcança | disponível | disponível |
+| `cry` | Recusa de castigo e de remoção quando o alvo tem Administrador; complemento no castigo e emoji da recusa na remoção quando o cargo do bot não alcança; recusa ao tentar banir o bot | disponível | disponível |
 | `developer` | Confirmação de que o emoji agora está nos Application Emojis do bot de produção | disponível | disponível |
 | `Dice` | Resultado aleatório ou sorteio | disponível | disponível |
 | `DiceRooling` | Sorteio ou rolagem de dados em andamento | disponível | disponível |
-| `Disappointed` | Membro sem a permissão exigida pelo comando | disponível | disponível |
+| `Disappointed` | Membro sem a permissão exigida pelo comando; recusa de banimento ou revogação por hierarquia, dono, alvo próprio ou banimento do bot | disponível | disponível |
 | `Disgusted` | Reprovação ou desagrado | disponível | disponível |
 | `Documentation` | Documentação ou referência | disponível | disponível |
 | `folder` | Pasta, categoria ou arquivos | disponível | disponível |
@@ -60,9 +60,9 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `Stackofbooks` | Lista extensa, histórico ou coleção de conteúdos | disponível | disponível |
 | `StaffPing` | Chamado ou menção à staff | disponível | disponível |
 | `star` | Destaque ou favorito | disponível | disponível |
-| `sucess` | Conclusão da importação de emoji, verificado ou confirmado | disponível | disponível |
+| `sucess` | Confirma a importação de emoji, a expulsão, o castigo, a remoção do castigo e a revogação do banimento | disponível | disponível |
 | `trash` | Exclusão ou remoção | disponível | disponível |
-| `unlock` | Complemento da confirmação de revogação do banimento; omitido quando indisponível | disponível | disponível |
+| `unlock` | Desbloqueio ou acesso liberado | disponível | disponível |
 | `unmute` | Complemento da confirmação de remoção do castigo; omitido quando indisponível | disponível | disponível |
 | `vault` | Cofre, armazenamento ou backup | disponível | disponível |
 | `Angry` | Bot sem as permissões necessárias no canal | disponível | disponível |

@@ -16,7 +16,7 @@ const { BanMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotUnbanBot = 'Ei! Eu nem estou banida, então como voce estaria tentando revogar o meu banimento?';
+const cannotUnbanBot = 'Ei! Eu nem estou banida, então como você estaria tentando revogar o meu banimento?';
 const unbanFailed = 'Não consegui revogar o banimento desse usuário. Tente de novo daqui a pouco.';
 const notBanned = 'Ei! Esse usuário não está nem sequer banido.';
 const SNOWFLAKE = /^\d{17,20}$/u;
@@ -104,16 +104,15 @@ async function confirmation(
   moderator: ModeratedUserProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, happy, unlock, identity, staff, note] = await Promise.all([
+  const [done, happy, identity, staff, note] = await Promise.all([
     context.emoji('sucess'),
     context.emoji('happy'),
-    context.emoji('unlock'),
     context.emoji('ID'),
     context.emoji('staff'),
     context.emoji('Note'),
   ]);
   return {
-    content: withEmojis(happy, `Pronto. O banimento de ${asCode(target.displayName, 'Usuário')} foi revogado.`),
+    content: withEmojis(happy, done, `Pronto. O banimento de ${asCode(target.displayName, 'Usuário')} foi revogado.`),
     embeds: [{
       color: 0x2b2d31,
       fields: [
@@ -178,7 +177,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Como voce estaria tentando revogar o seu próprio banimento?');
+    await say(context, 'Disappointed', 'Como você estaria tentando revogar o seu próprio banimento?');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {

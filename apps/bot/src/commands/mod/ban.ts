@@ -17,7 +17,7 @@ const { BanMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotBanBot = 'Ei! Porque você estar tentando banir?';
+const cannotBanBot = 'Ei! Por que você está tentando banir?';
 const banFailed = 'Não consegui banir esse usuário. Tente de novo daqui a pouco.';
 const userMissing = 'Não encontrei esse usuário.';
 const alreadyBanned = 'Esse usuário já está banido.';

@@ -13,8 +13,11 @@
     "node": "^22.14.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
+    "site:build": "node apps/site/build.mjs",
+    "site:start": "node apps/site/dist/index.js",
+    "site:dev": "npm run site:build && npm run site:start",
     "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p apps/bot/tsconfig.build.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/site/tsconfig.json",
     "start": "node dist/apps/bot/src/index.js",
     "deploy:commands": "node dist/apps/bot/src/deployments/deploy-central.js",
     "dev": "tsx apps/bot/src/index.ts",
@@ -37,7 +40,15 @@
     "typescript": "5.8.2"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "@vitejs/plugin-react": "6.1.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwindcss": "4.3.3",
     "tsx": "4.19.3",
+    "vite": "8.3.4",
     "vitest": "5.0.0"
   }
 }

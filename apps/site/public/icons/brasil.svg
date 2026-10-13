@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Bandeira do Brasil" clip-path="url(#clip0_0_16)">
+<path id="Vector" d="M18 0H2C0.89543 0 0 0.89543 0 2V12C0 13.1046 0.89543 14 2 14H18C19.1046 14 20 13.1046 20 12V2C20 0.89543 19.1046 0 18 0Z" fill="#009C3B"/>
+<path id="Vector_2" d="M10 1.4L18.2 7L10 12.6L1.8 7L10 1.4Z" fill="#FFDF00"/>
+<path id="Vector_3" d="M10 10.2C11.7673 10.2 13.2 8.76731 13.2 7C13.2 5.23269 11.7673 3.8 10 3.8C8.23269 3.8 6.8 5.23269 6.8 7C6.8 8.76731 8.23269 10.2 10 10.2Z" fill="#002776"/>
+</g>
+<defs>
+<clipPath id="clip0_0_16">
+<rect width="20" height="14" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, sans-serif;
+  --color-background: #050505;
+  --color-surface: #141414;
+  --color-border: #2a2a2a;
+  --color-text: #f5f5f5;
+  --color-muted: #a3a3a3;
+  --color-subtle: #8a8a8a;
+  --color-button: #f4f4f4;
+  --color-button-text: #111111;
+  --color-secondary: #c8c8c8;
+}
+
+:root {
+  color-scheme: dark;
+  scrollbar-color: var(--color-muted) var(--color-background);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-background: #fafafa;
+  --color-surface: #ededed;
+  --color-border: #d1d1d1;
+  --color-text: #111111;
+  --color-muted: #555555;
+  --color-subtle: #666666;
+}
+
+@layer base {
+  html {
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-synthesis: none;
+  }
+  body {
+    margin: 0;
+    min-width: 280px;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 5px;
+  }
+  button:hover,
+  a:hover {
+    opacity: 0.8;
+  }
+  button:active {
+    transform: translateY(1px);
+  }
+  ::selection {
+    background: var(--color-text);
+    color: var(--color-background);
+  }
+  img {
+    display: block;
+  }
+  p,
+  h1,
+  figure {
+    margin: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:active {
+    transform: none;
+  }
+}
+
+.noscript {
+  padding: 20px 5%;
+  color: var(--color-muted);
+}

@@ -27,6 +27,8 @@ O único [manifesto Square Cloud](../../squarecloud.app) executa atualmente o bo
 
 ## Operações de desenvolvimento
 
+A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. Configure `APP_ENV`, `PORT` e `ASSETS_BASE_URL` no `.env` da raiz. Veja [Home local](site.md) para limites e fluxo de edição. O manifesto Square continua executando somente o bot.
+
 Não há serviço de automação local ou remoto incluído no projeto. Ferramentas aposentadas de R2, espelhamento de emojis e Cloudflare Tunnel constam no [registro](tooling-retirement.md); os IDs e rotas históricas dos túneis estão no [inventário](cloudflare-tunnel.md).
 
 As regras para agentes começam em [AGENTS.md](../../AGENTS.md); leia somente os documentos de domínio necessários à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

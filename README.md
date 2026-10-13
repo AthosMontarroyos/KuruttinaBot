@@ -20,7 +20,7 @@ O projeto inclui testes automatizados de comportamento, autorização e isolamen
 
 ## Estado do projeto
 
-Em desenvolvimento ativo. O bot e sua camada de persistência estão implementados; o painel web está previsto para uma etapa futura.
+Em desenvolvimento ativo. O bot e sua camada de persistência estão implementados. A primeira Home responsiva baseada no Figma está disponível para execução local; o painel administrativo e suas integrações continuam previstos para uma etapa futura.
 
 O projeto está em replanejamento de identidade visual e stack tecnológica. A direção aprovada, o inventário de mudanças e as decisões pendentes estão no [replanejamento do projeto](docs/project/replanning.md). A nova paleta e a arquitetura futura ainda serão definidas.
 

@@ -4,10 +4,10 @@
 
 ## 2. Arquitetura de referência
 
-O projeto implementado é um monorepo modular com o bot Discord, `packages/config` e `packages/database`. O site e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. Bot e futuro site serão processos na mesma aplicação Square Cloud. Veja o [ADR](../decisions/square-cloud-supabase.md) e o [estado implementado](../project/current-state.md).
+O projeto implementado é um monorepo modular com o bot Discord, `packages/config` e `packages/database`. O site e packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. O plano técnico registrado prevê bot e futuro site na mesma aplicação Square Cloud, mas a topologia e a stack futura estão em revisão no [replanejamento](../project/replanning.md). O diagrama abaixo documenta esse plano anterior, não uma nova escolha tecnológica. Veja o [ADR](../decisions/square-cloud-supabase.md) e o [estado implementado](../project/current-state.md). As fronteiras de dependências e os contratos deste documento permanecem vigentes.
 
 ```text
-Arquitetura-alvo (itens ausentes não devem ser criados preventivamente):
+Arquitetura-alvo anterior, em revisão (não criar itens ausentes preventivamente):
 /
 ├── apps/
 │   ├── bot/                 # processo discord.js

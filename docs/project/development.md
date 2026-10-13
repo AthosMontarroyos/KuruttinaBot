@@ -23,7 +23,7 @@ Os testes de banco criam um cluster isolado no diretório temporário do sistema
 
 O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup.
 
-O único [manifesto Square Cloud](../../squarecloud.app) executa atualmente o bot com `npm run build && npm start`; configure `APP_ENV=production` e os secrets do runtime no painel da plataforma. O futuro site será outro processo da mesma aplicação após existir código executável e medição de memória. PostgreSQL continua no Supabase.
+O único [manifesto Square Cloud](../../squarecloud.app) executa atualmente o bot com `npm run build && npm start`; configure `APP_ENV=production` e os secrets do runtime no painel da plataforma. PostgreSQL continua no Supabase conforme o contrato operacional documentado. O plano anterior de executar o futuro site como outro processo da mesma aplicação está em revisão, junto com a stack, no [replanejamento](replanning.md). Os comandos desta referência permanecem válidos; nenhuma migração foi realizada por essa revisão documental.
 
 ## Operações de desenvolvimento
 

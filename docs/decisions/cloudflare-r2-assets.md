@@ -1,5 +1,7 @@
 # ADR: assets compartilhados no Cloudflare R2
 
+Status — 11 de outubro de 2026: **em revisão** pelo [replanejamento](../project/replanning.md). A decisão abaixo permanece como registro e contrato operacional atual. Provedor, distribuição e gestão de assets serão reavaliados; nenhum objeto, bucket ou domínio foi alterado. Números e comparações no contexto original são históricos e precisam de nova verificação na comparação técnica.
+
 ## Contexto
 
 Os 135 arquivos de imagem ocupavam aproximadamente 165 MB, acima do limite real de 100 MB do pacote da Square Cloud. Bot e futuro site precisam acessar os mesmos arquivos sem duplicá-los nos respectivos builds.

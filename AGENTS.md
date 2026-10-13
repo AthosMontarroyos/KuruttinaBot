@@ -30,6 +30,7 @@ Antes de concluir a tarefa, confira cada mensagem afetada contra as regras de pe
 
 ## Índice sob demanda
 
+- [Replanejamento do projeto](docs/project/replanning.md): direção aprovada do produto, descarte da identidade anterior, inventário e decisões técnicas em revisão; consulte ao planejar funcionalidades, identidade ou arquitetura futura.
 - [Estado implementado](docs/project/current-state.md): snapshot verificável do que existe hoje, comandos, runtime, deploys, segurança, testes e lacunas conhecidas.
 - [Organização dos arquivos do bot](docs/project/bot-file-organization.md): onde colocar comando, executor, adapter, caso de uso e teste no runtime Discord.
 - [Arquitetura e contratos](docs/agents/architecture.md): estrutura do monorepo, dependências, composição, TypeScript, contratos e configuração tipada.

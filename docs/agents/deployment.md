@@ -2,6 +2,8 @@
 
 Leia este documento para mudanças de runtime, Square Cloud ou operação. O estado implementado está em [Estado atual](../project/current-state.md); a decisão de topologia está no [ADR](../decisions/square-cloud-supabase.md).
 
+Status em 11 de outubro de 2026: provedores, topologia compartilhada e restrição a Docker/Compose estão em revisão no [replanejamento](../project/replanning.md). As regras abaixo continuam vigentes para a operação atual até uma decisão substituta; não autorizam nem comprovam migração. O futuro site ainda não existe e sua hospedagem deve ser resolvida nessa revisão antes da implementação.
+
 ## Topologia
 
 **MUST:** O monorepo possui uma aplicação Square Cloud e um `squarecloud.app` na raiz. Hoje ela executa somente o bot. Quando houver site executável, bot e site serão processos distintos dentro da mesma aplicação, com inicialização, propagação de sinais e encerramento coordenados. Só o site escuta a porta HTTP; bot e site compartilham infraestrutura, não memória autoritativa. A implementação do site exige medição de recursos e revisão do manifesto antes de deploy.

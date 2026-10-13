@@ -1,10 +1,10 @@
 # KuruttinaBot
 
-Bot para Discord voltado à administração de comunidades, com recursos de moderação, gerenciamento de emojis e controle de acesso da equipe.
+Bot multifuncional para comunidades Discord, com identidade própria e evolução orientada pelas necessidades de quem participa e administra os servidores. Moderação, gerenciamento de emojis e controle de acesso da equipe fazem parte das funcionalidades atuais, sem limitar o propósito do produto.
 
 Projeto proprietário de Athos Montarroyos, apresentado como parte de seu portfólio de desenvolvimento de software.
 
-## Funcionalidades
+## Funcionalidades implementadas
 
 - Comandos de aplicação e por prefixo, com as mesmas políticas de autorização.
 - Limpeza de mensagens com verificação de permissões.
@@ -21,6 +21,8 @@ O projeto inclui testes automatizados de comportamento, autorização e isolamen
 ## Estado do projeto
 
 Em desenvolvimento ativo. O bot e sua camada de persistência estão implementados; o painel web está previsto para uma etapa futura.
+
+O projeto está em replanejamento de identidade visual e stack tecnológica. A direção aprovada, o inventário de mudanças e as decisões pendentes estão no [replanejamento do projeto](docs/project/replanning.md). A nova paleta e a arquitetura futura ainda serão definidas.
 
 ## Autoria e licença
 

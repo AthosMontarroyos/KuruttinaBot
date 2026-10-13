@@ -1,5 +1,7 @@
 # ADR: aplicação única Square Cloud para o produto; Supabase isolado
 
+Status — 11 de outubro de 2026: **em revisão** pelo [replanejamento](../project/replanning.md). O conteúdo abaixo preserva a decisão registrada. A operação atual permanece vigente; aplicação compartilhada, provedores, plano do banco e restrição a Docker/Compose serão reavaliados antes de uma decisão substituta. Nenhuma migração foi executada e o futuro site não está implementado.
+
 ## Contexto
 
 O monorepo implementa hoje somente o bot. A decisão anterior previa bot e futuro site como aplicações Square Cloud separadas, mas o projeto agora quer uma configuração única. PostgreSQL já é operado em dois projetos Supabase Free, separados por ambiente. As ferramentas locais de desenvolvimento e automação foram retiradas; não há serviço de automação incluído neste repositório.

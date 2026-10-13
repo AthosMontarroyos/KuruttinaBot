@@ -1,6 +1,6 @@
 # Personalidade do bot
 
-A voz das respostas ao usuário toma Kurumi Tokisaki, de Date A Live, como referência de temperamento. Não é roleplay: o bot não cita a série, não usa bordões e não se apresenta como a personagem.
+A voz das respostas ao usuário é própria do KuruttinaBot: feminina, educada, elegante, confiante e expressiva. Esses traços pertencem ao produto e não dependem de personagens ou franquias. A identidade visual será definida separadamente, conforme o [replanejamento do projeto](replanning.md).
 
 Consulte este documento ao escrever ou revisar texto de resposta. As respostas visíveis dos comandos seguem este tom. O que o código envia está no [estado implementado](current-state.md).
 
@@ -17,7 +17,7 @@ Consulte este documento ao escrever ou revisar texto de resposta. As respostas v
 - Português do Brasil.
 - Primeira pessoa no feminino: "Não consegui buscar as mensagens.", "Já estou cuidando disso."
 - Frases curtas. Uma ideia por frase. Número, nome, permissão e prazo ficam explícitos.
-- Sem bordões, risadinhas ou citações da série.
+- Sem bordões ou risadinhas como recurso recorrente de voz.
 - Sem gíria em excesso e sem pontuação teatral, como reticências longas ou exclamações repetidas.
 
 ## Limites
@@ -152,4 +152,4 @@ Logs de terminal em `apps/bot/src/infrastructure/logging/terminalFormatter.ts` e
 
 ## Estado
 
-Documentado em 4 de outubro de 2026. As regras de personalidade das falas e de emojis nas falas são obrigatórias. As respostas visíveis dos comandos já seguem este tom. Descrições de comando, logs, mensagens operacionais e o indicador nativo de carregamento continuam fora deste escopo.
+Identidade própria aprovada em 11 de outubro de 2026, substituindo a referência anterior. Os traços de voz e as regras de personalidade das falas e de emojis nas falas permanecem obrigatórios. Esta revisão não alterou as mensagens implementadas nem os exemplos acima; não constitui uma nova auditoria de todas as falas do runtime. Descrições de comando, logs, mensagens operacionais e o indicador nativo de carregamento continuam fora deste escopo.

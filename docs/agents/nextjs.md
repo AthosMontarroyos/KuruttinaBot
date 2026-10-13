@@ -2,6 +2,8 @@
 
 > Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
 
+O site ainda não está implementado. Next.js, React e Tailwind compõem o plano anterior e estão em revisão no [replanejamento](../project/replanning.md); este documento não confirma novamente a escolha do framework. Os controles de autenticação, autorização e proteção de dados continuam requisitos de qualquer solução futura. As orientações específicas de framework aplicam-se caso essa stack seja mantida.
+
 ## 7. Dashboard Next.js, autenticação e UI
 
 ### Regra: server-first

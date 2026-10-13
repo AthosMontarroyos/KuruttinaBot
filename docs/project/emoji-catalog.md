@@ -4,9 +4,9 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 35 desses nomes; os outros 31 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 35 desses nomes; os outros 35 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
-Última conferência pelo GrokBot: Development 2026-10-02; Production 2026-10-02.
+Última conferência pelo GrokBot: Development 2026-10-13; Production 2026-10-13.
 
 | Nome | Uso na mensagem | Development | Production |
 | --- | --- | --- | --- |
@@ -76,6 +76,10 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `jail` | Complemento da confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `police` | Abre a confirmação de castigo e nomeia o campo Responsável no castigo e na remoção; omitido quando indisponível | disponível | disponível |
 | `happy` | Abre a confirmação de remoção do castigo e da revogação do banimento; omitido quando indisponível | disponível | disponível |
+| `Hi` | Cumprimento, boas-vindas ou "oi" animado (sinal de paz) | disponível | disponível |
+| `Read` | Leitura, documentação, regras ou "vai ler o manual" | disponível | disponível |
+| `santa` | Natal, eventos de fim de ano e presentes | disponível | disponível |
+| `think` | Dúvida, reflexão ou "hmm, deixa eu pensar" | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

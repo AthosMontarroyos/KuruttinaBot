@@ -3,9 +3,9 @@
 import { useState, type ReactNode } from 'react';
 
 const socials = [
-  { label: 'Instagram do criador', notice: 'O Instagram do criador ainda não foi configurado.', icon: '/icons/instagram.svg' },
-  { label: 'TikTok do criador', notice: 'O TikTok do criador ainda não foi configurado.', icon: '/icons/tiktok.svg' },
-  { label: 'GitHub do criador', notice: 'O GitHub do criador ainda não foi configurado.', icon: '/icons/github.svg' },
+  { label: 'Instagram do criador', notice: 'O Instagram do criador ainda não foi configurado.', icon: '/icons/social/instagram.svg' },
+  { label: 'TikTok do criador', notice: 'O TikTok do criador ainda não foi configurado.', icon: '/icons/social/tiktok.svg' },
+  { label: 'GitHub do criador', notice: 'O GitHub do criador ainda não foi configurado.', icon: '/icons/social/github.svg' },
 ] as const;
 
 type HomePageProps = {
@@ -39,7 +39,7 @@ function HomePage({ avatarUrl, onNotice }: HomePageProps) {
             aria-label="Discord do bot"
             onClick={() => onNotice('O link da comunidade ainda não foi configurado.')}
           >
-            <IconImage src="/icons/discord.svg" mobileSrc="/icons/discord-mobile.svg" />
+            <IconImage src="/icons/community/discord.svg" mobileSrc="/icons/community/discord-mobile.svg" />
           </button>
           <Pill onClick={() => onNotice('O convite do bot ainda não foi configurado.')}>Adicionar ao Discord</Pill>
           <Pill secondary onClick={() => onNotice('O painel de controle ainda está em desenvolvimento.')}>Painel de controle</Pill>

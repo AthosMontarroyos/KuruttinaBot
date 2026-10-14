@@ -3,7 +3,18 @@ import { readFile } from 'node:fs/promises';
 import type { readSiteConfig } from './config.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
-const iconNames = ['brasil', 'discord', 'discord-mobile', 'github', 'instagram', 'theme', 'theme-mobile', 'tiktok', 'user', 'user-mobile'] as const;
+const iconPaths = [
+  '/icons/account/user-mobile.svg',
+  '/icons/account/user.svg',
+  '/icons/community/discord-mobile.svg',
+  '/icons/community/discord.svg',
+  '/icons/language/brasil.svg',
+  '/icons/social/github.svg',
+  '/icons/social/instagram.svg',
+  '/icons/social/tiktok.svg',
+  '/icons/theme/theme-mobile.svg',
+  '/icons/theme/theme.svg',
+] as const;
 const safePublicPath = /^\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/u;
 
 const escapeAttribute = (value: string): string => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -47,8 +58,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     }
   }));
   if (missingBundledAssets.length > 0) throw new Error('O build da Home não contém todos os arquivos publicados.');
-  await Promise.all(iconNames.map(async (name) => {
-    const pathname = `/icons/${name}.svg`;
+  await Promise.all(iconPaths.map(async (pathname) => {
     assets.set(pathname, { type: 'image/svg+xml', body: await readPublicFile(staticDirectory, pathname) });
   }));
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {

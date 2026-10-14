@@ -41,8 +41,24 @@ describe('public Home HTTP boundary', () => {
     expect(html).toContain('https://assets.example.com/icons/Icons/1.jpg');
     expect(html).not.toContain('{{AVATAR_URL}}');
   });
-  it.each(['/.env', '/package.json', '/src/config.ts', '/%2e%2e/.env', '/icons/../../.env'])('never serves non-allowlisted file %s', async (path) => {
+  it.each(['/.env', '/package.json', '/src/config.ts', '/%2e%2e/.env', '/icons/../../.env', '/icons/theme.svg'])('never serves non-allowlisted file %s', async (path) => {
     expect((await fetch(origin + path)).status).toBe(404);
+  });
+  it.each([
+    '/icons/theme/theme.svg',
+    '/icons/theme/theme-mobile.svg',
+    '/icons/account/user.svg',
+    '/icons/account/user-mobile.svg',
+    '/icons/language/brasil.svg',
+    '/icons/community/discord.svg',
+    '/icons/community/discord-mobile.svg',
+    '/icons/social/instagram.svg',
+    '/icons/social/tiktok.svg',
+    '/icons/social/github.svg',
+  ])('serves icon grouped by function %s', async (path) => {
+    const response = await fetch(origin + path);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('image/svg+xml');
   });
   it('rejects mutations, supports HEAD and exposes a light health check', async () => {
     expect((await fetch(origin, { method: 'POST' })).status).toBe(405);

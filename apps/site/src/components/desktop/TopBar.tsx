@@ -54,10 +54,10 @@ function TopBar({ avatarUrl, light, onToggleTheme, onNotice }: TopBarProps) {
           aria-pressed={light}
           onClick={onToggleTheme}
         >
-          <img src="/icons/theme.svg" alt="" />
+          <img src="/icons/theme/theme.svg" alt="" />
         </button>
         <span className="flex items-center gap-2 text-[13px] font-medium whitespace-nowrap" aria-label="Idioma: português do Brasil">
-          <img src="/icons/brasil.svg" alt="" />
+          <img src="/icons/language/brasil.svg" alt="" />
           pt-BR (Brasil)
         </span>
         <button
@@ -66,7 +66,7 @@ function TopBar({ avatarUrl, light, onToggleTheme, onNotice }: TopBarProps) {
           aria-label="Minha conta"
           onClick={() => onNotice('O acesso à conta estará disponível junto com o painel.')}
         >
-          <img src="/icons/user.svg" alt="" />
+          <img src="/icons/account/user.svg" alt="" />
         </button>
       </div>
     </header>

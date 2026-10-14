@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": "server",
-    "outDir": "dist",
+    "outDir": "../../dist/apps/site",
     "lib": ["ES2022"]
   },
   "include": ["server/**/*.ts"]

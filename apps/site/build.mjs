@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const siteRoot = fileURLToPath(new URL('./', import.meta.url));
-const output = new URL('./dist/', import.meta.url);
+const output = new URL('../../dist/apps/site/', import.meta.url);
 rmSync(output, { recursive: true, force: true });
 
 const vite = fileURLToPath(new URL('../../node_modules/vite/bin/vite.js', import.meta.url));

@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
-    outDir: 'dist/public',
+    outDir: '../../dist/apps/site/public',
     emptyOutDir: true,
     sourcemap: false,
     modulePreload: { polyfill: false },

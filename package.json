@@ -14,9 +14,9 @@
   },
   "scripts": {
     "site:build": "node apps/site/build.mjs",
-    "site:start": "node apps/site/dist/index.js",
+    "site:start": "node dist/apps/site/index.js",
     "site:dev": "npm run site:build && npm run site:start",
-    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p apps/bot/tsconfig.build.json",
+    "build": "node -e \"require('node:fs').rmSync('dist/apps/bot',{recursive:true,force:true})\" && tsc -p apps/bot/tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/site/tsconfig.json",
     "start": "node dist/apps/bot/src/index.js",
     "deploy:commands": "node dist/apps/bot/src/deployments/deploy-central.js",

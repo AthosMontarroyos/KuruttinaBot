@@ -1,6 +1,6 @@
 # ADR: assets compartilhados no Cloudflare R2
 
-Status — 11 de outubro de 2026: **em revisão** pelo [replanejamento](../project/replanning.md). A decisão abaixo permanece como registro e contrato operacional atual. Provedor, distribuição e gestão de assets serão reavaliados; nenhum objeto, bucket ou domínio foi alterado. Números e comparações no contexto original são históricos e precisam de nova verificação na comparação técnica.
+Status — 14 de outubro de 2026: **vigente** como origem de assets. A revisão de provedor no [replanejamento](../project/replanning.md) não foi executada; a mudança para a VPS não altera bucket, domínio nem objetos. O limite de pacote da Square Cloud citado abaixo é contexto histórico. Números e comparações da época precisam de nova verificação se o provedor for reavaliado.
 
 ## Contexto
 
@@ -22,7 +22,7 @@ O endpoint público `r2.dev` atende provisoriamente. Antes do uso de produção 
 
 ## Alternativas rejeitadas
 
-- Manter `Pictures/` no Git ou no pacote Square: excede o limite de deploy.
+- Manter `Pictures/` no Git ou no pacote da antiga Square Cloud: o volume excedia o limite de deploy daquela hospedagem.
 - Duplicar assets no bot e no site: aumenta tamanho e permite divergência.
 - Supabase Storage: funciona, mas sua franquia de transferência é menos adequada aos GIFs públicos acessados repetidamente.
 

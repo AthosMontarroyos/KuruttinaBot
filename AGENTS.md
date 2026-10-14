@@ -9,7 +9,7 @@ Sol, ChatGPT e demais agentes usam este mesmo roteiro. Selecione a skill pela in
 | Commands, slash/prefixo, handlers, respostas, permissões ou runtime Discord | [discordbot-developer](.agents/skills/discordbot-developer/SKILL.md) |
 | Schema, migrations, RLS, queries ou repositories em `packages/database` | [database-developer](.agents/skills/database-developer/SKILL.md) |
 | Home, React, HTTP, ícones ou build de `apps/site` | [website-developer](.agents/skills/website-developer/SKILL.md) |
-| Square Cloud, release, ambiente, recursos ou R2/Cloudflare | [project-operations](.agents/skills/project-operations/SKILL.md) |
+| VPS KingHost, systemd, release, ambiente, túnel Cloudflare ou R2 | [project-operations](.agents/skills/project-operations/SKILL.md) |
 | Contratos entre módulos, configuração compartilhada, testes/CI ou manutenção de skills e contexto | [project-maintenance](.agents/skills/project-maintenance/SKILL.md) |
 
 Leia a skill aplicável antes de criar, alterar ou revisar o artefato. Escolha uma principal e acrescente outra somente se houver trabalho concreto no seu domínio. Nas referências, leia integralmente as seções aplicáveis, com requisitos e exceções. Não carregue todas as skills, referências ou snapshots preventivamente. Os controles continuam obrigatórios mesmo quando sua leitura é seletiva.

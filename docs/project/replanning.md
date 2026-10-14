@@ -13,13 +13,13 @@ Direção aprovada pelo responsável pelo produto em 11 de outubro de 2026. Este
 
 ## Como interpretar esta revisão
 
-**Implementado:** bot, configuração e persistência existentes no checkout. A operação com Square Cloud, Supabase e R2 é a documentada; contas e serviços remotos não foram reconferidos nesta entrega. A Home local React/Vite existe; autenticação e painel ainda não.
+**Implementado:** bot, configuração e persistência existentes no checkout. A Home local React/Vite existe; autenticação e painel ainda não. Supabase e R2 seguem os contratos documentados; contas remotas não foram reconferidas nesta revisão.
 
-**Aprovado:** propósito multifuncional, identidade própria, descarte da identidade anterior, descarte das paletas anteriores como proposta e critérios para a revisão técnica.
+**Aprovado:** propósito multifuncional, identidade própria, descarte da identidade anterior, descarte das paletas anteriores como proposta, critérios para a revisão técnica e, desde 14 de outubro de 2026, a hospedagem na VPS KingHost.
 
-**Em revisão:** escolhas tecnológicas e planos futuros inventariados abaixo. Esse status não equivale a revogar controles operacionais, autorizar migração ou declarar concluída uma substituição. As regras atuais continuam vigentes até a decisão substituta correspondente. Isolamento de ambientes, autorização, proteção de secrets, backup e recuperação continuam requisitos.
+**Em revisão:** escolhas tecnológicas ainda abertas, inclusive plano do banco e provedor de assets. Esse status não revoga os contratos operacionais vigentes nem declara uma substituição concluída. Isolamento de ambientes, autorização, proteção de secrets, backup e recuperação continuam requisitos.
 
-**Pendente de execução:** retirada dos elementos visuais antigos e implementação das escolhas futuras. Esta entrega altera somente documentação; código, APIs, banco, infraestrutura, imagens e protótipo permanecem intactos.
+**Pendente de execução:** retirada dos elementos visuais antigos, preparação real da VPS e as demais escolhas futuras. A atualização de 14 de outubro de 2026 preparou o contrato no repositório; não inspecionou a máquina, o DNS nem os túneis.
 
 ## Inventário da identidade a descartar
 
@@ -54,17 +54,17 @@ O protótipo já continha alterações locais do usuário no início da tarefa. 
 | Escolha ou premissa | Fontes locais | Estado e próxima decisão |
 | --- | --- | --- |
 | TypeScript/ESM, Node.js, discord.js e monorepo com bot, configuração e banco. | [Manifesto npm](../../package.json), [arquitetura](../agents/architecture.md), [estado atual](current-state.md). | Implementados. Avaliar adequação às necessidades futuras sem presumir reescrita. |
-| Uma aplicação Square Cloud, `MEMORY=512`, build antes do start. | [Manifesto Square](../../squarecloud.app), [deploy](../agents/deployment.md), [desenvolvimento](development.md). | Configuração local existente. Capacidade contratada, consumo real e disponibilidade remotos não reconferidos. Avaliar orçamento e operação. |
-| Bot e futuro site como processos da mesma aplicação. | [ADR Square/Supabase](../decisions/square-cloud-supabase.md), arquitetura e deploy. | Plano de hospedagem **em revisão**. Home implementada localmente, sem publicação confirmada. Comparar isolamento de falhas, deploy independente e custo antes de escolher topologia. |
-| PostgreSQL no Supabase Free, dois projetos separados por ambiente. | ADR Square/Supabase, [banco](../agents/database.md), [segurança](../agents/security.md), `packages/database`. | Contrato atual, provedor e plano **em revisão**. Comparar operação, limites, recuperação e portabilidade; preservar isolamento e menor privilégio. |
+| Hospedagem Square Cloud, `MEMORY=512`, build antes do start. | [ADR histórico](../decisions/square-cloud-supabase.md). O manifesto `squarecloud.app` foi removido do checkout. | **Histórico.** Substituída em 14 de outubro de 2026 pela VPS KingHost. A capacidade da VPS ainda não foi medida. |
+| Bot e Home como serviços `systemd` na mesma VPS, com túnel para a Home. | [ADR da VPS](../decisions/vps-kinghost.md), [deploy](../agents/deployment.md), `ops/systemd/`. | **Decidido e preparado no repositório.** Boot, túnel, DNS e publicação não foram verificados na máquina. |
+| PostgreSQL no Supabase Free, dois projetos separados por ambiente. | [ADR da VPS](../decisions/vps-kinghost.md), que preserva o isolamento do [ADR histórico](../decisions/square-cloud-supabase.md); [banco](../agents/database.md), [segurança](../agents/security.md), `packages/database`. | Contrato operacional preservado. Plano e provedor continuam **em revisão**. Comparar operação, limites, recuperação e portabilidade; preservar isolamento e menor privilégio. |
 | Cloudflare R2 como origem pública compartilhada, caminhos relativos e `ASSETS_BASE_URL` por consumidor. | [ADR de assets](../decisions/cloudflare-r2-assets.md), [regras de assets](../agents/assets.md). | Contrato atual **em revisão**. Reconferir volume, tráfego, domínio, proveniência, backup e necessidade de mídia antes da escolha. Não baixar o bucket para o repositório. |
 | React sem Next.js, com base/framework próprio. | [Decisão web](../decisions/react-base.md), [skill do website](../../.agents/skills/website-developer/SKILL.md). | **Aprovado em 14 de outubro de 2026.** Liberdade de organização e composição; Home atual usa Vite, TypeScript, Tailwind e servidor Node. Autenticação e painel continuam pendentes. |
 | Não usar Docker/Compose; PostgreSQL descartável nativo para testes. | ADR Square/Supabase, deploy, desenvolvimento e [testes](../agents/testing.md). | Restrição e fluxo atuais. Avaliar necessidade de containers; não reintroduzir ferramentas nesta etapa. |
-| Duas credenciais Discord no processo e operação cross-bot. | [ADR de credenciais](../decisions/dual-bot-credentials.md), [Discord](../agents/discord-bot.md), [acesso](bot-access.md). | Implementado, com exceção e controles registrados. Incluir gestão de secrets na revisão; nenhuma credencial ou autorização alterada. Railway aparece no ADR apenas como histórico. |
-| Logs humanos em produção. | [ADR de logs](../decisions/human-readable-bot-logs.md). | Decisão vigente. Reavaliar ingestão e observabilidade conforme a operação escolhida. |
+| Duas credenciais Discord no processo e operação cross-bot. | [ADR de credenciais](../decisions/dual-bot-credentials.md), [Discord](../agents/discord-bot.md), [acesso](bot-access.md). | Implementado, com exceção e controles registrados. Nenhuma credencial ou autorização foi alterada na mudança de hospedagem. Railway aparece nesse ADR apenas como histórico. |
+| Logs humanos em produção. | [ADR de logs](../decisions/human-readable-bot-logs.md). | Decisão vigente. Na VPS esses fluxos vão para o journal; reavaliar se a ingestão passar a exigir JSON. |
 | Organização de comandos e packages opcionais. | [ADR do catálogo](../decisions/command-catalog-layout.md), [organização do bot](bot-file-organization.md), arquitetura. | Fronteiras vigentes. Categorias técnicas não limitam o propósito multifuncional; não criar camadas sem consumidores. |
-| Ferramentas de R2, sincronização de emojis e túnel aposentadas. | [Registro de aposentadoria](tooling-retirement.md), [inventário de túneis](cloudflare-tunnel.md). | Histórico preservado. Túneis e DNS remotos não foram inspecionados; não reativar ferramentas por cópia. |
-| Roteamento e procedimentos dos agentes. | [AGENTS.md](../../AGENTS.md), [skill de operações](../../.agents/skills/project-operations/SKILL.md), guias de domínio. | O roteador aponta para este documento. Procedimentos atuais continuam orientando manutenção; revisar referências operacionais quando houver decisão técnica substituta. |
+| Ferramentas de R2, sincronização de emojis e launcher local de túnel aposentadas. | [Registro de aposentadoria](tooling-retirement.md), [inventário de túneis](cloudflare-tunnel.md). | Histórico preservado. O contrato novo usa `cloudflared` com configuração remota; os launchers não voltam. Túneis e DNS remotos continuam sem inspeção. |
+| Roteamento e procedimentos dos agentes. | [AGENTS.md](../../AGENTS.md), [skill de operações](../../.agents/skills/project-operations/SKILL.md), guias de domínio. | O roteador aponta para a skill de operação. A referência de hospedagem foi atualizada com a VPS; as demais revisões técnicas continuam nos itens acima. |
 
 As quantidades, limites de planos e comparações de preço nos ADRs antigos são contexto histórico. A futura comparação usará fontes oficiais atualizadas, data da consulta e medições próprias; esta entrega não valida ofertas comerciais nem recomenda substitutos.
 
@@ -74,10 +74,10 @@ As quantidades, limites de planos e comparações de preço nos ADRs antigos sã
 | --- | --- | --- |
 | 1. Prioridades funcionais | Quais necessidades de comunidades atender primeiro e quais fluxos web são necessários. | Escopo priorizado pelo responsável, separando existente, proposto e adiado, sem funcionalidades inventadas. |
 | 2. Nova identidade visual | Paleta, tipografia, composição e existência ou não de mascote próprio. | Direção aprovada, legível e acessível; plano de aplicação no bot e no site, com retirada das imagens e camadas inventariadas. |
-| 3. Comparação técnica | Orçamento, carga esperada, disponibilidade e recuperação desejadas. | Comparação por custo total, esforço de operação, confiabilidade e portabilidade; ADRs substitutos com justificativa, impacto e controles. |
+| 3. Comparação técnica | Orçamento, carga esperada, disponibilidade e recuperação desejadas para o que ainda está em aberto. A hospedagem já tem decisão. | Comparação por custo total, esforço de operação, confiabilidade e portabilidade; ADRs substitutos com justificativa, impacto e controles. |
 | 4. Implementação | Sequência das mudanças aprovadas e critérios de aceite. | Planos de compatibilidade, testes, rollback e migração quando necessários; atualização conjunta de código e documentação. |
 
-Responsável pelas escolhas de produto e aprovação das decisões: Athos Montarroyos. Não há prazo, orçamento, fornecedor substituto ou conjunto adicional de funcionalidades aprovado neste documento.
+Responsável pelas escolhas de produto e aprovação das decisões: Athos Montarroyos. A hospedagem aprovada é a VPS KingHost. Este documento não fixa prazo, orçamento da máquina nem funcionalidades adicionais.
 
 ## Validação e pendências desta entrega
 

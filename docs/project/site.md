@@ -10,4 +10,4 @@ A composição valida ambiente, porta e URL de assets no startup. A página carr
 
 A troca de tema funciona com armazenamento local opcional. Comandos, módulos, termos, convite, painel, conta e redes sociais ainda precisam de conteúdo/integração; seus controles informam essa indisponibilidade. A Home não implementa autenticação nem operações administrativas.
 
-Publicação não realizada. O site é uma base visual local para ajuste; a decisão de hospedagem, supervisão conjunta com o bot, recursos e revisão do manifesto continuam pré-requisitos de deploy. O servidor expõe somente arquivos públicos allowlisted e `/healthz`, com GET/HEAD, CSP, timeout HTTP e encerramento limitado após sinais. Nenhuma configuração de produção foi alterada.
+Publicação não realizada. A decisão vigente coloca esta Home na VPS, no serviço `kuruttina-site`, ainda sem a máquina verificada. O servidor continua expondo somente arquivos públicos allowlisted e `/healthz`, em `127.0.0.1:3666`, com GET/HEAD, CSP, timeout HTTP e encerramento limitado após sinais. Nenhuma configuração de produção foi aplicada fora do repositório.

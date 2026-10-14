@@ -1,16 +1,17 @@
 # Desenvolvimento e operação
 
-Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/square-cloud-supabase.md).
+Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md).
 
 ## Execução do bot
 
-O pacote declara suporte a Node 22.14+/24/26. Instale as dependências com `npm ci`. Copie `.env.example` para `.env`, configure `APP_ENV`, os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` e a URL/CA PostgreSQL do ambiente ativo. O arquivo `.env` não é versionado.
+O pacote declara suporte local a Node 22.14+/24/26. A VPS e o CI usam Node 24; dependências e lockfile são validados nessa linha, inclusive módulos nativos como `sharp`. O desenvolvimento continua nativo no Windows, sem contêiner. Instale as dependências com `npm ci`. Copie `.env.example` para `.env`, configure `APP_ENV`, os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` e a URL/CA PostgreSQL do ambiente ativo. O arquivo `.env` não é versionado e não entra nos releases.
 
 | Comando | Uso |
 | --- | --- |
 | `npm run dev` | Bot local com o `APP_ENV` do `.env`. |
 | `npm run build` | Limpa `dist/apps/bot` e compila o bot. |
-| `npm start` | Executa o build compilado. |
+| `npm run build:all` | Compila o bot e a Home. |
+| `npm start` | Executa o build compilado do bot. |
 | `npm run typecheck` | Verifica tipos. |
 | `npm test` | Testes herméticos. |
 | `npm run test:database` | Integração com PostgreSQL descartável; exige `initdb` e `pg_ctl` de uma instalação nativa do PostgreSQL. |
@@ -23,12 +24,12 @@ Os testes de banco criam um cluster isolado no diretório temporário do sistema
 
 O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup.
 
-O único [manifesto Square Cloud](../../squarecloud.app) executa atualmente o bot com `npm run build && npm start`; configure `APP_ENV=production` e os secrets do runtime no painel da plataforma. PostgreSQL continua no Supabase conforme o contrato operacional documentado. O plano anterior de executar o futuro site como outro processo da mesma aplicação está em revisão, junto com a stack, no [replanejamento](replanning.md). Os comandos desta referência permanecem válidos; nenhuma migração foi realizada por essa revisão documental.
+Produção prevista é a VPS KingHost: Node 24, releases em `/opt/kuruttina/releases/<commit>` e serviços `systemd` que executam os entrypoints já compilados. A configuração de produção fica em `/etc/kuruttina/`, separada por serviço; o `.env` local não muda de contrato. PostgreSQL continua no Supabase. O procedimento de publicação está na skill de operação e ainda não é um pipeline deste repositório. A máquina, o DNS e os túneis não foram verificados. O [replanejamento](replanning.md) registra o histórico dessa escolha.
 
 ## Operações de desenvolvimento
 
-A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. Configure `APP_ENV`, `PORT` e `ASSETS_BASE_URL` no `.env` da raiz. Veja [Home local](site.md) para limites e fluxo de edição. O manifesto Square continua executando somente o bot.
+A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. Configure `APP_ENV`, `PORT` e `ASSETS_BASE_URL` no `.env` da raiz. Veja [Home local](site.md) para limites e fluxo de edição. Na VPS, o processo da Home é o serviço `kuruttina-site`, separado do bot; essa publicação ainda não foi verificada.
 
-Não há serviço de automação local ou remoto incluído no projeto. Ferramentas aposentadas de R2, espelhamento de emojis e Cloudflare Tunnel constam no [registro](tooling-retirement.md); os IDs e rotas históricas dos túneis estão no [inventário](cloudflare-tunnel.md).
+Não há pipeline de deploy nem serviço de automação incluído no projeto. A Home de produção deve ser publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). IDs históricos e o contrato ainda não verificado do túnel estão no [inventário](cloudflare-tunnel.md).
 
 As regras para agentes começam em [AGENTS.md](../../AGENTS.md); selecione a skill pelo contexto e leia apenas as referências necessárias à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

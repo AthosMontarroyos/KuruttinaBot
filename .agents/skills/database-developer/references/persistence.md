@@ -68,7 +68,7 @@
 
 **Regra:** Separe role de migration/owner da role de runtime. Runtime não possui DDL, ownership, superuser, `BYPASSRLS`, `CREATEROLE`, `CREATEDB`, `TEMP` nem acesso a objetos desnecessários. Site e bot usam roles distintas quando suas capacidades diferirem. A credencial de migration existe apenas no job de release e nunca entra no ambiente dos processos site/bot.
 
-No Supabase, não use a role `postgres`, senha owner, secret key ou `service_role` como credencial normal de `bot`/`site`. Mantenha secrets de cada projeto somente no ambiente correspondente da Square/CI e use credenciais distintas para runtime e migration.
+No Supabase, não use a role `postgres`, senha owner, secret key ou `service_role` como credencial normal de `bot`/`site`. Mantenha secrets de cada projeto somente no arquivo de runtime correspondente da VPS e no CI, e use credenciais distintas para runtime e migration.
 
 ### Regra: hardening de schema e funções
 
@@ -86,7 +86,7 @@ No Supabase, não use a role `postgres`, senha owner, secret key ou `service_rol
 
 **Exceções:** valores não são constantes universais; ajuste apenas com métricas de fila, latência, memória e limite real do PostgreSQL.
 
-### Regra: conexão Square–Supabase
+### Regra: conexão da VPS com o Supabase
 
 **Nível:** MUST
 

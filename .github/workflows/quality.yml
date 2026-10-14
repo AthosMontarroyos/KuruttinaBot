@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   bot:
-    name: Typecheck, test, and build bot
+    name: Typecheck, test, and build bot and site
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -19,11 +19,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22.14.0
+          node-version: 24
           cache: npm
 
       - name: Install locked dependencies
-        run: npm ci
+        run: npm ci --engine-strict
 
       - name: Typecheck
         run: npm run typecheck
@@ -34,5 +34,5 @@ jobs:
       - name: Test PostgreSQL privileges and RLS
         run: npm run test:database
 
-      - name: Build bot
-        run: npm run build
+      - name: Build bot and site
+        run: npm run build:all

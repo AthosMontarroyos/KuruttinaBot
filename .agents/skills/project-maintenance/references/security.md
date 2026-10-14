@@ -58,7 +58,7 @@ Para o bot Discord atual, a configuração exige ambos os tokens/IDs, seleciona 
 
 **Nível:** MUST
 
-**Regra:** Restrinja permissões Discord, scopes OAuth, roles PostgreSQL/Supabase, acesso Square Cloud, rede, filesystem e tokens ao mínimo necessário. Development e production usam projetos Supabase e credenciais completamente distintos. Credenciais do painel/Management API, owner/migration e secret/`service_role` não entram no runtime comum nem no bundle client.
+**Regra:** Restrinja permissões Discord, scopes OAuth, roles PostgreSQL/Supabase, acesso à VPS, rede, filesystem e tokens ao mínimo necessário. O usuário de serviço `kuruttina` não é administrativo. Development e production usam projetos Supabase e credenciais completamente distintos. Token do túnel, credencial de migration, credenciais de painel e secret/`service_role` não entram nos processos Node nem no bundle client. Bot, Home e release usam arquivos separados em `/etc/kuruttina/`.
 
 ### Regra: fronteira Supabase
 

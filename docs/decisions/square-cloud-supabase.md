@@ -1,6 +1,6 @@
 # ADR: aplicação única Square Cloud para o produto; Supabase isolado
 
-Status — 11 de outubro de 2026: **em revisão** pelo [replanejamento](../project/replanning.md). O conteúdo abaixo preserva a decisão registrada. A operação atual permanece vigente; aplicação compartilhada, provedores, plano do banco e restrição a Docker/Compose serão reavaliados antes de uma decisão substituta. Nenhuma migração foi executada e o futuro site não está implementado.
+Status — 14 de outubro de 2026: **histórico**. A hospedagem Square Cloud foi substituída pela [VPS KingHost](vps-kinghost.md). O texto abaixo permanece para explicar a decisão da época. O isolamento Supabase, o PostgreSQL descartável, a migration por release e a ausência de Docker/Compose continuam na decisão nova. O manifesto `squarecloud.app` não volta ao checkout.
 
 ## Contexto
 

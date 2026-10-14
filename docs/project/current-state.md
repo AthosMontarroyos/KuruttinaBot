@@ -1,6 +1,6 @@
 # Estado atual do KuruttinaBot
 
-Última consolidação: 3 de outubro de 2026.
+Última consolidação funcional: 3 de outubro de 2026. Hospedagem atualizada em 14 de outubro de 2026.
 
 Nota de planejamento atualizada em 11 de outubro de 2026: o produto é um bot multifuncional com identidade própria. As capacidades abaixo descrevem a implementação, não o limite funcional do produto. O [replanejamento](replanning.md) registra a nova direção e a revisão da stack; esta atualização documental não migrou serviços nem reconferiu ambientes remotos.
 
@@ -10,6 +10,8 @@ O monorepo implementa um bot Discord em TypeScript/ESM, `packages/config` e `pac
 
 `packages/database` implementa acesso PostgreSQL, migrations versionadas, role runtime de menor privilégio e RLS. Development e production usam projetos Supabase diferentes; integração automatizada usa cluster PostgreSQL descartável. A migration administrativa tem lock transacional e checksum. O bucket R2 permanece origem operacional de assets; as ferramentas locais de gerenciamento e sincronização de emojis foram removidas, sem automação substituta no projeto. As ferramentas aposentadas estão [inventariadas](tooling-retirement.md).
 
-A raiz contém o único `squarecloud.app`, com bot como processo atual e `MEMORY=512`. O comando de build compila o bot antes do start. O plano técnico anterior prevê o futuro site nessa aplicação como processo separado após implementação e medição de recursos; essa topologia está em revisão e não representa um site implementado. Docker, Compose e o pacote opcional de automação foram retirados. Nenhum manifesto foi alterado nesta revisão documental.
+A hospedagem Square Cloud é histórica: o manifesto `squarecloud.app` permanece fora do checkout. A decisão vigente, ainda sem VPS inspecionada, está no [ADR](../decisions/vps-kinghost.md). No repositório existem as unidades `ops/systemd/kuruttina-bot.service` e `ops/systemd/kuruttina-site.service`, o comando `build:all` e o CI na linha Node 24, compilando bot e Home. Não há pipeline de deploy, integração com automação externa nem reativação dos launchers locais. Docker e Compose continuam fora do caminho de execução. Supabase e R2 não foram alterados.
 
-Execução local: Node 22.14+/24/26 para o bot, `npm ci`, `.env` na raiz, `npm run dev`; para produção equivalente, `npm run build` e `npm start`. O CI faz typecheck, testes, integração PostgreSQL, build e Gitleaks. A referência operacional atual é a [documentação de desenvolvimento](development.md), e a arquitetura decidida está no [ADR](../decisions/square-cloud-supabase.md).
+O que a decisão descreve e esta entrega não verificou: máquina KingHost, usuário `kuruttina`, arquivos em `/etc/kuruttina/`, releases em `/opt/kuruttina/`, boot, reinício, shutdown, túnel, DNS, acesso público, rollback e consumo de memória.
+
+Execução local: Node 22.14+/24/26 no Windows, `npm ci`, `.env` na raiz, `npm run dev`; a Home local usa `npm run site:dev`. Produção equivalente dos entrypoints: `npm run build:all` e, em separado, `npm start` ou `npm run site:start`. O CI faz typecheck, testes, integração PostgreSQL, build dos dois apps e Gitleaks, com Node 24. A referência operacional é a [documentação de desenvolvimento](development.md).

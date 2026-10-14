@@ -1,0 +1,33 @@
+# Home HTTP do KuruttinaBot, apenas em loopback.
+# Instalação e build ocorrem no release, antes desta unidade subir.
+# Segredos ficam em /etc/kuruttina/site.env, não nesta unidade.
+# O túnel Cloudflare é outro serviço e não é dependência desta unidade.
+
+[Unit]
+Description=KuruttinaBot Home
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kuruttina
+Group=kuruttina
+WorkingDirectory=/opt/kuruttina/current
+EnvironmentFile=/etc/kuruttina/site.env
+ExecStart=/usr/bin/node dist/apps/site/index.js
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=120
+StartLimitBurst=5
+TimeoutStopSec=15s
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=kuruttina-site
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

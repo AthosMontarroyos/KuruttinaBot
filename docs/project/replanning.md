@@ -8,12 +8,12 @@ Direção aprovada pelo responsável pelo produto em 11 de outubro de 2026. Este
 - A identidade é própria. A referência anterior à personagem foi descartada por completo e não deve reaparecer como inspiração secundária, tema opcional ou alternativa futura.
 - O nome KuruttinaBot permanece provisoriamente. Voz feminina, cortesia, elegância, confiança e emojis expressivos são traços do produto, conforme a [personalidade](bot-personality.md).
 - A paleta do protótipo anterior e o cinza dos embeds (`0x2b2d31`) estão descartados como proposta de identidade. A nova paleta, a tipografia, a composição e a existência ou não de mascote ainda não estão aprovados.
-- Toda a stack será reavaliada por custo, simplicidade operacional, confiabilidade e facilidade de migração. Nenhum fornecedor ou framework substituto foi escolhido.
+- Toda a stack será reavaliada por custo, simplicidade operacional, confiabilidade e facilidade de migração. A escolha web foi definida em 14 de outubro de 2026: React sem Next.js, com base própria e liberdade de organização; veja a [decisão](../decisions/react-base.md). As demais escolhas continuam sob revisão.
 - Novas funcionalidades e sua ordem dependem de prioridades de produto. O catálogo atual não autoriza restringir o propósito nem preencher um roadmap com funcionalidades presumidas.
 
 ## Como interpretar esta revisão
 
-**Implementado:** bot, configuração e persistência existentes no checkout. A operação com Square Cloud, Supabase e R2 é a documentada; contas e serviços remotos não foram reconferidos nesta entrega. O site ainda não existe.
+**Implementado:** bot, configuração e persistência existentes no checkout. A operação com Square Cloud, Supabase e R2 é a documentada; contas e serviços remotos não foram reconferidos nesta entrega. A Home local React/Vite existe; autenticação e painel ainda não.
 
 **Aprovado:** propósito multifuncional, identidade própria, descarte da identidade anterior, descarte das paletas anteriores como proposta e critérios para a revisão técnica.
 
@@ -55,10 +55,10 @@ O protótipo já continha alterações locais do usuário no início da tarefa. 
 | --- | --- | --- |
 | TypeScript/ESM, Node.js, discord.js e monorepo com bot, configuração e banco. | [Manifesto npm](../../package.json), [arquitetura](../agents/architecture.md), [estado atual](current-state.md). | Implementados. Avaliar adequação às necessidades futuras sem presumir reescrita. |
 | Uma aplicação Square Cloud, `MEMORY=512`, build antes do start. | [Manifesto Square](../../squarecloud.app), [deploy](../agents/deployment.md), [desenvolvimento](development.md). | Configuração local existente. Capacidade contratada, consumo real e disponibilidade remotos não reconferidos. Avaliar orçamento e operação. |
-| Bot e futuro site como processos da mesma aplicação. | [ADR Square/Supabase](../decisions/square-cloud-supabase.md), arquitetura e deploy. | Plano anterior **em revisão**. Site não implementado. Comparar isolamento de falhas, deploy independente e custo antes de escolher topologia. |
+| Bot e futuro site como processos da mesma aplicação. | [ADR Square/Supabase](../decisions/square-cloud-supabase.md), arquitetura e deploy. | Plano de hospedagem **em revisão**. Home implementada localmente, sem publicação confirmada. Comparar isolamento de falhas, deploy independente e custo antes de escolher topologia. |
 | PostgreSQL no Supabase Free, dois projetos separados por ambiente. | ADR Square/Supabase, [banco](../agents/database.md), [segurança](../agents/security.md), `packages/database`. | Contrato atual, provedor e plano **em revisão**. Comparar operação, limites, recuperação e portabilidade; preservar isolamento e menor privilégio. |
 | Cloudflare R2 como origem pública compartilhada, caminhos relativos e `ASSETS_BASE_URL` por consumidor. | [ADR de assets](../decisions/cloudflare-r2-assets.md), [regras de assets](../agents/assets.md). | Contrato atual **em revisão**. Reconferir volume, tráfego, domínio, proveniência, backup e necessidade de mídia antes da escolha. Não baixar o bucket para o repositório. |
-| Next.js App Router, React e Tailwind para o painel. | [Guia do site](../agents/nextjs.md), arquitetura. | Plano anterior **em revisão**, sem aplicação implementada. Definir primeiro os fluxos e depois a stack. Controles de autenticação e autorização continuam necessários. |
+| React sem Next.js, com base/framework próprio. | [Decisão web](../decisions/react-base.md), [skill do website](../../.agents/skills/website-developer/SKILL.md). | **Aprovado em 14 de outubro de 2026.** Liberdade de organização e composição; Home atual usa Vite, TypeScript, Tailwind e servidor Node. Autenticação e painel continuam pendentes. |
 | Não usar Docker/Compose; PostgreSQL descartável nativo para testes. | ADR Square/Supabase, deploy, desenvolvimento e [testes](../agents/testing.md). | Restrição e fluxo atuais. Avaliar necessidade de containers; não reintroduzir ferramentas nesta etapa. |
 | Duas credenciais Discord no processo e operação cross-bot. | [ADR de credenciais](../decisions/dual-bot-credentials.md), [Discord](../agents/discord-bot.md), [acesso](bot-access.md). | Implementado, com exceção e controles registrados. Incluir gestão de secrets na revisão; nenhuma credencial ou autorização alterada. Railway aparece no ADR apenas como histórico. |
 | Logs humanos em produção. | [ADR de logs](../decisions/human-readable-bot-logs.md). | Decisão vigente. Reavaliar ingestão e observabilidade conforme a operação escolhida. |

@@ -35,7 +35,7 @@ O projeto também é apresentado no portfólio de desenvolvimento de software de
 ## Capabilities and Constraints
 
 - O bot e a persistência estão implementados. O [estado atual](docs/project/current-state.md) e o [README](README.md) descrevem as capacidades existentes; não tratar esse catálogo como roadmap aprovado.
-- A Home local está implementada conforme o [brief do Figma](.ui/home-figma.md). Publicação, Dashboard e integrações continuam futuras.
+- A Home local está implementada conforme o [brief do Figma](.agents/skills/website-developer/references/home-figma.md). Publicação, Dashboard e integrações continuam futuras.
 - A stack existente está em revisão. Nenhum framework ou fornecedor substituto foi escolhido; revisão não autoriza migração nem revoga os controles atuais.
 - Isolamento de ambientes, autorização, proteção de secrets, backup e recuperação continuam requisitos, conforme o [replanejamento](docs/project/replanning.md) e os documentos de domínio aplicáveis.
 - Não inventar funcionalidades, estatísticas, disponibilidade, atividade ao vivo, depoimentos ou promessas operacionais para preencher interfaces.

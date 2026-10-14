@@ -9,7 +9,7 @@ O pacote declara suporte a Node 22.14+/24/26. Instale as dependências com `npm 
 | Comando | Uso |
 | --- | --- |
 | `npm run dev` | Bot local com o `APP_ENV` do `.env`. |
-| `npm run build` | Limpa `dist` e compila o bot. |
+| `npm run build` | Limpa `dist/apps/bot` e compila o bot. |
 | `npm start` | Executa o build compilado. |
 | `npm run typecheck` | Verifica tipos. |
 | `npm test` | Testes herméticos. |
@@ -31,4 +31,4 @@ A Home local em `apps/site` é uma interface React com Tailwind, servida pelo pr
 
 Não há serviço de automação local ou remoto incluído no projeto. Ferramentas aposentadas de R2, espelhamento de emojis e Cloudflare Tunnel constam no [registro](tooling-retirement.md); os IDs e rotas históricas dos túneis estão no [inventário](cloudflare-tunnel.md).
 
-As regras para agentes começam em [AGENTS.md](../../AGENTS.md); leia somente os documentos de domínio necessários à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).
+As regras para agentes começam em [AGENTS.md](../../AGENTS.md); selecione a skill pelo contexto e leia apenas as referências necessárias à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

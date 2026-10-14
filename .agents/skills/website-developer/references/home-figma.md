@@ -4,7 +4,7 @@ Modo: Persuade. Primeira versão local solicitada em 13 de outubro de 2026; não
 
 Fonte: [Kuruttina Home no Figma](https://www.figma.com/design/GQNMJgri0cuH6IuiFSJ6Qx/Kuruttina-Home?node-id=0-1). Desktop `2:2` (1440 × 813), celular `2:54` (390 × 905). Contexto completo e screenshots extraídos pelo MCP do Figma; não usar screenshots como imagem da página.
 
-Implementação: React e Tailwind em `apps/site/src`, com bundle Vite e o servidor Node existente. A escolha de framework do painel administrativo continua em aberto. Execução apenas local; o manifesto de produção do bot permanece inalterado.
+Implementação: React e Tailwind em `apps/site/src`, com bundle Vite e o servidor Node existente. A base web, incluindo o futuro painel, segue React sem Next.js e organização própria. Execução apenas local; o manifesto de produção do bot permanece inalterado.
 
 ## Direção da superfície
 
@@ -17,9 +17,9 @@ Implementação: React e Tailwind em `apps/site/src`, com bundle Vite e o servid
 
 ## Assets e proveniência
 
-Os dez SVGs em `apps/site/public/icons/` vieram dos frames acima pelo MCP do Figma, com dimensões originais preservadas. Avatar e foto foram substituídos conforme autorização do usuário pelo objeto público `icons/Icons/1.jpg` do bucket `kurrutina-bot-pictures`, localizado pelo MCP Cloudflare e inspecionado no browser. Nenhuma imagem do R2 foi baixada, alterada ou enviada ao bucket. O runtime recebe `ASSETS_BASE_URL` e armazena somente a chave relativa. A imagem é provisória, escolhida entre os avatares existentes; não representa uma nova aprovação de identidade ou licença. Nenhum upload externo nesta entrega.
+Os dez SVGs locais vieram dos frames acima pelo MCP do Figma, com dimensões originais preservadas. Eles ficam em `apps/site/public/icons/`, separados por função: `theme/`, `account/`, `language/`, `community/` e `social/`. Avatar e foto foram substituídos conforme autorização do usuário pelo objeto público `icons/Icons/1.jpg` do bucket `kurrutina-bot-pictures`, localizado pelo MCP Cloudflare e inspecionado no browser. Nenhuma imagem do R2 foi baixada, alterada ou enviada ao bucket. O runtime recebe `ASSETS_BASE_URL` e armazena somente a chave relativa. A imagem é provisória, escolhida entre os avatares existentes; não representa uma nova aprovação de identidade ou licença. Nenhum upload externo nesta entrega.
 
-Consultar `docs/project/site.md` para execução e limites.
+Consultar [Home local](../../../../docs/project/site.md) para execução e limites.
 
 ## Validação da entrega
 

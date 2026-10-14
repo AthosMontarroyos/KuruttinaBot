@@ -1,22 +1,16 @@
-# Dashboard Next.js e administração
+# Autenticação e administração web
 
-> Leia este documento somente quando a tarefa envolver este domínio. As regras mantêm os níveis e a semântica do AGENTS.md original.
+> Referência da skill. Leia as seções aplicáveis à operação, incluindo seus requisitos e exceções; não carregue os demais assuntos preventivamente.
 
-O site ainda não está implementado. Next.js, React e Tailwind compõem o plano anterior e estão em revisão no [replanejamento](../project/replanning.md); este documento não confirma novamente a escolha do framework. Os controles de autenticação, autorização e proteção de dados continuam requisitos de qualquer solução futura. As orientações específicas de framework aplicam-se caso essa stack seja mantida.
+A Home usa React/Vite e servidor Node próprio. Autenticação e painel ainda não estão implementados; consulte esta referência somente ao trabalhar nesses fluxos. Banco, secrets, tokens OAuth e autorização ficam exclusivamente no servidor, fora dos módulos incluídos no bundle React.
 
-## 7. Dashboard Next.js, autenticação e UI
-
-### Regra: server-first
-
-**Nível:** SHOULD
-
-**Regra:** Use App Router e Server Components por padrão. Adicione `"use client"` somente no menor componente que precise de estado, efeito ou API do browser. Banco, secrets, OAuth tokens e autorização permanecem em módulos `server-only`.
+## Autenticação e UI
 
 ### Regra: fronteira de mutations
 
 **Nível:** MUST
 
-**Regra:** Route Handlers e Server Actions tratam entrada como `unknown`, validam schema/tamanho, autenticam, autorizam por recurso/ação e só então chamam caso de uso/repository. Middleware pode otimizar navegação, mas não substitui essas verificações.
+**Regra:** Handlers HTTP do servidor Node tratam entrada como `unknown`, validam schema/tamanho, autenticam, autorizam por recurso/ação e só então chamam caso de uso/repository. Middleware pode otimizar navegação, mas não substitui essas verificações.
 
 ### Regra: identidade Discord
 
@@ -46,13 +40,13 @@ O site ainda não está implementado. Next.js, React e Tailwind compõem o plano
 
 **Nível:** MUST
 
-**Regra:** Toda listagem server-side usa seleção mínima, filtro e paginação com teto. Não mantenha dataset, sessão, resposta grande ou cache ilimitado em global. Use streaming/loading boundaries quando reduzirem pico e latência; não crie job permanente no processo web.
+**Regra:** Toda listagem server-side usa seleção mínima, filtro e paginação com teto. Não mantenha dataset, sessão, resposta grande ou cache ilimitado em global. Use streaming de respostas e estados de carregamento no React quando reduzirem pico e latência; não crie job permanente no processo web.
 
-### Regra: cache Next.js
+### Regra: cache de dados
 
 **Nível:** SHOULD
 
-**Regra:** Declare conscientemente política de cache/revalidation. Dados privados ou autorizados não compartilham cache entre usuários sem chave segura; após mutation invalide as tags/rotas pertinentes. Não presuma que cache em memória sobrevive ou é comum entre instâncias.
+**Regra:** Defina explicitamente duração e invalidação do cache quando ele existir. Dados privados ou autorizados não compartilham cache entre usuários sem chave segura; após uma alteração invalide as entradas afetadas no servidor e atualize os dados apresentados pelo cliente. Não presuma que cache em memória sobrevive ou é comum entre instâncias.
 
 ### Regra: erros no frontend
 

@@ -1,55 +1,36 @@
-# Regras globais do KuruttinaBot
+# KuruttinaBot — roteiro para agentes
 
-## Escopo e precedência
+Sol, ChatGPT e demais agentes usam este mesmo roteiro. Selecione a skill pela intenção e pelos artefatos da tarefa, sem esperar que o usuário cite seu nome.
 
-Este arquivo é o roteador de instruções do monorepo para pessoas e agentes de IA. Leia sempre este arquivo e consulte em `docs/agents/` somente os documentos pertinentes aos artefatos e domínios da tarefa atual. Não carregue os demais documentos preventivamente.
+## Seleção obrigatória por contexto
 
-A precedência é: pedido explícito da tarefa > este arquivo e decisões arquiteturais registradas > documento modular aplicável > skill especializada > convenção local do módulo. Um pedido não autoriza violar segurança, privacidade ou restrições da plataforma silenciosamente: registre o conflito e peça decisão. Nos documentos, `MUST` é invariante, `SHOULD` é o padrão e `MAY` é opção contextual.
+| Quando a tarefa envolver | Skill de entrada |
+| --- | --- |
+| Commands, slash/prefixo, handlers, respostas, permissões ou runtime Discord | [discordbot-developer](.agents/skills/discordbot-developer/SKILL.md) |
+| Schema, migrations, RLS, queries ou repositories em `packages/database` | [database-developer](.agents/skills/database-developer/SKILL.md) |
+| Home, React, HTTP, ícones ou build de `apps/site` | [website-developer](.agents/skills/website-developer/SKILL.md) |
+| Square Cloud, release, ambiente, recursos ou R2/Cloudflare | [project-operations](.agents/skills/project-operations/SKILL.md) |
+| Contratos entre módulos, configuração compartilhada, testes/CI ou manutenção de skills e contexto | [project-maintenance](.agents/skills/project-maintenance/SKILL.md) |
 
-### Regra: mudança proporcional
+Leia a skill aplicável antes de criar, alterar ou revisar o artefato. Escolha uma principal e acrescente outra somente se houver trabalho concreto no seu domínio. Nas referências, leia integralmente as seções aplicáveis, com requisitos e exceções. Não carregue todas as skills, referências ou snapshots preventivamente. Os controles continuam obrigatórios mesmo quando sua leitura é seletiva.
 
-**Nível:** SHOULD
+## Regras comuns
 
-Faça a menor mudança coerente que resolva o requisito. Não inclua limpeza, migração tecnológica ou abstração sem relação com a tarefa. Correções adjacentes indispensáveis para compilar, testar ou fechar uma vulnerabilidade devem ser explicadas no resultado.
+- Precedência: pedido explícito > este roteiro e decisões arquiteturais aprovadas > skill e suas referências > convenção local. `MUST` indica invariante, `SHOULD` padrão e `MAY` opção contextual.
+- Faça a menor mudança coerente e preserve trabalho alheio. Não introduza abstração ou migração sem relação com o pedido.
+- Preserve fronteiras entre apps e packages, autorização no servidor, isolamento de ambientes e proteção de secrets. Conflitos com segurança, privacidade ou plataforma exigem decisão explícita; não os resolva silenciosamente.
+- Exceção a invariante ou fronteira exige justificativa, impacto, controles compensatórios e aprovação humana; se temporária, responsável e condição de remoção.
 
-### Regra: evidência antes de exceção
+## Falas do bot
 
-**Nível:** MUST
+Ao criar, alterar ou revisar mensagens ao usuário, inclusive em helpers, handlers e adapters, leia integralmente [personalidade](docs/project/bot-personality.md) e [emojis](docs/project/emoji-catalog.md). Confira sucesso, erro, recusa e indisponibilidade de emojis personalizados. Informe referências consultadas, validação e caminhos não verificados. Não busque o catálogo no R2.
 
-Toda exceção a uma regra `MUST` ou a uma fronteira arquitetural precisa de justificativa escrita, impacto, controles compensatórios e aprovação humana. Exceções temporárias recebem responsável e condição de remoção.
+## Guardar contexto sem inflar leituras
 
-### Leitura por domínio — MUST
+Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio; detalhes condicionais pertencem a `references/`, ligados com um gatilho de leitura. Atualize isso durante a tarefa quando uma correção ou decisão mudar como executar o trabalho; não espere pedido adicional. Não salve transcrições, segredos, tentativas descartadas ou status efêmero.
 
-Antes de alterar um artefato, leia integralmente cada documento diretamente aplicável. Quando a tarefa cruzar domínios, leia todos os documentos correspondentes. As regras modulares complementam este roteador e continuam obrigatórias dentro do próprio escopo.
+`docs/project/` mantém produto e estado verificável; `docs/decisions/` mantém decisões aprovadas e seus motivos. Consulte esses documentos somente para a pergunta atual. `docs/agents/` preserva links antigos, sem novas regras. Não duplique procedimentos nesses locais nem crie instruções exclusivas de um agente, como `.cursor/rules`.
 
-### Falas do bot: leitura e conferência — MUST
+## Organização simples
 
-Antes de criar, alterar ou revisar qualquer mensagem do bot dirigida ao usuário, leia integralmente [Personalidade do bot](docs/project/bot-personality.md) e [Catálogo de emojis](docs/project/emoji-catalog.md). Isso também vale para mensagens montadas em handlers, adapters e helpers compartilhados, além dos commands, em slash e prefixo. Não dependa de memória de outra conversa nem apenas dos exemplos existentes no código.
-
-Antes de concluir a tarefa, confira cada mensagem afetada contra as regras de personalidade, emojis e escopo desses documentos, incluindo os caminhos de erro, recusa e indisponibilidade de emojis personalizados. Informe no resultado os documentos consultados, a validação realizada e qualquer caminho não verificado. Essa obrigação vale igualmente para Codex, Cursor e outros agentes que trabalhem neste repositório.
-
-## Índice sob demanda
-
-- [Replanejamento do projeto](docs/project/replanning.md): direção aprovada do produto, descarte da identidade anterior, inventário e decisões técnicas em revisão; consulte ao planejar funcionalidades, identidade ou arquitetura futura.
-- [Estado implementado](docs/project/current-state.md): snapshot verificável do que existe hoje, comandos, runtime, deploys, segurança, testes e lacunas conhecidas.
-- [Organização dos arquivos do bot](docs/project/bot-file-organization.md): onde colocar comando, executor, adapter, caso de uso e teste no runtime Discord.
-- [Arquitetura e contratos](docs/agents/architecture.md): estrutura do monorepo, dependências, composição, TypeScript, contratos e configuração tipada.
-- [PostgreSQL e acesso a dados](docs/agents/database.md): schema, migrations, queries, repositories, RLS, roles, pooling e transações.
-- [Discord bot](docs/agents/discord-bot.md): discord.js, credenciais por ambiente, command sync, registry, memória e ciclo de vida.
-- [Dashboard Next.js e administração](docs/agents/nextjs.md): App Router, React, Tailwind, OAuth, sessões, CSRF, cache e operações administrativas.
-- [Segurança transversal](docs/agents/security.md): validação, autorização, secrets, XSS, SSRF, uploads, rate limit e resposta a erro.
-- [Deployment, operação e performance](docs/agents/deployment.md): aplicação Square Cloud, Supabase, recursos, observabilidade e resiliência.
-- [Assets](docs/agents/assets.md): armazenamento R2, integração, otimização, proveniência e limpeza.
-- [Catálogo de emojis para agentes](docs/project/emoji-catalog.md): documentação mantida pelo DevOps do GrokBot neste repositório; consulte aqui os nomes e usos, sem buscar o catálogo no R2.
-- [Personalidade do bot](docs/project/bot-personality.md): voz das respostas ao usuário; consulte ao escrever ou revisar esse texto.
-- [Desenvolvimento, testes e conclusão](docs/agents/testing.md): comandos, testes, Git, documentação, ambientes, divisão entre skills e Definition of Done.
-
-## Uso conjunto
-
-- Uma mudança de banco também consulta segurança e testes quando envolver RLS, autorização, privilégios ou migration.
-- OAuth, sessão, autorização ou administração consulta Next.js, segurança e testes.
-- Deploy de bot/site consulta deployment e o documento do app afetado.
-- Mudança transversal consulta arquitetura e todos os domínios afetados.
-- Assets externos consultam assets; sua exposição pelo site consulta também Next.js e deployment quando alterar build ou distribuição.
-
-Não duplique regras entre este arquivo, documentos modulares e skills. Procedimentos especializados adicionam workflow e ferramentas do domínio sem substituir estas regras.
+É proibido criar ou recriar `.ui/` neste projeto, inclusive por sugestão de skills externas. Código de interface fica em `apps/site`; procedimentos e referências visuais ficam na skill `website-developer`; capturas temporárias ficam fora do repositório. Use a estrutura existente e acrescente pastas somente quando houver conteúdo e responsabilidade concretos.

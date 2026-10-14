@@ -21,10 +21,21 @@ Não há pipeline de deploy no repositório. A automação futura segue o contra
 | Arquivo | Modo | Conteúdo |
 | --- | --- | --- |
 | `/etc/kuruttina/bot.env` | `0640`, `root:kuruttina` | Contrato atual do bot, inclusive as duas credenciais Discord, URL/CA do runtime e `AUTO_SYNC_COMMANDS`. |
-| `/etc/kuruttina/site.env` | `0640`, `root:kuruttina` | Somente `APP_ENV`, `PORT` e `ASSETS_BASE_URL`. |
+| `/etc/kuruttina/site.env` | `0640`, `root:kuruttina` | Somente `APP_ENV`, `PORT`, `SITE_URL` e `ASSETS_BASE_URL`. |
 | `/etc/kuruttina/release.env` | `0600`, `root:root` | Credencial administrativa de migration. Fora dos processos Node. |
 
 O diretório `/etc/kuruttina/` fica em `0750` e `root:kuruttina`. Token do túnel e credenciais administrativas não entram nos ambientes Node. `process.env` continua prevalecendo sobre um `.env` eventual; mesmo assim o release não contém `.env`. Nunca versione `.env`, dumps ou credenciais.
+
+Exemplo de `/etc/kuruttina/site.env`, sem variáveis do bot, do túnel ou da migration:
+
+```text
+APP_ENV=production
+PORT=3666
+SITE_URL=https://kuruttina.athosmontarroyos.com
+ASSETS_BASE_URL=https://origem-publica-do-bucket
+```
+
+`SITE_URL` é a origem pública normalizada. `PORT` continua sendo a porta em que o processo escuta `127.0.0.1`.
 
 **MUST:** O usuário de serviço `kuruttina` não tem shell de login nem privilégio administrativo. O release é legível por ele e não é gravável. Em production, `AUTO_SYNC_COMMANDS=false`; publicar comandos continua sendo `npm run deploy:commands`, fora do startup.
 
@@ -46,7 +57,7 @@ O diretório `/etc/kuruttina/` fica em `0750` e `root:kuruttina`. Token do túne
 
 ## Túnel
 
-**MUST:** Use o conector remoto da Cloudflare, não um launcher deste repositório. Antes da ativação, confira túnel, DNS e conectores. Reutilize `kuruttina-production` (`b1460ee3-03f7-49e7-a35c-12d6a6f07ba7`) se o hostname `kuruttina.athosmontarroyos.com` apontar para `http://127.0.0.1:3666` e não houver conector antigo levando tráfego a outra origem. Caso contrário, crie o substituto e atualize o [inventário](../../../../docs/project/cloudflare-tunnel.md). O túnel de development inventariado não publica esse hostname.
+**MUST:** Use o conector remoto da Cloudflare, não um launcher deste repositório. A origem de `kuruttina.athosmontarroyos.com` em `kuruttina-production` (`b1460ee3-03f7-49e7-a35c-12d6a6f07ba7`) é `http://127.0.0.1:3666`, seguida da regra `http_status:404`. Antes de iniciar um conector, confira de novo as conexões e o DNS. Não publique esse hostname pelo túnel de development. O estado conferido está no [inventário](../../../../docs/project/cloudflare-tunnel.md).
 
 ## Persistência e recursos
 

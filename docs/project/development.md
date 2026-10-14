@@ -28,8 +28,8 @@ Produção prevista é a VPS KingHost: Node 24, releases em `/opt/kuruttina/rele
 
 ## Operações de desenvolvimento
 
-A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. Configure `APP_ENV`, `PORT` e `ASSETS_BASE_URL` no `.env` da raiz. Veja [Home local](site.md) para limites e fluxo de edição. Na VPS, o processo da Home é o serviço `kuruttina-site`, separado do bot; essa publicação ainda não foi verificada.
+A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. Configure `APP_ENV`, `PORT`, `SITE_URL` e `ASSETS_BASE_URL` no `.env` da raiz. Em desenvolvimento, `SITE_URL` é `http://localhost:3666`; em produção, `https://kuruttina.athosmontarroyos.com`. Veja [Home local](site.md) para limites e fluxo de edição. Na VPS, o processo da Home é o serviço `kuruttina-site`, separado do bot; essa publicação ainda não foi verificada.
 
-Não há pipeline de deploy nem serviço de automação incluído no projeto. A Home de produção deve ser publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). IDs históricos e o contrato ainda não verificado do túnel estão no [inventário](cloudflare-tunnel.md).
+Não há pipeline de deploy nem serviço de automação incluído no projeto. A Home de produção deve ser publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). O estado conferido do túnel está no [inventário](cloudflare-tunnel.md).
 
 As regras para agentes começam em [AGENTS.md](../../AGENTS.md); selecione a skill pelo contexto e leia apenas as referências necessárias à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

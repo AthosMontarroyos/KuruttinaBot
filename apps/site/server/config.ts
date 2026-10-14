@@ -1,3 +1,13 @@
+function readSiteUrl(raw: string | undefined, production: boolean): string {
+  let url: URL;
+  try { url = new URL(raw?.trim() ?? ''); } catch { throw new Error('SITE_URL inválida para o site.'); }
+  const https = url.protocol === 'https:';
+  if ((production && !https) || (!https && url.protocol !== 'http:') || url.username || url.password || url.search || url.hash || url.pathname !== '/') {
+    throw new Error('SITE_URL inválida para o site.');
+  }
+  return url.origin;
+}
+
 export function readSiteConfig(env: NodeJS.ProcessEnv) {
   if (env.APP_ENV !== 'development' && env.APP_ENV !== 'production') throw new Error('APP_ENV inválido para o site.');
   const rawPort = env.PORT ?? '3666';
@@ -8,5 +18,11 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   // Only relative object keys are persisted; the browser loads media directly from R2.
   const avatarPath = 'icons/Icons/1.jpg';
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
-  return Object.freeze({ port: Number(rawPort), host: '127.0.0.1', assetsOrigin: base.origin, avatarUrl: new URL(avatarPath, base).href });
+  return Object.freeze({
+    port: Number(rawPort),
+    host: '127.0.0.1',
+    siteUrl: readSiteUrl(env.SITE_URL, env.APP_ENV === 'production'),
+    assetsOrigin: base.origin,
+    avatarUrl: new URL(avatarPath, base).href,
+  });
 }

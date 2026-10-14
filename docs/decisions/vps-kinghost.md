@@ -21,6 +21,6 @@ Preserva-se o que continua válido do ADR anterior: projetos Supabase distintos 
 - A porta HTTP não é publicada para acesso externo direto. O bot segue conectado ao Discord sem o túnel.
 - Mudança de banco incompatível com o código anterior exige procedimento próprio, porque o rollback de release não reverte schema.
 - Memória agregada continua com teto operacional de 70% em uso estável e picos abaixo de 90%. Essa medição ainda não foi feita na VPS.
-- Antes de ativar o hostname, é preciso conferir o túnel de produção inventariado, o DNS e conectores antigos. Conector que ainda aponte para outra origem não pode permanecer ativo.
+- Antes de ativar o hostname, confira conectores. A origem de produção foi alinhada depois desta decisão; o estado verificado está no [inventário](../project/cloudflare-tunnel.md). Conector que ainda aponte para outra origem não pode permanecer ativo.
 
 Responsável: Athos Montarroyos.

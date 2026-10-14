@@ -3,11 +3,11 @@ import type { Server } from 'node:http';
 import { readSiteConfig } from '../apps/site/server/config.js';
 import { createSiteServer } from '../apps/site/server/http.js';
 
-const environment = { APP_ENV: 'development', PORT: '3666', ASSETS_BASE_URL: 'https://assets.example.com/' };
+const environment = { APP_ENV: 'development', PORT: '3666', SITE_URL: 'http://localhost:3666', ASSETS_BASE_URL: 'https://assets.example.com/' };
 describe('site configuration', () => {
   it('exposes only public configuration and keeps the stable avatar path', () => {
     expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN_PRODUCTION: 'test-secret' })).toEqual({
-      port: 3666, host: '127.0.0.1', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
+      port: 3666, host: '127.0.0.1', siteUrl: 'http://localhost:3666', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
     });
   });
   it.each(['', 'http://assets.example.com', 'https://user:password@assets.example.com', 'https://assets.example.com/?token=secret', 'https://assets.example.com/#fragment'])('rejects invalid asset base %s', (base) => {
@@ -17,7 +17,28 @@ describe('site configuration', () => {
     expect(() => readSiteConfig({ ...environment, PORT: port })).toThrow();
   });
   it('requires an explicit environment', () => {
-    expect(() => readSiteConfig({ ASSETS_BASE_URL: environment.ASSETS_BASE_URL })).toThrow();
+    expect(() => readSiteConfig({ ASSETS_BASE_URL: environment.ASSETS_BASE_URL, SITE_URL: environment.SITE_URL })).toThrow();
+  });
+  it('requires a public site URL and keeps the listen address independent', () => {
+    expect(readSiteConfig({ ...environment, PORT: '8080', SITE_URL: 'http://localhost:3666/' }).siteUrl).toBe('http://localhost:3666');
+    expect(readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com' })).toMatchObject({
+      port: 3666, host: '127.0.0.1', siteUrl: 'https://kuruttina.athosmontarroyos.com',
+    });
+  });
+  it.each([
+    undefined,
+    '',
+    'ftp://localhost:3666',
+    'http://user:password@localhost:3666',
+    'http://localhost:3666/home',
+    'http://localhost:3666/?token=secret',
+    'http://localhost:3666/#fragment',
+  ])('rejects invalid site URL %s', (siteUrl) => {
+    expect(() => readSiteConfig({ ...environment, SITE_URL: siteUrl })).toThrow();
+  });
+  it('allows HTTP only in development', () => {
+    expect(readSiteConfig(environment).siteUrl).toBe('http://localhost:3666');
+    expect(() => readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'http://kuruttina.athosmontarroyos.com' })).toThrow();
   });
 });
 

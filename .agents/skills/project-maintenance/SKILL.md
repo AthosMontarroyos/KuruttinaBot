@@ -1,9 +1,15 @@
 ---
 name: project-maintenance
-description: Manter contratos entre módulos, configuração compartilhada, testes/CI e o contexto de agentes do KuruttinaBot. Usar ao reorganizar documentação ou skills e ao registrar procedimentos reutilizáveis; não carregar para mudanças isoladas de UI ou comandos.
+description: Registrar planejamentos futuros no Notion e manter contratos entre módulos, configuração compartilhada, testes/CI e o contexto de agentes do KuruttinaBot. Usar ao planejar o projeto, reorganizar documentação ou skills e registrar procedimentos reutilizáveis; não carregar para mudanças isoladas de UI ou comandos.
 ---
 
 # Manutenção e contexto do projeto
+
+## Planejamentos futuros
+
+- Registre planejamentos futuros, propostas e prioridades na página [KuruttinaBot no Notion](https://app.notion.com/p/KuruttinaBot-3dff122a9b1b80ab8e80d8b72f83ee19). Consulte a página quando a tarefa envolver planejamento e atualize o conteúdo pertinente, distinguindo propostas de decisões aprovadas.
+- Preserve no repositório o estado verificável em `docs/project/`, decisões arquiteturais aprovadas em `docs/decisions/` e procedimentos nas skills. Não duplique o planejamento no README nem carregue o Notion em tarefas sem relação com planejamento.
+- Se o Notion estiver inacessível, informe a limitação e apresente o planejamento na conversa, sem afirmar que foi salvo.
 
 ## Contratos, configuração e testes
 

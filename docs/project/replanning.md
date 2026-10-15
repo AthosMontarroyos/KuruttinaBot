@@ -1,5 +1,7 @@
 # Replanejamento do KuruttinaBot
 
+Os novos planejamentos do projeto ficam no [Notion do KuruttinaBot](https://app.notion.com/p/KuruttinaBot-3dff122a9b1b80ab8e80d8b72f83ee19). O registro abaixo preserva o contexto da revisão iniciada em outubro de 2026.
+
 Direção aprovada pelo responsável pelo produto em 11 de outubro de 2026. Este documento centraliza o inventário, as decisões aprovadas e o que ainda precisa ser escolhido. O [estado implementado](current-state.md) descreve o runtime; as instruções de execução permanecem em [desenvolvimento](development.md).
 
 ## Direção aprovada

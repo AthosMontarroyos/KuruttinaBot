@@ -1,6 +1,9 @@
+# Runtime anterior (systemd). Não instale esta unidade nem prepare usuário ou arquivos para o Docker.
+# O Compose vigente interpola o .env da raiz e não exige a conta kuruttina nem /etc/kuruttina.
+# As linhas User, Group e EnvironmentFile abaixo descrevem somente este runtime anterior.
 # Home HTTP do KuruttinaBot, apenas em loopback.
 # Instalação e build ocorrem no release, antes desta unidade subir.
-# Segredos ficam em /etc/kuruttina/site.env, não nesta unidade.
+# Segredos deste runtime anterior ficam em /etc/kuruttina/site.env, não nesta unidade.
 # O túnel Cloudflare é outro serviço e não é dependência desta unidade.
 
 [Unit]

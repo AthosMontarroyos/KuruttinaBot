@@ -17,4 +17,4 @@ O bot não usa o túnel. A porta HTTP não deve ser aberta para acesso externo d
 
 ## Ainda não publicado
 
-Não há `cloudflared` em execução para esse túnel. Preencher `/etc/kuruttina/site.env` e instalar ou iniciar o conector na VPS continuam pendentes. Sem o conector, o domínio não entrega `/healthz`, a Home nem os assets. Essa verificação pública só vale depois da ativação na máquina.
+Não há `cloudflared` em execução para esse túnel. Instalar ou iniciar o conector na VPS continua pendente. Sem o conector, o domínio não entrega `/healthz`, a Home nem os assets. Essa verificação pública só vale depois da ativação na máquina.

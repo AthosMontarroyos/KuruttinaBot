@@ -10,7 +10,7 @@ O pacote declara suporte local a Node 22.14+/24/26. A VPS, as imagens e o CI usa
 | --- | --- | --- | --- |
 | Nativo (`dev`/`site:dev`) | `development` definido pelo comando | `PORT`, padrão `3666` | `.env` local e variáveis do processo |
 | Docker development | `development` fixo | `3667` | Variáveis selecionadas do `.env`/ambiente pelo Compose |
-| Docker production | `production` fixo | `3666` | Arquivos separados em `/etc/kuruttina/` |
+| Docker production | `production` fixo | `3666` | Variáveis selecionadas do `.env` da raiz pelo Compose |
 
 O bot não escuta HTTP. `APP_ENV`, `HOST` e a porta do site definidos pelos serviços Compose prevalecem sobre os mesmos nomes no `.env`. A seleção de variáveis de cada serviço está na referência de deployment.
 
@@ -45,7 +45,7 @@ Os testes de banco criam um cluster isolado no diretório temporário do sistema
 
 O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup. Pelo Compose, essa operação existe somente em `compose.yaml`; o comando está na referência de deployment.
 
-Produção no repositório é o `compose.yaml`, com configuração em `/etc/kuruttina/`, separada por serviço. As unidades em `ops/systemd/` são o runtime anterior. PostgreSQL continua no Supabase. Não há pipeline de deploy neste repositório. A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
+Produção no repositório é o `compose.yaml`, com o mesmo `.env` da raiz e variáveis declaradas por serviço. As unidades em `ops/systemd/` são o runtime anterior e ainda citam a conta `kuruttina` e `/etc/kuruttina/`; essa citação não é pré-requisito do Docker. PostgreSQL continua no Supabase. Não há pipeline de deploy neste repositório. A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
 
 ## Operações de desenvolvimento
 

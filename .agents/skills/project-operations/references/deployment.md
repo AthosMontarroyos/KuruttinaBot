@@ -6,7 +6,7 @@ Não há pipeline de deploy no repositório. A automação futura segue o contra
 
 ## Modos
 
-**MUST:** Há três modos. Nativo usa `npm run dev` ou `npm run site:dev`, que fixam `APP_ENV=development` pelo preload `@kuruttina/config/development`, a porta `PORT` com padrão `3666` e o `.env` da raiz. Entrypoints genéricos como `npm start`, `site:start` e `deploy:commands` continuam exigindo ambiente explícito no processo. Docker development usa `compose.dev.yaml`, com `APP_ENV=development` e porta `3667`. Docker production usa `compose.yaml`, com `APP_ENV=production`, porta `3666` e arquivos em `/etc/kuruttina/`. O bot não possui porta HTTP. Os valores de `APP_ENV`, `HOST` e porta escritos no bloco `environment` de um serviço Compose prevalecem sobre o `.env` e sobre o `env_file`.
+**MUST:** Há três modos. Nativo usa `npm run dev` ou `npm run site:dev`, que fixam `APP_ENV=development` pelo preload `@kuruttina/config/development`, a porta `PORT` com padrão `3666` e o `.env` da raiz. Entrypoints genéricos como `npm start`, `site:start` e `deploy:commands` continuam exigindo ambiente explícito no processo. Docker development usa `compose.dev.yaml`, com `APP_ENV=development` e porta `3667`. Docker production usa `compose.yaml`, com `APP_ENV=production`, porta `3666` e interpolação do mesmo `.env` da raiz. O bot não possui porta HTTP. Os valores de `APP_ENV`, `HOST` e porta escritos no bloco `environment` de um serviço Compose prevalecem sobre os mesmos nomes no `.env`.
 
 ## Topologia
 
@@ -32,26 +32,18 @@ docker compose -f compose.dev.yaml down
 **MUST:** O Compose lê o `.env` da raiz para interpolar somente as chaves listadas em cada serviço. O site recebe `ASSETS_BASE_URL` e fixa `APP_ENV=development`, `HOST=0.0.0.0`, `PORT=3667` e `SITE_URL=http://localhost:3667`. O bot fixa `APP_ENV=development` e `AUTO_SYNC_COMMANDS=false`, e recebe `DISCORD_BOT_TOKEN_DEVELOPMENT`, `DISCORD_BOT_ID_DEVELOPMENT`, `DISCORD_BOT_TOKEN_PRODUCTION`, `DISCORD_BOT_ID_PRODUCTION`, `DATABASE_URL_DEVELOPMENT` e `DATABASE_CA_CERT_DEVELOPMENT`. Credenciais administrativas, token do túnel, banco de production e segredos OAuth ficam de fora. Alterar no `.env` um valor que o serviço define explicitamente não muda o contêiner.
 
 ## Configuração
+
 O `.env` local e o `.env.example` não repetem `APP_ENV`, `PORT`, `HOST`, `SITE_URL` ou `AUTO_SYNC_COMMANDS`: os Composes definem esses controles. No nativo, os comandos de desenvolvimento selecionam o ambiente, o site usa porta padrão 3666 e a sincronização fica desativada por padrão. Preserve credenciais ao limpar esses arquivos; overrides nativos continuam possíveis no ambiente do processo.
- de produção
 
-**MUST:** `APP_ENV=development|production` é explícito, sem fallback. O `.env` da raiz continua sendo o contrato local e não entra na imagem. Na VPS, cada processo permanente lê o próprio arquivo. Esses caminhos são absolutos no host Linux:
+**MUST:** `APP_ENV=development|production` é explícito, sem fallback. O `.env` da raiz é a única origem de credenciais para o modo nativo e para os dois Composes. Ele fica fora do Git, do contexto de build e das imagens: não é copiado nem montado. O Compose o lê só para interpolar as chaves declaradas em cada serviço. Nenhum contêiner recebe o arquivo inteiro.
 
-| Arquivo | Modo | Conteúdo |
-| --- | --- | --- |
-| `/etc/kuruttina/bot.env` | `0640`, `root:kuruttina` | Contrato atual do bot, inclusive as duas credenciais Discord, URL/CA do runtime e `AUTO_SYNC_COMMANDS`. |
-| `/etc/kuruttina/site.env` | `0640`, `root:kuruttina` | Somente `ASSETS_BASE_URL`; ambiente, host, porta e URL pública são definidos pelo Compose. |
-| `/etc/kuruttina/release.env` | `0600`, `root:root` | Credencial administrativa de migration. Somente no serviço `migrate`. |
+**MUST:** Em produção, o serviço `bot` recebe os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` exigidos pelo contrato atual, `DATABASE_URL_PRODUCTION` e `DATABASE_CA_CERT_PRODUCTION`. O Compose fixa `APP_ENV=production` e `AUTO_SYNC_COMMANDS=false`. O serviço `site` recebe somente `ASSETS_BASE_URL`, além de `APP_ENV=production`, `AUTO_SYNC_COMMANDS=false`, `HOST=0.0.0.0`, `PORT=3666` e `SITE_URL=https://kuruttina.athosmontarroyos.com`. O serviço `migrate` recebe somente `DATABASE_MIGRATION_URL_PRODUCTION` e `DATABASE_CA_CERT_PRODUCTION`.
 
-O diretório `/etc/kuruttina/` fica em `0750` e `root:kuruttina`. Os serviços permanentes ainda fixam `APP_ENV=production` e `AUTO_SYNC_COMMANDS=false`; o site também fixa `HOST=0.0.0.0`, `PORT=3666` e `SITE_URL=https://kuruttina.athosmontarroyos.com`. Token do túnel e credenciais administrativas não entram nesses processos. O CA do banco continua sendo o PEM da variável de ambiente; não há arquivo de CA para montar. Credenciais não entram em argumento de build nem na imagem. `process.env` continua prevalecendo sobre um `.env` eventual. Nunca versione `.env`, dumps ou credenciais.
+**MUST:** `DATABASE_MIGRATION_URL_PRODUCTION` pode permanecer vazio enquanto não houver migration. A validação existente rejeita essa ausência e não usa `DATABASE_URL_PRODUCTION` no lugar. Isso impede apenas o serviço `migrate`. Token do túnel, client secrets, chaves públicas e a credencial administrativa não entram em `bot` nem em `site`. O CA do banco continua sendo o PEM da variável de ambiente; não há arquivo de CA para montar. Credenciais não entram em argumento de build nem na imagem. `process.env` continua prevalecendo sobre um `.env` eventual dentro do processo. Nunca versione `.env`, dumps ou credenciais.
 
-Exemplo de `/etc/kuruttina/site.env`, sem variáveis do bot, do túnel ou da migration:
+**MUST:** No Linux, restrinja o `.env` da raiz ao proprietário que realiza o deploy, por exemplo com modo `0600`. Conta, grupo ou diretório dedicados não são pré-requisito. Não crie usuário `kuruttina` nem arquivos em `/etc/kuruttina/` para o Compose. Se esses caminhos já existirem na VPS, esta mudança não os apaga.
 
-```text
-ASSETS_BASE_URL=https://origem-publica-do-bucket
-```
-
-**MUST:** O usuário de serviço `kuruttina` não tem shell de login nem privilégio administrativo. A imagem não é gravável por ele. Em production, `AUTO_SYNC_COMMANDS=false`. Publicar comandos fica fora do startup.
+**MUST:** Os alvos da imagem executam com o usuário não administrativo `node`, já presente em `node:24-bookworm-slim`. Os arquivos da aplicação permanecem legíveis e percorríveis, sem escrita para esse usuário. Em production, `AUTO_SYNC_COMMANDS=false`. Publicar comandos fica fora do startup.
 
 ## Migration e comandos
 
@@ -75,13 +67,13 @@ docker compose run --rm --no-deps bot node dist/apps/bot/src/deployments/deploy-
 
 **MUST:** Prepare a imagem em Linux, com Node 24, `npm ci` e o lockfile. Inclua dependências nativas como `sharp`. Não copie `node_modules` do Windows. Rode as verificações do repositório antes de ativar.
 
-**MUST:** Migrations necessárias rodam uma vez, com a credencial de `release.env`, pelo comando da seção anterior. Não rodam de novo no restart. Mudança de banco incompatível com o código anterior exige procedimento próprio: voltar às unidades legadas não desfaz migrations.
+**MUST:** Migrations necessárias rodam uma vez, com `DATABASE_MIGRATION_URL_PRODUCTION` do `.env`, entregue somente ao serviço `migrate`, pelo comando da seção anterior. Não rodam de novo no restart. Mudança de banco incompatível com o código anterior exige procedimento próprio: voltar às unidades legadas não desfaz migrations.
 
-**MUST:** Para ativar pelo painel, quando isso for pedido: disponibilize checkout, arquivos de ambiente e `compose.yaml`; execute a migration explícita e espere sucesso; pare `kuruttina-bot` e `kuruttina-site`; inicie os contêineres de bot e site. O túnel permanece no ar. Valide o log `Bot pronto`, e pelo domínio público `/healthz`, a página e um asset. Se essa primeira ativação falhar, pare os contêineres antes de reativar as unidades legadas. Isso não desfaz migrations. Só depois da validação manual desabilite o startup dessas unidades. Esta referência não registra essa ativação como concluída.
+**MUST:** Para ativar pelo painel, quando isso for pedido: disponibilize o checkout, o `.env` da raiz e o `compose.yaml`; execute a migration explícita e espere sucesso; pare `kuruttina-bot` e `kuruttina-site`; inicie os contêineres de bot e site. O túnel permanece no ar. Valide o log `Bot pronto`, e pelo domínio público `/healthz`, a página e um asset. Se essa primeira ativação falhar, pare os contêineres antes de reativar as unidades legadas. Isso não desfaz migrations. Só depois da validação manual desabilite o startup dessas unidades. Esta referência não registra essa ativação como concluída.
 
 ## Runtime legado: systemd
 
-As unidades em `ops/systemd/` descrevem o runtime anterior. Não as instale como caminho padrão enquanto o Compose for o contrato de execução. Elas sobem no boot, reiniciam após falha com `StartLimitIntervalSec=120` e `StartLimitBurst=5`, registram stdout/stderr no journal e encerram por `SIGTERM` com `TimeoutStopSec=15s`. O timeout interno dos processos é 5s; a folga da unidade cobre o término antes do `SIGKILL`. Bot e Home não se exigem mutuamente. Nenhum dos dois exige `cloudflared`. Conferir boot, restart após falha e shutdown faz parte da aceitação na VPS; essa conferência ainda não foi feita.
+As unidades em `ops/systemd/` descrevem o runtime anterior. Não as instale como caminho padrão enquanto o Compose for o contrato de execução, nem prepare usuário, diretório ou arquivos para o Docker. `User`/`Group=kuruttina` e `EnvironmentFile=/etc/kuruttina/*.env` permanecem só nessas unidades legadas. Elas sobem no boot, reiniciam após falha com `StartLimitIntervalSec=120` e `StartLimitBurst=5`, registram stdout/stderr no journal e encerram por `SIGTERM` com `TimeoutStopSec=15s`. O timeout interno dos processos é 5s; a folga da unidade cobre o término antes do `SIGKILL`. Bot e Home não se exigem mutuamente. Nenhum dos dois exige `cloudflared`. Conferir boot, restart após falha e shutdown faz parte da aceitação na VPS; essa conferência ainda não foi feita.
 
 ## Túnel
 

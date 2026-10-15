@@ -7,7 +7,7 @@ metadata:
 
 # Website
 
-A implementação atual usa React, TypeScript, Tailwind, Vite e servidor Node em `apps/site/server`. A direção aprovada é React sem Next.js, construindo uma base/framework próprio com liberdade de organização. Estrutura de pastas e roteamento são decisões do projeto, não convenções impostas por um framework. Veja a [decisão](../../../docs/decisions/react-base.md). Autenticação e painel ainda não existem.
+A implementação atual usa React, TypeScript, Tailwind, Vite e servidor Node em `apps/site/server`. A direção aprovada é React sem Next.js, construindo uma base/framework próprio com liberdade de organização. Estrutura de pastas e roteamento são decisões do projeto, não convenções impostas por um framework. Veja a [decisão](../../../docs/decisions/react-base.md). Autenticação e painel ainda não existem. O login futuro é exclusivamente Discord, conforme a [decisão de autenticação](../../../docs/decisions/discord-only-authentication.md).
 
 ## Procedimento
 
@@ -19,6 +19,8 @@ A implementação atual usa React, TypeScript, Tailwind, Vite e servidor Node em
 
 ## Login e administração, somente quando pedidos
 
-Leia [autenticação e administração](references/authentication-and-admin.md): mutations, identidade Discord, autorização, sessões, CSRF, erros e administração aplicam-se ao fluxo correspondente. Persistência aciona `database-developer`; publicação e hospedagem acionam `project-operations`.
+A [decisão de login exclusivo via Discord](../../../docs/decisions/discord-only-authentication.md) é requisito obrigatório de qualquer trabalho de autenticação ou painel. Autenticação e painel ainda não estão implementados.
+
+Leia [autenticação e administração](references/authentication-and-admin.md): mutations, identidade Discord, autorização pela equipe, sessões, CSRF, erros e administração aplicam-se ao fluxo correspondente. Persistência aciona `database-developer`; publicação e hospedagem acionam `project-operations`. Não crie contas, usuários de teste ou registros privilegiados sem autorização explícita do responsável.
 
 Atualize esta skill quando mudar o procedimento de trabalho e `docs/project/site.md` quando mudar o comportamento implementado, sem duplicar os dois.

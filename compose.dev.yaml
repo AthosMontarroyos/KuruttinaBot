@@ -1,0 +1,42 @@
+# Standalone: docker compose -f compose.dev.yaml up --build -d
+# Compose reads the root .env for interpolation; only the keys below enter each service.
+name: kuruttina-dev
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: bot
+    image: kuruttina-bot:development
+    container_name: kuruttina-bot-dev
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    environment:
+      APP_ENV: development
+      AUTO_SYNC_COMMANDS: "false"
+      DISCORD_BOT_TOKEN_DEVELOPMENT: ${DISCORD_BOT_TOKEN_DEVELOPMENT:-}
+      DISCORD_BOT_ID_DEVELOPMENT: ${DISCORD_BOT_ID_DEVELOPMENT:-}
+      DISCORD_BOT_TOKEN_PRODUCTION: ${DISCORD_BOT_TOKEN_PRODUCTION:-}
+      DISCORD_BOT_ID_PRODUCTION: ${DISCORD_BOT_ID_PRODUCTION:-}
+      DATABASE_URL_DEVELOPMENT: ${DATABASE_URL_DEVELOPMENT:-}
+      DATABASE_CA_CERT_DEVELOPMENT: ${DATABASE_CA_CERT_DEVELOPMENT:-}
+
+  site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: site
+    image: kuruttina-site:development
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    environment:
+      APP_ENV: development
+      HOST: 0.0.0.0
+      PORT: "3667"
+      SITE_URL: http://localhost:3667
+      ASSETS_BASE_URL: ${ASSETS_BASE_URL:-}
+    ports:
+      - "127.0.0.1:3667:3667"

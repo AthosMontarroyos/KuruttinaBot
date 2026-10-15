@@ -1,0 +1,54 @@
+name: kuruttina
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: bot
+    image: kuruttina-bot
+    container_name: kuruttina-bot
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    env_file:
+      - path: /etc/kuruttina/bot.env
+        required: true
+    environment:
+      APP_ENV: production
+      AUTO_SYNC_COMMANDS: "false"
+
+  site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: site
+    image: kuruttina-site
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    env_file:
+      - path: /etc/kuruttina/site.env
+        required: true
+    environment:
+      APP_ENV: production
+      AUTO_SYNC_COMMANDS: "false"
+      HOST: 0.0.0.0
+      PORT: "3666"
+      SITE_URL: https://kuruttina.athosmontarroyos.com
+    ports:
+      - "127.0.0.1:3666:3666"
+
+  migrate:
+    profiles:
+      - release
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: release
+    image: kuruttina-release
+    restart: "no"
+    env_file:
+      - path: /etc/kuruttina/release.env
+        required: true
+    command: ["node", "packages/database/cli.js", "migrate", "production"]

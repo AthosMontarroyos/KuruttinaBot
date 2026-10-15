@@ -19,14 +19,13 @@ describe('site configuration', () => {
   it('requires an explicit environment', () => {
     expect(() => readSiteConfig({ ASSETS_BASE_URL: environment.ASSETS_BASE_URL, SITE_URL: environment.SITE_URL })).toThrow();
   });
-  it('requires a public site URL and keeps the listen address independent', () => {
+  it('honors an explicit public site URL and keeps the listen address independent', () => {
     expect(readSiteConfig({ ...environment, PORT: '8080', SITE_URL: 'http://localhost:3666/' }).siteUrl).toBe('http://localhost:3666');
     expect(readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com' })).toMatchObject({
       port: 3666, host: '127.0.0.1', siteUrl: 'https://kuruttina.athosmontarroyos.com',
     });
   });
   it.each([
-    undefined,
     '',
     'ftp://localhost:3666',
     'http://user:password@localhost:3666',
@@ -36,9 +35,26 @@ describe('site configuration', () => {
   ])('rejects invalid site URL %s', (siteUrl) => {
     expect(() => readSiteConfig({ ...environment, SITE_URL: siteUrl })).toThrow();
   });
+  it('derives the development URL from the port without using the bind address', () => {
+    const { SITE_URL, PORT, ...withoutUrl } = environment;
+    expect(readSiteConfig(withoutUrl).siteUrl).toBe('http://localhost:3666');
+    expect(readSiteConfig({ ...withoutUrl, PORT: '3667', HOST: '0.0.0.0' }).siteUrl).toBe('http://localhost:3667');
+    expect(readSiteConfig({ ...withoutUrl, PORT: '8080' }).siteUrl).toBe('http://localhost:8080');
+    expect(() => readSiteConfig({ ...withoutUrl, APP_ENV: 'production' })).toThrow('SITE_URL');
+  });
   it('allows HTTP only in development', () => {
     expect(readSiteConfig(environment).siteUrl).toBe('http://localhost:3666');
     expect(() => readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'http://kuruttina.athosmontarroyos.com' })).toThrow();
+  });
+  it('listens on loopback when HOST is absent and on the container address when set', () => {
+    expect(readSiteConfig(environment).host).toBe('127.0.0.1');
+    expect(readSiteConfig({ ...environment, HOST: '   ' }).host).toBe('127.0.0.1');
+    expect(readSiteConfig({ ...environment, HOST: '0.0.0.0', APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com' })).toMatchObject({
+      host: '0.0.0.0', siteUrl: 'https://kuruttina.athosmontarroyos.com',
+    });
+  });
+  it.each(['http://0.0.0.0', '0.0.0.0:3666', 'localhost', 'example.com'])('rejects invalid listen host %s', (host) => {
+    expect(() => readSiteConfig({ ...environment, HOST: host })).toThrow('HOST');
   });
 });
 

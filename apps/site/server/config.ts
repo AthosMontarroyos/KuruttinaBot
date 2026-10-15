@@ -1,3 +1,12 @@
+import { isIP } from 'node:net';
+
+function readHost(raw: string | undefined): string {
+  const value = raw?.trim() ?? '';
+  if (!value) return '127.0.0.1';
+  if (isIP(value) === 0) throw new Error('HOST inválido para o site.');
+  return value;
+}
+
 function readSiteUrl(raw: string | undefined, production: boolean): string {
   let url: URL;
   try { url = new URL(raw?.trim() ?? ''); } catch { throw new Error('SITE_URL inválida para o site.'); }
@@ -20,8 +29,8 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   return Object.freeze({
     port: Number(rawPort),
-    host: '127.0.0.1',
-    siteUrl: readSiteUrl(env.SITE_URL, env.APP_ENV === 'production'),
+    host: readHost(env.HOST),
+    siteUrl: readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production'),
     assetsOrigin: base.origin,
     avatarUrl: new URL(avatarPath, base).href,
   });

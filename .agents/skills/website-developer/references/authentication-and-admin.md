@@ -34,7 +34,7 @@ A Home usa React/Vite e servidor Node próprio. Autenticação e painel ainda n�
 
 **Nível:** MUST
 
-**Regra:** Mutations autenticadas por cookie aceitam apenas métodos não seguros apropriados, exigem `Origin` igual à origem pública canônica configurada e usam proteção CSRF da biblioteca/framework ou token explícito quando a proteção embutida não cobrir o fluxo. Não derive a origem esperada de `Host`/`X-Forwarded-*` fornecidos livremente. A Home escuta só em `127.0.0.1`; quando a autenticação existir, o único proxy confiável é o `cloudflared` local do túnel. Normalize protocolo, host e porta antes da comparação. `GET` não altera estado.
+**Regra:** Mutations autenticadas por cookie aceitam apenas métodos não seguros apropriados, exigem `Origin` igual à origem pública canônica configurada e usam proteção CSRF da biblioteca/framework ou token explícito quando a proteção embutida não cobrir o fluxo. Não derive a origem esperada de `Host`/`X-Forwarded-*` fornecidos livremente. O endereço de escuta depende do modo documentado em [Home local](../../../../docs/project/site.md). Quando a autenticação existir, o único proxy confiável é o `cloudflared` local do túnel, na publicação em loopback do host. Normalize protocolo, host e porta antes da comparação. `GET` não altera estado.
 
 ### Regra: fetching e memória
 

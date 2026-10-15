@@ -4,7 +4,7 @@
 
 ## 2. Arquitetura de referência
 
-O projeto implementado é um monorepo modular com o bot Discord, a Home React/Vite em `apps/site`, `packages/config` e `packages/database`. Packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A hospedagem vigente é a VPS KingHost, com bot e Home em serviços `systemd` separados; a preparação está no repositório e a máquina ainda não foi verificada. A base web segue a [decisão React sem Next.js](../../../../docs/decisions/react-base.md). O diagrama mostra a estrutura base, sem pastas opcionais antecipadas. Veja o [ADR](../../../../docs/decisions/vps-kinghost.md) e o [estado implementado](../../../../docs/project/current-state.md). As fronteiras de dependências e os contratos deste documento permanecem vigentes.
+O projeto implementado é um monorepo modular com o bot Discord, a Home React/Vite em `apps/site`, `packages/config` e `packages/database`. Packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A hospedagem vigente é a VPS KingHost, com bot e Home empacotados por Docker Compose; a preparação está no repositório e a implantação na máquina ainda não foi confirmada. A base web segue a [decisão React sem Next.js](../../../../docs/decisions/react-base.md). O diagrama mostra a estrutura base, sem pastas opcionais antecipadas. Veja o [ADR](../../../../docs/decisions/vps-kinghost.md) e o [estado implementado](../../../../docs/project/current-state.md). As fronteiras de dependências e os contratos deste documento permanecem vigentes.
 
 ```text
 Estrutura base (expandir somente por necessidade concreta):
@@ -15,7 +15,11 @@ Estrutura base (expandir somente por necessidade concreta):
 ├── packages/
 │   ├── config/              # configuração validada
 │   └── database/            # persistência
-├── ops/systemd/             # unidades de bot e Home, sem segredos
+├── Dockerfile               # build Linux e alvos bot, site e release
+├── compose.yaml             # produção: bot, site e migrate
+├── compose.dev.yaml         # desenvolvimento em contêiner, independente
+├── .dockerignore
+├── ops/systemd/             # legado: unidades anteriores de bot e Home
 ├── .agents/skills/          # procedimentos e referências sob demanda
 ├── docs/                    # produto e decisões aprovadas
 └── AGENTS.md

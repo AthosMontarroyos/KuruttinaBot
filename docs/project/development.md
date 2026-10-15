@@ -1,34 +1,55 @@
 # Desenvolvimento e operação
 
-Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md).
+Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.agents/skills/project-operations/references/deployment.md).
 
-## Execução do bot
+## Modos de execução
 
-O pacote declara suporte local a Node 22.14+/24/26. A VPS e o CI usam Node 24; dependências e lockfile são validados nessa linha, inclusive módulos nativos como `sharp`. O desenvolvimento continua nativo no Windows, sem contêiner. Instale as dependências com `npm ci`. Copie `.env.example` para `.env`, configure `APP_ENV`, os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` e a URL/CA PostgreSQL do ambiente ativo. O arquivo `.env` não é versionado e não entra nos releases.
+O pacote declara suporte local a Node 22.14+/24/26. A VPS, as imagens e o CI usam Node 24; dependências e lockfile são validados nessa linha, inclusive módulos nativos como `sharp`. A execução nativa no Windows continua disponível.
+
+| Modo | Ambiente | Porta do site | Configuração |
+| --- | --- | --- | --- |
+| Nativo (`dev`/`site:dev`) | `development` definido pelo comando | `PORT`, padrão `3666` | `.env` local e variáveis do processo |
+| Docker development | `development` fixo | `3667` | Variáveis selecionadas do `.env`/ambiente pelo Compose |
+| Docker production | `production` fixo | `3666` | Arquivos separados em `/etc/kuruttina/` |
+
+O bot não escuta HTTP. `APP_ENV`, `HOST` e a porta do site definidos pelos serviços Compose prevalecem sobre os mesmos nomes no `.env`. A seleção de variáveis de cada serviço está na referência de deployment.
+
+No modo nativo, instale as dependências com `npm ci`. Copie `.env.example` para `.env`, configure os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` e a URL/CA PostgreSQL do ambiente ativo. O arquivo `.env` não é versionado e não entra nas imagens.
+
+O Compose de desenvolvimento é `compose.dev.yaml`, independente de `compose.yaml`. Ele não funciona como override de produção, não oferece hot reload e não inclui serviço de migration. Suba e encerre com:
+
+```text
+docker compose -f compose.dev.yaml up --build -d
+docker compose -f compose.dev.yaml down
+```
+
+Depois de alterar o código, rode de novo o `up --build`. O ambiente foi construído e iniciado no Docker Desktop, com bot pronto e Home respondendo na porta 3667. A publicação na VPS não foi confirmada.
+
+## Comandos
 
 | Comando | Uso |
 | --- | --- |
-| `npm run dev` | Bot local com o `APP_ENV` do `.env`. |
+| `npm run dev` | Bot local em development, definido pelo comando. |
 | `npm run build` | Limpa `dist/apps/bot` e compila o bot. |
 | `npm run build:all` | Compila o bot e a Home. |
-| `npm start` | Executa o build compilado do bot. |
+| `npm start` | Executa o build compilado do bot; exige `APP_ENV` explícito no ambiente do processo. |
 | `npm run typecheck` | Verifica tipos. |
 | `npm test` | Testes herméticos. |
 | `npm run test:database` | Integração com PostgreSQL descartável; exige `initdb` e `pg_ctl` de uma instalação nativa do PostgreSQL. |
-| `npm run deploy:commands` | Publica o catálogo do bot ativo nos escopos global e da equipe. |
+| `npm run deploy:commands` | Publica o catálogo nos escopos global e da equipe; exige `APP_ENV` explícito no processo, ou execução pelo Compose. |
 | `npm run database:migrate -- development` | Migration única do ambiente escolhido; `production` é alternativa explícita. |
 | `npm run database:seed -- development` | Cadastro inicial do ambiente escolhido. |
 | `npm run security:secrets` | Gitleaks local, se instalado. |
 
 Os testes de banco criam um cluster isolado no diretório temporário do sistema, acessível somente por TCP em `127.0.0.1`, e o removem ao terminar. Instale PostgreSQL localmente e disponibilize sua pasta de binários no `PATH`; quando `pg_config` estiver disponível, ele localiza os demais binários. Não é necessário um serviço PostgreSQL já iniciado, WSL ou um shell Unix. `npm test` executa apenas os testes herméticos. A integração não lê `.env` nem usa os projetos Supabase.
 
-O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup.
+O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup. Pelo Compose, essa operação existe somente em `compose.yaml`; o comando está na referência de deployment.
 
-Produção prevista é a VPS KingHost: Node 24, releases em `/opt/kuruttina/releases/<commit>` e serviços `systemd` que executam os entrypoints já compilados. A configuração de produção fica em `/etc/kuruttina/`, separada por serviço; o `.env` local não muda de contrato. PostgreSQL continua no Supabase. O procedimento de publicação está na skill de operação e ainda não é um pipeline deste repositório. A máquina, o DNS e os túneis não foram verificados. O [replanejamento](replanning.md) registra o histórico dessa escolha.
+Produção no repositório é o `compose.yaml`, com configuração em `/etc/kuruttina/`, separada por serviço. As unidades em `ops/systemd/` são o runtime anterior. PostgreSQL continua no Supabase. Não há pipeline de deploy neste repositório. A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
 
 ## Operações de desenvolvimento
 
-A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. Configure `APP_ENV`, `PORT`, `SITE_URL` e `ASSETS_BASE_URL` no `.env` da raiz. Em desenvolvimento, `SITE_URL` é `http://localhost:3666`; em produção, `https://kuruttina.athosmontarroyos.com`. Veja [Home local](site.md) para limites e fluxo de edição. Na VPS, o processo da Home é o serviço `kuruttina-site`, separado do bot; essa publicação ainda não foi verificada.
+A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. No modo nativo, configure `ASSETS_BASE_URL` e, opcionalmente, `PORT` no `.env` da raiz. `npm run dev` e `npm run site:dev` carregam `@kuruttina/config/development` antes do app, fixando `APP_ENV=development`, inclusive se houver um valor herdado diferente. Sem `SITE_URL`, o site de development calcula `http://localhost:<PORT>`; um override explícito continua validado. Produção recebe a URL pública pelo Compose. Em desenvolvimento nativo, `SITE_URL` é `http://localhost:3666` e a página abre em `http://127.0.0.1:3666`. No Compose de desenvolvimento, a página publicada no host abre em `http://127.0.0.1:3667`. Em produção, `SITE_URL` é `https://kuruttina.athosmontarroyos.com`. Veja [Home local](site.md) para escuta, `HOST` e fluxo de edição.
 
 Não há pipeline de deploy nem serviço de automação incluído no projeto. A Home de produção deve ser publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). O estado conferido do túnel está no [inventário](cloudflare-tunnel.md).
 

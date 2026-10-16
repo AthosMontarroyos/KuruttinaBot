@@ -1,0 +1,246 @@
+name: Publicar produção
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag para publicar ou restaurar
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Verificações de qualidade
+    uses: ./.github/workflows/quality.yml
+    with:
+      ref: ${{ github.event.release.tag_name || inputs.tag }}
+    permissions:
+      contents: read
+
+  deploy:
+    name: Publicar na VPS
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    environment: production
+    steps:
+      - name: Preparar acesso SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VPS_HOST}" ] || [ -z "${VPS_USER}" ] || [ -z "${VPS_SSH_KEY}" ]; then
+            echo "Os segredos VPS_HOST, VPS_USER e VPS_SSH_KEY precisam estar configurados no ambiente production."
+            exit 1
+          fi
+          key_dir="${RUNNER_TEMP}/ssh"
+          mkdir -p "${key_dir}"
+          chmod 700 "${key_dir}"
+          printf '%s\n' "${VPS_SSH_KEY}" | tr -d '\r' > "${key_dir}/id"
+          chmod 600 "${key_dir}/id"
+          if ! ssh-keyscan -H -T 10 "${VPS_HOST}" > "${key_dir}/known_hosts" 2>/dev/null; then
+            echo "Não foi possível obter a chave de host da VPS."
+            exit 1
+          fi
+          if [ ! -s "${key_dir}/known_hosts" ]; then
+            echo "Não foi possível obter a chave de host da VPS."
+            exit 1
+          fi
+          chmod 644 "${key_dir}/known_hosts"
+
+      - name: Publicar a tag na VPS
+        id: deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TAG}" ]; then
+            echo "Nenhuma tag foi informada."
+            exit 1
+          fi
+          if [[ ! "${TAG}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${TAG}" == *".."* ]] || [[ "${TAG}" == -* ]]; then
+            echo "A tag informada é inválida."
+            exit 1
+          fi
+          ssh -T \
+            -i "${RUNNER_TEMP}/ssh/id" \
+            -o UserKnownHostsFile="${RUNNER_TEMP}/ssh/known_hosts" \
+            -o StrictHostKeyChecking=yes \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=20 \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=4 \
+            "${VPS_USER}@${VPS_HOST}" \
+            bash -s -- "${TAG}" <<'REMOTE' | tee "${RUNNER_TEMP}/deploy.log"
+          set -euo pipefail
+          cd /home/deploy/Projects/KuruttinaBot
+          tag="$1"
+
+          migration_configured() {
+            local status=0
+            awk '
+              BEGIN { found = 0 }
+              /^DATABASE_MIGRATION_URL_PRODUCTION=/ {
+                value = substr($0, index($0, "=") + 1)
+                gsub(/\r/, "", value)
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+                first = substr(value, 1, 1)
+                last = substr(value, length(value), 1)
+                if (length(value) >= 2 && (first == "\"" || first == sprintf("%c", 39)) && first == last) {
+                  value = substr(value, 2, length(value) - 2)
+                  gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+                }
+                found = (value != "")
+              }
+              END { exit (found ? 0 : 1) }
+            ' .env || status=$?
+            if [ "${status}" -eq 0 ]; then
+              return 0
+            fi
+            if [ "${status}" -eq 1 ]; then
+              return 1
+            fi
+            echo "Não foi possível ler DATABASE_MIGRATION_URL_PRODUCTION."
+            exit 1
+          }
+
+          restore_checkout() {
+            git checkout --detach "${prev}"
+          }
+
+          restore_built_images() {
+            git checkout --detach "${prev}"
+            if ! docker compose build; then
+              echo "Não foi possível reconstruir as imagens do commit anterior. Os contêineres em execução não foram recriados."
+              exit 1
+            fi
+          }
+
+          rollback_activation() {
+            echo "A ativação falhou. Restaurando o commit anterior."
+            git checkout --detach "${prev}"
+            docker compose build && docker compose up -d bot site
+            exit 1
+          }
+
+          if [ -z "${tag}" ]; then
+            echo "Nenhuma tag foi informada."
+            exit 1
+          fi
+          if ! git check-ref-format --allow-onelevel "refs/tags/${tag}"; then
+            echo "A tag informada é inválida."
+            exit 1
+          fi
+          if [ ! -r .env ]; then
+            echo "O .env da raiz não pode ser lido. Nenhum contêiner foi alterado."
+            exit 1
+          fi
+          if ! command -v git >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+            echo "A VPS precisa de git, curl e docker compose. Nenhum contêiner foi alterado."
+            exit 1
+          fi
+
+          prev=$(git rev-parse HEAD)
+          git fetch --tags --prune origin
+          if ! git rev-parse --verify --quiet "refs/tags/${tag}^{commit}" >/dev/null; then
+            echo "A tag ${tag} não existe no repositório."
+            exit 1
+          fi
+          git checkout --detach "${tag}"
+
+          if ! docker compose build; then
+            echo "A construção das imagens falhou. Os contêineres em execução não foram alterados."
+            restore_checkout
+            exit 1
+          fi
+
+          if migration_configured; then
+            if ! docker compose --profile release build migrate; then
+              echo "A construção da imagem de migration falhou. Os contêineres em execução não foram recriados."
+              restore_built_images
+              exit 1
+            fi
+            if ! docker compose --profile release run --rm migrate; then
+              echo "A migration falhou. Os contêineres em execução não foram recriados."
+              restore_built_images
+              exit 1
+            fi
+          else
+            echo "Migration ignorada: DATABASE_MIGRATION_URL_PRODUCTION vazio ou ausente."
+          fi
+
+          if ! docker compose up -d bot site; then
+            rollback_activation
+          fi
+
+          umask 077
+          log_file=$(mktemp)
+          trap 'rm -f "${log_file}"' EXIT
+          deadline=$((SECONDS + 120))
+          ready=0
+          while [ "${SECONDS}" -lt "${deadline}" ]; do
+            bot_ok=0
+            site_ok=0
+            if docker compose logs bot >"${log_file}" 2>&1 && grep -F -q 'Bot pronto' "${log_file}"; then
+              bot_ok=1
+            fi
+            http_code=$(curl -fsS --max-time 10 -o /dev/null -w '%{http_code}' https://kuruttina.athosmontarroyos.com/healthz || true)
+            if [ "${http_code}" = "200" ]; then
+              site_ok=1
+            fi
+            if [ "${bot_ok}" -eq 1 ] && [ "${site_ok}" -eq 1 ]; then
+              ready=1
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "${ready}" -ne 1 ]; then
+            echo "A publicação não ficou saudável em 120s. Restaurando o commit anterior."
+            rollback_activation
+          fi
+
+          printf 'KURUTTINA_DEPLOYED_TAG=%s\n' "${tag}"
+          printf 'KURUTTINA_DEPLOYED_COMMIT=%s\n' "$(git rev-parse HEAD)"
+          REMOTE
+          commit=$(grep -E '^KURUTTINA_DEPLOYED_COMMIT=[0-9a-f]{40}$' "${RUNNER_TEMP}/deploy.log" | tail -n 1 | cut -d= -f2 || true)
+          deployed_tag=$(grep -E '^KURUTTINA_DEPLOYED_TAG=' "${RUNNER_TEMP}/deploy.log" | tail -n 1 | cut -d= -f2- || true)
+          if [ -z "${commit}" ] || [ "${deployed_tag}" != "${TAG}" ]; then
+            echo "A publicação não confirmou a tag e o commit."
+            exit 1
+          fi
+          {
+            echo "## Publicação"
+            echo
+            echo "- Tag: \`${TAG}\`"
+            echo "- Commit: \`${commit}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Apagar chave SSH
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/ssh/id"
+
+      - name: Registrar falha da publicação
+        if: failure() && steps.deploy.outcome == 'failure'
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Publicação"
+            echo
+            echo "A publicação da tag \`${TAG}\` falhou."
+          } >> "${GITHUB_STEP_SUMMARY}"

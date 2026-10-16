@@ -1,6 +1,6 @@
 # Desenvolvimento e operação
 
-Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.agents/skills/project-operations/references/deployment.md).
+Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.agents/skills/project-operations/references/deployment.md). A publicação por GitHub Release está em [Publicação](deploy.md).
 
 ## Modos de execução
 
@@ -45,12 +45,12 @@ Os testes de banco criam um cluster isolado no diretório temporário do sistema
 
 O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup. Pelo Compose, essa operação existe somente em `compose.yaml`; o comando está na referência de deployment.
 
-Produção no repositório é o `compose.yaml`, com o mesmo `.env` da raiz e variáveis declaradas por serviço. As unidades em `ops/systemd/` são o runtime anterior e ainda citam a conta `kuruttina` e `/etc/kuruttina/`; essa citação não é pré-requisito do Docker. PostgreSQL continua no Supabase. Não há pipeline de deploy neste repositório. A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
+Produção no repositório é o `compose.yaml`, com o mesmo `.env` da raiz e variáveis declaradas por serviço. As unidades em `ops/systemd/` são o runtime anterior e ainda citam a conta `kuruttina` e `/etc/kuruttina/`; essa citação não é pré-requisito do Docker. PostgreSQL continua no Supabase. A publicação por GitHub Release está em [Publicação](deploy.md). A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
 
 ## Operações de desenvolvimento
 
 A Home local em `apps/site` é uma interface React com Tailwind, servida pelo processo Node do site. `npm run site:dev` gera o bundle e inicia esse processo; build e execução separados usam `npm run site:build` e `npm run site:start`. No modo nativo, configure `ASSETS_BASE_URL` e, opcionalmente, `PORT` no `.env` da raiz. `npm run dev` e `npm run site:dev` carregam `@kuruttina/config/development` antes do app, fixando `APP_ENV=development`, inclusive se houver um valor herdado diferente. Sem `SITE_URL`, o site de development calcula `http://localhost:<PORT>`; um override explícito continua validado. Produção recebe a URL pública pelo Compose. Em desenvolvimento nativo, `SITE_URL` é `http://localhost:3666` e a página abre em `http://127.0.0.1:3666`. No Compose de desenvolvimento, a página publicada no host abre em `http://127.0.0.1:3667`. Em produção, `SITE_URL` é `https://kuruttina.athosmontarroyos.com`. Veja [Home local](site.md) para escuta, `HOST` e fluxo de edição.
 
-Não há pipeline de deploy nem serviço de automação incluído no projeto. A Home de produção deve ser publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). O estado conferido do túnel está no [inventário](cloudflare-tunnel.md).
+A publicação do checkout está em [Publicação](deploy.md). A Home de produção continua publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). O estado conferido do túnel está no [inventário](cloudflare-tunnel.md).
 
 As regras para agentes começam em [AGENTS.md](../../AGENTS.md); selecione a skill pelo contexto e leia apenas as referências necessárias à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

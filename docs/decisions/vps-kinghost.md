@@ -2,9 +2,13 @@
 
 Status — 15 de outubro de 2026: **vigente** para hospedagem. A execução passa a ser Docker Compose, gerenciado pelo painel externo quando a VPS for ativada. Esta atualização não afirma que a migração na máquina ocorreu. Substitui a topologia Square Cloud do [ADR anterior](square-cloud-supabase.md) e a escolha de execução de 14 de outubro de 2026, resumida abaixo.
 
+## Atualização — 16 de outubro de 2026
+
+O repositório passa a ter os workflows descritos em [Publicação](../project/deploy.md). Eles automatizam a sequência desta decisão e não afirmam que a VPS já foi ativada. Rollback de código continua sem desfazer migrations. O restante desta decisão permanece vigente.
+
 ## Contexto
 
-O produto tem bot Discord e Home local em processos Node separados. A hospedagem anterior era uma aplicação Square Cloud, com manifesto removido do checkout. O responsável definiu produção no Ubuntu 24.04 da KingHost e publicação da Home por Cloudflare Tunnel no host. Supabase e R2 permanecem os provedores atuais. Não há pipeline de deploy neste repositório. O painel externo deve aceitar Compose com build local e o `.env` da raiz do checkout para interpolação.
+O produto tem bot Discord e Home local em processos Node separados. A hospedagem anterior era uma aplicação Square Cloud, com manifesto removido do checkout. O responsável definiu produção no Ubuntu 24.04 da KingHost e publicação da Home por Cloudflare Tunnel no host. Supabase e R2 permanecem os provedores atuais. Na decisão de 15 de outubro de 2026, o repositório ainda não tinha pipeline de deploy. O painel externo deve aceitar Compose com build local e o `.env` da raiz do checkout para interpolação.
 
 ## Decisão
 

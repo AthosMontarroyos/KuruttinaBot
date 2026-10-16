@@ -8,7 +8,7 @@ Leia este documento quando alterar código, CI, contratos ou automações. Execu
 
 **SHOULD:** Testes são herméticos; mocks servem para APIs externas e integração real fica em ambiente development autorizado. Lint e format verificam imports, promises, tipos e fronteiras quando configurados. Não edite migration já aplicada; crie correção versionada.
 
-**SHOULD:** Atualize a referência de desenvolvimento, `.env.example` e documentação do contrato sempre que o modo de operar mudar. O README apresenta o produto, suas funcionalidades e licença; atualize-o quando esses aspectos mudarem, mantendo instruções de execução e configuração na documentação de manutenção. Registre decisão duradoura em ADR curto. Remova código morto e não versione outputs, segredos ou dumps. Commits pequenos não descartam mudanças alheias.
+**SHOULD:** Atualize a referência de desenvolvimento e a documentação do contrato sempre que o modo de operar mudar. Segredos ficam no Doppler, nos configs `dev` e `prd`. O README apresenta o produto, suas funcionalidades e licença; atualize-o quando esses aspectos mudarem, mantendo instruções de execução e configuração na documentação de manutenção. Registre decisão duradoura em ADR curto. Remova código morto e não versione outputs, segredos ou dumps. Commits pequenos não descartam mudanças alheias.
 
 ## Definition of Done
 

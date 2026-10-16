@@ -33,7 +33,7 @@ doppler run -- docker compose -f compose.dev.yaml down
 
 ## Configuração
 
-`APP_ENV`, `PORT`, `HOST`, `SITE_URL` e `AUTO_SYNC_COMMANDS` não ficam no Doppler: os Composes definem esses controles. No nativo, os comandos de desenvolvimento selecionam o ambiente, o site usa porta padrão 3666 e a sincronização fica desativada por padrão. O `.env.example` só aponta para o Doppler.
+`APP_ENV`, `PORT`, `HOST`, `SITE_URL` e `AUTO_SYNC_COMMANDS` não ficam no Doppler: os Composes definem esses controles. No nativo, os comandos de desenvolvimento selecionam o ambiente, o site usa porta padrão 3666 e a sincronização fica desativada por padrão. Os segredos entram por `doppler login` e `doppler setup` no config `dev`.
 
 **MUST:** `APP_ENV=development|production` é explícito, sem fallback, e continua determinando o comportamento do ambiente. Os segredos vêm do Doppler, configs `dev` e `prd`, com os mesmos nomes sem sufixo: `ASSETS_BASE_URL`, `DATABASE_CA`, `DATABASE_URL`, `DATABASE_MIGRATION_URL`, `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_SECRET` e `DISCORD_PUBLIC_KEY`. O código não escolhe variável por sufixo de `APP_ENV`. Nenhum contêiner recebe o conjunto inteiro. Segredos não entram no Git, no contexto de build nem nas imagens.
 

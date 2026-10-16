@@ -27,7 +27,7 @@ No `doppler setup`, escolha o config `dev`. Em seguida:
 doppler run -- docker compose -f compose.dev.yaml up
 ```
 
-O `.env.example` só registra esse caminho. Segredos não entram nas imagens.
+Esses comandos são a origem dos segredos. Eles vêm do Doppler e não entram nas imagens.
 
 O Compose de desenvolvimento é `compose.dev.yaml`, independente de `compose.yaml`. Ele não funciona como override de produção, não oferece hot reload e não inclui serviço de migration. Suba e encerre com:
 

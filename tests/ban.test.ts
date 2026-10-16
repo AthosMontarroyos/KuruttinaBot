@@ -239,7 +239,7 @@ describe('ban command', () => {
   it('refuses to ban the author, the bot, the owner or a higher role', async () => {
     const cases: Array<{ rawArgs: string; members?: Record<string, GuildMemberProfile>; text: string }> = [
       { rawArgs: `<@${ACTOR}>`, text: '<:Disappointed:Disappointed-id> Você não pode se banir... Por que você estaria tentando banir você mesmo?' },
-      { rawArgs: `<@${BOT}>`, text: '<:cry:cry-id> Ei! Por que você está tentando banir?' },
+      { rawArgs: `<@${BOT}>`, text: '<:cry:cry-id> Ei! Por que você está tentando me banir?' },
       { rawArgs: `<@${OWNER}>`, text: '<:Disappointed:Disappointed-id> Não consigo banir o dono deste servidor.' },
       {
         rawArgs: `<@${TARGET}>`,

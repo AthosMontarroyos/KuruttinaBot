@@ -108,7 +108,7 @@ jobs:
 
           migration_configured() {
             local value status=0
-            value="$(doppler secrets get DATABASE_MIGRATION_URL --plain 2>/dev/null)" || status=$?
+            value="$(doppler secrets get DATABASE_MIGRATION_URL --plain --no-exit-on-missing-secret 2>/dev/null)" || status=$?
             if [ "${status}" -ne 0 ]; then
               return 2
             fi
@@ -222,7 +222,7 @@ jobs:
               exit 1
             fi
           else
-            echo "Migration ignorada: DATABASE_MIGRATION_URL vazio."
+            echo "Migration ignorada: DATABASE_MIGRATION_URL ausente ou vazio."
           fi
 
           if ! doppler run -- docker compose up -d bot site; then

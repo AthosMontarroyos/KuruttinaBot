@@ -8,12 +8,6 @@ dist/
 coverage/
 *.log
 
-
-# Assets are stored in Cloudflare R2; keep local backups out of deploys and Git.
-/R2/
-/emojis/
-.tools/
-
 #Cache
 .vscode
 .npm-cache

@@ -1,15 +1,15 @@
 # Emojis de produção
 
-Application Emojis do bot de produção entram só por um workflow manual. A máquina de desenvolvimento não precisa do token desse bot, e o comando `/dev emoji add` não cria o emoji.
+Application Emojis do bot de produção entram só por um workflow manual. A imagem não fica no repositório. A máquina de desenvolvimento não precisa do token desse bot, e o comando `/dev emoji add` não cria o emoji.
 
 ## Como adicionar
 
-1. Grave um PNG, GIF ou WEBP de no máximo 256 KiB em `assets/emojis/` e faça o commit na branch que será usada na execução.
+1. Publique a imagem em uma URL HTTPS. Ela precisa ser PNG, JPEG, GIF ou WEBP e ter no máximo 256 KiB.
 2. No GitHub, abra **Actions** → **Adicionar emoji de produção** → **Run workflow**.
-3. Informe `name` e `image_path`. O nome tem de 2 a 32 caracteres e só aceita letras, dígitos e `_`. O caminho fica dentro de `assets/emojis/`, por exemplo `assets/emojis/festa.png`.
+3. Informe `name` e `image_url`. O nome tem de 2 a 32 caracteres e só aceita letras, dígitos e `_`. A URL usa somente HTTPS, sem usuário ou senha.
 4. Aprove a execução no ambiente `production`. Sem essa aprovação o job não usa o segredo.
 
-O workflow consulta a aplicação, recusa o nome se ele já existir e só então cria o emoji. Ele não apaga nem substitui. O resumo do job mostra o nome e o ID criados. Uma execução por vez: a concorrência é `emoji-prod`.
+O workflow baixa a imagem para o diretório temporário do runner com `curl`, restrito a HTTPS, com limite de 256 KiB, timeout e no máximo cinco redirects. Confere o tipo anunciado e a assinatura do arquivo, consulta a aplicação, recusa o nome se ele já existir e só então cria o emoji. Em seguida apaga o arquivo temporário. Ele não apaga nem substitui emoji. O resumo do job mostra o nome e o ID criados. O token não é impresso. Uma execução por vez: a concorrência é `emoji-prod`.
 
 Kurutta configura os revisores obrigatórios do ambiente GitHub `production`. O arquivo do workflow só declara `environment: production`; a trava de aprovação fica nessa configuração do ambiente, não no repositório.
 

@@ -2,7 +2,7 @@
 
 A publicação de produção acontece quando uma GitHub Release é publicada. O workflow [deploy.yml](../../.github/workflows/deploy.yml) executa, na tag dessa release, as verificações do workflow de qualidade e só então atualiza a VPS. O mesmo workflow pode ser executado manualmente com uma tag.
 
-Os segredos `VPS_HOST`, `VPS_USER` e `VPS_SSH_KEY` ficam apenas no GitHub, no ambiente `production`. Eles não são versionados.
+Os segredos `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` e `VPS_KNOWN_HOSTS` ficam apenas no GitHub, no ambiente `production`. Eles não são versionados. `VPS_KNOWN_HOSTS` é a chave de host fixada.
 
 Para rollback, execute o workflow Publicar produção manualmente e informe a tag anterior.
 

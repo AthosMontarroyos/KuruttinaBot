@@ -58,6 +58,7 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Situação | Emoji | Texto |
 | --- | --- | --- |
 | Sucesso | `add` e `sucess` | ➕ Pronto. O emoji **nome** agora está neste servidor. ✅ |
+| Application Emoji de produção | `book` | 📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Grave a imagem no repositório e use o workflow **Adicionar emoji de produção** no GitHub. A criação espera aprovação. |
 | Erro | `ops` | 😅 Não consegui buscar as mensagens. Tente de novo daqui a pouco. |
 | Permissão negada | `Disappointed` | 😞 Você precisa da permissão **Gerenciar mensagens** neste canal. |
 | Entrada inválida | `question` | ❓ Diga quantas mensagens apagar: um número de **1 a 200**. |

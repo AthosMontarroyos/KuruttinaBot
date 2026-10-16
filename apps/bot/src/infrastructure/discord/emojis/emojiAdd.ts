@@ -69,10 +69,11 @@ const importErrorEmoji = {
 } as const satisfies Record<EmojiImportErrorCode, string>;
 
 /**
- * Executor compartilhado das operações `dev emoji add` e `emoji add`.
+ * Executor da importação `emoji add` no servidor onde o comando foi usado.
  *
  * Slash e prefixo só diferem na leitura das entradas; autorização, fila,
  * limites e erros são resolvidos fora, pelo dispatcher e pelo núcleo.
+ * O destino `application` não cria emoji de produção: o adapter o recusa.
  */
 export function createEmojiAddExecutor(target: EmojiAddTarget): (context: CommandContext) => Promise<void> {
   return async (context: CommandContext): Promise<void> => {

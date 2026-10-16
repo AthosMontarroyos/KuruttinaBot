@@ -14,7 +14,7 @@ O pacote declara suporte local a Node 22.14+/24/26. A VPS, as imagens e o CI usa
 
 O bot não escuta HTTP. `APP_ENV`, `HOST` e a porta do site definidos pelos serviços Compose prevalecem sobre os mesmos nomes no `.env`. A seleção de variáveis de cada serviço está na referência de deployment.
 
-No modo nativo, instale as dependências com `npm ci`. Copie `.env.example` para `.env`, configure os dois pares `DISCORD_BOT_TOKEN_*`/`DISCORD_BOT_ID_*` e a URL/CA PostgreSQL do ambiente ativo. O arquivo `.env` não é versionado e não entra nas imagens.
+No modo nativo, instale as dependências com `npm ci`. Copie `.env.example` para `.env`, configure o par `DISCORD_BOT_TOKEN_DEVELOPMENT`/`DISCORD_BOT_ID_DEVELOPMENT` e a URL/CA PostgreSQL de development. O token de production não entra no desenvolvimento: Application Emojis desse bot seguem [Emojis de produção](emojis-prod.md). O arquivo `.env` não é versionado e não entra nas imagens.
 
 O Compose de desenvolvimento é `compose.dev.yaml`, independente de `compose.yaml`. Ele não funciona como override de produção, não oferece hot reload e não inclui serviço de migration. Suba e encerre com:
 

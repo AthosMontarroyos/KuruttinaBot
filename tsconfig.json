@@ -8,5 +8,5 @@
       "#bot/*": ["./apps/bot/src/*"]
     }
   },
-  "include": ["apps/**/*.ts", "packages/**/*.js", "tests/**/*.ts", "vitest.config.ts"]
+  "include": ["apps/**/*.ts", "packages/**/*.js", "scripts/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
 }

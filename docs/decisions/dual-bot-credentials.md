@@ -26,4 +26,14 @@ Responsável: AthosMontarroyos.
 
 ## Remoção
 
+O plano abaixo foi cumprido, para Application Emojis, pela atualização de 16 de outubro de 2026. O texto original fica como registro.
+
 Quando existir um secret store para esta capability, remover o acesso conjunto ao `.env`. Até lá, o processo continua lendo os dois pares e a capability recebe só a credencial de production.
+
+## Atualização — 16 de outubro de 2026
+
+A criação de Application Emojis de production saiu do processo local. Ela ocorre só no workflow manual `emoji-prod`, com o segredo `DISCORD_PROD_BOT_TOKEN` no ambiente GitHub `production` e com a aprovação dos revisores desse ambiente. O procedimento está em [Emojis de produção](../project/emojis-prod.md).
+
+Development deixa de exigir e de ler `DISCORD_BOT_TOKEN_PRODUCTION` e `DISCORD_BOT_ID_PRODUCTION`. `/dev emoji add` apenas orienta o workflow. O `compose.dev.yaml` não recebe esse par.
+
+O contêiner de production na VPS não muda a forma de obter o token: o `compose.yaml` continua entregando `DISCORD_BOT_TOKEN_PRODUCTION` a partir do `.env` da raiz, e o processo de production continua exigindo os dois pares. O token antigo que circulou em máquinas de desenvolvimento deve ser rotacionado no Discord, no segredo do ambiente e no `.env` da VPS.

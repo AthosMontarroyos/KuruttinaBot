@@ -219,33 +219,29 @@ describe('emoji add command routing', () => {
     },
   );
 
-  it('sends /dev emoji add to the production application, without credentials', async () => {
+  it('points /dev emoji add at the production workflow and does not import', async () => {
     const { importEmoji, service } = importService();
     const staff = staffPort('creator');
     const ports = slash('dev', ['emoji', 'add'], { guildId: DEV_GUILD, attachments: [ATTACHMENT] });
 
     await runSlash(ports, new CommandsHandler([devCommand], staff, service));
 
-    expect(importEmoji).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      destination: { kind: 'application', actorUserId: CREATOR, guildId: DEV_GUILD },
-    }));
-    const request = importEmoji.mock.calls[0]?.[0];
-    expect(JSON.stringify(request)).not.toContain('token');
-    expect(texts(ports.reply)).toEqual(['🧑‍💻 Pronto. O emoji **derived** agora está nos Application Emojis do bot de produção. ✅']);
+    expect(importEmoji).not.toHaveBeenCalled();
+    expect(texts(ports.reply)).toEqual([
+      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Grave a imagem no repositório e use o workflow **Adicionar emoji de produção** no GitHub. A criação espera aprovação.',
+    ]);
     expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
 
-  it.each(['k!dev-emoji-add', 'K!dev-emoji-add'])('routes prefix %s to the shared application executor', async (content) => {
+  it.each(['k!dev-emoji-add', 'K!dev-emoji-add'])('routes prefix %s to the production workflow notice', async (content) => {
     const { importEmoji, service } = importService();
     const { message } = prefix(content, { guildId: DEV_GUILD, attachments: [ATTACHMENT] });
 
     await runPrefix(message, new CommandsHandler([devCommand], staffPort('dev'), service));
 
-    expect(importEmoji).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      destination: { kind: 'application', actorUserId: CREATOR, guildId: DEV_GUILD },
-    }));
+    expect(importEmoji).not.toHaveBeenCalled();
     expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
-      '🧑‍💻 Pronto. O emoji **derived** agora está nos Application Emojis do bot de produção. ✅',
+      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Grave a imagem no repositório e use o workflow **Adicionar emoji de produção** no GitHub. A criação espera aprovação.',
     ]);
   });
 
@@ -302,13 +298,15 @@ describe('dev emoji authorization in both transports', () => {
       const handler = new CommandsHandler([devCommand], staff, service);
       const spec: TransportSpec = { userId: user, guildId: location, attachments: [ATTACHMENT] };
 
-      if (transport === 'slash') {
-        await runSlash(slash('dev', ['emoji', 'add'], spec), handler);
-      } else {
-        await runPrefix(prefix(transport + 'dev-emoji-add', spec).message, handler);
-      }
+      const replies = transport === 'slash'
+        ? await runSlash(slash('dev', ['emoji', 'add'], spec), handler)
+        : await runPrefix(prefix(transport + 'dev-emoji-add', spec).message, handler);
 
-      expect(importEmoji).toHaveBeenCalledTimes(expected ? 1 : 0);
+      expect(importEmoji).not.toHaveBeenCalled();
+      if (expected) expect(replies).toEqual([
+        '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Grave a imagem no repositório e use o workflow **Adicionar emoji de produção** no GitHub. A criação espera aprovação.',
+      ]);
+      else expect(replies.join('\n')).not.toContain('Adicionar emoji de produção');
       if (location) expect(staff.getStaffRole).toHaveBeenCalledWith(user, location);
       else expect(staff.getStaffRole).not.toHaveBeenCalled();
     });

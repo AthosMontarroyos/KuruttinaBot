@@ -8,7 +8,7 @@ export type BotTarget = AppEnv;
 export type BotCredential = Readonly<{ token: string; expectedBotId: string }>;
 export type BotConfig = Readonly<{
   target: BotTarget;
-  credentials: Readonly<{ development: BotCredential; production: BotCredential }>;
+  credentials: Readonly<{ development: BotCredential; production?: BotCredential }>;
   activeCredential: BotCredential;
   autoSyncCommands: boolean;
   database: ReturnType<typeof readDatabaseConfig>;
@@ -16,20 +16,19 @@ export type BotConfig = Readonly<{
 
 const configurationError = (message: string): Error => Object.assign(new Error(message), { name: 'BotConfigurationError' });
 
-const botEnvironmentNames = [
-  'APP_ENV',
-  'AUTO_SYNC_COMMANDS',
-  'DISCORD_BOT_ID_DEVELOPMENT',
-  'DISCORD_BOT_ID_PRODUCTION',
-  'DISCORD_BOT_TOKEN_DEVELOPMENT',
-  'DISCORD_BOT_TOKEN_PRODUCTION',
-] as const;
-
 export function selectBotEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  const suffix = env.APP_ENV === 'production' ? 'PRODUCTION' : 'DEVELOPMENT';
-  return Object.fromEntries(
-    [...botEnvironmentNames, 'DATABASE_URL_' + suffix, 'DATABASE_CA_CERT_' + suffix].flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]])),
-  );
+  const production = env.APP_ENV === 'production';
+  const suffix = production ? 'PRODUCTION' : 'DEVELOPMENT';
+  const names = [
+    'APP_ENV',
+    'AUTO_SYNC_COMMANDS',
+    'DISCORD_BOT_ID_DEVELOPMENT',
+    'DISCORD_BOT_TOKEN_DEVELOPMENT',
+    ...(production ? ['DISCORD_BOT_ID_PRODUCTION', 'DISCORD_BOT_TOKEN_PRODUCTION'] : []),
+    `DATABASE_URL_${suffix}`,
+    `DATABASE_CA_CERT_${suffix}`,
+  ];
+  return Object.fromEntries(names.flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]])));
 }
 
 /**
@@ -70,16 +69,26 @@ const parseBoolean = (value: string | undefined): boolean => {
 
 export function loadConfig(env: NodeJS.ProcessEnv = loadBotEnvironment()): BotConfig {
   const { appEnv: target } = loadAppConfig(env);
-  const credentials = Object.freeze({
-    development: readCredential(env, 'DEVELOPMENT'),
-    production: readCredential(env, 'PRODUCTION'),
-  });
-  return Object.freeze({
-    target,
-    credentials,
-    activeCredential: credentials[target],
+  const development = readCredential(env, 'DEVELOPMENT');
+  const shared = {
     autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS),
     database: readDatabaseConfig(env, target),
+  };
+  if (target === 'production') {
+    const production = readCredential(env, 'PRODUCTION');
+    return Object.freeze({
+      target,
+      credentials: Object.freeze({ development, production }),
+      activeCredential: production,
+      ...shared,
+    });
+  }
+  // Development não lê o par de production, mesmo que ele esteja no ambiente.
+  return Object.freeze({
+    target,
+    credentials: Object.freeze({ development }),
+    activeCredential: development,
+    ...shared,
   });
 }
 

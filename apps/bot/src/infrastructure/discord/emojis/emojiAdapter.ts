@@ -7,8 +7,6 @@ import {
   type EmojiDestination,
   type PreparedEmojiImage,
 } from '#bot/application/emojis/types.js';
-import type { ProductionApplicationEmojiPort } from './productionApplicationEmojis.js';
-
 /**
  * Códigos REST do Discord para destino sem capacidade
  * (`RESTJSONErrorCodes`): emojis normais, animados e premium.
@@ -34,13 +32,12 @@ function mapCreateFailure(error: unknown): EmojiImportError {
   return emojiError('create_failed', 'O Discord recusou a criação do emoji.');
 }
 
-export function createDiscordEmojiAdapter(
-  client: Client,
-  productionEmojis: ProductionApplicationEmojiPort,
-): EmojiCreationPort {
+const applicationClosed = 'Application Emojis do bot de produção entram pelo workflow manual no GitHub.';
+
+export function createDiscordEmojiAdapter(client: Client): EmojiCreationPort {
   return {
     countApplicationEmojis(): Promise<number> {
-      return productionEmojis.count();
+      return Promise.reject(emojiError('destination_unavailable', applicationClosed));
     },
 
     async create(
@@ -49,14 +46,7 @@ export function createDiscordEmojiAdapter(
       image: PreparedEmojiImage,
     ): Promise<CreatedEmoji> {
       if (destination.kind === 'application') {
-        try {
-          return await productionEmojis.create(name, image, {
-            userId: destination.actorUserId,
-            guildId: destination.guildId,
-          });
-        } catch (error: unknown) {
-          throw mapCreateFailure(error);
-        }
+        throw emojiError('destination_unavailable', applicationClosed);
       }
 
       const attachment = toDataUri(image);

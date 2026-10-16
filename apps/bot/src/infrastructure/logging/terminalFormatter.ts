@@ -43,8 +43,6 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   unban_failed: { emoji: '❌', category: 'Ban', message: 'Falha ao revogar o banimento' },
   unban_confirm_failed: { emoji: '❌', category: 'Ban', message: 'Banimento revogado; falha ao enviar confirmação' },
   central_command_deployment_failed: { emoji: '❌', category: 'Sync', message: 'Falha ao sincronizar comandos globais' },
-  production_application_emoji_created: { emoji: '✅', category: 'Emoji', message: 'Emoji criado no bot de produção' },
-  production_application_identity_rejected: { emoji: '⚠️', category: 'Emoji', message: 'Identidade do bot de produção rejeitada' },
 };
 
 const levelPresentations: Readonly<Record<TerminalLogLevel, EventPresentation>> = {

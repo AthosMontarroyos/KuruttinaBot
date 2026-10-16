@@ -1,18 +1,21 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import type { ChatInputCommand } from '#bot/command-system/types.js';
-import { addEmojiAddOptions, createEmojiAddExecutor } from '#bot/infrastructure/discord/emojis/emojiAdd.js';
+import { withEmojis } from '#bot/command-system/responses.js';
+import type { ChatInputCommand, CommandContext } from '#bot/command-system/types.js';
+
+const productionEmojiRedirect =
+  'Eu não adiciono Application Emojis ao bot de produção por aqui. Grave a imagem no repositório e use o workflow **Adicionar emoji de produção** no GitHub. A criação espera aprovação.';
 
 /**
- * Adiciona um emoji aos Application Emojis do bot de produção.
- *
- * O módulo fica em `commands/dev/`: o loader exige `scope: 'dev-guild'` e a
- * política `staff` para qualquer arquivo dessa pasta, então o comando é
- * publicado somente na guilda de desenvolvimento cadastrada e nunca no
- * payload global. A publicação restrita não substitui a autorização: nos dois
- * transports a política `staff` exige um usuário ativo como Dev ou Creator.
- * O destino de produção é escolhido na composição do processo; este módulo
- * não recebe tokens nem o objeto de credenciais.
+ * Orienta a equipe a criar Application Emojis do bot de produção pelo workflow
+ * manual. O módulo fica em `commands/dev/`: o loader exige `scope: 'dev-guild'`
+ * e a política `staff`, então o comando é publicado somente na guilda de
+ * desenvolvimento cadastrada. Ele não recebe token nem cria o emoji.
  */
+async function explainProductionEmoji(context: CommandContext): Promise<void> {
+  await context.acknowledge();
+  await context.reply(withEmojis(await context.emoji('book'), productionEmojiRedirect));
+}
+
 export const command = {
   data: new SlashCommandBuilder()
     .setName('dev')
@@ -22,11 +25,9 @@ export const command = {
         .setName('emoji')
         .setDescription('Emojis do bot')
         .addSubcommand((subcommand) =>
-          addEmojiAddOptions(
-            subcommand
-              .setName('add')
-              .setDescription('Adiciona um emoji aos Application Emojis do bot de produção'),
-          ),
+          subcommand
+            .setName('add')
+            .setDescription('Informa como adicionar um Application Emoji ao bot de produção'),
         ),
     ),
   access: {
@@ -42,6 +43,6 @@ export const command = {
   },
   scope: 'dev-guild' as const,
   routes: [
-    { path: ['emoji', 'add'], aliases: ['dev-emoji-add'], execute: createEmojiAddExecutor('application') },
+    { path: ['emoji', 'add'], aliases: ['dev-emoji-add'], execute: explainProductionEmoji },
   ],
 } satisfies ChatInputCommand;

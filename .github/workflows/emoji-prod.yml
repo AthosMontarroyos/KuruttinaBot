@@ -1,0 +1,43 @@
+name: Adicionar emoji de produção
+
+# Manual. O ambiente production precisa de revisores obrigatórios: cada execução
+# espera a aprovação deles antes de usar o segredo. O workflow só cria o emoji.
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: Nome do emoji (2 a 32 caracteres, A-Z, a-z, 0-9 ou _)
+        required: true
+        type: string
+      image_path:
+        description: Caminho de um PNG, GIF ou WEBP em assets/emojis/, de até 256 KiB
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency: emoji-prod
+
+jobs:
+  create:
+    name: Criar Application Emoji
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Criar emoji
+        env:
+          DISCORD_PROD_BOT_TOKEN: ${{ secrets.DISCORD_PROD_BOT_TOKEN }}
+          EMOJI_NAME: ${{ inputs.name }}
+          EMOJI_IMAGE_PATH: ${{ inputs.image_path }}
+        run: node scripts/add-production-emoji.ts

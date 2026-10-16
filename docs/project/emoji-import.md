@@ -2,7 +2,7 @@
 
 Última atualização: 29 de setembro de 2026.
 
-Este documento descreve o núcleo compartilhado de importação de emojis e a integração por trás de dois comandos: **Dev** (`/dev emoji add` → `k!dev-emoji-add`, nos Application Emojis do bot de produção) e **Servidor** (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). Os dois usam a mesma fila, os mesmos limites e o mesmo downloader; o que os separa são a política de acesso e o destino. As permissões de `emoji add` ficam na rota e se somam à política raiz de `/emoji`. A consulta `/emoji info` não usa este pipeline e não baixa nem reenvia arquivos. O destino `application` não usa a aplicação conectada ao Gateway: a composição injeta uma capability que autentica somente a credencial de production.
+Este documento descreve o núcleo compartilhado de importação de emojis e a integração do comando de servidor (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). `/dev emoji add` não cria Application Emojis: ele orienta o [workflow manual](emojis-prod.md). O adapter do processo recusa o destino `application` e o bootstrap não autentica a credencial de production para isso. O serviço ainda conhece esse destino para os testes do núcleo. As permissões de `emoji add` ficam na rota e se somam à política raiz de `/emoji`. A consulta `/emoji info` não usa este pipeline e não baixa nem reenvia arquivos.
 
 ## Escopo desta etapa
 
@@ -14,10 +14,9 @@ Implementado:
 - `apps/bot/src/application/emojis/importEmoji.ts`: serviço com fila, parsing de referências, derivação de nome, verificação de capacidade e fallback GIF→PNG.
 - `apps/bot/src/infrastructure/images/downloadDiscordImage.ts`: download restrito ao CDN do Discord.
 - `apps/bot/src/infrastructure/images/sharpEmojiProcessor.ts`: escada de compressão com `sharp` e redução de quadros com `gifenc`.
-- `apps/bot/src/infrastructure/discord/emojis/emojiAdapter.ts`: criação de emojis de servidor via `discord.js`, com o destino `application` delegado à capability de produção.
-- `apps/bot/src/infrastructure/discord/emojis/productionApplicationEmojis.ts`: capability que lista e cria Application Emojis só na aplicação de production.
-- `apps/bot/src/infrastructure/discord/emojis/emojiAdd.ts`: executor e leitura de entradas compartilhados pelas duas operações, fora da descoberta de comandos.
-- `apps/bot/src/commands/dev/emoji.ts` e `apps/bot/src/commands/mod/emoji.ts`: definições slash (subcomando e grupo), rotas por prefixo e políticas `staff`/`guild`; o módulo em `dev/` declara `scope: 'dev-guild'` e só é publicado na guilda da equipe.
+- `apps/bot/src/infrastructure/discord/emojis/emojiAdapter.ts`: criação de emojis de servidor via `discord.js`. O destino `application` é recusado; a criação no bot de produção é o workflow manual.
+- `apps/bot/src/infrastructure/discord/emojis/emojiAdd.ts`: executor e leitura de entradas da importação no servidor, fora da descoberta de comandos.
+- `apps/bot/src/commands/dev/emoji.ts` e `apps/bot/src/commands/mod/emoji.ts`: definições slash (subcomando e grupo), rotas por prefixo e políticas `staff`/`guild`. O módulo em `dev/` declara `scope: 'dev-guild'`, só é publicado na guilda da equipe e responde com a orientação do workflow. O módulo em `mod/` importa para o servidor.
 - `apps/bot/src/bootstrap.ts`: uma única composição do serviço, injetada no dispatcher pelos dois transports.
 
 Permissões e identidade ficam na política de acesso (ver [Acesso do bot](bot-access.md)). Não existe configuração por guild de limites ou fila; os limites são os de `DEFAULT_EMOJI_IMAGE_LIMITS`.
@@ -63,7 +62,7 @@ Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=l
 
 ## Destinos e erros
 
-`createEmojiImportService` aceita origem (referência de emoji `<:nome:id>`/`<a:nome:id>`, ID puro ou URL de anexo) e destino (`application` ou `guild`). Para `application`, a capacidade é verificada antes (`DISCORD_APPLICATION_EMOJI_LIMIT` = 2000) na aplicação de produção; para `guild`, a capacidade é deixada para o erro do Discord. O adapter de servidor envia data URI com MIME explícito (`image/png`/`image/gif`) pelo client ativo. A capability de produção faz o mesmo por REST, em `POST /applications/{id}/emojis`, depois de confirmar `/users/@me` contra `DISCORD_BOT_ID_PRODUCTION`. Essa confirmação ocorre na primeira operação, fica em cache só se passar e não abre Gateway. Identidade divergente, timeout ou resposta inválida falha fechado, sem token em log ou resposta. Os códigos 30008/30018/30056 mapeiam para `capacity_reached`. O command não recebe o objeto de credenciais; a auditoria registra a aplicação de produção, o emoji e, quando são snowflakes, o autor e a guilda.
+`createEmojiImportService` aceita origem (referência de emoji `<:nome:id>`/`<a:nome:id>`, ID puro ou URL de anexo) e destino (`application` ou `guild`). Para `application`, a capacidade ainda é verificada no serviço antes (`DISCORD_APPLICATION_EMOJI_LIMIT` = 2000); para `guild`, a capacidade é deixada para o erro do Discord. O adapter de servidor envia data URI com MIME explícito (`image/png`/`image/gif`) pelo client ativo. No processo, o destino `application` falha fechado, sem token de production: a criação real está no workflow manual. Os códigos 30008/30018/30056 do destino de servidor mapeiam para `capacity_reached`.
 
 O nome sai, nesta ordem, da opção `nome`, do nome real do arquivo (sem extensão), do segmento final da URL ou do nome embutido na referência do emoji. Antes de enfileirar, um tamanho declarado acima do limite de entrada falha com `input_too_large` sem consumir download — junto com a cota do destino, é a verificação de falha barata. Um `contentType` declarado fora de `image/` também recusa antes do download (`unsupported_format`); ausência, `null` e `image/*` não autorizam o arquivo.
 

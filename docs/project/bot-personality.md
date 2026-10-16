@@ -114,7 +114,7 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Bot sem permissão para banir | `Angry` | 😠 Preciso destas permissões para banir um usuário: **Banir membros**. |
 | Banimento sem usuário | `question` | ❓ Diga quem banir. Mencione o membro ou digite o ID! |
 | Autobanimento | `Disappointed` | 😞 Você não pode se banir... Por que você estaria tentando banir você mesmo? |
-| Banir o bot | `cry` | 😢 Ei! Por que você está tentando banir? |
+| Banir o bot | `cry` | 😢 Ei! Por que você está tentando me banir? |
 | Falha no banimento | `ops` | 😅 Não consegui banir esse usuário. Tente de novo daqui a pouco. |
 | Dono no banimento | `Disappointed` | 😞 Não consigo banir o dono deste servidor. |
 | Cargo do autor no banimento | `Disappointed` | 😞 Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo. |

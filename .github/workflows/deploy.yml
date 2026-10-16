@@ -1,12 +1,14 @@
 name: Publicar produção
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Quality"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
-      tag:
-        description: Tag para publicar ou restaurar
+      ref:
+        description: Tag ou SHA para publicar ou restaurar
         required: true
         type: string
 
@@ -16,15 +18,17 @@ permissions:
 jobs:
   quality:
     name: Verificações de qualidade
+    if: github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/quality.yml
     with:
-      ref: ${{ github.event.release.tag_name || inputs.tag }}
+      ref: ${{ inputs.ref }}
     permissions:
       contents: read
 
   deploy:
     name: Publicar na VPS
     needs: quality
+    if: always() && (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' || github.event_name == 'workflow_dispatch' && needs.quality.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     concurrency:
@@ -62,20 +66,27 @@ jobs:
             exit 1
           fi
 
-      - name: Publicar a tag na VPS
+      - name: Publicar o commit na VPS
         id: deploy
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
-          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.event.workflow_run.head_sha }}
+          DEPLOY_MODE: ${{ github.event_name == 'workflow_run' && 'sha' || 'manual' }}
         run: |
           set -euo pipefail
-          if [ -z "${TAG}" ]; then
-            echo "Nenhuma tag foi informada."
+          if [ -z "${DEPLOY_REF}" ]; then
+            echo "Nenhuma referência foi informada."
             exit 1
           fi
-          if [[ ! "${TAG}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${TAG}" == *".."* ]] || [[ "${TAG}" == -* ]]; then
-            echo "A tag informada é inválida."
+          if [[ "${DEPLOY_REF}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            DEPLOY_REF="${DEPLOY_REF,,}"
+          elif [[ ! "${DEPLOY_REF}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${DEPLOY_REF}" == *".."* ]] || [[ "${DEPLOY_REF}" == -* ]]; then
+            echo "A referência informada é inválida."
+            exit 1
+          fi
+          if [ "${DEPLOY_MODE}" = "sha" ] && [[ ! "${DEPLOY_REF}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "O commit da Quality não é um SHA de 40 caracteres."
             exit 1
           fi
           ssh -T \
@@ -89,10 +100,11 @@ jobs:
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=4 \
             "${VPS_USER}@${VPS_HOST}" \
-            bash -s -- "${TAG}" <<'REMOTE' | tee "${RUNNER_TEMP}/deploy.log"
+            bash -s -- "${DEPLOY_REF}" "${DEPLOY_MODE}" <<'REMOTE' | tee "${RUNNER_TEMP}/deploy.log"
           set -euo pipefail
           cd /home/deploy/Projects/KuruttinaBot
-          tag="$1"
+          ref="$1"
+          mode="$2"
 
           migration_configured() {
             local status=0
@@ -141,12 +153,19 @@ jobs:
             exit 1
           }
 
-          if [ -z "${tag}" ]; then
-            echo "Nenhuma tag foi informada."
+          if [ -z "${ref}" ]; then
+            echo "Nenhuma referência foi informada."
             exit 1
           fi
-          if ! git check-ref-format --allow-onelevel "refs/tags/${tag}"; then
-            echo "A tag informada é inválida."
+          if [ "${mode}" != "sha" ] && [ "${mode}" != "manual" ]; then
+            echo "O modo de publicação é inválido."
+            exit 1
+          fi
+          if [[ "${ref}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            ref="${ref,,}"
+          fi
+          if [ "${mode}" = "sha" ] && [[ ! "${ref}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "O commit informado não é um SHA de 40 caracteres."
             exit 1
           fi
           if [ ! -r .env ]; then
@@ -160,11 +179,36 @@ jobs:
 
           prev=$(git rev-parse HEAD)
           git fetch --tags --prune origin
-          if ! git rev-parse --verify --quiet "refs/tags/${tag}^{commit}" >/dev/null; then
-            echo "A tag ${tag} não existe no repositório."
+          if ! git rev-parse --verify --quiet origin/main >/dev/null; then
+            echo "origin/main não está disponível depois do fetch."
             exit 1
           fi
-          git checkout --detach "${tag}"
+          if [[ "${ref}" =~ ^[0-9a-f]{40}$ ]]; then
+            if ! git cat-file -e "${ref}^{commit}" 2>/dev/null; then
+              echo "O commit ${ref} não está no repositório."
+              exit 1
+            fi
+            resolved="${ref}"
+          else
+            if ! git check-ref-format --allow-onelevel "refs/tags/${ref}"; then
+              echo "A referência informada é inválida."
+              exit 1
+            fi
+            if ! git rev-parse --verify --quiet "refs/tags/${ref}^{commit}" >/dev/null; then
+              echo "A tag ${ref} não existe no repositório."
+              exit 1
+            fi
+            resolved=$(git rev-parse "refs/tags/${ref}^{commit}")
+          fi
+          if ! git merge-base --is-ancestor "${resolved}" origin/main; then
+            echo "O commit ${resolved} não é alcançável a partir de origin/main."
+            exit 1
+          fi
+          if [ "${mode}" = "sha" ] && [ "${resolved}" != "${prev}" ] && git merge-base --is-ancestor "${resolved}" "${prev}"; then
+            echo "O commit ${resolved} já está no checkout atual. A publicação automática não volta para um commit anterior."
+            exit 1
+          fi
+          git checkout --detach "${resolved}"
 
           if ! docker compose build; then
             echo "A construção das imagens falhou. Os contêineres em execução não foram alterados."
@@ -222,19 +266,19 @@ jobs:
             echo "A limpeza de imagens não utilizadas falhou e foi ignorada."
           fi
 
-          printf 'KURUTTINA_DEPLOYED_TAG=%s\n' "${tag}"
+          printf 'KURUTTINA_DEPLOYED_REF=%s\n' "${ref}"
           printf 'KURUTTINA_DEPLOYED_COMMIT=%s\n' "$(git rev-parse HEAD)"
           REMOTE
           commit=$(grep -E '^KURUTTINA_DEPLOYED_COMMIT=[0-9a-f]{40}$' "${RUNNER_TEMP}/deploy.log" | tail -n 1 | cut -d= -f2 || true)
-          deployed_tag=$(grep -E '^KURUTTINA_DEPLOYED_TAG=' "${RUNNER_TEMP}/deploy.log" | tail -n 1 | cut -d= -f2- || true)
-          if [ -z "${commit}" ] || [ "${deployed_tag}" != "${TAG}" ]; then
-            echo "A publicação não confirmou a tag e o commit."
+          deployed_ref=$(grep -E '^KURUTTINA_DEPLOYED_REF=' "${RUNNER_TEMP}/deploy.log" | tail -n 1 | cut -d= -f2- || true)
+          if [ -z "${commit}" ] || [ "${deployed_ref}" != "${DEPLOY_REF}" ]; then
+            echo "A publicação não confirmou a referência e o commit."
             exit 1
           fi
           {
             echo "## Publicação"
             echo
-            echo "- Tag: \`${TAG}\`"
+            echo "- Ref: \`${DEPLOY_REF}\`"
             echo "- Commit: \`${commit}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
 
@@ -245,11 +289,11 @@ jobs:
       - name: Registrar falha da publicação
         if: failure() && steps.deploy.outcome == 'failure'
         env:
-          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
           {
             echo "## Publicação"
             echo
-            echo "A publicação da tag \`${TAG}\` falhou."
+            echo "A publicação de \`${DEPLOY_REF}\` falhou."
           } >> "${GITHUB_STEP_SUMMARY}"

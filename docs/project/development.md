@@ -1,6 +1,6 @@
 # Desenvolvimento e operação
 
-Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.agents/skills/project-operations/references/deployment.md). A publicação por GitHub Release está em [Publicação](deploy.md).
+Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.agents/skills/project-operations/references/deployment.md). A publicação depois que a qualidade passa em `main` está em [Publicação](deploy.md).
 
 ## Modos de execução
 
@@ -45,7 +45,7 @@ Os testes de banco criam um cluster isolado no diretório temporário do sistema
 
 O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`. `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup. Pelo Compose, essa operação existe somente em `compose.yaml`; o comando está na referência de deployment.
 
-Produção no repositório é o `compose.yaml`, com o mesmo `.env` da raiz e variáveis declaradas por serviço. As unidades em `ops/systemd/` são o runtime anterior e ainda citam a conta `kuruttina` e `/etc/kuruttina/`; essa citação não é pré-requisito do Docker. PostgreSQL continua no Supabase. A publicação por GitHub Release está em [Publicação](deploy.md). A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
+Produção no repositório é o `compose.yaml`, com o mesmo `.env` da raiz e variáveis declaradas por serviço. As unidades em `ops/systemd/` são o runtime anterior e ainda citam a conta `kuruttina` e `/etc/kuruttina/`; essa citação não é pré-requisito do Docker. PostgreSQL continua no Supabase. A publicação depois que a qualidade passa em `main` está em [Publicação](deploy.md). A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
 
 ## Operações de desenvolvimento
 

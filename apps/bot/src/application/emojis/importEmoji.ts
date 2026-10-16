@@ -176,18 +176,20 @@ function urlFilename(rawUrl: string): string | undefined {
   }
 }
 
-async function resolveSource(
-  source: EmojiSource,
-  ref: ParsedEmojiRef | undefined,
+/**
+ * Baixa um emoji do CDN pelo ID. Tenta `.gif` e, só se essa variante não
+ * existir, `.png`, para não perder animação. A mesma função serve o importador
+ * de emojis de servidor e o workflow de Application Emoji de produção.
+ */
+export async function downloadDiscordEmojiById(
+  id: string,
   download: EmojiDownloadPort,
-  limits: EmojiImageLimits,
+  limits: Pick<EmojiImageLimits, 'maxInputBytes' | 'downloadTimeoutMs'>,
 ): Promise<Uint8Array> {
-  const options = { maxBytes: limits.maxInputBytes, timeoutMs: limits.downloadTimeoutMs };
-  if (source.kind === 'attachment') {
-    return await download(source.url, options);
+  if (!BARE_EMOJI_ID.test(id)) {
+    throw emojiError('invalid_source', 'A referência do emoji personalizado não é válida.');
   }
-  if (!ref) throw emojiError('invalid_source', 'A referência do emoji personalizado não é válida.');
-  const id = ref.id;
+  const options = { maxBytes: limits.maxInputBytes, timeoutMs: limits.downloadTimeoutMs };
   for (const extension of EMOJI_CDN_EXTENSIONS) {
     const url = `${EMOJI_CDN}/${id}.${extension}?size=128&quality=lossless`;
     try {
@@ -198,6 +200,19 @@ async function resolveSource(
     }
   }
   throw emojiError('source_missing', 'Não encontrei esse emoji no Discord.');
+}
+
+async function resolveSource(
+  source: EmojiSource,
+  ref: ParsedEmojiRef | undefined,
+  download: EmojiDownloadPort,
+  limits: EmojiImageLimits,
+): Promise<Uint8Array> {
+  if (source.kind === 'attachment') {
+    return await download(source.url, { maxBytes: limits.maxInputBytes, timeoutMs: limits.downloadTimeoutMs });
+  }
+  if (!ref) throw emojiError('invalid_source', 'A referência do emoji personalizado não é válida.');
+  return downloadDiscordEmojiById(ref.id, download, limits);
 }
 
 function createRunSlot(queue: EmojiQueueLimits): <T>(task: () => Promise<T>) => Promise<T> {

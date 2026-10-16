@@ -33,8 +33,9 @@ export async function startBot(correlationId: string): Promise<void> {
       makeCache: Options.cacheWithLimits({ ...Options.DefaultMakeCacheSettings, MessageManager: 0 }),
       allowedMentions: { parse: [], repliedUser: false },
     });
-    // Uma única fila. Emojis de servidor usam o client ativo. Application Emojis
-    // do bot de produção entram só pelo workflow manual, sem este token.
+    // Uma única fila. Emojis de servidor usam o client ativo e as mesmas
+    // fábricas de download e processamento do workflow de produção. Application
+    // Emojis do bot de produção entram só por esse workflow, sem este token.
     const emojiImport = createEmojiImportService({
       download: createDiscordImageDownloader(),
       processor: createSharpEmojiProcessor(),

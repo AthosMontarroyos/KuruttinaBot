@@ -1,17 +1,32 @@
-import { appendFileSync, lstatSync, readFileSync, unlinkSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { Routes } from 'discord.js';
+import { downloadDiscordEmojiById } from '#bot/application/emojis/importEmoji.js';
+import { prepareEmojiImage } from '#bot/application/emojis/prepareEmojiImage.js';
+import {
+  DEFAULT_EMOJI_IMAGE_LIMITS,
+  type EmojiDownloadPort,
+  type EmojiImageProcessor,
+} from '#bot/application/emojis/types.js';
+import { createDiscordImageDownloader } from '#bot/infrastructure/images/downloadDiscordImage.js';
+import { createSharpEmojiProcessor } from '#bot/infrastructure/images/sharpEmojiProcessor.js';
 
 /** Nome de emoji da aplicação: 2–32 caracteres, letras, dígitos ou _. */
 export const EMOJI_NAME_PATTERN = /^[A-Za-z0-9_]{2,32}$/u;
 
-/** Limite do Discord para o arquivo do emoji. */
-export const MAX_EMOJI_IMAGE_BYTES = 256 * 1024;
-
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+/** Mesma regra de ID do importador de emojis de servidor. */
+const DISCORD_EMOJI_ID = /^\d{17,20}$/u;
 
 const SNOWFLAKE = /^[1-9]\d{16,19}$/u;
 const DISCORD_API = 'https://discord.com/api/v10';
+
+/**
+ * O workflow e o bot chamam as mesmas fábricas. O alias existe para o teste
+ * conferir a identidade da função, sem uma segunda implementação.
+ */
+export const createProductionImageDownloader = createDiscordImageDownloader;
+export const createProductionEmojiProcessor = createSharpEmojiProcessor;
 
 export class EmojiProdError extends Error {
   constructor(message: string) {
@@ -24,10 +39,9 @@ export interface DiscordClient {
   request(method: 'GET' | 'POST', apiPath: string, body?: unknown): Promise<unknown>;
 }
 
-export interface ResolvedEmojiImage {
-  readonly absolutePath: string;
-  readonly mediaType: string;
-  readonly bytes: Buffer;
+export interface ProductionEmojiImage {
+  readonly bytes: Uint8Array;
+  readonly contentType: 'image/png' | 'image/gif';
 }
 
 export interface CreatedApplicationEmoji {
@@ -35,11 +49,17 @@ export interface CreatedApplicationEmoji {
   readonly name: string;
 }
 
+export type ProductionSource =
+  | { readonly kind: 'id'; readonly id: string }
+  | { readonly kind: 'url'; readonly url: string };
+
 export interface EmojiProdIO {
   readonly env: NodeJS.ProcessEnv;
   writeStdout(chunk: string): void;
   writeStderr(chunk: string): void;
   readonly discord?: DiscordClient | undefined;
+  readonly download?: EmojiDownloadPort | undefined;
+  readonly processor?: EmojiImageProcessor | undefined;
 }
 
 /** Remove espaços nas pontas e recusa nome fora da regra do Discord. */
@@ -52,41 +72,23 @@ export function validateEmojiName(name: string): string {
 }
 
 /**
- * Lê o arquivo baixado e exige que o Content-Type e a assinatura sejam o mesmo
- * PNG, JPEG, GIF ou WEBP, com no máximo 256 KiB.
+ * Classifica a origem. ID de emoji segue o CDN compartilhado; qualquer outra
+ * origem precisa ser HTTPS, sem usuário ou senha. A allowlist do CDN fica no
+ * downloader.
  */
-export function readEmojiImage(filePath: string, contentType: string): ResolvedEmojiImage {
-  const trimmed = filePath.trim();
-  if (trimmed === '' || trimmed.includes('\0') || !path.isAbsolute(trimmed)) {
-    throw new EmojiProdError('Não encontrei a imagem baixada.');
-  }
-
-  let size: number;
+export function resolveProductionSource(raw: string): ProductionSource {
+  const trimmed = raw.trim();
+  if (DISCORD_EMOJI_ID.test(trimmed)) return { kind: 'id', id: trimmed };
+  let url: URL;
   try {
-    const stat = lstatSync(trimmed);
-    if (stat.isSymbolicLink() || !stat.isFile()) {
-      throw new EmojiProdError('O caminho precisa ser um arquivo.');
-    }
-    size = stat.size;
-  } catch (error: unknown) {
-    if (error instanceof EmojiProdError) throw error;
-    throw new EmojiProdError('Não encontrei a imagem baixada.');
+    url = new URL(trimmed);
+  } catch {
+    throw new EmojiProdError('Informe o ID de um emoji do Discord ou uma URL HTTPS.');
   }
-  if (size <= 0 || size > MAX_EMOJI_IMAGE_BYTES) {
-    throw new EmojiProdError('A imagem precisa ter entre 1 byte e 256 KiB.');
+  if (url.protocol !== 'https:' || url.username !== '' || url.password !== '') {
+    throw new EmojiProdError('A URL da imagem precisa usar HTTPS, sem usuário ou senha.');
   }
-
-  const bytes = readFileSync(trimmed);
-  if (bytes.length <= 0 || bytes.length > MAX_EMOJI_IMAGE_BYTES) {
-    throw new EmojiProdError('A imagem precisa ter entre 1 byte e 256 KiB.');
-  }
-
-  const announced = mediaTypeFromContentType(contentType);
-  const signature = mediaTypeFromBytes(bytes);
-  if (announced === undefined || signature === undefined || announced !== signature) {
-    throw new EmojiProdError('A imagem precisa ser PNG, JPEG, GIF ou WEBP, e o tipo anunciado precisa conferir com o conteúdo.');
-  }
-  return { absolutePath: trimmed, mediaType: signature, bytes };
+  return { kind: 'url', url: url.toString() };
 }
 
 /** Registra o valor no mascaramento do GitHub Actions sem devolvê-lo em outro texto. */
@@ -134,21 +136,21 @@ export function createDiscordClient(token: string, fetchImpl: typeof fetch = glo
 
 /**
  * Cria um Application Emoji. Só usa GET e POST: não apaga nem substitui um nome
- * que já exista.
+ * que já exista. A imagem já saiu do processador compartilhado.
  */
 export async function addProductionEmoji(
   discord: DiscordClient,
   name: string,
-  image: ResolvedEmojiImage,
+  image: ProductionEmojiImage,
 ): Promise<CreatedApplicationEmoji> {
-  const applicationId = readSnowflake(await discord.request('GET', '/applications/@me'), 'id');
-  const listed = await discord.request('GET', `/applications/${applicationId}/emojis`);
+  const applicationId = readSnowflake(await discord.request('GET', Routes.currentApplication()), 'id');
+  const listed = await discord.request('GET', Routes.applicationEmojis(applicationId));
   if (emojiNameExists(listed, name)) {
     throw new EmojiProdError(`O emoji ${name} já existe na aplicação de produção. Este workflow só cria; não substitui nem apaga.`);
   }
-  const created = await discord.request('POST', `/applications/${applicationId}/emojis`, {
+  const created = await discord.request('POST', Routes.applicationEmojis(applicationId), {
     name,
-    image: `data:${image.mediaType};base64,${image.bytes.toString('base64')}`,
+    image: toDataUri(image),
   });
   return { id: readSnowflake(created, 'id'), name: readCreatedName(created, name) };
 }
@@ -159,15 +161,18 @@ export function writeJobSummary(markdown: string, env: NodeJS.ProcessEnv = proce
   appendFileSync(file, `${markdown}\n`, { encoding: 'utf8' });
 }
 
-/** Valida as entradas, mascara o token, cria o emoji e apaga o arquivo baixado. */
+/** Valida as entradas, mascara o token e cria o emoji em memória. */
 export async function runEmojiProd(io: EmojiProdIO): Promise<number> {
   let token = '';
-  let code = 1;
   try {
     token = normalizeBotToken(io.env.DISCORD_BOT_TOKEN);
     maskSecret(token, io.writeStdout);
     const name = validateEmojiName(io.env.EMOJI_NAME ?? '');
-    const image = readEmojiImage(io.env.EMOJI_IMAGE_FILE ?? '', io.env.EMOJI_CONTENT_TYPE ?? '');
+    const source = resolveProductionSource(io.env.EMOJI_SOURCE ?? '');
+    const download = io.download ?? createProductionImageDownloader();
+    const processor = io.processor ?? createProductionEmojiProcessor();
+    const bytes = await loadSource(source, download);
+    const image = await prepareEmojiImage({ bytes }, processor, DEFAULT_EMOJI_IMAGE_LIMITS);
     const discord = io.discord ?? createDiscordClient(token);
     const created = await addProductionEmoji(discord, name, image);
     const summary = [
@@ -179,61 +184,23 @@ export async function runEmojiProd(io: EmojiProdIO): Promise<number> {
     ].join('\n');
     writeJobSummary(summary, io.env);
     io.writeStdout(`Emoji criado: ${created.name} (${created.id})\n`);
-    code = 0;
+    return 0;
   } catch (error: unknown) {
     io.writeStderr(`${publicError(error, token)}\n`);
-    code = 1;
-  } finally {
-    removeDownloadedImage(io.env.EMOJI_IMAGE_FILE ?? '', io.writeStderr);
-  }
-  return code;
-}
-
-function mediaTypeFromContentType(contentType: string): string | undefined {
-  const media = contentType.split(';', 1)[0]?.trim().toLowerCase() ?? '';
-  if (media === 'image/png') return 'image/png';
-  if (media === 'image/jpeg' || media === 'image/jpg') return 'image/jpeg';
-  if (media === 'image/gif') return 'image/gif';
-  if (media === 'image/webp') return 'image/webp';
-  return undefined;
-}
-
-function mediaTypeFromBytes(bytes: Buffer): string | undefined {
-  if (bytes.length >= PNG_SIGNATURE.length && bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) {
-    return 'image/png';
-  }
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
-    return 'image/jpeg';
-  }
-  if (bytes.length >= 6) {
-    const gif = bytes.subarray(0, 6).toString('ascii');
-    if (gif === 'GIF87a' || gif === 'GIF89a') return 'image/gif';
-  }
-  if (
-    bytes.length >= 12
-    && bytes.subarray(0, 4).toString('ascii') === 'RIFF'
-    && bytes.subarray(8, 12).toString('ascii') === 'WEBP'
-  ) {
-    return 'image/webp';
-  }
-  return undefined;
-}
-
-function removeDownloadedImage(filePath: string, writeStderr: (chunk: string) => void): void {
-  const trimmed = filePath.trim();
-  if (trimmed === '' || trimmed.includes('\0') || !path.isAbsolute(trimmed)) return;
-  try {
-    const stat = lstatSync(trimmed);
-    if (!stat.isFile() && !stat.isSymbolicLink()) return;
-    unlinkSync(trimmed);
-  } catch (error: unknown) {
-    if (isNotFound(error)) return;
-    writeStderr('Não consegui apagar o arquivo temporário da imagem.\n');
+    return 1;
   }
 }
 
-function isNotFound(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT';
+async function loadSource(source: ProductionSource, download: EmojiDownloadPort): Promise<Uint8Array> {
+  if (source.kind === 'id') return downloadDiscordEmojiById(source.id, download, DEFAULT_EMOJI_IMAGE_LIMITS);
+  return download(source.url, {
+    maxBytes: DEFAULT_EMOJI_IMAGE_LIMITS.maxInputBytes,
+    timeoutMs: DEFAULT_EMOJI_IMAGE_LIMITS.downloadTimeoutMs,
+  });
+}
+
+function toDataUri(image: ProductionEmojiImage): string {
+  return `data:${image.contentType};base64,${Buffer.from(image.bytes).toString('base64')}`;
 }
 
 function publicError(error: unknown, token: string): string {

@@ -2,7 +2,8 @@ name: Adicionar emoji de produção
 
 # Manual. O ambiente production precisa de revisores obrigatórios: cada execução
 # espera a aprovação deles antes de usar o segredo. O workflow só cria o emoji.
-# A imagem vem de image_url e não fica no repositório.
+# A origem é um ID de emoji do Discord ou uma URL HTTPS. A imagem fica só em
+# memória e não entra no repositório.
 # DOPPLER_TOKEN do ambiente GitHub production é usado só aqui.
 
 on:
@@ -12,8 +13,8 @@ on:
         description: Nome do emoji (2 a 32 caracteres, A-Z, a-z, 0-9 ou _)
         required: true
         type: string
-      image_url:
-        description: URL HTTPS de um PNG, JPEG, GIF ou WEBP de até 256 KiB
+      source:
+        description: ID de um emoji do Discord ou URL HTTPS do CDN
         required: true
         type: string
 
@@ -26,7 +27,7 @@ jobs:
   create:
     name: Criar Application Emoji
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     environment: production
     steps:
       - name: Checkout repository
@@ -36,76 +37,30 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci --engine-strict
+
+      - name: Compilar o bot
+        run: npm run build
 
       - name: Instalar Doppler CLI
         uses: dopplerhq/cli-action@v4
-
-      - name: Baixar a imagem
-        env:
-          IMAGE_URL: ${{ inputs.image_url }}
-        run: |
-          set -euo pipefail
-          image="${RUNNER_TEMP}/kuruttina-emoji"
-          headers="${RUNNER_TEMP}/kuruttina-emoji.headers"
-          rm -f "${image}" "${headers}"
-          if [[ "${IMAGE_URL}" =~ [[:cntrl:]] ]] || [[ ! "${IMAGE_URL}" =~ ^https://[^[:space:]]+$ ]]; then
-            echo "A URL da imagem precisa usar HTTPS, sem espaço."
-            exit 1
-          fi
-          rest="${IMAGE_URL#https://}"
-          authority="${rest%%/*}"
-          authority="${authority%%\?*}"
-          if [ -z "${authority}" ] || [[ "${authority}" == *@* ]]; then
-            echo "A URL da imagem precisa usar HTTPS, sem usuário ou senha."
-            exit 1
-          fi
-          curl --fail --silent --show-error \
-            --proto '=https' \
-            --proto-redir '=https' \
-            --location \
-            --max-redirs 5 \
-            --connect-timeout 10 \
-            --max-time 20 \
-            --max-filesize 262144 \
-            --output "${image}" \
-            --dump-header "${headers}" \
-            -- "${IMAGE_URL}"
-          size=$(wc -c < "${image}")
-          if [ "${size}" -le 0 ] || [ "${size}" -gt 262144 ]; then
-            echo "A imagem precisa ter entre 1 byte e 256 KiB."
-            rm -f "${image}" "${headers}"
-            exit 1
-          fi
-          content_type=$(awk 'BEGIN { IGNORECASE = 1 } /^HTTP\// { value = "" } /^content-type:/ { sub(/\r$/, ""); sub(/^[^:]*:[[:space:]]*/, ""); value = $0 } END { print value }' "${headers}")
-          rm -f "${headers}"
-          if [ -z "${content_type}" ] || [[ "${content_type}" =~ [[:cntrl:]] ]]; then
-            echo "A resposta não informou o tipo da imagem."
-            rm -f "${image}"
-            exit 1
-          fi
-          {
-            printf 'EMOJI_IMAGE_FILE=%s\n' "${image}"
-            printf 'EMOJI_CONTENT_TYPE=%s\n' "${content_type}"
-          } >> "${GITHUB_ENV}"
 
       - name: Criar emoji
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           EMOJI_NAME: ${{ inputs.name }}
+          EMOJI_SOURCE: ${{ inputs.source }}
         run: |
           set -euo pipefail
           if [ -z "${DOPPLER_TOKEN}" ]; then
             echo "O segredo DOPPLER_TOKEN não está configurado no ambiente production."
             exit 1
           fi
-          if [ -z "${EMOJI_IMAGE_FILE:-}" ] || [ -z "${EMOJI_CONTENT_TYPE:-}" ]; then
-            echo "A imagem baixada não está disponível."
+          if [ -z "${EMOJI_SOURCE}" ]; then
+            echo "Informe o ID de um emoji do Discord ou uma URL HTTPS."
             exit 1
           fi
           doppler run --only-secrets DISCORD_BOT_TOKEN -- node scripts/add-production-emoji.ts
-
-      - name: Apagar imagem temporária
-        if: always()
-        run: |
-          set -euo pipefail
-          rm -f "${RUNNER_TEMP}/kuruttina-emoji" "${RUNNER_TEMP}/kuruttina-emoji.headers"

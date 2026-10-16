@@ -1,8 +1,8 @@
 # Importação e processamento de imagens de emoji
 
-Última atualização: 29 de setembro de 2026.
+Última atualização: 16 de outubro de 2026.
 
-Este documento descreve o núcleo compartilhado de importação de emojis e a integração do comando de servidor (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). `/dev emoji add` não cria Application Emojis: ele orienta o [workflow manual](emojis-prod.md). O adapter do processo recusa o destino `application` e o bootstrap não autentica a credencial de production para isso. O serviço ainda conhece esse destino para os testes do núcleo. As permissões de `emoji add` ficam na rota e se somam à política raiz de `/emoji`. A consulta `/emoji info` não usa este pipeline e não baixa nem reenvia arquivos.
+Este documento descreve o núcleo compartilhado de importação de emojis e a integração do comando de servidor (`/emoji add` → `k!emoji-add`, no servidor onde o comando foi executado). `/dev emoji add` não cria Application Emojis: ele orienta o [workflow manual](emojis-prod.md). Esse workflow reutiliza o mesmo `createDiscordImageDownloader` e o mesmo `createSharpEmojiProcessor`, em memória, e não grava arquivo nem carrega o token de production no bot. O adapter do processo recusa o destino `application` e o bootstrap não autentica a credencial de production para isso. O serviço ainda conhece esse destino para os testes do núcleo. As permissões de `emoji add` ficam na rota e se somam à política raiz de `/emoji`. A consulta `/emoji info` não usa este pipeline e não baixa nem reenvia arquivos.
 
 ## Escopo desta etapa
 
@@ -58,7 +58,7 @@ Detalhes de implementação relevantes:
 
 `downloadDiscordImage` só aceita `https`, porta 443, sem credenciais, hosts `cdn.discordapp.com`/`media.discordapp.net`, paths `/emojis`, `/attachments` (arquivo de mensagem) ou `/ephemeral-attachments` (arquivo da opção de slash command), sem redirects (`redirect: 'error'`) e com stream limitado a `maxBytes`. A leitura fica só em memória: nada é gravado em disco e o arquivo original nunca é reenviado. O Discord recebe apenas a imagem recodificada, em data URI. **Limitação registrada:** não há pinning de DNS — um resolve falsificado para o mesmo host ainda passaria na allowlist; o transporte TLS continua obrigatório.
 
-Para emojis de guild, o CDN é consultado primeiro como `.gif?size=128&quality=lossless` e, se ausente, como `.png`, para nunca perder animação por adivinhar o formato. Um GIF que não existe volta HTTP 415 com `Invalid resource`, não 404; essa resposta conta como ausência e a tentativa segue para PNG.
+Para emojis de guild e para o workflow de produção, `downloadDiscordEmojiById` consulta o CDN primeiro como `.gif?size=128&quality=lossless` e, se ausente, como `.png`, para nunca perder animação por adivinhar o formato. Um GIF que não existe volta HTTP 415 com `Invalid resource`, não 404; essa resposta conta como ausência e a tentativa segue para PNG. Uma URL HTTPS fora dessa allowlist não é buscada.
 
 ## Destinos e erros
 

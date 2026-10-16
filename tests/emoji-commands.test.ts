@@ -725,14 +725,10 @@ describe('emoji command deployment scopes', () => {
   function config() {
     return {
       target: 'development' as const,
-      credentials: {
-        development: { token: 'fake-token', expectedBotId: CREATOR },
-        production: { token: 'fake-prod-token', expectedBotId: DEV },
-      },
       activeCredential: { token: 'fake-token', expectedBotId: CREATOR },
       autoSyncCommands: false,
       database: readDatabaseConfig(
-        { DATABASE_URL_DEVELOPMENT: 'postgres://kuruttina_bot:test@localhost/postgres' },
+        { DATABASE_URL: 'postgres://kuruttina_bot:test@localhost/postgres' },
         'development',
       ),
     };

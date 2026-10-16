@@ -126,7 +126,7 @@ export function maskSecret(secret: string, write: (chunk: string) => void): void
 export function normalizeBotToken(raw: string | undefined): string {
   const token = raw?.trim() ?? '';
   if (token.length === 0 || /[\s\0]/u.test(token)) {
-    throw new EmojiProdError('O segredo DISCORD_PROD_BOT_TOKEN não está configurado no ambiente production.');
+    throw new EmojiProdError('O segredo DISCORD_BOT_TOKEN não está disponível via Doppler.');
   }
   return token;
 }
@@ -190,7 +190,7 @@ export function writeJobSummary(markdown: string, env: NodeJS.ProcessEnv = proce
 export async function runEmojiProd(io: EmojiProdIO): Promise<number> {
   let token = '';
   try {
-    token = normalizeBotToken(io.env.DISCORD_PROD_BOT_TOKEN);
+    token = normalizeBotToken(io.env.DISCORD_BOT_TOKEN);
     maskSecret(token, io.writeStdout);
     const name = validateEmojiName(io.env.EMOJI_NAME ?? '');
     const imagePath = io.env.EMOJI_IMAGE_PATH ?? '';

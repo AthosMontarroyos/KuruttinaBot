@@ -6,7 +6,7 @@ import { createSiteServer } from '../apps/site/server/http.js';
 const environment = { APP_ENV: 'development', PORT: '3666', SITE_URL: 'http://localhost:3666', ASSETS_BASE_URL: 'https://assets.example.com/' };
 describe('site configuration', () => {
   it('exposes only public configuration and keeps the stable avatar path', () => {
-    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN_PRODUCTION: 'test-secret' })).toEqual({
+    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: 'test-secret' })).toEqual({
       port: 3666, host: '127.0.0.1', siteUrl: 'http://localhost:3666', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
     });
   });

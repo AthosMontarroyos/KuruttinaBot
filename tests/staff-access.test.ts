@@ -131,9 +131,9 @@ describe('staff authorization in both transports', () => {
     const publicCommand: ChatInputCommand = { ...command(), data: new SlashCommandBuilder().setName('public').setDescription('Public'), access: { kind: 'public' }, scope: 'global' };
     const handler = new CommandsHandler([publicCommand, command()]);
     const cfg = {
-      target: 'development' as const, credentials: { development: { token: 'fake', expectedBotId: creatorId }, production: { token: 'fake', expectedBotId: devId } },
+      target: 'development' as const,
       activeCredential: { token: 'fake', expectedBotId: creatorId }, autoSyncCommands: false,
-      database: readDatabaseConfig({ DATABASE_URL_DEVELOPMENT: 'postgres://kuruttina_bot:test@localhost/postgres' }, 'development'),
+      database: readDatabaseConfig({ DATABASE_URL: 'postgres://kuruttina_bot:test@localhost/postgres' }, 'development'),
     };
     const ctx = { config: cfg, applicationId: creatorId, correlationId: 'test' };
     const settings = vi.fn(async () => ({ environment: 'development' as const, devGuildId: guildId }));

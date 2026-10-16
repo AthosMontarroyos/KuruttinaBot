@@ -23,8 +23,7 @@ function readCertificate(value, name) {
 /** @typedef {'development' | 'production'} Environment */
 /** @param {NodeJS.ProcessEnv} env @param {Environment} target @param {'runtime'|'migration'} [purpose] */
 export function readDatabaseConfig(env, target, purpose = 'runtime') {
-  const suffix = target.toUpperCase();
-  const name = `${purpose === 'runtime' ? 'DATABASE_URL' : 'DATABASE_MIGRATION_URL'}_${suffix}`;
+  const name = purpose === 'runtime' ? 'DATABASE_URL' : 'DATABASE_MIGRATION_URL';
   const invalid = () => Object.assign(new Error(`Invalid or missing ${name}`), { name: 'DatabaseConfigurationError' });
   let url;
   try { url = new URL(env[name] ?? ''); } catch { throw invalid(); }
@@ -39,8 +38,7 @@ export function readDatabaseConfig(env, target, purpose = 'runtime') {
   if (purpose === 'runtime' && !/^kuruttina_bot(?:\.[a-z0-9]+)?$/u.test(user)) throw invalid();
   const local = ['localhost', '127.0.0.1', '[::1]', 'postgres'].includes(url.hostname);
   if (local && target !== 'development') throw invalid();
-  const caValue = env[`DATABASE_CA_CERT_${suffix}`];
-  const ca = readCertificate(caValue, `DATABASE_CA_CERT_${suffix}`);
+  const ca = readCertificate(env.DATABASE_CA, 'DATABASE_CA');
   return Object.freeze({
     host: url.hostname.replace(/^\[|\]$/gu, ''), port: Number(url.port || 5432),
     user, password, database,

@@ -37,3 +37,11 @@ A criação de Application Emojis de production saiu do processo local. Ela ocor
 Development deixa de exigir e de ler `DISCORD_BOT_TOKEN_PRODUCTION` e `DISCORD_BOT_ID_PRODUCTION`. `/dev emoji add` apenas orienta o workflow. O `compose.dev.yaml` não recebe esse par.
 
 O contêiner de production na VPS não muda a forma de obter o token: o `compose.yaml` continua entregando `DISCORD_BOT_TOKEN_PRODUCTION` a partir do `.env` da raiz, e o processo de production continua exigindo os dois pares. O token antigo que circulou em máquinas de desenvolvimento deve ser rotacionado no Discord, no segredo do ambiente e no `.env` da VPS.
+
+## Atualização — Doppler, 16 de outubro de 2026
+
+Os segredos passam para o Doppler. Os configs `dev` e `prd` usam os mesmos nomes, sem sufixo: `ASSETS_BASE_URL`, `DATABASE_CA`, `DATABASE_URL`, `DATABASE_MIGRATION_URL`, `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_SECRET` e `DISCORD_PUBLIC_KEY`. `APP_ENV` continua escolhendo o comportamento e não o nome da variável. O processo lê uma credencial, a que o config injetou. Production deixa de exigir o par de development.
+
+O acesso conjunto ao `.env` previsto na seção Remoção fica encerrado para esta capability. Na VPS, o token de serviço somente leitura do config `prd` é configurado para o usuário `deploy`, com escopo `/home/deploy/Projects/KuruttinaBot`. Os workflows de deploy e de comandos rodam `doppler run -- docker compose ...` e não recebem `DOPPLER_TOKEN`. Esse segredo do ambiente GitHub `production` serve só ao workflow de emoji, que lê `DISCORD_BOT_TOKEN` do config `prd`.
+
+Um bot `production` continua rejeitando um banco de development: o startup confere `bot_settings.environment`. A checklist da troca está em [Publicação](../project/deploy.md).

@@ -167,7 +167,7 @@ describe('runEmojiProd', () => {
 
     const code = await runEmojiProd({
       env: {
-        DISCORD_PROD_BOT_TOKEN: `  ${TOKEN}\n`,
+        DISCORD_BOT_TOKEN: `  ${TOKEN}\n`,
         EMOJI_NAME: 'festa',
         EMOJI_IMAGE_PATH: imagePath,
         GITHUB_STEP_SUMMARY: summary,
@@ -193,14 +193,14 @@ describe('runEmojiProd', () => {
       throw new Error('não deveria chamar');
     });
     const code = await runEmojiProd({
-      env: { DISCORD_PROD_BOT_TOKEN: '   ', EMOJI_NAME: 'festa', EMOJI_IMAGE_PATH: 'assets/emojis/a.png' },
+      env: { DISCORD_BOT_TOKEN: '   ', EMOJI_NAME: 'festa', EMOJI_IMAGE_PATH: 'assets/emojis/a.png' },
       repoRoot: process.cwd(),
       writeStdout: () => undefined,
       writeStderr: (chunk) => { stderr.push(chunk); },
       discord,
     });
     expect(code).toBe(1);
-    expect(stderr.join('')).toMatch(/DISCORD_PROD_BOT_TOKEN/u);
+    expect(stderr.join('')).toMatch(/DISCORD_BOT_TOKEN/u);
     expect(discord.request).not.toHaveBeenCalled();
   });
 
@@ -211,7 +211,7 @@ describe('runEmojiProd', () => {
       throw new Error(`vazou ${TOKEN}`);
     });
     const code = await runEmojiProd({
-      env: { DISCORD_PROD_BOT_TOKEN: TOKEN, EMOJI_NAME: 'festa', EMOJI_IMAGE_PATH: imagePath },
+      env: { DISCORD_BOT_TOKEN: TOKEN, EMOJI_NAME: 'festa', EMOJI_IMAGE_PATH: imagePath },
       repoRoot: root,
       writeStdout: () => undefined,
       writeStderr: (chunk) => { stderr.push(chunk); },

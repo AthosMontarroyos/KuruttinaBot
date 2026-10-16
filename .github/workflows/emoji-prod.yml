@@ -2,6 +2,7 @@ name: Adicionar emoji de produção
 
 # Manual. O ambiente production precisa de revisores obrigatórios: cada execução
 # espera a aprovação deles antes de usar o segredo. O workflow só cria o emoji.
+# DOPPLER_TOKEN do ambiente GitHub production é usado só aqui.
 
 on:
   workflow_dispatch:
@@ -35,9 +36,18 @@ jobs:
         with:
           node-version: 24
 
+      - name: Instalar Doppler CLI
+        uses: dopplerhq/cli-action@v4
+
       - name: Criar emoji
         env:
-          DISCORD_PROD_BOT_TOKEN: ${{ secrets.DISCORD_PROD_BOT_TOKEN }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           EMOJI_NAME: ${{ inputs.name }}
           EMOJI_IMAGE_PATH: ${{ inputs.image_path }}
-        run: node scripts/add-production-emoji.ts
+        run: |
+          set -euo pipefail
+          if [ -z "${DOPPLER_TOKEN}" ]; then
+            echo "O segredo DOPPLER_TOKEN não está configurado no ambiente production."
+            exit 1
+          fi
+          doppler run --only-secrets DISCORD_BOT_TOKEN -- node scripts/add-production-emoji.ts

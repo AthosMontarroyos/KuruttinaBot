@@ -8,10 +8,9 @@ const context: DeploymentContext = {
   correlationId: 'test-correlation-id',
   config: {
     target: 'development',
-    credentials: { development: { token: 'fake-token', expectedBotId: '123456789012345678' }, production: { token: 'fake-prod-token', expectedBotId: '987654321098765432' } },
     activeCredential: { token: 'fake-token', expectedBotId: '123456789012345678' },
     autoSyncCommands: true,
-    database: readDatabaseConfig({ DATABASE_URL_DEVELOPMENT: 'postgresql://kuruttina_bot:test@localhost/postgres' }, 'development'),
+    database: readDatabaseConfig({ DATABASE_URL: 'postgresql://kuruttina_bot:test@localhost/postgres' }, 'development'),
   },
 };
 

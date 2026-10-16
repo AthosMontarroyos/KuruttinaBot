@@ -15,17 +15,17 @@ Kurutta configura os revisores obrigatórios do ambiente GitHub `production`. O 
 
 ## Onde o token fica
 
-`DISCORD_PROD_BOT_TOKEN` é segredo do ambiente `production` no GitHub. Não é segredo do repositório, não entra em `.env` local e não entra no `compose.dev.yaml`. O script mascara o valor e não o imprime.
+O job instala a Doppler CLI com `dopplerhq/cli-action` e lê `DISCORD_BOT_TOKEN` do config `prd` por `doppler run --only-secrets DISCORD_BOT_TOKEN`. A autenticação é `DOPPLER_TOKEN`, segredo do ambiente GitHub `production`. Esse segredo é usado só por este workflow. Não é segredo do repositório, não entra no Compose e não é enviado à VPS.
 
-O contêiner de produção na VPS continua lendo `DISCORD_BOT_TOKEN_PRODUCTION` do `.env` da raiz, pelo `compose.yaml`. Esse arquivo não mudou: o processo de produção ainda precisa do token para o Gateway. Desenvolvimento nativo e o Compose de desenvolvimento exigem só o par `DISCORD_BOT_TOKEN_DEVELOPMENT` / `DISCORD_BOT_ID_DEVELOPMENT`.
+O contêiner de produção na VPS lê o mesmo nome `DISCORD_BOT_TOKEN` pelo token Doppler já configurado para o usuário `deploy`. Desenvolvimento usa o config `dev`, também com `DISCORD_BOT_TOKEN` e `DISCORD_BOT_ID`, sem o token de production.
 
 ## Rotacionar o token antigo
 
 O token de produção que já esteve em máquinas de desenvolvimento deve ser trocado.
 
 1. No Discord Developer Portal, gere um token novo para a aplicação de produção.
-2. Atualize `DISCORD_PROD_BOT_TOKEN` no ambiente GitHub `production`.
-3. Atualize `DISCORD_BOT_TOKEN_PRODUCTION` no `.env` da VPS e reinicie só o contêiner do bot de produção.
-4. Apague o token antigo dos `.env` locais e de qualquer cópia fora da VPS e do ambiente GitHub.
+2. Atualize `DISCORD_BOT_TOKEN` no config Doppler `prd`.
+3. Reinicie só o contêiner do bot de produção, com `doppler run -- docker compose up -d bot`.
+4. Apague cópias antigas fora do Doppler, inclusive o segredo GitHub `DISCORD_PROD_BOT_TOKEN` depois do primeiro deploy com Doppler.
 
-Não grave o token novo no repositório, no exemplo de ambiente nem no Compose de desenvolvimento.
+A ordem completa está na [checklist de migração](deploy.md#checklist-de-migração-para-o-doppler). Não grave o token novo no repositório nem no Compose.

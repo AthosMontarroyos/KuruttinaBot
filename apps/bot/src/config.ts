@@ -8,7 +8,6 @@ export type BotTarget = AppEnv;
 export type BotCredential = Readonly<{ token: string; expectedBotId: string }>;
 export type BotConfig = Readonly<{
   target: BotTarget;
-  credentials: Readonly<{ development: BotCredential; production?: BotCredential }>;
   activeCredential: BotCredential;
   autoSyncCommands: boolean;
   database: ReturnType<typeof readDatabaseConfig>;
@@ -16,19 +15,18 @@ export type BotConfig = Readonly<{
 
 const configurationError = (message: string): Error => Object.assign(new Error(message), { name: 'BotConfigurationError' });
 
+const botEnvironmentNames = [
+  'APP_ENV',
+  'AUTO_SYNC_COMMANDS',
+  'DISCORD_BOT_ID',
+  'DISCORD_BOT_TOKEN',
+  'DATABASE_URL',
+  'DATABASE_CA',
+] as const;
+
+/** Mantém só as variáveis do bot. O sufixo de ambiente não escolhe o nome. */
 export function selectBotEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  const production = env.APP_ENV === 'production';
-  const suffix = production ? 'PRODUCTION' : 'DEVELOPMENT';
-  const names = [
-    'APP_ENV',
-    'AUTO_SYNC_COMMANDS',
-    'DISCORD_BOT_ID_DEVELOPMENT',
-    'DISCORD_BOT_TOKEN_DEVELOPMENT',
-    ...(production ? ['DISCORD_BOT_ID_PRODUCTION', 'DISCORD_BOT_TOKEN_PRODUCTION'] : []),
-    `DATABASE_URL_${suffix}`,
-    `DATABASE_CA_CERT_${suffix}`,
-  ];
-  return Object.fromEntries(names.flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]])));
+  return Object.fromEntries(botEnvironmentNames.flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]])));
 }
 
 /**
@@ -46,8 +44,8 @@ function readLocalEnvironment(): NodeJS.ProcessEnv {
 }
 
 /**
- * Combina `.env` local (se existir) com `process.env`.
- * `process.env` tem precedência sobre o arquivo local.
+ * Combina um `.env` local, se existir, com `process.env`.
+ * `process.env` tem precedência. Doppler injeta os segredos nesse ambiente.
  * `selectBotEnvironment` então extrai apenas as chaves consumidas pelo bot.
  */
 function loadBotEnvironment(): NodeJS.ProcessEnv {
@@ -69,32 +67,16 @@ const parseBoolean = (value: string | undefined): boolean => {
 
 export function loadConfig(env: NodeJS.ProcessEnv = loadBotEnvironment()): BotConfig {
   const { appEnv: target } = loadAppConfig(env);
-  const development = readCredential(env, 'DEVELOPMENT');
-  const shared = {
-    autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS),
-    database: readDatabaseConfig(env, target),
-  };
-  if (target === 'production') {
-    const production = readCredential(env, 'PRODUCTION');
-    return Object.freeze({
-      target,
-      credentials: Object.freeze({ development, production }),
-      activeCredential: production,
-      ...shared,
-    });
-  }
-  // Development não lê o par de production, mesmo que ele esteja no ambiente.
   return Object.freeze({
     target,
-    credentials: Object.freeze({ development }),
-    activeCredential: development,
-    ...shared,
+    activeCredential: readCredential(env),
+    autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS),
+    database: readDatabaseConfig(env, target),
   });
 }
 
-function readCredential(env: NodeJS.ProcessEnv, suffix: 'DEVELOPMENT' | 'PRODUCTION'): BotCredential {
-  const idName = `DISCORD_BOT_ID_${suffix}`;
-  const expectedBotId = required(env, idName);
-  if (!/^[1-9]\d{16,19}$/.test(expectedBotId)) throw configurationError(`${idName} must be a Discord snowflake`);
-  return Object.freeze({ token: required(env, `DISCORD_BOT_TOKEN_${suffix}`), expectedBotId });
+function readCredential(env: NodeJS.ProcessEnv): BotCredential {
+  const expectedBotId = required(env, 'DISCORD_BOT_ID');
+  if (!/^[1-9]\d{16,19}$/.test(expectedBotId)) throw configurationError('DISCORD_BOT_ID must be a Discord snowflake');
+  return Object.freeze({ token: required(env, 'DISCORD_BOT_TOKEN'), expectedBotId });
 }

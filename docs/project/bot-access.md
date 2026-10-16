@@ -21,17 +21,17 @@ Os cadastros são independentes. Alterar uma conta ou guilda em development não
 
 ## Credenciais e primeiro startup
 
-O `.env` local foi configurado e as conexões dos dois ambientes foram validadas com senhas distintas, usando o pooler IPv4 `aws-0-sa-east-1.pooler.supabase.com:5432` e a CA oficial Supabase Root 2021. Nenhuma senha é versionada. Na Square, configure somente a URL e a CA do ambiente da aplicação nas variáveis protegidas.
+As conexões dos dois ambientes foram validadas com senhas distintas, usando o pooler IPv4 `aws-0-sa-east-1.pooler.supabase.com:5432` e a CA oficial Supabase Root 2021. Nenhuma senha é versionada. Cada config Doppler (`dev` e `prd`) guarda `DATABASE_URL` e `DATABASE_CA` daquele projeto.
 
 Para recriar o provisionamento, siga os passos abaixo. A migration cria `kuruttina_owner` (NOLOGIN, owner) e `kuruttina_bot` (LOGIN, sem senha inicial e sem escrita). A senha do projeto/role `postgres` não deve ser usada pelo bot.
 
 1. Conecte administrativamente ao projeto pelo cliente PostgreSQL, usando a conexão indicada no painel Supabase.
 2. No psql, execute `\password kuruttina_bot` para definir uma senha forte exclusiva daquele ambiente. O prompt evita colocar a senha em SQL versionado ou no histórico do shell.
 3. Copie a conexão do painel, substituindo a role por `kuruttina_bot`; no pooler, preserve o sufixo `.<project-ref>`. Codifique caracteres especiais da senha na URL.
-4. Configure `DATABASE_URL_DEVELOPMENT` ou `DATABASE_URL_PRODUCTION` no .env raiz ou nas variáveis protegidas da Square. O processo recebe somente a conexão do ambiente ativo.
-5. Remova query parameters como `sslmode` ou `options`: o código define TLS com verificação de certificado e timeouts. Se a CA do projeto não estiver na cadeia confiável do sistema, forneça o PEM em `DATABASE_CA_CERT_<AMBIENTE>`.
-6. Configure `DATABASE_MIGRATION_URL_<AMBIENTE>` somente para scripts de administração/release. Nunca injete essa variável no bot.
-7. O startup valida conexão, presença da guilda e identificação do ambiente antes do Gateway. Um banco de development é rejeitado por um bot production.
+4. Grave `DATABASE_URL` no config Doppler do ambiente (`dev` ou `prd`). O processo recebe somente a conexão injetada por esse config.
+5. Remova query parameters como `sslmode` ou `options`: o código define TLS com verificação de certificado e timeouts. Se a CA do projeto não estiver na cadeia confiável do sistema, forneça o PEM em `DATABASE_CA`.
+6. Grave `DATABASE_MIGRATION_URL` no mesmo config, somente para scripts de administração/release. Valor vazio faz o deploy pular a migration. Nunca injete essa variável no bot.
+7. O startup valida conexão, presença da guilda e identificação do ambiente antes do Gateway. `APP_ENV` continua distinguindo development de production. Um banco de development é rejeitado por um bot production porque `bot_settings.environment` não confere.
 
 Conexões remotas exigem TLS; sockets/hosts locais previstos só são aceitos na configuração development. A URL não pode carregar opções que sobrescrevam o TLS. O pool tem três conexões, timeout de conexão/statement/transação ociosa de cinco segundos e no máximo doze operações admitidas. O shutdown para novas execuções, aguarda as aceitas, desconecta Discord e fecha o pool, com prazo total de cinco segundos.
 
@@ -100,7 +100,7 @@ Falhas de banco no startup e no deploy central exibem `Database — Falha no ace
 
 Exemplos para diagnóstico na Square:
 
-- `SELF_SIGNED_CERT_IN_CHAIN` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE`: conferir a CA oficial em `DATABASE_CA_CERT_PRODUCTION`, como PEM. O carregamento aceita quebras de linha reais, `\n` literal ou espaços entre blocos base64, com ou sem um par de aspas externas. Certificados malformados são rejeitados no startup, sem registrar seu conteúdo. Não desative a verificação TLS.
+- `SELF_SIGNED_CERT_IN_CHAIN` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE`: conferir a CA oficial em `DATABASE_CA`, como PEM. O carregamento aceita quebras de linha reais, `\n` literal ou espaços entre blocos base64, com ou sem um par de aspas externas. Certificados malformados são rejeitados no startup, sem registrar seu conteúdo. Não desative a verificação TLS.
 - `28P01`: conferir usuário runtime e senha do ambiente ativo na URL protegida.
 - `ENOTFOUND`, `ENETUNREACH`, `ECONNREFUSED` ou `CONNECTION_TIMEOUT`: conferir endpoint/pooler, conectividade e disponibilidade do projeto Supabase.
 - `42501` ou `42P01`: conferir permissões runtime e migrations aplicadas.

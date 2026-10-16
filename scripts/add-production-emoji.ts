@@ -1,21 +1,14 @@
-import { appendFileSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { appendFileSync, lstatSync, readFileSync, unlinkSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 /** Nome de emoji da aplicação: 2–32 caracteres, letras, dígitos ou _. */
 export const EMOJI_NAME_PATTERN = /^[A-Za-z0-9_]{2,32}$/u;
 
-/** Pasta versionada das imagens enviadas ao bot de produção. */
-export const EMOJI_ASSET_DIR = 'assets/emojis';
-
 /** Limite do Discord para o arquivo do emoji. */
 export const MAX_EMOJI_IMAGE_BYTES = 256 * 1024;
 
-const MEDIA_TYPES = new Map<string, string>([
-  ['.png', 'image/png'],
-  ['.gif', 'image/gif'],
-  ['.webp', 'image/webp'],
-]);
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 const SNOWFLAKE = /^[1-9]\d{16,19}$/u;
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -44,7 +37,6 @@ export interface CreatedApplicationEmoji {
 
 export interface EmojiProdIO {
   readonly env: NodeJS.ProcessEnv;
-  readonly repoRoot: string;
   writeStdout(chunk: string): void;
   writeStderr(chunk: string): void;
   readonly discord?: DiscordClient | undefined;
@@ -60,60 +52,41 @@ export function validateEmojiName(name: string): string {
 }
 
 /**
- * Confere que o caminho fica dentro de `assets/emojis`, com extensão permitida
- * e no máximo 256 KiB. Recusa caminho absoluto, `..` e link que saia da pasta.
+ * Lê o arquivo baixado e exige que o Content-Type e a assinatura sejam o mesmo
+ * PNG, JPEG, GIF ou WEBP, com no máximo 256 KiB.
  */
-export function resolveEmojiImage(repoRoot: string, imagePath: string): ResolvedEmojiImage {
-  const normalized = imagePath.trim().replaceAll('\\', '/');
-  if (normalized === '' || normalized.includes('\0')) {
-    throw new EmojiProdError('Informe o caminho da imagem dentro de assets/emojis/.');
-  }
-  if (path.posix.isAbsolute(normalized) || path.win32.isAbsolute(normalized)) {
-    throw new EmojiProdError('O caminho da imagem precisa ficar dentro de assets/emojis/.');
-  }
-
-  const allowedDir = path.resolve(repoRoot, EMOJI_ASSET_DIR);
-  const candidate = path.resolve(repoRoot, normalized);
-  if (!isInside(allowedDir, candidate)) {
-    throw new EmojiProdError('O caminho da imagem precisa ficar dentro de assets/emojis/.');
-  }
-
-  const extension = path.extname(candidate).toLowerCase();
-  const mediaType = MEDIA_TYPES.get(extension);
-  if (mediaType === undefined) {
-    throw new EmojiProdError('A imagem precisa ser PNG, GIF ou WEBP.');
-  }
-
-  let allowedReal: string;
-  let fileReal: string;
-  try {
-    allowedReal = realpathSync(allowedDir);
-    fileReal = realpathSync(candidate);
-  } catch {
-    throw new EmojiProdError('Não encontrei a imagem em assets/emojis/.');
-  }
-  if (!isInside(allowedReal, fileReal)) {
-    throw new EmojiProdError('O caminho da imagem precisa ficar dentro de assets/emojis/.');
+export function readEmojiImage(filePath: string, contentType: string): ResolvedEmojiImage {
+  const trimmed = filePath.trim();
+  if (trimmed === '' || trimmed.includes('\0') || !path.isAbsolute(trimmed)) {
+    throw new EmojiProdError('Não encontrei a imagem baixada.');
   }
 
   let size: number;
   try {
-    const stat = statSync(fileReal);
-    if (!stat.isFile()) throw new EmojiProdError('O caminho precisa ser um arquivo.');
+    const stat = lstatSync(trimmed);
+    if (stat.isSymbolicLink() || !stat.isFile()) {
+      throw new EmojiProdError('O caminho precisa ser um arquivo.');
+    }
     size = stat.size;
   } catch (error: unknown) {
     if (error instanceof EmojiProdError) throw error;
-    throw new EmojiProdError('Não encontrei a imagem em assets/emojis/.');
+    throw new EmojiProdError('Não encontrei a imagem baixada.');
   }
   if (size <= 0 || size > MAX_EMOJI_IMAGE_BYTES) {
     throw new EmojiProdError('A imagem precisa ter entre 1 byte e 256 KiB.');
   }
 
-  const bytes = readFileSync(fileReal);
+  const bytes = readFileSync(trimmed);
   if (bytes.length <= 0 || bytes.length > MAX_EMOJI_IMAGE_BYTES) {
     throw new EmojiProdError('A imagem precisa ter entre 1 byte e 256 KiB.');
   }
-  return { absolutePath: fileReal, mediaType, bytes };
+
+  const announced = mediaTypeFromContentType(contentType);
+  const signature = mediaTypeFromBytes(bytes);
+  if (announced === undefined || signature === undefined || announced !== signature) {
+    throw new EmojiProdError('A imagem precisa ser PNG, JPEG, GIF ou WEBP, e o tipo anunciado precisa conferir com o conteúdo.');
+  }
+  return { absolutePath: trimmed, mediaType: signature, bytes };
 }
 
 /** Registra o valor no mascaramento do GitHub Actions sem devolvê-lo em outro texto. */
@@ -186,15 +159,15 @@ export function writeJobSummary(markdown: string, env: NodeJS.ProcessEnv = proce
   appendFileSync(file, `${markdown}\n`, { encoding: 'utf8' });
 }
 
-/** Valida as entradas, mascara o token e cria o emoji. Devolve o código de saída. */
+/** Valida as entradas, mascara o token, cria o emoji e apaga o arquivo baixado. */
 export async function runEmojiProd(io: EmojiProdIO): Promise<number> {
   let token = '';
+  let code = 1;
   try {
     token = normalizeBotToken(io.env.DISCORD_BOT_TOKEN);
     maskSecret(token, io.writeStdout);
     const name = validateEmojiName(io.env.EMOJI_NAME ?? '');
-    const imagePath = io.env.EMOJI_IMAGE_PATH ?? '';
-    const image = resolveEmojiImage(io.repoRoot, imagePath);
+    const image = readEmojiImage(io.env.EMOJI_IMAGE_FILE ?? '', io.env.EMOJI_CONTENT_TYPE ?? '');
     const discord = io.discord ?? createDiscordClient(token);
     const created = await addProductionEmoji(discord, name, image);
     const summary = [
@@ -206,11 +179,61 @@ export async function runEmojiProd(io: EmojiProdIO): Promise<number> {
     ].join('\n');
     writeJobSummary(summary, io.env);
     io.writeStdout(`Emoji criado: ${created.name} (${created.id})\n`);
-    return 0;
+    code = 0;
   } catch (error: unknown) {
     io.writeStderr(`${publicError(error, token)}\n`);
-    return 1;
+    code = 1;
+  } finally {
+    removeDownloadedImage(io.env.EMOJI_IMAGE_FILE ?? '', io.writeStderr);
   }
+  return code;
+}
+
+function mediaTypeFromContentType(contentType: string): string | undefined {
+  const media = contentType.split(';', 1)[0]?.trim().toLowerCase() ?? '';
+  if (media === 'image/png') return 'image/png';
+  if (media === 'image/jpeg' || media === 'image/jpg') return 'image/jpeg';
+  if (media === 'image/gif') return 'image/gif';
+  if (media === 'image/webp') return 'image/webp';
+  return undefined;
+}
+
+function mediaTypeFromBytes(bytes: Buffer): string | undefined {
+  if (bytes.length >= PNG_SIGNATURE.length && bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) {
+    return 'image/png';
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  if (bytes.length >= 6) {
+    const gif = bytes.subarray(0, 6).toString('ascii');
+    if (gif === 'GIF87a' || gif === 'GIF89a') return 'image/gif';
+  }
+  if (
+    bytes.length >= 12
+    && bytes.subarray(0, 4).toString('ascii') === 'RIFF'
+    && bytes.subarray(8, 12).toString('ascii') === 'WEBP'
+  ) {
+    return 'image/webp';
+  }
+  return undefined;
+}
+
+function removeDownloadedImage(filePath: string, writeStderr: (chunk: string) => void): void {
+  const trimmed = filePath.trim();
+  if (trimmed === '' || trimmed.includes('\0') || !path.isAbsolute(trimmed)) return;
+  try {
+    const stat = lstatSync(trimmed);
+    if (!stat.isFile() && !stat.isSymbolicLink()) return;
+    unlinkSync(trimmed);
+  } catch (error: unknown) {
+    if (isNotFound(error)) return;
+    writeStderr('Não consegui apagar o arquivo temporário da imagem.\n');
+  }
+}
+
+function isNotFound(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT';
 }
 
 function publicError(error: unknown, token: string): string {
@@ -219,11 +242,6 @@ function publicError(error: unknown, token: string): string {
     : 'Falha ao criar o emoji.';
   if (token.length > 0 && message.includes(token)) return 'Falha ao criar o emoji.';
   return message;
-}
-
-function isInside(parent: string, candidate: string): boolean {
-  const relative = path.relative(parent, candidate);
-  return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
 function readSnowflake(body: unknown, key: string): string {
@@ -259,7 +277,6 @@ const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(path.resolve(entry)).href) {
   process.exitCode = await runEmojiProd({
     env: process.env,
-    repoRoot: process.cwd(),
     writeStdout: (chunk) => { process.stdout.write(chunk); },
     writeStderr: (chunk) => { process.stderr.write(chunk); },
   });

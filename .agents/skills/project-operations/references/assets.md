@@ -20,7 +20,7 @@
 
 **Nível:** MUST
 
-**Regra:** `R2/emojis/` permanece como diretório plano destinado ao espelho dos Application Emojis do bot principal. Este repositório não é dono desse espelho: não o atualiza, não remove objetos e não confere divergência com o Discord. O sincronizador foi aposentado. Application Emojis de production entram pelo workflow manual em [Emojis de produção](../../../../docs/project/emojis-prod.md), com imagem versionada em `assets/emojis/` e limite de 256 KiB. O importador do bot, usado por emojis de servidor, aplica o mesmo limite e não lê o bucket.
+**Regra:** `R2/emojis/` permanece como diretório plano destinado ao espelho dos Application Emojis do bot principal. Este repositório não é dono desse espelho: não o atualiza, não remove objetos e não confere divergência com o Discord. O sincronizador foi aposentado. Application Emojis de production entram pelo workflow manual em [Emojis de produção](../../../../docs/project/emojis-prod.md), a partir de uma URL HTTPS informada na execução, sem versionar a imagem, com limite de 256 KiB. O importador do bot, usado por emojis de servidor, aplica o mesmo limite e não lê o bucket.
 
 ### Regra: integração com o site
 

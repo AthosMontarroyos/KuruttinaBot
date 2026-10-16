@@ -3,7 +3,7 @@ import { withEmojis } from '#bot/command-system/responses.js';
 import type { ChatInputCommand, CommandContext } from '#bot/command-system/types.js';
 
 const productionEmojiRedirect =
-  'Eu não adiciono Application Emojis ao bot de produção por aqui. Grave a imagem no repositório e use o workflow **Adicionar emoji de produção** no GitHub. A criação espera aprovação.';
+  'Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a URL HTTPS da imagem. A criação espera aprovação.';
 
 /**
  * Orienta a equipe a criar Application Emojis do bot de produção pelo workflow

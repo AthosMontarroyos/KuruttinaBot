@@ -66,7 +66,11 @@ jobs:
             bash -s <<'REMOTE'
           set -euo pipefail
           cd /home/deploy/Projects/KuruttinaBot
-          docker compose run --rm --no-deps bot node dist/apps/bot/src/deployments/deploy-central.js
+          if ! command -v doppler >/dev/null 2>&1; then
+            echo "A VPS precisa do Doppler CLI configurado para o usuário deploy."
+            exit 1
+          fi
+          doppler run -- docker compose run --rm --no-deps bot node dist/apps/bot/src/deployments/deploy-central.js
           REMOTE
 
       - name: Apagar chave SSH

@@ -1,5 +1,6 @@
-# Standalone: docker compose -f compose.dev.yaml up --build -d
-# Compose reads the root .env for interpolation; only the keys below enter each service.
+# Standalone: doppler run -- docker compose -f compose.dev.yaml up --build -d
+# Doppler injects unsuffixed secrets into this process. Compose passes only the keys below.
+# APP_ENV, HOST, PORT and SITE_URL are fixed here, not in Doppler.
 name: kuruttina-dev
 
 services:
@@ -16,10 +17,10 @@ services:
     environment:
       APP_ENV: development
       AUTO_SYNC_COMMANDS: "false"
-      DISCORD_BOT_TOKEN_DEVELOPMENT: ${DISCORD_BOT_TOKEN_DEVELOPMENT:-}
-      DISCORD_BOT_ID_DEVELOPMENT: ${DISCORD_BOT_ID_DEVELOPMENT:-}
-      DATABASE_URL_DEVELOPMENT: ${DATABASE_URL_DEVELOPMENT:-}
-      DATABASE_CA_CERT_DEVELOPMENT: ${DATABASE_CA_CERT_DEVELOPMENT:-}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}
+      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_CA: ${DATABASE_CA:-}
 
   site:
     build:

@@ -30,7 +30,7 @@ Para recriar o provisionamento, siga os passos abaixo. A migration cria `kurutti
 3. Copie a conexão do painel, substituindo a role por `kuruttina_bot`; no pooler, preserve o sufixo `.<project-ref>`. Codifique caracteres especiais da senha na URL.
 4. Grave `DATABASE_URL` no config Doppler do ambiente (`dev` ou `prd`). O processo recebe somente a conexão injetada por esse config.
 5. Remova query parameters como `sslmode` ou `options`: o código define TLS com verificação de certificado e timeouts. Se a CA do projeto não estiver na cadeia confiável do sistema, forneça o PEM em `DATABASE_CA`.
-6. Grave `DATABASE_MIGRATION_URL` no mesmo config, somente para scripts de administração/release. Valor vazio faz o deploy pular a migration. Nunca injete essa variável no bot.
+6. Grave `DATABASE_MIGRATION_URL` no mesmo config, somente para scripts de administração/release. Nome ausente ou valor vazio faz o deploy pular a migration. Nunca injete essa variável no bot.
 7. O startup valida conexão, presença da guilda e identificação do ambiente antes do Gateway. `APP_ENV` continua distinguindo development de production. Um banco de development é rejeitado por um bot production porque `bot_settings.environment` não confere.
 
 Conexões remotas exigem TLS; sockets/hosts locais previstos só são aceitos na configuração development. A URL não pode carregar opções que sobrescrevam o TLS. O pool tem três conexões, timeout de conexão/statement/transação ociosa de cinco segundos e no máximo doze operações admitidas. O shutdown para novas execuções, aguarda as aceitas, desconecta Discord e fecha o pool, com prazo total de cinco segundos.

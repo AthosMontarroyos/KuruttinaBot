@@ -31,6 +31,12 @@ Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio;
 
 `docs/project/` mantém produto e estado verificável; `docs/decisions/` mantém decisões aprovadas e seus motivos. Consulte esses documentos somente para a pergunta atual. `docs/agents/` preserva links antigos, sem novas regras. Não duplique procedimentos nesses locais nem crie instruções exclusivas de um agente, como `.cursor/rules`.
 
+## Cursor Cloud
+
+O ambiente de agentes já inclui Node.js 24 e o PostgreSQL 16. `pg_config` localiza `initdb` e `pg_ctl`. `npm ci --engine-strict` instala as dependências do lockfile. `npm test` permanece hermético. `npm run test:database` sobe um cluster descartável e não consulta Supabase.
+
+A Home escuta em `http://127.0.0.1:3666` depois do boot. `ASSETS_BASE_URL`, quando presente no ambiente, substitui a origem pública já publicada pela Home de produção. Depois de alterar `apps/site`, execute `npm run site:build` e reinicie esse processo. O bot Discord não sobe no boot: ele exige credenciais vivas e abre o Gateway.
+
 ## Organização simples
 
 É proibido criar ou recriar `.ui/` neste projeto, inclusive por sugestão de skills externas. Código de interface fica em `apps/site`; procedimentos e referências visuais ficam na skill `website-developer`; capturas temporárias ficam fora do repositório. Use a estrutura existente e acrescente pastas somente quando houver conteúdo e responsabilidade concretos.

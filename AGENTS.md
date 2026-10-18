@@ -35,7 +35,7 @@ Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio;
 
 O ambiente de agentes já inclui Node.js 24 e o PostgreSQL 16. `pg_config` localiza `initdb` e `pg_ctl`. `npm ci --engine-strict` instala as dependências do lockfile. `npm test` permanece hermético. `npm run test:database` sobe um cluster descartável e não consulta Supabase.
 
-A Home escuta em `http://127.0.0.1:3666` depois do boot. `ASSETS_BASE_URL`, quando presente no ambiente, substitui a origem pública já publicada pela Home de produção. Depois de alterar `apps/site`, execute `npm run site:build` e reinicie esse processo. O bot Discord não sobe no boot: ele exige credenciais vivas e abre o Gateway.
+A Home escuta em `http://127.0.0.1:3666` depois do boot. O processo usa `doppler run --config dev --project kuruttina-bot` e o `DOPPLER_TOKEN` do ambiente. `ASSETS_BASE_URL` vem desse config; se o segredo faltar, a origem pública já publicada pela Home de produção continua como reserva. Depois de alterar `apps/site`, execute `npm run site:build` e reinicie esse processo. O bot Discord não sobe no boot: ele exige credenciais vivas e abre o Gateway.
 
 ## Organização simples
 

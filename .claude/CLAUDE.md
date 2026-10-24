@@ -1,16 +1,16 @@
 # KuruttinaBot — roteiro para agentes
 
-Sol, ChatGPT e demais agentes usam este mesmo roteiro. Selecione a skill pela intenção e pelos artefatos da tarefa, sem esperar que o usuário cite seu nome.
+Este é o roteiro único de instruções do projeto, mantido em `.claude/`. Selecione a skill pela intenção e pelos artefatos da tarefa, sem esperar que o usuário cite seu nome.
 
 ## Seleção obrigatória por contexto
 
 | Quando a tarefa envolver | Skill de entrada |
 | --- | --- |
-| Commands, slash/prefixo, handlers, respostas, permissões ou runtime Discord | [discordbot-developer](.agents/skills/discordbot-developer/SKILL.md) |
-| Schema, migrations, RLS, queries ou repositories em `packages/database` | [database-developer](.agents/skills/database-developer/SKILL.md) |
-| Home, React, HTTP, ícones ou build de `apps/site` | [website-developer](.agents/skills/website-developer/SKILL.md) |
-| VPS KingHost, Docker, Compose, contêineres, systemd, release, ambiente, túnel Cloudflare ou R2 | [project-operations](.agents/skills/project-operations/SKILL.md) |
-| Planejamentos futuros, contratos entre módulos, configuração compartilhada, testes/CI ou manutenção de skills e contexto | [project-maintenance](.agents/skills/project-maintenance/SKILL.md) |
+| Commands, slash/prefixo, handlers, respostas, permissões ou runtime Discord | [discordbot-developer](skills/discordbot-developer/SKILL.md) |
+| Schema, migrations, RLS, queries ou repositories em `packages/database` | [database-developer](skills/database-developer/SKILL.md) |
+| Home, React, HTTP, ícones ou build de `apps/site` | [website-developer](skills/website-developer/SKILL.md) |
+| VPS KingHost, Docker, Compose, contêineres, systemd, release, ambiente, túnel Cloudflare ou R2 | [project-operations](skills/project-operations/SKILL.md) |
+| Planejamentos futuros, contratos entre módulos, configuração compartilhada, testes/CI ou manutenção de skills e contexto | [project-maintenance](skills/project-maintenance/SKILL.md) |
 
 Leia a skill aplicável antes de criar, alterar ou revisar o artefato. Escolha uma principal e acrescente outra somente se houver trabalho concreto no seu domínio. Nas referências, leia integralmente as seções aplicáveis, com requisitos e exceções. Não carregue todas as skills, referências ou snapshots preventivamente. Os controles continuam obrigatórios mesmo quando sua leitura é seletiva.
 
@@ -23,13 +23,13 @@ Leia a skill aplicável antes de criar, alterar ou revisar o artefato. Escolha u
 
 ## Falas do bot
 
-Ao criar, alterar ou revisar mensagens ao usuário, inclusive em helpers, handlers e adapters, leia integralmente [personalidade](docs/project/bot-personality.md) e [emojis](docs/project/emoji-catalog.md). Confira sucesso, erro, recusa e indisponibilidade de emojis personalizados. Informe referências consultadas, validação e caminhos não verificados. Não busque o catálogo no R2.
+Ao criar, alterar ou revisar mensagens ao usuário, inclusive em helpers, handlers e adapters, leia integralmente [personalidade](../docs/project/bot-personality.md) e [emojis](../docs/project/emoji-catalog.md). Confira sucesso, erro, recusa e indisponibilidade de emojis personalizados. Informe referências consultadas, validação e caminhos não verificados. Não busque o catálogo no R2.
 
 ## Guardar contexto sem inflar leituras
 
 Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio; detalhes condicionais pertencem a `references/`, ligados com um gatilho de leitura. Atualize isso durante a tarefa quando uma correção ou decisão mudar como executar o trabalho; não espere pedido adicional. Não salve transcrições, segredos, tentativas descartadas ou status efêmero.
 
-`docs/project/` mantém produto e estado verificável; `docs/decisions/` mantém decisões aprovadas e seus motivos. Consulte esses documentos somente para a pergunta atual. `docs/agents/` preserva links antigos, sem novas regras. Não duplique procedimentos nesses locais nem crie instruções exclusivas de um agente, como `.cursor/rules`.
+`docs/project/` mantém produto e estado verificável; `docs/decisions/` mantém decisões aprovadas e seus motivos. Consulte esses documentos somente para a pergunta atual. `docs/agents/` preserva links antigos, sem novas regras. Não duplique procedimentos nesses locais; instruções vivem somente em `.claude/` (este arquivo e `skills/`), sem arquivos paralelos como `AGENTS.md` ou `.cursor/rules`.
 
 ## Organização simples
 

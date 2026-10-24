@@ -56,6 +56,7 @@ esac
     script,
     `#!/bin/bash
 set -euo pipefail
+export PATH="$(dirname "$0"):$PATH"
 ${migrationFunction()}
 status=0
 migration_configured || status=$?
@@ -63,10 +64,10 @@ printf 'STATUS=%s\\n' "\${status}"
 `,
   );
   chmodSync(script, 0o755);
-  return execFileSync(script, {
+  return execFileSync('bash', [script], {
     encoding: 'utf8',
     env: {
-      PATH: `${root}:/usr/bin:/bin`,
+      PATH: process.platform === 'win32' ? process.env.PATH : '/usr/bin:/bin',
       DOPPLER_FAKE_MODE: mode,
       DOPPLER_FAKE_VALUE: value,
       HOME: root,

@@ -14,3 +14,6 @@ coverage/
 
 #Temp
 IDEA.md
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -14,4 +14,4 @@ Leia este documento quando alterar código, CI, contratos ou automações. Execu
 
 Confirme, conforme o risco: escopo proporcional; dependências sem ciclo; entrada validada; autorização server-side; secrets fora de artefatos/logs; queries e pools limitados; startup/shutdown corretos; testes e build aprovados; documentação e ADR atualizados; resultado com validação e riscos materiais.
 
-Quando a tarefa envolver mensagens do bot ao usuário, cumpra também a [leitura e conferência obrigatórias das falas](../../../../AGENTS.md#falas-do-bot), registrando no resultado a validação e as limitações encontradas.
+Quando a tarefa envolver mensagens do bot ao usuário, cumpra também a [leitura e conferência obrigatórias das falas](../../../CLAUDE.md#falas-do-bot), registrando no resultado a validação e as limitações encontradas.

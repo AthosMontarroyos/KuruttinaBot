@@ -29,7 +29,7 @@ Ao criar, alterar ou revisar mensagens ao usuário, inclusive em helpers, handle
 
 Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio; detalhes condicionais pertencem a `references/`, ligados com um gatilho de leitura. Atualize isso durante a tarefa quando uma correção ou decisão mudar como executar o trabalho; não espere pedido adicional. Não salve transcrições, segredos, tentativas descartadas ou status efêmero.
 
-`docs/project/` mantém produto e estado verificável; `docs/decisions/` mantém decisões aprovadas e seus motivos. Consulte esses documentos somente para a pergunta atual. `docs/agents/` preserva links antigos, sem novas regras. Não duplique procedimentos nesses locais; instruções vivem somente em `.claude/` (este arquivo e `skills/`), sem arquivos paralelos como `AGENTS.md` ou `.cursor/rules`.
+`docs/project/` mantém produto e estado verificável; `docs/decisions/` mantém decisões aprovadas e seus motivos. Consulte esses documentos somente para a pergunta atual. `docs/agents/` preserva links antigos, sem novas regras. Não duplique procedimentos nesses locais; instruções vivem somente em `.claude/` (este arquivo e `skills/`), sem arquivos paralelos como `.cursor/rules`. A única exceção aprovada é o `AGENTS.md` da raiz, um ponteiro sem regras próprias que encaminha qualquer agente compatível com esse formato (Cursor, Codex, Copilot etc.) para este arquivo; não acrescente conteúdo nele.
 
 ## Organização simples
 

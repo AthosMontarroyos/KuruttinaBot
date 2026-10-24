@@ -1,6 +1,6 @@
 # Home local
 
-A primeira Home foi adaptada dos frames desktop e celular do [Figma](https://www.figma.com/design/GQNMJgri0cuH6IuiFSJ6Qx/Kuruttina-Home?node-id=0-1). O código está em `apps/site`. Layout, proveniência dos ícones e imagem provisória estão em [referência visual](../../.agents/skills/website-developer/references/home-figma.md).
+A primeira Home foi adaptada dos frames desktop e celular do [Figma](https://www.figma.com/design/GQNMJgri0cuH6IuiFSJ6Qx/Kuruttina-Home?node-id=0-1). O código está em `apps/site`. Layout, proveniência dos ícones e imagem provisória estão em [referência visual](../../.claude/skills/website-developer/references/home-figma.md).
 
 Com as dependências instaladas pelo lockfile (`npm ci`), o modo nativo recebe `ASSETS_BASE_URL` do Doppler, a origem HTTPS pública do bucket, e `PORT` opcional no processo (padrão `3666`). O comando `site:dev` define `APP_ENV=development`; a URL pública local é calculada pela porta quando `SITE_URL` está ausente. Execute `doppler run --only-secrets ASSETS_BASE_URL -- npm run site:dev` e abra `http://127.0.0.1:3666`. Sem `HOST`, ou com `HOST` em branco, o processo escuta `127.0.0.1`. Um `HOST` informado precisa ser um endereço IP.
 

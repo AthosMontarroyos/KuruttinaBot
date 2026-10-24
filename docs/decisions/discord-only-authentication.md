@@ -12,7 +12,7 @@ O site terá login exclusivamente via Discord. Não haverá cadastro local, logi
 - Autenticação pelo Discord não concede privilégios administrativos. Os usuários privilegiados são os registros de `bot_private.bot_staff` do ambiente correspondente, com os papéis existentes `creator` e `dev`. Essa tabela não cadastra todos os visitantes e não será substituída por outro cadastro de administradores nem por um identificador fixo de configuração.
 - O login não autoriza provisionamento de usuários nem concessão de privilégios. Agentes não criam contas, usuários de teste ou registros privilegiados sem autorização explícita do responsável.
 
-Autenticação e painel ainda não estão implementados. O procedimento obrigatório para o trabalho futuro está na [skill do website](../../.agents/skills/website-developer/SKILL.md).
+Autenticação e painel ainda não estão implementados. O procedimento obrigatório para o trabalho futuro está na [skill do website](../../.claude/skills/website-developer/SKILL.md).
 
 ## Limites
 

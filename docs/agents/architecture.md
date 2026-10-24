@@ -1,3 +1,3 @@
 # Arquitetura e contratos
 
-Conteúdo mantido na skill [project-maintenance](../../.agents/skills/project-maintenance/SKILL.md), em [referência sob demanda](../../.agents/skills/project-maintenance/references/architecture.md). Este arquivo preserva links antigos; não acrescente procedimentos aqui.
+Conteúdo mantido na skill [project-maintenance](../../.claude/skills/project-maintenance/SKILL.md), em [referência sob demanda](../../.claude/skills/project-maintenance/references/architecture.md). Este arquivo preserva links antigos; não acrescente procedimentos aqui.

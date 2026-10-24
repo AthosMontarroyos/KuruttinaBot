@@ -1,6 +1,6 @@
 # Desenvolvimento e operação
 
-Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.agents/skills/project-operations/references/deployment.md). A publicação depois que a qualidade passa em `main` está em [Publicação](deploy.md).
+Referência técnica para mantenedores autorizados do KuruttinaBot. A apresentação do produto fica no [README](../../README.md); os contratos implementados estão no [estado atual](current-state.md) e no [ADR de hospedagem](../decisions/vps-kinghost.md). O procedimento de contêineres, migration e publicação está na [referência de deployment](../../.claude/skills/project-operations/references/deployment.md). A publicação depois que a qualidade passa em `main` está em [Publicação](deploy.md).
 
 ## Modos de execução
 
@@ -66,4 +66,4 @@ A Home local em `apps/site` é uma interface React com Tailwind, servida pelo pr
 
 A publicação do checkout está em [Publicação](deploy.md). A Home de produção continua publicada por `cloudflared` com configuração remota; os launchers locais continuam aposentados no [registro](tooling-retirement.md). O estado conferido do túnel está no [inventário](cloudflare-tunnel.md).
 
-As regras para agentes começam em [AGENTS.md](../../AGENTS.md); selecione a skill pelo contexto e leia apenas as referências necessárias à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).
+As regras para agentes começam em [CLAUDE.md](../../.claude/CLAUDE.md); selecione a skill pelo contexto e leia apenas as referências necessárias à tarefa. Arquivos novos do bot seguem a [organização dos arquivos](bot-file-organization.md).

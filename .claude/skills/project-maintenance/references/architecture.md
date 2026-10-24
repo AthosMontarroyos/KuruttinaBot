@@ -20,9 +20,8 @@ Estrutura base (expandir somente por necessidade concreta):
 ├── compose.dev.yaml         # desenvolvimento em contêiner, independente
 ├── .dockerignore
 ├── ops/systemd/             # legado: unidades anteriores de bot e Home
-├── .agents/skills/          # procedimentos e referências sob demanda
-├── docs/                    # produto e decisões aprovadas
-└── AGENTS.md
+├── .claude/                 # CLAUDE.md e skills (procedimentos sob demanda)
+└── docs/                    # produto e decisões aprovadas
 ```
 
 Diretórios opcionais (`auth`, `shared`) só devem existir quando possuírem conteúdo real. Uma nova aplicação ou serviço exige ciclo de vida, necessidade de deploy ou isolamento operacional próprio; importância de domínio, sozinha, não basta.

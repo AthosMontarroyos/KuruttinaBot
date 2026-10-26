@@ -17,3 +17,6 @@ IDEA.md
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Estado local do harness
+.claude/state/

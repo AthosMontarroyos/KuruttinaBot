@@ -110,7 +110,7 @@ describe('mock login HTTP boundary', () => {
 });
 
 describe('Discord OAuth HTTP boundary', () => {
-  const oauthEnvironment = { ...environment, DISCORD_BOT_ID: '123456789012345678', DISCORD_CLIENT_SECRET: 'test-secret' };
+  const oauthEnvironment = { ...environment, DISCORD_BOT_ID: '123456789012345678', DISCORD_CLIENT_SECRET: 'test-secret' }; // gitleaks:allow
   let server: Server;
   let origin: string;
   beforeAll(async () => {

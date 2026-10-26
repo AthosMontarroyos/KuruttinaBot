@@ -1,5 +1,5 @@
 # Runtime anterior (systemd). Não instale esta unidade nem prepare usuário ou arquivos para o Docker.
-# O Compose vigente interpola o .env da raiz e não exige a conta kuruttina nem /etc/kuruttina.
+# O Compose vigente interpola o ambiente do processo (doppler run), sem .env, e não exige a conta kuruttina nem /etc/kuruttina.
 # As linhas User, Group e EnvironmentFile abaixo descrevem somente este runtime anterior.
 # Processo Discord do KuruttinaBot.
 # Instalação e build ocorrem no release, antes desta unidade subir.

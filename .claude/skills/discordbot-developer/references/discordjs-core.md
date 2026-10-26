@@ -21,7 +21,7 @@ Não force esse layout sobre um projeto com arquitetura coerente diferente. Use 
 - `GuildMembers`, `GuildPresences` e `MessageContent` são privilegiados.
 - DMs e reactions podem exigir intents e partials correspondentes.
 - Sem um intent, um evento pode não chegar ou uma structure pode conter apenas IDs.
-- Evite `MessageContent`: prefira application commands e components.
+- Evite `MessageContent`: prefira application commands e components. Exceção: os prefixos `k!`/`K!` autorizados em [project-contracts.md](project-contracts.md).
 
 ## Partials e cache
 

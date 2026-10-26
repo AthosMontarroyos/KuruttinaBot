@@ -68,7 +68,7 @@
 
 **Regra:** Separe role de migration/owner da role de runtime. Runtime não possui DDL, ownership, superuser, `BYPASSRLS`, `CREATEROLE`, `CREATEDB`, `TEMP` nem acesso a objetos desnecessários. Site e bot usam roles distintas quando suas capacidades diferirem. A credencial de migration existe apenas no job de release e nunca entra no ambiente dos processos site/bot.
 
-No Supabase, não use a role `postgres`, senha owner, secret key ou `service_role` como credencial normal de `bot`/`site`. Mantenha os secrets de cada projeto no config Doppler correspondente (`dev` ou `prd`), com os nomes sem sufixo `DATABASE_URL`, `DATABASE_CA` e `DATABASE_MIGRATION_URL`, e use credenciais distintas para runtime e migration.
+No Supabase, não use a role `postgres`, senha owner, secret key ou `service_role` como credencial normal de `bot`/`site`. Mantenha os secrets de cada projeto no config Doppler correspondente (`dev` ou `prd`), com os nomes sem sufixo `DATABASE_URL`, `DATABASE_CA` e `DATABASE_MIGRATION_URL`, e use credenciais distintas para runtime e migration. O código rejeita `DATABASE_URL` de runtime cujo usuário não seja `kuruttina_bot` (ou `kuruttina_bot.<ref>`).
 
 ### Regra: hardening de schema e funções
 

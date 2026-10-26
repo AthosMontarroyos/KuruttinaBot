@@ -15,6 +15,7 @@ Estrutura base (expandir somente por necessidade concreta):
 ├── packages/
 │   ├── config/              # configuração validada
 │   └── database/            # persistência
+├── scripts/                 # entrypoints operacionais (ex.: add-production-emoji.ts)
 ├── Dockerfile               # build Linux e alvos bot, site e release
 ├── compose.yaml             # produção: bot, site e migrate
 ├── compose.dev.yaml         # desenvolvimento em contêiner, independente

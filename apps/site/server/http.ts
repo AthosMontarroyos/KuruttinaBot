@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { createAuth } from './auth.js';
 import type { readSiteConfig } from './config.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
@@ -12,6 +13,7 @@ const iconPaths = [
   '/icons/social/github.svg',
   '/icons/social/instagram.svg',
   '/icons/social/tiktok.svg',
+  '/icons/social/x.svg',
   '/icons/theme/theme-mobile.svg',
   '/icons/theme/theme.svg',
 ] as const;
@@ -45,6 +47,10 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   const html = template.replaceAll('{{AVATAR_URL}}', escapeAttribute(config.avatarUrl));
   const assets = new Map<string, { type: string; body: Buffer | string }>([
     ['/', { type: 'text/html; charset=utf-8', body: html }],
+    ['/comandos', { type: 'text/html; charset=utf-8', body: html }],
+    ['/modulos', { type: 'text/html; charset=utf-8', body: html }],
+    ['/login', { type: 'text/html; charset=utf-8', body: html }],
+    ['/dashboard', { type: 'text/html; charset=utf-8', body: html }],
     ['/healthz', { type: 'application/json', body: '{"status":"ok"}' }],
   ]);
   const missingBundledAssets: string[] = [];
@@ -61,13 +67,15 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   await Promise.all(iconPaths.map(async (pathname) => {
     assets.set(pathname, { type: 'image/svg+xml', body: await readPublicFile(staticDirectory, pathname) });
   }));
+  const auth = createAuth(config);
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
-    res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${config.assetsOrigin}; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
+    res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${config.assetsOrigin} https://cdn.discordapp.com; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-cache');
+    const [path = '', search = ''] = (req.url ?? '').split('?');
+    if (auth(req, res, path, search)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
-    const path = (req.url ?? '').split('?')[0] ?? '';
     const asset = assets.get(path);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }
     res.writeHead(200, { 'Content-Type': asset.type });

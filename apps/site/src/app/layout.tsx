@@ -4,9 +4,14 @@ import { StrictMode, useEffect, useLayoutEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { TopBar } from '../components/desktop/TopBar';
 import { HomePage } from './page';
+import { LoginPage } from './login';
+import { PanelPage } from './panel';
+import { useSession } from './session';
+import { UnderConstructionPage } from './under-construction';
 import './globals.css';
 
 const themeStorageKey = 'kuruttina-theme';
+const constructionPages: Record<string, string | undefined> = { '/comandos': 'Comandos', '/modulos': 'Módulos' };
 
 function readAvatarUrl(): string {
   const content = document.querySelector('meta[name="kuruttina-avatar"]')?.getAttribute('content') ?? '';
@@ -31,6 +36,8 @@ function RootLayout() {
   const [light, setLight] = useState(readStoredLightTheme);
   const [notice, setNotice] = useState<string | null>(null);
   const avatarUrl = readAvatarUrl();
+  const { session, failed, mockLogin, logout } = useSession();
+  const pageTitle = constructionPages[location.pathname];
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = light ? 'light' : 'dark';
@@ -63,8 +70,8 @@ function RootLayout() {
       <a className="fixed top-[-100px] left-5 z-30 bg-surface p-3 focus:top-3" href="#conteudo">
         Pular para o conteúdo
       </a>
-      <TopBar avatarUrl={avatarUrl} light={light} onToggleTheme={toggleTheme} onNotice={showNotice} />
-      <HomePage avatarUrl={avatarUrl} onNotice={showNotice} />
+      <TopBar avatarUrl={avatarUrl} light={light} onToggleTheme={toggleTheme} onNotice={showNotice} session={session} onLogout={() => void logout()} />
+      {location.pathname === '/dashboard' ? <PanelPage session={session} failed={failed} onLogout={() => void logout()} /> : location.pathname === '/login' ? <LoginPage session={session} failed={failed} onMockLogin={mockLogin} /> : pageTitle ? <UnderConstructionPage title={pageTitle} /> : <HomePage avatarUrl={avatarUrl} onNotice={showNotice} />}
       <footer className="border-t border-border px-5 pt-5 pb-7 text-[13px] leading-4 font-medium text-subtle min-[701px]:border-0 min-[701px]:px-[5%] min-[701px]:py-6">
         Kuruttina
       </footer>

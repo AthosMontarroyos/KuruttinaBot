@@ -58,6 +58,91 @@ describe('site configuration', () => {
   });
 });
 
+describe('mock login configuration', () => {
+  const ownerId = '123456789012345678';
+  it('enables the mock only in development with a valid OWNER_ID', () => {
+    expect(readSiteConfig({ ...environment, OWNER_ID: ownerId }).mockOwnerId).toBe(ownerId);
+    expect(readSiteConfig(environment).mockOwnerId).toBeUndefined();
+  });
+  it('refuses to start in production when OWNER_ID is present', () => {
+    expect(() => readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com', OWNER_ID: ownerId })).toThrow('login mock');
+  });
+  it.each(['abc', '123', '0123456789012345678'])('rejects invalid OWNER_ID %s', (value) => {
+    expect(() => readSiteConfig({ ...environment, OWNER_ID: value })).toThrow('OWNER_ID');
+  });
+});
+
+describe('mock login HTTP boundary', () => {
+  const ownerId = '123456789012345678';
+  let server: Server;
+  let origin: string;
+  const post = (path: string, headers: Record<string, string> = {}) => fetch(origin + path, { method: 'POST', headers });
+  beforeAll(async () => {
+    server = await createSiteServer(readSiteConfig({ ...environment, OWNER_ID: ownerId }), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    origin = `http://127.0.0.1:${address.port}`;
+  });
+  afterAll(async () => { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); });
+  it('reports the mock without exposing the full ID', async () => {
+    const body = await (await fetch(origin + '/api/session')).json();
+    expect(body).toEqual({ mock: true, discord: false, authenticated: false });
+  });
+  it('rejects a login from another origin', async () => {
+    expect((await post('/api/mock-login', { Origin: 'https://evil.example' })).status).toBe(403);
+    expect((await post('/api/mock-login')).status).toBe(403);
+  });
+  it('opens and closes an HttpOnly session', async () => {
+    const login = await post('/api/mock-login', { Origin: 'http://localhost:3666' });
+    expect(login.status).toBe(200);
+    const cookie = login.headers.get('set-cookie') ?? '';
+    expect(cookie).toContain('HttpOnly');
+    expect(cookie).toContain('SameSite=Strict');
+    const text = await login.text();
+    expect(text).toContain('"label":"Dev"');
+    expect(text).not.toContain(ownerId);
+    const pair = cookie.split(';')[0] ?? '';
+    expect(await (await fetch(origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: true });
+    await fetch(origin + '/api/logout', { method: 'POST', headers: { Origin: 'http://localhost:3666', Cookie: pair } });
+    expect(await (await fetch(origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: false });
+  });
+});
+
+describe('Discord OAuth HTTP boundary', () => {
+  const oauthEnvironment = { ...environment, DISCORD_BOT_ID: '123456789012345678', DISCORD_CLIENT_SECRET: 'test-secret' };
+  let server: Server;
+  let origin: string;
+  beforeAll(async () => {
+    server = await createSiteServer(readSiteConfig(oauthEnvironment), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    origin = `http://127.0.0.1:${address.port}`;
+  });
+  afterAll(async () => { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); });
+  it('keeps the secret out of the configuration unless both values exist', () => {
+    expect(readSiteConfig(environment).oauth).toBeUndefined();
+    expect(readSiteConfig(oauthEnvironment).oauth).toMatchObject({ clientId: '123456789012345678', redirectUri: 'http://localhost:3666/auth/callback' });
+  });
+  it('redirects to Discord with state, PKCE and a bound cookie', async () => {
+    const response = await fetch(origin + '/auth/discord', { redirect: 'manual' });
+    expect(response.status).toBe(302);
+    const location = new URL(response.headers.get('location') ?? '');
+    expect(location.origin + location.pathname).toBe('https://discord.com/oauth2/authorize');
+    expect(location.searchParams.get('scope')).toBe('identify guilds');
+    expect(location.searchParams.get('code_challenge_method')).toBe('S256');
+    expect(location.searchParams.get('redirect_uri')).toBe('http://localhost:3666/auth/callback');
+    expect(response.headers.get('set-cookie')).toContain(`kuruttina_oauth=${location.searchParams.get('state')}`);
+    expect(location.href).not.toContain('test-secret');
+  });
+  it('rejects a callback without a matching state', async () => {
+    const response = await fetch(origin + '/auth/callback?code=abc&state=forged', { redirect: 'manual', headers: { Cookie: 'kuruttina_oauth=forged' } });
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe('/login?erro=login');
+  });
+});
+
 describe('public Home HTTP boundary', () => {
   let server: Server;
   let origin: string;
@@ -92,10 +177,16 @@ describe('public Home HTTP boundary', () => {
     '/icons/social/instagram.svg',
     '/icons/social/tiktok.svg',
     '/icons/social/github.svg',
+    '/icons/social/x.svg',
   ])('serves icon grouped by function %s', async (path) => {
     const response = await fetch(origin + path);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/svg+xml');
+  });
+  it.each(['/comandos', '/modulos', '/dashboard', '/login'])('serves the shell for the construction page %s', async (path) => {
+    const response = await fetch(origin + path);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
   });
   it('rejects mutations, supports HEAD and exposes a light health check', async () => {
     expect((await fetch(origin, { method: 'POST' })).status).toBe(405);

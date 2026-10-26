@@ -11,6 +11,7 @@
   --color-button: #f4f4f4;
   --color-button-text: #111111;
   --color-secondary: #c8c8c8;
+  --color-control: #737373;
 }
 
 :root {
@@ -26,6 +27,18 @@
   --color-text: #111111;
   --color-muted: #555555;
   --color-subtle: #666666;
+  --color-button: #0a0a0a;
+  --color-button-text: #fafafa;
+  --color-secondary: #3a3a3a;
+}
+
+/* Os SVGs trazem cor fixa pensada para o tema escuro; no claro, escurecem ou invertem. */
+:root[data-theme="light"] button img[src^="/icons/"],
+:root[data-theme="light"] a.icon-link img[src^="/icons/"] {
+  filter: brightness(0.4);
+}
+:root[data-theme="light"] button.action-icon img[src^="/icons/"] {
+  filter: invert(1);
 }
 
 @layer base {
@@ -55,10 +68,6 @@
   a:focus-visible {
     outline: 2px solid var(--color-text);
     outline-offset: 5px;
-  }
-  button:hover,
-  a:hover {
-    opacity: 0.8;
   }
   button:active {
     transform: translateY(1px);

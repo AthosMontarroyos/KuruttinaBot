@@ -5,10 +5,6 @@ import type { CommandContext, CommandReply, EmojiInfoLookup } from '#bot/command
 const CUSTOM_EMOJI = /^<a?:([A-Za-z0-9_]{2,32}):(\d{17,20})>$/u;
 const EMOJI_CDN = 'https://cdn.discordapp.com/emojis';
 
-const usageMessage = 'Envie somente a marcação de um emoji personalizado, como `<:nome:id>` ou `<a:nome:id>`.';
-const unavailableMessage = 'Não consegui consultar este emoji agora. Tente de novo daqui a pouco.';
-const notAvailableMessage = 'Não consigo consultar emojis agora. Tente de novo daqui a pouco.';
-
 interface ParsedMarkup {
   readonly raw: string;
   readonly name: string;
@@ -41,10 +37,6 @@ function imageUrl(id: string, animated: boolean): string {
   return `${EMOJI_CDN}/${id}.${animated ? 'gif' : 'png'}`;
 }
 
-async function replyWithEmoji(context: CommandContext, emojiName: string, text: string): Promise<void> {
-  await context.reply(withEmojis(await context.emoji(emojiName), text));
-}
-
 function browserLink(url: string): APIActionRowComponent<APIButtonComponent> {
   return {
     type: ComponentType.ActionRow,
@@ -60,13 +52,19 @@ function browserLink(url: string): APIActionRowComponent<APIButtonComponent> {
 async function infoReply(context: CommandContext, markup: ParsedMarkup, lookup: EmojiInfoLookup): Promise<CommandReply> {
   const animated = lookup.status === 'confirmed' && lookup.animated !== null ? lookup.animated : markup.animated;
   const url = imageUrl(markup.id, animated);
-  const [identity, mention] = await Promise.all([context.emoji('ID'), context.emoji('photo')]);
+  const [base, identity, mention] = await Promise.all([
+    context.render('emojiinfo.info', { id: markup.id }),
+    context.emoji('ID'),
+    context.emoji('photo'),
+  ]);
+  const embed = typeof base === 'string' ? undefined : base.embeds[0];
+  // Ícones, miniatura, campo da menção (o motor escaparia o `_` da marcação) e botão com URL dinâmica ficam aqui.
   return {
     embeds: [{
-      color: 0x2b2d31,
+      ...embed,
       thumbnail: { url },
       fields: [
-        { name: withEmojis(identity, 'Identidade'), value: `\`${markup.id}\``, inline: true },
+        ...(embed?.fields ?? []).map((field) => ({ ...field, name: withEmojis(identity, field.name) })),
         { name: withEmojis(mention, 'Menção'), value: `\`\`\`\n${markup.raw}\n\`\`\``, inline: true },
       ],
     }],
@@ -83,17 +81,17 @@ export function createEmojiInfoExecutor(): (context: CommandContext) => Promise<
     await context.acknowledge();
     const markup = readMarkup(context);
     if (markup === undefined) {
-      await replyWithEmoji(context, 'warning', usageMessage);
+      await context.reply(await context.render('emojiinfo.usage', {}));
       return;
     }
     const lookupPort = context.emojiInfo;
     if (lookupPort === undefined || context.guildId === undefined) {
-      await replyWithEmoji(context, 'ops', notAvailableMessage);
+      await context.reply(await context.render('emojiinfo.not_available', {}));
       return;
     }
     const lookup = await lookupPort.lookup(context.guildId, markup.id);
     if (lookup.status === 'unavailable') {
-      await replyWithEmoji(context, 'ops', unavailableMessage);
+      await context.reply(await context.render('emojiinfo.unavailable', {}));
       return;
     }
     await context.reply(await infoReply(context, markup, lookup));

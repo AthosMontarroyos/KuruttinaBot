@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Guild, Session } from './session';
+import { MessageTemplatesSection } from '../components/MessageTemplates';
 
-type Section = 'overview' | 'modules';
+type Section = 'overview' | 'messages' | 'modules';
 
 const card = 'rounded-[14px] border border-border bg-surface';
 const primaryButton = 'inline-flex min-h-11 items-center justify-center rounded-[10px] border-0 bg-button px-5 text-sm font-semibold text-button-text hover:bg-secondary';
@@ -26,6 +27,8 @@ function GuildIcon({ guild, size }: { guild: Guild; size: 'sm' | 'lg' }) {
 function Skeleton({ className }: { className: string }) {
   return <div className={`animate-pulse rounded-lg bg-border motion-reduce:animate-none ${className}`} />;
 }
+
+export { card, primaryButton, outlineButton, Skeleton };
 
 function Message({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return (
@@ -128,6 +131,7 @@ function PanelPage({ session, failed, onLogout }: PanelPageProps) {
         <nav className="flex flex-col gap-1" aria-label="Seções do servidor">
           {([
             ['overview', 'Visão geral'],
+            ['messages', 'Mensagens'],
             ['modules', 'Módulos'],
           ] as const).map(([target, label]) => (
             <button
@@ -162,6 +166,8 @@ function PanelPage({ session, failed, onLogout }: PanelPageProps) {
               </div>
             </div>
           </>
+        ) : section === 'messages' ? (
+          <MessageTemplatesSection guildId={guild.id} />
         ) : (
           <>
             <h1 className="text-[28px] font-semibold">Módulos</h1>

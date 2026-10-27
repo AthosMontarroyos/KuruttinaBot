@@ -21,8 +21,13 @@ function readCertificate(value, name) {
   }).join('');
 }
 /** @typedef {'development' | 'production'} Environment */
-/** @param {NodeJS.ProcessEnv} env @param {Environment} target @param {'runtime'|'migration'} [purpose] */
-export function readDatabaseConfig(env, target, purpose = 'runtime') {
+/** @typedef {'kuruttina_bot' | 'kuruttina_site'} RuntimeRole */
+/**
+ * @param {NodeJS.ProcessEnv} env @param {Environment} target
+ * @param {'runtime'|'migration'} [purpose]
+ * @param {RuntimeRole} [expectedUser] Role de runtime esperada; cada app usa a sua (privilégios mínimos).
+ */
+export function readDatabaseConfig(env, target, purpose = 'runtime', expectedUser = 'kuruttina_bot') {
   const name = purpose === 'runtime' ? 'DATABASE_URL' : 'DATABASE_MIGRATION_URL';
   const invalid = () => Object.assign(new Error(`Invalid or missing ${name}`), { name: 'DatabaseConfigurationError' });
   let url;
@@ -35,7 +40,7 @@ export function readDatabaseConfig(env, target, purpose = 'runtime') {
     password = decodeURIComponent(url.password);
     database = decodeURIComponent(url.pathname.slice(1));
   } catch { throw invalid(); }
-  if (purpose === 'runtime' && !/^kuruttina_bot(?:\.[a-z0-9]+)?$/u.test(user)) throw invalid();
+  if (purpose === 'runtime' && !new RegExp(`^${expectedUser}(?:\\.[a-z0-9]+)?$`, 'u').test(user)) throw invalid();
   const local = ['localhost', '127.0.0.1', '[::1]', 'postgres'].includes(url.hostname);
   if (local && target !== 'development') throw invalid();
   const ca = readCertificate(env.DATABASE_CA, 'DATABASE_CA');

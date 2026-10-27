@@ -1,6 +1,5 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { validateCommandAccess } from '#bot/command-system/access.js';
-import { withEmojis } from '#bot/command-system/responses.js';
 import type {
   ChatInputCommand,
   CommandAccess,
@@ -9,6 +8,7 @@ import type {
   GuildMemberProfile,
   MemberModerationPort,
 } from '#bot/command-system/types.js';
+import type { MessageKey } from '#bot/application/messages/catalog.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 const { KickMembers } = PermissionFlagsBits;
@@ -16,9 +16,6 @@ const { KickMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotKickBot = 'Ei! Você não pode me expulsar!!!';
-const kickFailed = 'Não consegui expulsar esse membro. Tente de novo daqui a pouco.';
-const memberMissing = 'Não encontrei esse membro neste servidor.';
 const SNOWFLAKE = /^\d{17,20}$/u;
 const MENTION = /^<@!?(\d{17,20})>$/u;
 
@@ -64,11 +61,6 @@ function parseTarget(userId: string | undefined, reason: string): KickArgs {
   return { ok: true, userId, ...(reason === '' ? {} : { reason }) };
 }
 
-function asCode(value: string, fallback: string): string {
-  const cleaned = value.replaceAll('`', '').replace(/\s+/gu, ' ').trim().slice(0, MAX_REASON_LENGTH);
-  return `\`${cleaned === '' ? fallback : cleaned}\``;
-}
-
 function auditReason(moderatorId: string, reason: string | undefined): string {
   const base = `Moderador ${moderatorId}`;
   if (reason === undefined) return base;
@@ -85,12 +77,12 @@ function errorDetails(error: unknown): { errorName: string; errorCode?: string |
   };
 }
 
-async function say(context: CommandContext, emojiName: string, text: string): Promise<void> {
-  await context.reply(withEmojis(await context.emoji(emojiName), text));
+async function say(context: CommandContext, key: MessageKey): Promise<void> {
+  await context.reply(await context.render(key));
 }
 
 async function sayKickFailed(context: CommandContext): Promise<void> {
-  await say(context, 'ops', kickFailed);
+  await say(context, 'kick.failed');
 }
 
 async function reportKickFailure(context: CommandContext, targetId: string, error: unknown): Promise<void> {
@@ -104,36 +96,15 @@ async function confirmation(
   moderator: GuildMemberProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, kick, identity, staff, note] = await Promise.all([
-    context.emoji('sucess'),
-    context.emoji('kick'),
-    context.emoji('ID'),
-    context.emoji('staff'),
-    context.emoji('Note'),
-  ]);
-  return {
-    content: withEmojis(done, `Pronto. ${asCode(target.displayName, 'Membro')} foi expulso deste servidor.`, kick),
-    embeds: [{
-      color: 0x2b2d31,
-      fields: [
-        {
-          name: withEmojis(identity, 'Membro'),
-          value: `${asCode(target.displayName, 'Membro')}\n\`${target.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(staff, 'Responsável'),
-          value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(note, 'Motivo'),
-          value: reason === undefined ? 'Nenhum motivo informado.' : asCode(reason, 'Motivo'),
-          inline: false,
-        },
-      ],
-    }],
+  const values = {
+    target: target.displayName,
+    'target.id': target.id,
+    moderator: moderator.displayName,
+    'moderator.id': moderator.id,
   };
+  return reason === undefined
+    ? context.render('kick.success_no_reason', values)
+    : context.render('kick.success', { ...values, reason });
 }
 
 async function publishConfirmation(context: CommandContext, message: CommandReply): Promise<void> {
@@ -157,7 +128,7 @@ async function authorizeKick(
   target: GuildMemberProfile,
 ): Promise<GuildMemberProfile | undefined> {
   if (target.id === guild.ownerId) {
-    await say(context, 'Disappointed', 'Não consigo expulsar o dono deste servidor.');
+    await say(context, 'kick.owner');
     return undefined;
   }
 
@@ -167,7 +138,7 @@ async function authorizeKick(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'O cargo desse membro está acima do seu ou no mesmo nível. Você não pode expulsá-lo.');
+    await say(context, 'kick.role_above_actor');
     return undefined;
   }
 
@@ -177,11 +148,11 @@ async function authorizeKick(
     return undefined;
   }
   if (target.id === bot.id) {
-    await say(context, 'Angry', cannotKickBot);
+    await say(context, 'kick.bot_target');
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Angry', 'Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo expulsá-lo.');
+    await say(context, 'kick.bot_role_below');
     return undefined;
   }
   return actor;
@@ -196,14 +167,14 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parseKickPrefixArgs(context.rawArgs ?? '');
   if (!args.ok) {
     if (args.reason === 'missing') {
-      await say(context, 'question', 'Diga quem expulsar. Mencione o membro ou digite o ID!');
+      await say(context, 'kick.missing_target');
       return;
     }
     if (args.reason === 'reason-too-long') {
-      await say(context, 'warning', `O motivo pode ter no máximo **${MAX_REASON_LENGTH}** caracteres.`);
+      await say(context, 'kick.reason_too_long');
       return;
     }
-    await say(context, 'search', 'Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.');
+    await say(context, 'kick.invalid_target');
     return;
   }
 
@@ -214,11 +185,11 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Você não pode se expulsar!!');
+    await say(context, 'kick.self');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {
-    await say(context, 'Angry', cannotKickBot);
+    await say(context, 'kick.bot_target');
     return;
   }
 
@@ -230,7 +201,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (target === null) {
-    await say(context, 'search', memberMissing);
+    await say(context, 'kick.member_not_found');
     return;
   }
 
@@ -251,7 +222,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (outcome === 'missing') {
-    await say(context, 'search', memberMissing);
+    await say(context, 'kick.member_not_found');
     return;
   }
 

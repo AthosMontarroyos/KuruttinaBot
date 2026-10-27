@@ -1,5 +1,8 @@
 import type { GuildTextBasedChannel, TextBasedChannel } from 'discord.js';
 import type { CommandContext, HasPermission } from '#bot/command-system/types.js';
+import { MESSAGE_CATALOG, type MessageCatalogEntry, type MessageKey } from '#bot/application/messages/catalog.js';
+import { fillEmojis, renderTemplate } from '@kuruttina/message-templates';
+import { toCommandReply } from '../messages/toCommandReply.js';
 import { createClearChannelAdapter } from '../moderation/clearAdapter.js';
 import { createMemberModerationAdapter } from '../moderation/memberModerationAdapter.js';
 
@@ -49,6 +52,18 @@ export function createEmojiResolver(application: CommandClientPort['application'
     } catch {
       return emojiFallbacks[name] ?? '';
     }
+  };
+}
+
+/** Cria o `render` do contexto, reutilizando o `emoji` (e seu cache) do comando. */
+export function createRenderer(emoji: CommandContext['emoji']): CommandContext['render'] {
+  return async (key: MessageKey, values = {}) => {
+    if (!Object.hasOwn(MESSAGE_CATALOG, key)) throw new Error(`Fala desconhecida no catálogo: ${String(key)}`);
+    const entry = (MESSAGE_CATALOG as Readonly<Record<string, MessageCatalogEntry>>)[key] as MessageCatalogEntry;
+    const aliases = Object.entries(entry.emojis);
+    const resolved = await Promise.all(aliases.map(([, name]) => emoji(name)));
+    const emojis = Object.fromEntries(aliases.map(([alias], index) => [alias, resolved[index] ?? '']));
+    return toCommandReply(renderTemplate(fillEmojis(entry.template, emojis), entry.variables, values));
   };
 }
 

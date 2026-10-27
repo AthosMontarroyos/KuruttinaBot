@@ -1,6 +1,6 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { validateCommandAccess } from '#bot/command-system/access.js';
-import { withEmojis } from '#bot/command-system/responses.js';
+import type { MessageKey } from '#bot/application/messages/catalog.js';
 import type {
   ChatInputCommand,
   CommandAccess,
@@ -16,9 +16,6 @@ const { BanMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotUnbanBot = 'Ei! Eu nem estou banida, então como você estaria tentando revogar o meu banimento?';
-const unbanFailed = 'Não consegui revogar o banimento desse usuário. Tente de novo daqui a pouco.';
-const notBanned = 'Ei! Esse usuário não está nem sequer banido.';
 const SNOWFLAKE = /^\d{17,20}$/u;
 const MENTION = /^<@!?(\d{17,20})>$/u;
 
@@ -64,11 +61,6 @@ function parseTarget(userId: string | undefined, reason: string): UnbanArgs {
   return { ok: true, userId, ...(reason === '' ? {} : { reason }) };
 }
 
-function asCode(value: string, fallback: string): string {
-  const cleaned = value.replaceAll('`', '').replace(/\s+/gu, ' ').trim().slice(0, MAX_REASON_LENGTH);
-  return `\`${cleaned === '' ? fallback : cleaned}\``;
-}
-
 function auditReason(moderatorId: string, reason: string | undefined): string {
   const base = `Moderador ${moderatorId}`;
   if (reason === undefined) return base;
@@ -85,12 +77,12 @@ function errorDetails(error: unknown): { errorName: string; errorCode?: string |
   };
 }
 
-async function say(context: CommandContext, emojiName: string, text: string): Promise<void> {
-  await context.reply(withEmojis(await context.emoji(emojiName), text));
+async function say(context: CommandContext, key: MessageKey): Promise<void> {
+  await context.reply(await context.render(key));
 }
 
 async function sayUnbanFailed(context: CommandContext): Promise<void> {
-  await say(context, 'ops', unbanFailed);
+  await say(context, 'unban.failed');
 }
 
 async function reportUnbanFailure(context: CommandContext, targetId: string, error: unknown): Promise<void> {
@@ -104,36 +96,13 @@ async function confirmation(
   moderator: ModeratedUserProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, happy, identity, staff, note] = await Promise.all([
-    context.emoji('sucess'),
-    context.emoji('happy'),
-    context.emoji('ID'),
-    context.emoji('staff'),
-    context.emoji('Note'),
-  ]);
-  return {
-    content: withEmojis(happy, done, `Pronto. O banimento de ${asCode(target.displayName, 'Usuário')} foi revogado.`),
-    embeds: [{
-      color: 0x2b2d31,
-      fields: [
-        {
-          name: withEmojis(identity, 'Usuário'),
-          value: `${asCode(target.displayName, 'Usuário')}\n\`${target.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(staff, 'Responsável'),
-          value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(note, 'Motivo'),
-          value: reason === undefined ? 'Nenhum motivo informado.' : asCode(reason, 'Motivo'),
-          inline: false,
-        },
-      ],
-    }],
-  };
+  return context.render(reason === undefined ? 'unban.success_no_reason' : 'unban.success', {
+    target: target.displayName,
+    'target.id': target.id,
+    moderator: moderator.displayName,
+    'moderator.id': moderator.id,
+    ...(reason === undefined ? {} : { reason }),
+  });
 }
 
 async function publishConfirmation(context: CommandContext, message: CommandReply): Promise<void> {
@@ -159,14 +128,14 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parseUnbanPrefixArgs(context.rawArgs ?? '');
   if (!args.ok) {
     if (args.reason === 'missing') {
-      await say(context, 'question', 'Diga de quem revogar o banimento. Mencione o usuário ou digite o ID!');
+      await say(context, 'unban.missing_target');
       return;
     }
     if (args.reason === 'reason-too-long') {
-      await say(context, 'warning', `O motivo pode ter no máximo **${MAX_REASON_LENGTH}** caracteres.`);
+      await say(context, 'unban.reason_too_long');
       return;
     }
-    await say(context, 'search', 'Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.');
+    await say(context, 'unban.invalid_target');
     return;
   }
 
@@ -177,11 +146,11 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Como você estaria tentando revogar o seu próprio banimento?');
+    await say(context, 'unban.self');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {
-    await say(context, 'Disappointed', cannotUnbanBot);
+    await say(context, 'unban.bot_target');
     return;
   }
 
@@ -195,7 +164,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (banned === null) {
-    await say(context, 'search', notBanned);
+    await say(context, 'unban.not_banned');
     return;
   }
   if (moderator === null) {
@@ -211,7 +180,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (outcome === 'not-banned') {
-    await say(context, 'search', notBanned);
+    await say(context, 'unban.not_banned');
     return;
   }
 

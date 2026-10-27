@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { command as clearCommand, parsePrefixArgs } from '../apps/bot/src/commands/mod/clear.js';
 import { createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 import type { CommandContext, BulkDeletePort } from '../apps/bot/src/command-system/types.js';
+import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -24,6 +25,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
   return {
     apiPing: 42,
     gatewayPing: 84,
+    render: createRenderer(async () => ''),
     acknowledge: vi.fn().mockResolvedValue(undefined),
     emoji: vi.fn(async (name: string) => `<:${name}:${name}-id>`),
     reply,

@@ -1,0 +1,5785 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshot do catálogo de falas: ban > confirma com motivo claro 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`motivo claro\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > confirma com motivo que fica vazio depois da limpeza 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`Motivo\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > confirma sem motivo com emojis empty 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "Pronto. \`Alvo\` foi banido deste servidor.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > confirma sem motivo com emojis resolved 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > confirma sem motivo com emojis unicode 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > limpa o motivo com caracteres especiais 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`a*b_c x @everyone <@1>\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > limpa o nome com asterisco e sublinhado 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`a*b_c\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`a*b_c\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`a*b_c\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > limpa o nome com crase 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Alvo\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > limpa o nome com everyone 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`@everyone\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`@everyone\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`@everyone\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > limpa o nome com menção 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`<@1>\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`<@1>\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`<@1>\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ban > limpa o nome com só espaços 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Usuário\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Usuário\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Moderador\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > avisa uso inválido, consulta indisponível e sem porta com emojis empty 1`] = `
+{
+  "invalid": [
+    "Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "noPort": [
+    "Não consigo consultar emojis agora. Tente de novo daqui a pouco.",
+  ],
+  "unavailable": [
+    "Não consegui consultar este emoji agora. Tente de novo daqui a pouco.",
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > avisa uso inválido, consulta indisponível e sem porta com emojis resolved 1`] = `
+{
+  "invalid": [
+    "<:warning:warning-id> Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "noPort": [
+    "<:ops:ops-id> Não consigo consultar emojis agora. Tente de novo daqui a pouco.",
+  ],
+  "unavailable": [
+    "<:ops:ops-id> Não consegui consultar este emoji agora. Tente de novo daqui a pouco.",
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > avisa uso inválido, consulta indisponível e sem porta com emojis unicode 1`] = `
+{
+  "invalid": [
+    "⚠️ Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "noPort": [
+    "😅 Não consigo consultar emojis agora. Tente de novo daqui a pouco.",
+  ],
+  "unavailable": [
+    "😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco.",
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha com emojis empty 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "label": "Abrir no navegador",
+            "style": 5,
+            "type": 2,
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "embeds": [
+      {
+        "color": 2829617,
+        "fields": [
+          {
+            "inline": true,
+            "name": "Identidade",
+            "value": "\`910000000000000001\`",
+          },
+          {
+            "inline": true,
+            "name": "Menção",
+            "value": "\`\`\`
+<:wave:910000000000000001>
+\`\`\`",
+          },
+        ],
+        "thumbnail": {
+          "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+        },
+      },
+    ],
+  },
+]
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha com emojis resolved 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "label": "Abrir no navegador",
+            "style": 5,
+            "type": 2,
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "embeds": [
+      {
+        "color": 2829617,
+        "fields": [
+          {
+            "inline": true,
+            "name": "<:ID:ID-id> Identidade",
+            "value": "\`910000000000000001\`",
+          },
+          {
+            "inline": true,
+            "name": "<:photo:photo-id> Menção",
+            "value": "\`\`\`
+<:wave:910000000000000001>
+\`\`\`",
+          },
+        ],
+        "thumbnail": {
+          "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+        },
+      },
+    ],
+  },
+]
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha com emojis unicode 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "label": "Abrir no navegador",
+            "style": 5,
+            "type": 2,
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "embeds": [
+      {
+        "color": 2829617,
+        "fields": [
+          {
+            "inline": true,
+            "name": "🪪 Identidade",
+            "value": "\`910000000000000001\`",
+          },
+          {
+            "inline": true,
+            "name": "🖼️ Menção",
+            "value": "\`\`\`
+<:wave:910000000000000001>
+\`\`\`",
+          },
+        ],
+        "thumbnail": {
+          "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+        },
+      },
+    ],
+  },
+]
+`;
+
+exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha de um emoji com sublinhado no nome 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "label": "Abrir no navegador",
+            "style": 5,
+            "type": 2,
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "embeds": [
+      {
+        "color": 2829617,
+        "fields": [
+          {
+            "inline": true,
+            "name": "<:ID:ID-id> Identidade",
+            "value": "\`910000000000000001\`",
+          },
+          {
+            "inline": true,
+            "name": "<:photo:photo-id> Menção",
+            "value": "\`\`\`
+<:a_b_c:910000000000000001>
+\`\`\`",
+          },
+        ],
+        "thumbnail": {
+          "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+        },
+      },
+    ],
+  },
+]
+`;
+
+exports[`snapshot do catálogo de falas: kick > confirma com motivo claro 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`motivo claro\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > confirma com motivo que fica vazio depois da limpeza 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`Motivo\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > confirma sem motivo com emojis empty 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "Pronto. \`Alvo\` foi expulso deste servidor.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > confirma sem motivo com emojis resolved 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > confirma sem motivo com emojis unicode 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > limpa o motivo com caracteres especiais 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`a*b_c x @everyone <@1>\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > limpa o nome com asterisco e sublinhado 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`a*b_c\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`a*b_c\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`a*b_c\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > limpa o nome com crase 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Alvo\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > limpa o nome com everyone 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`@everyone\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`@everyone\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`@everyone\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > limpa o nome com menção 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`<@1>\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`<@1>\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`<@1>\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: kick > limpa o nome com só espaços 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Membro\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Membro\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Moderador\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ping > publica o ping com emojis empty 1`] = `
+{
+  "reply": [
+    {
+      "content": "Pong. Ainda estou aqui.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "API",
+              "value": "\`42ms\`",
+            },
+            {
+              "inline": true,
+              "name": "Gateway",
+              "value": "\`87ms\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ping > publica o ping com emojis resolved 1`] = `
+{
+  "reply": [
+    {
+      "content": "<:dancing:dancing-id> Pong. Ainda estou aqui.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:stats:stats-id> API",
+              "value": "\`42ms\`",
+            },
+            {
+              "inline": true,
+              "name": "<:gateway:gateway-id> Gateway",
+              "value": "\`87ms\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot do catálogo de falas: ping > publica o ping com emojis unicode 1`] = `
+{
+  "reply": [
+    {
+      "content": "💃 Pong. Ainda estou aqui.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "📊 API",
+              "value": "\`42ms\`",
+            },
+            {
+              "inline": true,
+              "name": "🌐 Gateway",
+              "value": "\`87ms\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > confirma com motivo claro 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`motivo claro\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > confirma com motivo que fica vazio depois da limpeza 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`Motivo\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > confirma sem motivo com emojis empty 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "Pronto. \`Alvo\` foi castigado por **10 minutos**.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > confirma sem motivo com emojis resolved 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > confirma sem motivo com emojis unicode 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "✅ Pronto. \`Alvo\` foi castigado por **10 minutos**.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > limpa o motivo com caracteres especiais 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`a*b_c x @everyone <@1>\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > limpa o nome com asterisco e sublinhado 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`a*b_c\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`a*b_c\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`a*b_c\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > limpa o nome com crase 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Alvo\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > limpa o nome com everyone 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`@everyone\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`@everyone\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`@everyone\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > limpa o nome com menção 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`<@1>\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`<@1>\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`<@1>\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout > limpa o nome com só espaços 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Membro\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Membro\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Moderador\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout com várias unidades > formata a duração 1 hora e 30 minutos 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "1 hora e 30 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`aviso\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout com várias unidades > formata a duração 1 semana, 2 dias 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 semana e 2 dias**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "1 semana e 2 dias",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`aviso\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout com várias unidades > formata a duração 1d2h3m4s 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 dia, 2 horas, 3 minutos e 4 segundos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "1 dia, 2 horas, 3 minutos e 4 segundos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`aviso\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: timeout com várias unidades > formata a duração 4 semanas 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **4 semanas**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "4 semanas",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`aviso\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > confirma com motivo claro 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`motivo claro\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > confirma com motivo que fica vazio depois da limpeza 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`Motivo\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > confirma sem motivo com emojis empty 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > confirma sem motivo com emojis resolved 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > confirma sem motivo com emojis unicode 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "✅ Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > limpa o motivo com caracteres especiais 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`a*b_c x @everyone <@1>\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > limpa o nome com asterisco e sublinhado 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`a*b_c\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`a*b_c\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`a*b_c\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > limpa o nome com crase 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Alvo\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > limpa o nome com everyone 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`@everyone\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`@everyone\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`@everyone\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > limpa o nome com menção 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`<@1>\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`<@1>\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`<@1>\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: unban > limpa o nome com só espaços 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Usuário\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Usuário\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Moderador\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > confirma com motivo claro 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`motivo claro\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > confirma com motivo que fica vazio depois da limpeza 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`Motivo\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > confirma sem motivo com emojis empty 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "Pronto. O castigo de \`Alvo\` foi removido.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > confirma sem motivo com emojis resolved 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > confirma sem motivo com emojis unicode 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > limpa o motivo com caracteres especiais 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "\`a*b_c x @everyone <@1>\`",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > limpa o nome com asterisco e sublinhado 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`a*b_c\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`a*b_c\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`a*b_c\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > limpa o nome com crase 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Alvo\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > limpa o nome com everyone 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`@everyone\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`@everyone\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`@everyone\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > limpa o nome com menção 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`<@1>\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`<@1>\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`<@1>\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot do catálogo de falas: untimeout > limpa o nome com só espaços 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Membro\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Membro\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Moderador\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: ban > entrada por slash com emojis resolved 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "<:Disappointed:Disappointed-id> Você não pode se banir... Por que você estaria tentando banir você mesmo?",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Usuário",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:staff:staff-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Usuário",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:staff:staff-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: ban > entrada por slash com emojis unicode 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode se banir... Por que você estaria tentando banir você mesmo?",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Usuário",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Usuário",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: administrador 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: alvo inválido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: autoação 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você não pode se banir... Por que você estaria tentando banir você mesmo?",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: bot como alvo 1`] = `
+{
+  "reply": [
+    "<:cry:cry-id> Ei! Por que você está tentando me banir?",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: cargo do autor igual 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: cargo do bot igual 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Ei! Meu cargo está abaixo desse membro ou no mesmo nível. Eu não consigo simplesmente bani-lo desse servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: dono do servidor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Não consigo banir o dono deste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: falha ao buscar o membro 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui banir esse usuário. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: falha do Discord 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui banir esse usuário. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: fora de servidor 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: já banido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Esse usuário já está banido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: membro ausente 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse usuário.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: motivo longo 1`] = `
+{
+  "reply": [
+    "<:warning:warning-id> O motivo pode ter no máximo **200** caracteres.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: permissão do bot ausente 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Preciso destas permissões para banir um usuário: **Banir membros, Enviar mensagens**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: permissão negada ao autor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você precisa da permissão **Banir membros** neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: resultado desconhecido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse usuário.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: sem alvo 1`] = `
+{
+  "reply": [
+    "<:question:question-id> Diga quem banir. Mencione o membro ou digite o ID!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: sem banimento 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: ban > recusa/erro: sem castigo ativo 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: ban > todos os emojis falhando (empty): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "Você não pode se banir... Por que você estaria tentando banir você mesmo?",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. \`Alvo\` foi banido deste servidor.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "Usuário",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "Não consegui banir esse usuário. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "Você precisa da permissão **Banir membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: ban > todos os emojis falhando (unicode): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode se banir... Por que você estaria tentando banir você mesmo?",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Usuário",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "😅 Não consegui banir esse usuário. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "⚠️ O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "😞 Você precisa da permissão **Banir membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: emojiInfo > indisponível com emojis empty 1`] = `
+[
+  "Não consegui consultar este emoji agora. Tente de novo daqui a pouco.",
+]
+`;
+
+exports[`snapshot estendido: emojiInfo > indisponível com emojis resolved 1`] = `
+[
+  "<:ops:ops-id> Não consegui consultar este emoji agora. Tente de novo daqui a pouco.",
+]
+`;
+
+exports[`snapshot estendido: emojiInfo > indisponível com emojis unicode 1`] = `
+[
+  "😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco.",
+]
+`;
+
+exports[`snapshot estendido: emojiInfo > uso inválido sem marcação com emojis empty 1`] = `
+{
+  "dois": [
+    "Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "slash": [
+    "Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "texto": [
+    "Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "vazio": [
+    "Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+}
+`;
+
+exports[`snapshot estendido: emojiInfo > uso inválido sem marcação com emojis resolved 1`] = `
+{
+  "dois": [
+    "<:warning:warning-id> Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "slash": [
+    "<:warning:warning-id> Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "texto": [
+    "<:warning:warning-id> Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "vazio": [
+    "<:warning:warning-id> Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+}
+`;
+
+exports[`snapshot estendido: emojiInfo > uso inválido sem marcação com emojis unicode 1`] = `
+{
+  "dois": [
+    "⚠️ Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "slash": [
+    "⚠️ Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "texto": [
+    "⚠️ Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+  "vazio": [
+    "⚠️ Envie somente a marcação de um emoji personalizado, como \`<:nome:id>\` ou \`<a:nome:id>\`.",
+  ],
+}
+`;
+
+exports[`snapshot estendido: emojiInfo > variante animada com emojis resolved 1`] = `
+{
+  "confirmadoAnimado": [
+    {
+      "components": [
+        {
+          "components": [
+            {
+              "label": "Abrir no navegador",
+              "style": 5,
+              "type": 2,
+              "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+            },
+          ],
+          "type": 1,
+        },
+      ],
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Identidade",
+              "value": "\`910000000000000001\`",
+            },
+            {
+              "inline": true,
+              "name": "<:photo:photo-id> Menção",
+              "value": "\`\`\`
+<a:dance_now:910000000000000001>
+\`\`\`",
+            },
+          ],
+          "thumbnail": {
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+          },
+        },
+      ],
+    },
+  ],
+  "confirmadoEstatico": [
+    {
+      "components": [
+        {
+          "components": [
+            {
+              "label": "Abrir no navegador",
+              "style": 5,
+              "type": 2,
+              "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+            },
+          ],
+          "type": 1,
+        },
+      ],
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Identidade",
+              "value": "\`910000000000000001\`",
+            },
+            {
+              "inline": true,
+              "name": "<:photo:photo-id> Menção",
+              "value": "\`\`\`
+<a:dance_now:910000000000000001>
+\`\`\`",
+            },
+          ],
+          "thumbnail": {
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+          },
+        },
+      ],
+    },
+  ],
+  "naoConfirmado": [
+    {
+      "components": [
+        {
+          "components": [
+            {
+              "label": "Abrir no navegador",
+              "style": 5,
+              "type": 2,
+              "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+            },
+          ],
+          "type": 1,
+        },
+      ],
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Identidade",
+              "value": "\`910000000000000001\`",
+            },
+            {
+              "inline": true,
+              "name": "<:photo:photo-id> Menção",
+              "value": "\`\`\`
+<a:dance_now:910000000000000001>
+\`\`\`",
+            },
+          ],
+          "thumbnail": {
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+          },
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: emojiInfo > variante animada com emojis unicode 1`] = `
+{
+  "confirmadoAnimado": [
+    {
+      "components": [
+        {
+          "components": [
+            {
+              "label": "Abrir no navegador",
+              "style": 5,
+              "type": 2,
+              "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+            },
+          ],
+          "type": 1,
+        },
+      ],
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Identidade",
+              "value": "\`910000000000000001\`",
+            },
+            {
+              "inline": true,
+              "name": "🖼️ Menção",
+              "value": "\`\`\`
+<a:dance_now:910000000000000001>
+\`\`\`",
+            },
+          ],
+          "thumbnail": {
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+          },
+        },
+      ],
+    },
+  ],
+  "confirmadoEstatico": [
+    {
+      "components": [
+        {
+          "components": [
+            {
+              "label": "Abrir no navegador",
+              "style": 5,
+              "type": 2,
+              "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+            },
+          ],
+          "type": 1,
+        },
+      ],
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Identidade",
+              "value": "\`910000000000000001\`",
+            },
+            {
+              "inline": true,
+              "name": "🖼️ Menção",
+              "value": "\`\`\`
+<a:dance_now:910000000000000001>
+\`\`\`",
+            },
+          ],
+          "thumbnail": {
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.png",
+          },
+        },
+      ],
+    },
+  ],
+  "naoConfirmado": [
+    {
+      "components": [
+        {
+          "components": [
+            {
+              "label": "Abrir no navegador",
+              "style": 5,
+              "type": 2,
+              "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+            },
+          ],
+          "type": 1,
+        },
+      ],
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "🪪 Identidade",
+              "value": "\`910000000000000001\`",
+            },
+            {
+              "inline": true,
+              "name": "🖼️ Menção",
+              "value": "\`\`\`
+<a:dance_now:910000000000000001>
+\`\`\`",
+            },
+          ],
+          "thumbnail": {
+            "url": "https://cdn.discordapp.com/emojis/910000000000000001.gif",
+          },
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: kick > entrada por slash com emojis resolved 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "<:Disappointed:Disappointed-id> Você não pode se expulsar!!",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:staff:staff-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:staff:staff-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: kick > entrada por slash com emojis unicode 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode se expulsar!!",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: administrador 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: alvo inválido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: autoação 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você não pode se expulsar!!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: bot como alvo 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Ei! Você não pode me expulsar!!!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: cargo do autor igual 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> O cargo desse membro está acima do seu ou no mesmo nível. Você não pode expulsá-lo.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: cargo do bot igual 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo expulsá-lo.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: dono do servidor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Não consigo expulsar o dono deste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: falha ao buscar o membro 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui expulsar esse membro. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: falha do Discord 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui expulsar esse membro. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: fora de servidor 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: já banido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: membro ausente 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: motivo longo 1`] = `
+{
+  "reply": [
+    "<:warning:warning-id> O motivo pode ter no máximo **200** caracteres.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: permissão do bot ausente 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Preciso destas permissões para expulsar um membro: **Expulsar membros, Enviar mensagens**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: permissão negada ao autor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você precisa da permissão **Expulsar membros** neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: resultado desconhecido 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: sem alvo 1`] = `
+{
+  "reply": [
+    "<:question:question-id> Diga quem expulsar. Mencione o membro ou digite o ID!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: sem banimento 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: kick > recusa/erro: sem castigo ativo 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: kick > todos os emojis falhando (empty): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "Você não pode se expulsar!!",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. \`Alvo\` foi expulso deste servidor.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "Não consegui expulsar esse membro. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "Você precisa da permissão **Expulsar membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: kick > todos os emojis falhando (unicode): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode se expulsar!!",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "😅 Não consegui expulsar esse membro. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "⚠️ O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "😞 Você precisa da permissão **Expulsar membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: ping completo > publica latências altas e zeradas 1`] = `
+{
+  "high": {
+    "reply": [
+      {
+        "content": "<:dancing:dancing-id> Pong. Ainda estou aqui.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:stats:stats-id> API",
+                "value": "\`1234ms\`",
+              },
+              {
+                "inline": true,
+                "name": "<:gateway:gateway-id> Gateway",
+                "value": "\`5678ms\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    "sendMessage": [],
+  },
+  "zero": {
+    "reply": [
+      {
+        "content": "💃 Pong. Ainda estou aqui.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "📊 API",
+                "value": "\`0ms\`",
+              },
+              {
+                "inline": true,
+                "name": "🌐 Gateway",
+                "value": "\`0ms\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout > entrada por slash com emojis resolved 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "<:Disappointed:Disappointed-id> Você não pode se castigar...",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**. <:jail:jail-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:police:police-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:info:info-id> Duração",
+                "value": "1 hora e 30 minutos",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**. <:jail:jail-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:police:police-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:info:info-id> Duração",
+                "value": "1 hora e 30 minutos",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout > entrada por slash com emojis unicode 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode se castigar...",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Duração",
+                "value": "1 hora e 30 minutos",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Duração",
+                "value": "1 hora e 30 minutos",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: administrador 1`] = `
+{
+  "reply": [
+    "<:cry:cry-id> Não consigo castigar um membro com a permissão **Administrador**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: alvo inválido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: autoação 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você não pode se castigar...",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: bot como alvo 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Ei! Você não pode me castigar...",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: cargo do autor igual 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: cargo do bot igual 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo. <:cry:cry-id>",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: dono do servidor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Não consigo castigar o dono deste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: falha ao buscar o membro 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui castigar esse membro. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: falha do Discord 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui castigar esse membro. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: fora de servidor 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: já banido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: membro ausente 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: motivo longo 1`] = `
+{
+  "reply": [
+    "<:warning:warning-id> O motivo pode ter no máximo **200** caracteres.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: permissão do bot ausente 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Preciso destas permissões para castigar um membro: **Castigar membros, Enviar mensagens**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: permissão negada ao autor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você precisa da permissão **Castigar membros** neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: resultado desconhecido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: sem alvo 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: sem banimento 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: timeout > recusa/erro: sem castigo ativo 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:info:info-id> Duração",
+              "value": "10 minutos",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: timeout > todos os emojis falhando (empty): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "Você não pode se castigar...",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. \`Alvo\` foi castigado por **10 minutos**.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Duração",
+                "value": "10 minutos",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "Não consegui castigar esse membro. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "Você precisa da permissão **Castigar membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout > todos os emojis falhando (unicode): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode se castigar...",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. \`Alvo\` foi castigado por **10 minutos**.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Duração",
+                "value": "10 minutos",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "😅 Não consegui castigar esse membro. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "⚠️ O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "😞 Você precisa da permissão **Castigar membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout com duração inválida > recusa a duração curta (menos de 1 segundo) 1`] = `
+{
+  "empty": {
+    "reply": [
+      "O castigo precisa durar pelo menos **1 segundo**.",
+    ],
+    "sendMessage": [],
+  },
+  "resolved": {
+    "reply": [
+      "<:warning:warning-id> O castigo precisa durar pelo menos **1 segundo**.",
+    ],
+    "sendMessage": [],
+  },
+  "unicode": {
+    "reply": [
+      "⚠️ O castigo precisa durar pelo menos **1 segundo**.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout com duração inválida > recusa a duração duração inválida 1`] = `
+{
+  "empty": {
+    "reply": [
+      "Não entendi essa duração. Use **10m**, **2h**, **1d** ou **1 semana**.",
+    ],
+    "sendMessage": [],
+  },
+  "resolved": {
+    "reply": [
+      "<:warning:warning-id> Não entendi essa duração. Use **10m**, **2h**, **1d** ou **1 semana**.",
+    ],
+    "sendMessage": [],
+  },
+  "unicode": {
+    "reply": [
+      "⚠️ Não entendi essa duração. Use **10m**, **2h**, **1d** ou **1 semana**.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout com duração inválida > recusa a duração longa (mais de 28 dias) 1`] = `
+{
+  "empty": {
+    "reply": [
+      "O castigo pode durar no máximo **28 dias**.",
+    ],
+    "sendMessage": [],
+  },
+  "resolved": {
+    "reply": [
+      "<:warning:warning-id> O castigo pode durar no máximo **28 dias**.",
+    ],
+    "sendMessage": [],
+  },
+  "unicode": {
+    "reply": [
+      "⚠️ O castigo pode durar no máximo **28 dias**.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout com duração inválida > recusa a duração longa em semanas 1`] = `
+{
+  "empty": {
+    "reply": [
+      "O castigo pode durar no máximo **28 dias**.",
+    ],
+    "sendMessage": [],
+  },
+  "resolved": {
+    "reply": [
+      "<:warning:warning-id> O castigo pode durar no máximo **28 dias**.",
+    ],
+    "sendMessage": [],
+  },
+  "unicode": {
+    "reply": [
+      "⚠️ O castigo pode durar no máximo **28 dias**.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout com duração inválida > recusa a duração sem duração 1`] = `
+{
+  "empty": {
+    "reply": [
+      "Diga por quanto tempo. Use **10m**, **2h** ou **1d**.",
+    ],
+    "sendMessage": [],
+  },
+  "resolved": {
+    "reply": [
+      "<:question:question-id> Diga por quanto tempo. Use **10m**, **2h** ou **1d**.",
+    ],
+    "sendMessage": [],
+  },
+  "unicode": {
+    "reply": [
+      "❓ Diga por quanto tempo. Use **10m**, **2h** ou **1d**.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: timeout com duração inválida > recusa duração curta pelo slash 1`] = `
+{
+  "reply": [
+    "<:warning:warning-id> O castigo precisa durar pelo menos **1 segundo**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > entrada por slash com emojis resolved 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "<:Disappointed:Disappointed-id> Como você estaria tentando revogar o seu próprio banimento?",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Usuário",
+                "value": "\`Fora\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:staff:staff-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Usuário",
+                "value": "\`Fora\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:staff:staff-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: unban > entrada por slash com emojis unicode 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Como você estaria tentando revogar o seu próprio banimento?",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. O banimento de \`Fora\` foi revogado.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Usuário",
+                "value": "\`Fora\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. O banimento de \`Fora\` foi revogado.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Usuário",
+                "value": "\`Fora\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: administrador 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: alvo inválido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: autoação 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Como você estaria tentando revogar o seu próprio banimento?",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: bot como alvo 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Ei! Eu nem estou banida, então como você estaria tentando revogar o meu banimento?",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: cargo do autor igual 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: cargo do bot igual 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: dono do servidor 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: falha ao buscar o membro 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: falha do Discord 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui revogar o banimento desse usuário. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: fora de servidor 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: já banido 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: membro ausente 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: motivo longo 1`] = `
+{
+  "reply": [
+    "<:warning:warning-id> O motivo pode ter no máximo **200** caracteres.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: permissão do bot ausente 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Preciso destas permissões para revogar um banimento: **Banir membros, Enviar mensagens**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: permissão negada ao autor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você precisa da permissão **Banir membros** neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: resultado desconhecido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Ei! Esse usuário não está nem sequer banido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: sem alvo 1`] = `
+{
+  "reply": [
+    "<:question:question-id> Diga de quem revogar o banimento. Mencione o usuário ou digite o ID!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: sem banimento 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Ei! Esse usuário não está nem sequer banido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: unban > recusa/erro: sem castigo ativo 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Usuário",
+              "value": "\`Fora\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:staff:staff-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: unban > todos os emojis falhando (empty): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "Como você estaria tentando revogar o seu próprio banimento?",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. O banimento de \`Fora\` foi revogado.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "Usuário",
+                "value": "\`Fora\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "Não consegui revogar o banimento desse usuário. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "Você precisa da permissão **Banir membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: unban > todos os emojis falhando (unicode): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Como você estaria tentando revogar o seu próprio banimento?",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. O banimento de \`Fora\` foi revogado.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Usuário",
+                "value": "\`Fora\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "😅 Não consegui revogar o banimento desse usuário. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "⚠️ O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "😞 Você precisa da permissão **Banir membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: untimeout > entrada por slash com emojis resolved 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "<:Disappointed:Disappointed-id> Você não pode remover o próprio castigo.",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:police:police-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "<:ID:ID-id> Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "<:police:police-id> Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "<:Note:Note-id> Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: untimeout > entrada por slash com emojis unicode 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode remover o próprio castigo.",
+    ],
+    "sendMessage": [],
+  },
+  "comMotivo": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "\`motivo claro\`",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: administrador 1`] = `
+{
+  "reply": [
+    "<:cry:cry-id> Ei! Não consigo alterar o castigo de um membro com a permissão **Administrador**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: alvo inválido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: autoação 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você não pode remover o próprio castigo.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: bot como alvo 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Você não pode remover o meu castigo.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: cargo do autor igual 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: cargo do bot igual 1`] = `
+{
+  "reply": [
+    "<:cry:cry-id> Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: dono do servidor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Ei! Não consigo alterar o castigo do dono deste servidor...",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: falha ao buscar o membro 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui remover o castigo desse membro. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: falha do Discord 1`] = `
+{
+  "reply": [
+    "<:ops:ops-id> Não consegui remover o castigo desse membro. Tente de novo daqui a pouco.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: fora de servidor 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: já banido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: membro ausente 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: motivo longo 1`] = `
+{
+  "reply": [
+    "<:warning:warning-id> O motivo pode ter no máximo **200** caracteres.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: permissão do bot ausente 1`] = `
+{
+  "reply": [
+    "<:Angry:Angry-id> Preciso destas permissões para remover um castigo: **Castigar membros, Enviar mensagens**.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: permissão negada ao autor 1`] = `
+{
+  "reply": [
+    "<:Disappointed:Disappointed-id> Você precisa da permissão **Castigar membros** neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: resultado desconhecido 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Não encontrei esse membro neste servidor.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: sem alvo 1`] = `
+{
+  "reply": [
+    "<:question:question-id> Diga de quem remover o castigo. Mencione o membro ou digite o ID!",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: sem banimento 1`] = `
+{
+  "reply": [],
+  "sendMessage": [
+    {
+      "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
+      "embeds": [
+        {
+          "color": 2829617,
+          "fields": [
+            {
+              "inline": true,
+              "name": "<:ID:ID-id> Membro",
+              "value": "\`Alvo\`
+\`222222222222222222\`",
+            },
+            {
+              "inline": true,
+              "name": "<:police:police-id> Responsável",
+              "value": "\`Mod\`
+\`111111111111111111\`",
+            },
+            {
+              "inline": false,
+              "name": "<:Note:Note-id> Motivo",
+              "value": "Nenhum motivo informado.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`snapshot estendido: untimeout > recusa/erro: sem castigo ativo 1`] = `
+{
+  "reply": [
+    "<:search:search-id> Esse membro não está castigado.",
+  ],
+  "sendMessage": [],
+}
+`;
+
+exports[`snapshot estendido: untimeout > todos os emojis falhando (empty): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "Você não pode remover o próprio castigo.",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "Pronto. O castigo de \`Alvo\` foi removido.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "Não consegui remover o castigo desse membro. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "Você precisa da permissão **Castigar membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;
+
+exports[`snapshot estendido: untimeout > todos os emojis falhando (unicode): recusa, erro e confirmação 1`] = `
+{
+  "autoacao": {
+    "reply": [
+      "😞 Você não pode remover o próprio castigo.",
+    ],
+    "sendMessage": [],
+  },
+  "confirmacao": {
+    "reply": [],
+    "sendMessage": [
+      {
+        "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
+        "embeds": [
+          {
+            "color": 2829617,
+            "fields": [
+              {
+                "inline": true,
+                "name": "🪪 Membro",
+                "value": "\`Alvo\`
+\`222222222222222222\`",
+              },
+              {
+                "inline": true,
+                "name": "Responsável",
+                "value": "\`Mod\`
+\`111111111111111111\`",
+              },
+              {
+                "inline": false,
+                "name": "Motivo",
+                "value": "Nenhum motivo informado.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "falha": {
+    "reply": [
+      "😅 Não consegui remover o castigo desse membro. Tente de novo daqui a pouco.",
+    ],
+    "sendMessage": [],
+  },
+  "motivoLongo": {
+    "reply": [
+      "⚠️ O motivo pode ter no máximo **200** caracteres.",
+    ],
+    "sendMessage": [],
+  },
+  "permissao": {
+    "reply": [
+      "😞 Você precisa da permissão **Castigar membros** neste servidor.",
+    ],
+    "sendMessage": [],
+  },
+}
+`;

@@ -18,5 +18,11 @@ IDEA.md
 # Claude Code local settings
 .claude/settings.local.json
 
+# Sessões locais do site em development
+.sessions/
+
 # Estado local do harness
 .claude/state/
+
+# Prompts e saídas temporárias de agentes
+.kuru/

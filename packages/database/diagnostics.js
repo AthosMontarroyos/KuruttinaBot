@@ -1,4 +1,4 @@
-/** @typedef {'get_settings'|'get_staff_role'|'pool'} DatabaseOperation */
+/** @typedef {'get_settings'|'get_staff_role'|'pool'|'list_templates'|'get_template'|'template_usage'|'create_template'|'update_template'|'remove_template'} DatabaseOperation */
 /** @typedef {'connect'|'query'|'validate_settings'|'idle'} DatabaseStage */
 /** @typedef {{operation: DatabaseOperation, stage: DatabaseStage, errorCode: string, reason: string}} DatabaseDiagnostic */
 

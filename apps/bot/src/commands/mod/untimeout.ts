@@ -1,6 +1,5 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { validateCommandAccess } from '#bot/command-system/access.js';
-import { withEmojis } from '#bot/command-system/responses.js';
 import type {
   ChatInputCommand,
   CommandAccess,
@@ -9,6 +8,7 @@ import type {
   GuildMemberProfile,
   MemberModerationPort,
 } from '#bot/command-system/types.js';
+import type { MessageKey } from '#bot/application/messages/catalog.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 const { ModerateMembers } = PermissionFlagsBits;
@@ -16,9 +16,6 @@ const { ModerateMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotClearBot = 'Você não pode remover o meu castigo.';
-const clearFailed = 'Não consegui remover o castigo desse membro. Tente de novo daqui a pouco.';
-const memberMissing = 'Não encontrei esse membro neste servidor.';
 const SNOWFLAKE = /^\d{17,20}$/u;
 const MENTION = /^<@!?(\d{17,20})>$/u;
 
@@ -64,11 +61,6 @@ function parseTarget(userId: string | undefined, reason: string): UntimeoutArgs 
   return { ok: true, userId, ...(reason === '' ? {} : { reason }) };
 }
 
-function asCode(value: string, fallback: string): string {
-  const cleaned = value.replaceAll('`', '').replace(/\s+/gu, ' ').trim().slice(0, MAX_REASON_LENGTH);
-  return `\`${cleaned === '' ? fallback : cleaned}\``;
-}
-
 function auditReason(moderatorId: string, reason: string | undefined): string {
   const base = `Moderador ${moderatorId}`;
   if (reason === undefined) return base;
@@ -85,12 +77,12 @@ function errorDetails(error: unknown): { errorName: string; errorCode?: string |
   };
 }
 
-async function say(context: CommandContext, emojiName: string, text: string): Promise<void> {
-  await context.reply(withEmojis(await context.emoji(emojiName), text));
+async function say(context: CommandContext, key: MessageKey): Promise<void> {
+  await context.reply(await context.render(key));
 }
 
 async function sayClearFailed(context: CommandContext): Promise<void> {
-  await say(context, 'ops', clearFailed);
+  await say(context, 'untimeout.failed');
 }
 
 async function reportClearFailure(context: CommandContext, targetId: string, error: unknown): Promise<void> {
@@ -104,37 +96,13 @@ async function confirmation(
   moderator: GuildMemberProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, happy, unmute, identity, police, note] = await Promise.all([
-    context.emoji('sucess'),
-    context.emoji('happy'),
-    context.emoji('unmute'),
-    context.emoji('ID'),
-    context.emoji('police'),
-    context.emoji('Note'),
-  ]);
-  return {
-    content: withEmojis(happy, done, `Pronto. O castigo de ${asCode(target.displayName, 'Membro')} foi removido.`, unmute),
-    embeds: [{
-      color: 0x2b2d31,
-      fields: [
-        {
-          name: withEmojis(identity, 'Membro'),
-          value: `${asCode(target.displayName, 'Membro')}\n\`${target.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(police, 'Responsável'),
-          value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(note, 'Motivo'),
-          value: reason === undefined ? 'Nenhum motivo informado.' : asCode(reason, 'Motivo'),
-          inline: false,
-        },
-      ],
-    }],
-  };
+  return context.render(reason === undefined ? 'untimeout.success_no_reason' : 'untimeout.success', {
+    target: target.displayName,
+    'target.id': target.id,
+    moderator: moderator.displayName,
+    'moderator.id': moderator.id,
+    ...(reason === undefined ? {} : { reason }),
+  });
 }
 
 async function publishConfirmation(context: CommandContext, message: CommandReply): Promise<void> {
@@ -158,7 +126,7 @@ async function authorizeClear(
   target: GuildMemberProfile,
 ): Promise<GuildMemberProfile | undefined> {
   if (target.id === guild.ownerId) {
-    await say(context, 'Disappointed', 'Ei! Não consigo alterar o castigo do dono deste servidor...');
+    await say(context, 'untimeout.owner');
     return undefined;
   }
 
@@ -168,7 +136,7 @@ async function authorizeClear(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode remover o castigo dele!');
+    await say(context, 'untimeout.role_above_actor');
     return undefined;
   }
 
@@ -178,15 +146,15 @@ async function authorizeClear(
     return undefined;
   }
   if (target.id === bot.id) {
-    await say(context, 'Angry', cannotClearBot);
+    await say(context, 'untimeout.bot_target');
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'cry', 'Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo remover o castigo dele.');
+    await say(context, 'untimeout.bot_role_below');
     return undefined;
   }
   if (target.administrator) {
-    await say(context, 'cry', 'Ei! Não consigo alterar o castigo de um membro com a permissão **Administrador**.');
+    await say(context, 'untimeout.administrator');
     return undefined;
   }
   return actor;
@@ -201,14 +169,14 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parseUntimeoutPrefixArgs(context.rawArgs ?? '');
   if (!args.ok) {
     if (args.reason === 'missing') {
-      await say(context, 'question', 'Diga de quem remover o castigo. Mencione o membro ou digite o ID!');
+      await say(context, 'untimeout.missing_target');
       return;
     }
     if (args.reason === 'reason-too-long') {
-      await say(context, 'warning', `O motivo pode ter no máximo **${MAX_REASON_LENGTH}** caracteres.`);
+      await say(context, 'untimeout.reason_too_long');
       return;
     }
-    await say(context, 'search', 'Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.');
+    await say(context, 'untimeout.invalid_target');
     return;
   }
 
@@ -219,11 +187,11 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Você não pode remover o próprio castigo.');
+    await say(context, 'untimeout.self');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {
-    await say(context, 'Angry', cannotClearBot);
+    await say(context, 'untimeout.bot_target');
     return;
   }
 
@@ -235,7 +203,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (target === null) {
-    await say(context, 'search', memberMissing);
+    await say(context, 'untimeout.member_not_found');
     return;
   }
 
@@ -248,7 +216,7 @@ async function execute(context: CommandContext): Promise<void> {
   }
   if (moderator === undefined) return;
   if (target.timedOutUntil === null) {
-    await say(context, 'search', 'Esse membro não está castigado.');
+    await say(context, 'untimeout.not_timed_out');
     return;
   }
 
@@ -260,7 +228,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (outcome === 'missing') {
-    await say(context, 'search', memberMissing);
+    await say(context, 'untimeout.member_not_found');
     return;
   }
 

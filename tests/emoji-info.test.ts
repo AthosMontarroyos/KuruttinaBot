@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { EmojiInfoLookup } from '../apps/bot/src/command-system/types.js';
 import { createEmojiInfoExecutor } from '../apps/bot/src/infrastructure/discord/emojis/emojiInfo.js';
 import { createEmojiLookup } from '../apps/bot/src/infrastructure/discord/emojis/emojiLookup.js';
+import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 const CURRENT = '910000000000000005';
 const ORIGIN = '910000000000000006';
@@ -109,13 +110,15 @@ describe('emoji info executor', () => {
   }) {
     const reply = vi.fn(async (_content: unknown) => undefined);
     const acknowledge = vi.fn(async () => undefined);
+    const emoji = context.emoji ?? (async (name: string) => (
+      name === 'photo' ? '🖼️' : name === 'ID' ? '🪪' : name === 'warning' ? '⚠️' : '😅'
+    ));
     await createEmojiInfoExecutor()({
       apiPing: 0,
       gatewayPing: 0,
+      render: createRenderer(emoji),
       acknowledge,
-      emoji: context.emoji ?? (async (name) => (
-        name === 'photo' ? '🖼️' : name === 'ID' ? '🪪' : name === 'warning' ? '⚠️' : '😅'
-      )),
+      emoji,
       reply,
       ...context,
     });

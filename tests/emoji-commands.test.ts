@@ -20,6 +20,7 @@ import { handleMessageCreate } from '../apps/bot/src/events/messages/messageCrea
 import { CommandsHandler } from '../apps/bot/src/command-system/CommandsHandler.js';
 import { DeploymentsHandler } from '../apps/bot/src/handlers/DeploymentsHandler.js';
 import type { CommandClientPort } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
+import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 const discord = vi.hoisted(() => ({ deployGuildCommands: vi.fn(), deployGlobalCommands: vi.fn() }));
 vi.mock('../apps/bot/src/infrastructure/discord/commands/deployCommands.js', () => discord);
@@ -704,6 +705,7 @@ describe('emoji add inputs', () => {
     await createEmojiAddExecutor('guild')({
       apiPing: 0,
       gatewayPing: 0,
+      render: createRenderer(async () => ''),
       acknowledge: async () => undefined,
       emoji: async (name) => {
         names.push(name);

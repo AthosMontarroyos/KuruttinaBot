@@ -1,6 +1,7 @@
 import type { StaffRole } from '@kuruttina/database';
 import type { APIActionRowComponent, APIButtonComponent, APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
+import type { MessageKey } from '#bot/application/messages/catalog.js';
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
 
 export type CommandReply = string | {
@@ -85,6 +86,8 @@ export interface CommandContext {
   readonly gatewayPing: number;
   acknowledge(): Promise<void>;
   emoji(name: string): Promise<string>;
+  /** Renderiza uma fala do catálogo, com emojis resolvidos e variáveis escapadas. */
+  render: (key: MessageKey, values?: Readonly<Record<string, string>>) => Promise<CommandReply>;
   reply(content: CommandReply): Promise<void>;
   deleteReply?(): Promise<void>;
 

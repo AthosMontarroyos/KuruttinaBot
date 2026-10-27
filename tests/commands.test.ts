@@ -7,13 +7,16 @@ import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.j
 import type { BulkDeletePort, ChatInputCommand, CommandAccess, CommandContext } from '../apps/bot/src/command-system/types.js';
 import { handleMessageCreate } from '../apps/bot/src/events/messages/messageCreate.js';
 import { CommandsHandler } from '../apps/bot/src/command-system/CommandsHandler.js';
+import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 function commandContext(reply = vi.fn().mockResolvedValue(undefined)): CommandContext {
+  const emoji = vi.fn(async (name: string) => `<:${name}:${name}-id>`);
   return {
     apiPing: 42,
     gatewayPing: 84,
+    render: createRenderer(emoji),
     acknowledge: vi.fn().mockResolvedValue(undefined),
-    emoji: vi.fn(async (name: string) => `<:${name}:${name}-id>`),
+    emoji,
     reply,
   };
 }

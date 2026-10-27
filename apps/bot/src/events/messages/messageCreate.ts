@@ -1,7 +1,7 @@
 import type { Message } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
-import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
+import { createChannelContext, createEmojiResolver, createRenderer, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 type MessageCommandPort = Pick<Message, 'content' | 'createdTimestamp' | 'id' | 'reply' | 'system' | 'webhookId'> & {
@@ -33,6 +33,7 @@ export async function handleMessageCreate(message: MessageCommandPort, commandsH
     const memberPermissions = message.channel && !message.channel.isDMBased()
       ? message.member?.permissionsIn(message.channel)
       : undefined;
+    const emoji = createEmojiResolver(message.client.application);
     await commandsHandler.execute(commandName, {
       userId: message.author.id,
       ...createChannelContext(message.channel, memberPermissions),
@@ -40,7 +41,8 @@ export async function handleMessageCreate(message: MessageCommandPort, commandsH
       apiPing: Math.max(0, Date.now() - message.createdTimestamp),
       gatewayPing: Math.max(0, Math.round(message.client.ws.ping)),
       acknowledge: async () => undefined,
-      emoji: createEmojiResolver(message.client.application),
+      emoji,
+      render: createRenderer(emoji),
       reply: async (content) => { await message.reply({ ...typeof content === 'string' ? { content } : content, failIfNotExists: false }); },
       rawArgs,
       commandMessageId: message.id,

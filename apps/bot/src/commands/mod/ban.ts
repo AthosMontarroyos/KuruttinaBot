@@ -1,6 +1,6 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { validateCommandAccess } from '#bot/command-system/access.js';
-import { withEmojis } from '#bot/command-system/responses.js';
+import type { MessageKey } from '#bot/application/messages/catalog.js';
 import type {
   ChatInputCommand,
   CommandAccess,
@@ -17,10 +17,6 @@ const { BanMembers } = PermissionFlagsBits;
 /** Discord audit-log reason limit is 512. The visible reason stays shorter. */
 const MAX_REASON_LENGTH = 200;
 
-const cannotBanBot = 'Ei! Por que você está tentando me banir?';
-const banFailed = 'Não consegui banir esse usuário. Tente de novo daqui a pouco.';
-const userMissing = 'Não encontrei esse usuário.';
-const alreadyBanned = 'Esse usuário já está banido.';
 const SNOWFLAKE = /^\d{17,20}$/u;
 const MENTION = /^<@!?(\d{17,20})>$/u;
 
@@ -66,11 +62,6 @@ function parseTarget(userId: string | undefined, reason: string): BanArgs {
   return { ok: true, userId, ...(reason === '' ? {} : { reason }) };
 }
 
-function asCode(value: string, fallback: string): string {
-  const cleaned = value.replaceAll('`', '').replace(/\s+/gu, ' ').trim().slice(0, MAX_REASON_LENGTH);
-  return `\`${cleaned === '' ? fallback : cleaned}\``;
-}
-
 function auditReason(moderatorId: string, reason: string | undefined): string {
   const base = `Moderador ${moderatorId}`;
   if (reason === undefined) return base;
@@ -87,12 +78,12 @@ function errorDetails(error: unknown): { errorName: string; errorCode?: string |
   };
 }
 
-async function say(context: CommandContext, emojiName: string, text: string): Promise<void> {
-  await context.reply(withEmojis(await context.emoji(emojiName), text));
+async function say(context: CommandContext, key: MessageKey): Promise<void> {
+  await context.reply(await context.render(key));
 }
 
 async function sayBanFailed(context: CommandContext): Promise<void> {
-  await say(context, 'ops', banFailed);
+  await say(context, 'ban.failed');
 }
 
 async function reportBanFailure(context: CommandContext, targetId: string, error: unknown): Promise<void> {
@@ -106,36 +97,13 @@ async function confirmation(
   moderator: ModeratedUserProfile,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [ban, identity, staff, note, coffee] = await Promise.all([
-    context.emoji('ban'),
-    context.emoji('ID'),
-    context.emoji('staff'),
-    context.emoji('Note'),
-    context.emoji('coffee'),
-  ]);
-  return {
-    content: withEmojis(ban, `Pronto. ${asCode(target.displayName, 'Usuário')} foi banido deste servidor.`, coffee),
-    embeds: [{
-      color: 0x2b2d31,
-      fields: [
-        {
-          name: withEmojis(identity, 'Usuário'),
-          value: `${asCode(target.displayName, 'Usuário')}\n\`${target.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(staff, 'Responsável'),
-          value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(note, 'Motivo'),
-          value: reason === undefined ? 'Nenhum motivo informado.' : asCode(reason, 'Motivo'),
-          inline: false,
-        },
-      ],
-    }],
-  };
+  return context.render(reason === undefined ? 'ban.success_no_reason' : 'ban.success', {
+    target: target.displayName,
+    'target.id': target.id,
+    moderator: moderator.displayName,
+    'moderator.id': moderator.id,
+    ...(reason === undefined ? {} : { reason }),
+  });
 }
 
 async function publishConfirmation(context: CommandContext, message: CommandReply): Promise<void> {
@@ -159,7 +127,7 @@ async function authorizeBan(
   target: GuildMemberProfile,
 ): Promise<GuildMemberProfile | undefined> {
   if (target.id === guild.ownerId) {
-    await say(context, 'Disappointed', 'Não consigo banir o dono deste servidor.');
+    await say(context, 'ban.owner');
     return undefined;
   }
 
@@ -169,7 +137,7 @@ async function authorizeBan(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode simplesmente bani-lo.');
+    await say(context, 'ban.role_above_actor');
     return undefined;
   }
 
@@ -179,11 +147,11 @@ async function authorizeBan(
     return undefined;
   }
   if (target.id === bot.id) {
-    await say(context, 'cry', cannotBanBot);
+    await say(context, 'ban.bot_target');
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Angry', 'Ei! Meu cargo está abaixo desse membro ou no mesmo nível. Eu não consigo simplesmente bani-lo desse servidor.');
+    await say(context, 'ban.bot_role_below');
     return undefined;
   }
   return actor;
@@ -207,12 +175,12 @@ async function resolveBanTarget(
     return undefined;
   }
   if (await guild.fetchBan(userId) !== null) {
-    await say(context, 'search', alreadyBanned);
+    await say(context, 'ban.already_banned');
     return undefined;
   }
   const user = await guild.fetchUser(userId);
   if (user === null) {
-    await say(context, 'search', userMissing);
+    await say(context, 'ban.user_not_found');
     return undefined;
   }
 
@@ -231,14 +199,14 @@ async function execute(context: CommandContext): Promise<void> {
   const args = context.options ? parseSlashArgs(context.options) : parseBanPrefixArgs(context.rawArgs ?? '');
   if (!args.ok) {
     if (args.reason === 'missing') {
-      await say(context, 'question', 'Diga quem banir. Mencione o membro ou digite o ID!');
+      await say(context, 'ban.missing_target');
       return;
     }
     if (args.reason === 'reason-too-long') {
-      await say(context, 'warning', `O motivo pode ter no máximo **${MAX_REASON_LENGTH}** caracteres.`);
+      await say(context, 'ban.reason_too_long');
       return;
     }
-    await say(context, 'search', 'Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.');
+    await say(context, 'ban.invalid_target');
     return;
   }
 
@@ -249,11 +217,11 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Você não pode se banir... Por que você estaria tentando banir você mesmo?');
+    await say(context, 'ban.self');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {
-    await say(context, 'cry', cannotBanBot);
+    await say(context, 'ban.bot_target');
     return;
   }
 
@@ -282,7 +250,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (outcome === 'unknown-user') {
-    await say(context, 'search', userMissing);
+    await say(context, 'ban.user_not_found');
     return;
   }
 

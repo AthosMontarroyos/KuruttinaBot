@@ -11,7 +11,7 @@ import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import { withEmojis } from '#bot/command-system/responses.js';
 import type { CommandReply, CommandContext, HasPermission } from '#bot/command-system/types.js';
 import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
-import { createChannelContext, createEmojiResolver, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
+import { createChannelContext, createEmojiResolver, createRenderer, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 const failureMessage = 'Não consegui executar este comando. Tente de novo daqui a pouco.';
@@ -139,6 +139,7 @@ export async function handleChatInputCommand(
       apiPing: Math.max(0, Date.now() - interaction.createdTimestamp),
       gatewayPing: Math.max(0, Math.round(interaction.client.ws.ping)),
       emoji,
+      render: createRenderer(emoji),
       reply: async (content: CommandReply) => {
         if (interaction.isDeferred()) await interaction.editReply(content);
         else if (interaction.isReplied()) await interaction.followUp(content);

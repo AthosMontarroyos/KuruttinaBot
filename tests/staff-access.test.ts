@@ -10,6 +10,7 @@ import { createGuildDeployment } from '../apps/bot/src/deployments/guild.js';
 import { createCentralDeployment } from '../apps/bot/src/deployments/central.js';
 import { readDatabaseConfig } from '@kuruttina/database';
 import { loadCommands } from '../apps/bot/src/command-system/loadCommands.js';
+import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 const discord = vi.hoisted(() => ({ deployGuildCommands: vi.fn(), deployGlobalCommands: vi.fn() }));
 vi.mock('../apps/bot/src/infrastructure/discord/commands/deployCommands.js', () => discord);
@@ -28,7 +29,7 @@ function command(minimumRole: StaffRole = 'dev'): ChatInputCommand {
 function context(): CommandContext {
   return {
     apiPing: 0, gatewayPing: 0, userId: creatorId, guildId,
-    acknowledge: vi.fn(async () => {}), reply: vi.fn(async () => {}), emoji: async () => '',
+    render: createRenderer(async () => ''), acknowledge: vi.fn(async () => {}), reply: vi.fn(async () => {}), emoji: async () => '',
     memberPermissions: allowed, appPermissions: allowed,
     textChannel: { isThread: false, fetchMessages: async () => [], bulkDelete: async () => 0, deleteMessage: async () => true },
   };

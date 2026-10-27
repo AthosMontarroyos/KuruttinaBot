@@ -20,3 +20,6 @@ IDEA.md
 
 # Estado local do harness
 .claude/state/
+
+# Prompts e saídas temporárias de agentes
+.kuru/

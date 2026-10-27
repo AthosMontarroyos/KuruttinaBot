@@ -1,6 +1,5 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { validateCommandAccess } from '#bot/command-system/access.js';
-import { withEmojis } from '#bot/command-system/responses.js';
 import type {
   ChatInputCommand,
   CommandAccess,
@@ -9,6 +8,7 @@ import type {
   GuildMemberProfile,
   MemberModerationPort,
 } from '#bot/command-system/types.js';
+import type { MessageKey } from '#bot/application/messages/catalog.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 const { ModerateMembers } = PermissionFlagsBits;
@@ -54,9 +54,6 @@ const DURATION_PART = new RegExp(
   'iu',
 );
 
-const cannotTimeoutBot = 'Ei! Você não pode me castigar...';
-const timeoutFailed = 'Não consegui castigar esse membro. Tente de novo daqui a pouco.';
-const memberMissing = 'Não encontrei esse membro neste servidor.';
 const SNOWFLAKE = /^\d{17,20}$/u;
 const MENTION = /^<@!?(\d{17,20})>$/u;
 
@@ -192,11 +189,6 @@ export function formatTimeoutDuration(ms: number): string {
   return `${parts.slice(0, -1).join(', ')} e ${last}`;
 }
 
-function asCode(value: string, fallback: string): string {
-  const cleaned = value.replaceAll('`', '').replace(/\s+/gu, ' ').trim().slice(0, MAX_REASON_LENGTH);
-  return `\`${cleaned === '' ? fallback : cleaned}\``;
-}
-
 function auditReason(moderatorId: string, durationMs: number, reason: string | undefined): string {
   const base = `Moderador ${moderatorId} por ${formatTimeoutDuration(durationMs)}`;
   if (reason === undefined) return base.slice(0, 512);
@@ -213,13 +205,12 @@ function errorDetails(error: unknown): { errorName: string; errorCode?: string |
   };
 }
 
-async function say(context: CommandContext, emojiName: string, text: string, ...extraEmojiNames: string[]): Promise<void> {
-  const [primary, ...extra] = await Promise.all([emojiName, ...extraEmojiNames].map((name) => context.emoji(name)));
-  await context.reply(withEmojis(primary ?? '', text, ...extra));
+async function say(context: CommandContext, key: MessageKey): Promise<void> {
+  await context.reply(await context.render(key));
 }
 
 async function sayTimeoutFailed(context: CommandContext): Promise<void> {
-  await say(context, 'ops', timeoutFailed);
+  await say(context, 'timeout.failed');
 }
 
 async function reportTimeoutFailure(context: CommandContext, targetId: string, error: unknown): Promise<void> {
@@ -234,48 +225,14 @@ async function confirmation(
   durationMs: number,
   reason: string | undefined,
 ): Promise<CommandReply> {
-  const [done, jail, identity, police, duration, note] = await Promise.all([
-    context.emoji('sucess'),
-    context.emoji('jail'),
-    context.emoji('ID'),
-    context.emoji('police'),
-    context.emoji('info'),
-    context.emoji('Note'),
-  ]);
-  const length = formatTimeoutDuration(durationMs);
-  return {
-    content: withEmojis(
-      police,
-      done,
-      `Pronto. ${asCode(target.displayName, 'Membro')} foi castigado por **${length}**.`,
-      jail,
-    ),
-    embeds: [{
-      color: 0x2b2d31,
-      fields: [
-        {
-          name: withEmojis(identity, 'Membro'),
-          value: `${asCode(target.displayName, 'Membro')}\n\`${target.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(police, 'Responsável'),
-          value: `${asCode(moderator.displayName, 'Moderador')}\n\`${moderator.id}\``,
-          inline: true,
-        },
-        {
-          name: withEmojis(duration, 'Duração'),
-          value: length,
-          inline: false,
-        },
-        {
-          name: withEmojis(note, 'Motivo'),
-          value: reason === undefined ? 'Nenhum motivo informado.' : asCode(reason, 'Motivo'),
-          inline: false,
-        },
-      ],
-    }],
-  };
+  return context.render(reason === undefined ? 'timeout.success_no_reason' : 'timeout.success', {
+    target: target.displayName,
+    'target.id': target.id,
+    moderator: moderator.displayName,
+    'moderator.id': moderator.id,
+    length: formatTimeoutDuration(durationMs),
+    ...(reason === undefined ? {} : { reason }),
+  });
 }
 
 async function publishConfirmation(context: CommandContext, message: CommandReply): Promise<void> {
@@ -299,7 +256,7 @@ async function authorizeTimeout(
   target: GuildMemberProfile,
 ): Promise<GuildMemberProfile | undefined> {
   if (target.id === guild.ownerId) {
-    await say(context, 'Disappointed', 'Não consigo castigar o dono deste servidor.');
+    await say(context, 'timeout.owner');
     return undefined;
   }
 
@@ -309,7 +266,7 @@ async function authorizeTimeout(
     return undefined;
   }
   if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Disappointed', 'Ei! O cargo desse membro está acima do seu ou no mesmo nível. Você não pode castigá-lo!');
+    await say(context, 'timeout.role_above_actor');
     return undefined;
   }
 
@@ -319,15 +276,15 @@ async function authorizeTimeout(
     return undefined;
   }
   if (target.id === bot.id) {
-    await say(context, 'Angry', cannotTimeoutBot);
+    await say(context, 'timeout.bot_target');
     return undefined;
   }
   if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'Angry', 'Ei! Meu cargo está abaixo do cargo desse membro ou no mesmo nível. Não consigo castigá-lo.', 'cry');
+    await say(context, 'timeout.bot_role_below');
     return undefined;
   }
   if (target.administrator) {
-    await say(context, 'cry', 'Não consigo castigar um membro com a permissão **Administrador**.');
+    await say(context, 'timeout.administrator');
     return undefined;
   }
   return actor;
@@ -335,30 +292,30 @@ async function authorizeTimeout(
 
 async function rejectTimeoutArgs(context: CommandContext, reason: Exclude<TimeoutArgs, { ok: true }>['reason']): Promise<void> {
   if (reason === 'missing') {
-    await say(context, 'question', 'Diga quem castigar. Mencione o membro ou digite o ID!');
+    await say(context, 'timeout.missing_target');
     return;
   }
   if (reason === 'missing-duration') {
-    await say(context, 'question', 'Diga por quanto tempo. Use **10m**, **2h** ou **1d**.');
+    await say(context, 'timeout.missing_duration');
     return;
   }
   if (reason === 'invalid-duration') {
-    await say(context, 'warning', 'Não entendi essa duração. Use **10m**, **2h**, **1d** ou **1 semana**.');
+    await say(context, 'timeout.invalid_duration');
     return;
   }
   if (reason === 'duration-too-short') {
-    await say(context, 'warning', 'O castigo precisa durar pelo menos **1 segundo**.');
+    await say(context, 'timeout.duration_too_short');
     return;
   }
   if (reason === 'duration-too-long') {
-    await say(context, 'warning', 'O castigo pode durar no máximo **28 dias**.');
+    await say(context, 'timeout.duration_too_long');
     return;
   }
   if (reason === 'reason-too-long') {
-    await say(context, 'warning', `O motivo pode ter no máximo **${MAX_REASON_LENGTH}** caracteres.`);
+    await say(context, 'timeout.reason_too_long');
     return;
   }
-  await say(context, 'search', 'Não consegui identificar esse membro. Mencione alguém ou informe um ID válido.');
+  await say(context, 'timeout.invalid_target');
 }
 
 async function execute(context: CommandContext): Promise<void> {
@@ -380,11 +337,11 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (args.userId === actorId) {
-    await say(context, 'Disappointed', 'Você não pode se castigar...');
+    await say(context, 'timeout.self');
     return;
   }
   if (guild.botUserId !== null && args.userId === guild.botUserId) {
-    await say(context, 'Angry', cannotTimeoutBot);
+    await say(context, 'timeout.bot_target');
     return;
   }
 
@@ -396,7 +353,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (target === null) {
-    await say(context, 'search', memberMissing);
+    await say(context, 'timeout.member_not_found');
     return;
   }
 
@@ -417,7 +374,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
   if (outcome === 'missing') {
-    await say(context, 'search', memberMissing);
+    await say(context, 'timeout.member_not_found');
     return;
   }
 

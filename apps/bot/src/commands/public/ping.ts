@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { withEmojis } from '#bot/command-system/responses.js';
 import type { ChatInputCommand, CommandContext } from '#bot/command-system/types.js';
 
 export const command = {
@@ -7,28 +6,9 @@ export const command = {
   access: { kind: 'public' },
   scope: 'global',
   async execute(context: CommandContext): Promise<void> {
-    const [dancing, stats, gateway] = await Promise.all([
-      context.emoji('dancing'),
-      context.emoji('stats'),
-      context.emoji('gateway'),
-    ]);
-    await context.reply({
-      content: withEmojis(dancing, 'Pong. Ainda estou aqui.'),
-      embeds: [{
-        color: 0x2b2d31,
-        fields: [
-          {
-            name: withEmojis(stats, 'API'),
-            value: `\`${context.apiPing}ms\``,
-            inline: true,
-          },
-          {
-            name: withEmojis(gateway, 'Gateway'),
-            value: `\`${context.gatewayPing}ms\``,
-            inline: true,
-          },
-        ],
-      }],
-    });
+    await context.reply(await context.render('ping.reply', {
+      api: String(context.apiPing),
+      gateway: String(context.gatewayPing),
+    }));
   },
 } satisfies ChatInputCommand;

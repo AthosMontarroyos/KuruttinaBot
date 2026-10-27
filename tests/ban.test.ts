@@ -11,6 +11,7 @@ import type {
 } from '../apps/bot/src/command-system/types.js';
 import { createEmojiResolver } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 import { createMemberModerationAdapter } from '../apps/bot/src/infrastructure/discord/moderation/memberModerationAdapter.js';
+import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/commandContext.js';
 
 const ACTOR = '111111111111111111';
 const TARGET = '222222222222222222';
@@ -57,13 +58,15 @@ function moderation(options: {
 
 function context(overrides: Partial<CommandContext> = {}): CommandContext {
   const allowed = { has: () => true };
+  const emoji = overrides.emoji ?? vi.fn(async (name: string) => `<:${name}:${name}-id>`);
   return {
     userId: ACTOR,
     guildId: 'guild-id',
     apiPing: 1,
     gatewayPing: 1,
+    render: createRenderer(emoji),
     acknowledge: vi.fn(async () => undefined),
-    emoji: vi.fn(async (name: string) => `<:${name}:${name}-id>`),
+    emoji,
     reply: vi.fn(async () => undefined),
     sendMessage: vi.fn(async () => undefined),
     deleteReply: vi.fn(async () => undefined),

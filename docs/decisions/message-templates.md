@@ -6,7 +6,7 @@ O bot vai enviar mensagens configuráveis por servidor, com embeds, botões e me
 
 ## Decisão
 
-O motor fica em `apps/bot/src/application/messages/` (`limits.ts`, `template.ts`, `render.ts`).
+O motor ficava em `apps/bot/src/application/messages/` (`limits.ts`, `template.ts`, `render.ts`). Em 27 de outubro de 2026 foi extraído para o pacote compartilhado `packages/message-templates` (JavaScript puro com JSDoc, mesmo formato de `packages/database`), porque a configuração de templates passou a ser exclusiva do site (veja [a decisão](site-owns-template-config.md)) e o site não pode importar de dentro de `apps/bot`. `apps/bot/src/application/messages/catalog.ts` continua no bot, com as falas do bot, e importa os tipos desse pacote.
 
 1. **Limites do Discord** em `DISCORD_MESSAGE_LIMITS`, congelado: content 2000; 10 embeds; título 256; descrição 4096; 25 campos; nome do campo 256; valor 1024; rodapé 2048; autor 256; 6000 caracteres somados; 5 linhas; 5 botões por linha; rótulo 80; custom_id 100; 25 opções de menu. O limite de 6000 soma título, descrição, campos, rodapé e autor dos embeds (regra do Discord); `content` não entra. Acrescentado: 100 caracteres para rótulo e valor de opção de menu.
 2. **Limites por servidor** em `GuildTemplateLimits`, padrão `DEFAULT_GUILD_TEMPLATE_LIMITS` = 100 templates / 50 botões / 50 menus, injetáveis por parâmetro. A contagem é por servidor, somando todos os templates; botões e menus são contados separadamente.
@@ -31,6 +31,12 @@ O motor fica em `apps/bot/src/application/messages/` (`limits.ts`, `template.ts`
 - Esse teste falha se algum arquivo de `application/messages/` importar `discord.js`, `command-system`, `infrastructure` ou `commands`.
 - Nenhum valor de usuário é interpretado: só passa por escape e truncamento.
 
+## Etapas 1B e 1C (27 de outubro de 2026)
+
+- **1B:** catálogo de falas padrão (`apps/bot/src/application/messages/catalog.ts`) e `context.render(chave, valores)`, que resolve emojis, preenche o template e converte para `CommandReply`. Os comandos `ping`, `ban`, `kick`, `timeout`, `untimeout`, `unban` e as falas do `emojiInfo` passaram a usar esse caminho, com o texto preservado por um snapshot de 199 cenários gravado antes da migração.
+- **1C:** persistência por servidor em `bot_private.message_templates` (migration `20261027221916_message_templates.sql`), com RLS por `guild_id`, cota de 100 templates e 50 botões/menus aplicada também por trigger no banco, e o caso de uso `templateAdmin` (`createTemplate`/`updateTemplate`/`listTemplates`/`getTemplate`/`removeTemplate`), que valida nome, tamanho do JSON, o motor e a cota antes de persistir. `checkGuildQuota` ganhou um 4º parâmetro, `isNewTemplate`, para uma edição não ser recusada só por o servidor já estar no limite de templates (só botões e menus continuam contados na edição).
+- Templates de usuário não declaram variáveis nesta etapa (lista de variáveis sempre vazia); só o catálogo de falas do bot usa `{chave}`.
+
 ## Condição de revisão
 
-Reavaliar quando houver emoji em botões, persistência de templates ou necessidade de variáveis em URL.
+Reavaliar quando houver emoji em botões, variáveis em templates de usuário, necessidade de variáveis em URL, ou o roteamento de interações de botões e menus (módulo futuro).

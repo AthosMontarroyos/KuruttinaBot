@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "packages/config",
-    "packages/database"
+    "packages/database",
+    "packages/message-templates"
   ],
   "imports": {
     "#bot/*": "./dist/apps/bot/src/*"
@@ -31,6 +32,7 @@
   "dependencies": {
     "@kuruttina/config": "*",
     "@kuruttina/database": "*",
+    "@kuruttina/message-templates": "*",
     "@types/node": "22.13.10",
     "@types/pg": "8.23.1",
     "discord.js": "14.27.0",

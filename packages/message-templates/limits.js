@@ -26,14 +26,15 @@ export const DISCORD_MESSAGE_LIMITS = Object.freeze({
   selectOptionText: 100,
 });
 
-/** Limites por servidor, somando todos os templates dele. */
-export interface GuildTemplateLimits {
-  maxTemplates: number;
-  maxButtons: number;
-  maxSelectMenus: number;
-}
+/** Limites por servidor, somando todos os templates dele.
+ * @typedef {Object} GuildTemplateLimits
+ * @property {number} maxTemplates
+ * @property {number} maxButtons
+ * @property {number} maxSelectMenus
+ */
 
-export const DEFAULT_GUILD_TEMPLATE_LIMITS: GuildTemplateLimits = Object.freeze({
+/** @type {GuildTemplateLimits} */
+export const DEFAULT_GUILD_TEMPLATE_LIMITS = Object.freeze({
   maxTemplates: 100,
   maxButtons: 50,
   maxSelectMenus: 50,

@@ -1,6 +1,6 @@
 import { ButtonStyle, ComponentType } from 'discord.js';
 import type { APIActionRowComponent, APIButtonComponent, APIEmbed } from 'discord.js';
-import type { MessageTemplate, TemplateButton, TemplateEmbed } from '#bot/application/messages/template.js';
+import type { MessageTemplate, TemplateButton, TemplateEmbed } from '@kuruttina/message-templates';
 import type { CommandReply } from '#bot/command-system/types.js';
 
 /** Cor padrão dos embeds quando o template não define uma. */

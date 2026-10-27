@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { createAuth } from './auth.js';
+import { createTemplatesApi } from './templates.js';
 import type { readSiteConfig } from './config.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
@@ -68,13 +69,15 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     assets.set(pathname, { type: 'image/svg+xml', body: await readPublicFile(staticDirectory, pathname) });
   }));
   const auth = createAuth(config);
+  const templatesApi = createTemplatesApi(config, auth);
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
     res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${config.assetsOrigin} https://cdn.discordapp.com; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-cache');
     const [path = '', search = ''] = (req.url ?? '').split('?');
-    if (auth(req, res, path, search)) return;
+    if (auth.handle(req, res, path, search)) return;
+    if (templatesApi.handle(req, res, path, search)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
     const asset = assets.get(path);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }
@@ -82,5 +85,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     res.end(req.method === 'HEAD' ? undefined : asset.body);
   });
   server.headersTimeout = 10_000;
+  // Fecha o pool de templates junto com o servidor HTTP (sinal tratado em server/index.ts).
+  server.on('close', () => { void templatesApi.close(); });
   return server;
 }

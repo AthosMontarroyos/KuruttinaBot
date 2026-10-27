@@ -9,51 +9,54 @@ import { extractVariables } from './render.js';
 import {
   DEFAULT_GUILD_TEMPLATE_LIMITS,
   DISCORD_MESSAGE_LIMITS as L,
-  type GuildTemplateLimits,
 } from './limits.js';
 
-export interface TemplateEmbedField {
-  name: string;
-  value: string;
-  inline?: boolean;
-}
+/**
+ * @typedef {Object} TemplateEmbedField
+ * @property {string} name
+ * @property {string} value
+ * @property {boolean} [inline]
+ */
 
-export interface TemplateEmbed {
-  title?: string;
-  description?: string;
-  url?: string;
-  fields?: TemplateEmbedField[];
-  footer?: { text: string };
-  author?: { name: string; url?: string };
-  /** Cor da barra lateral, como `0x2b2d31`: inteiro entre 0 e 0xFFFFFF. */
-  color?: number;
-}
+/**
+ * @typedef {Object} TemplateEmbed
+ * @property {string} [title]
+ * @property {string} [description]
+ * @property {string} [url]
+ * @property {TemplateEmbedField[]} [fields]
+ * @property {{text: string}} [footer]
+ * @property {{name: string, url?: string}} [author]
+ * @property {number} [color] Cor da barra lateral, como `0x2b2d31`: inteiro entre 0 e 0xFFFFFF.
+ */
 
-export type TemplateButton =
-  | { style: 'link'; label: string; url: string }
-  | { style: 'primary' | 'secondary' | 'success' | 'danger'; label: string; customId: string };
+/**
+ * @typedef {{style: 'link', label: string, url: string}|{style: 'primary'|'secondary'|'success'|'danger', label: string, customId: string}} TemplateButton
+ */
 
-export interface TemplateSelectOption {
-  label: string;
-  value: string;
-  description?: string;
-}
+/**
+ * @typedef {Object} TemplateSelectOption
+ * @property {string} label
+ * @property {string} value
+ * @property {string} [description]
+ */
 
-export interface TemplateSelectMenu {
-  customId: string;
-  placeholder?: string;
-  options: TemplateSelectOption[];
-}
+/**
+ * @typedef {Object} TemplateSelectMenu
+ * @property {string} customId
+ * @property {string} [placeholder]
+ * @property {TemplateSelectOption[]} options
+ */
 
-export type TemplateRow =
-  | { kind: 'buttons'; buttons: TemplateButton[] }
-  | { kind: 'select'; menu: TemplateSelectMenu };
+/**
+ * @typedef {{kind: 'buttons', buttons: TemplateButton[]}|{kind: 'select', menu: TemplateSelectMenu}} TemplateRow
+ */
 
-export interface MessageTemplate {
-  content?: string;
-  embeds: TemplateEmbed[];
-  components: TemplateRow[];
-}
+/**
+ * @typedef {Object} MessageTemplate
+ * @property {string} [content]
+ * @property {TemplateEmbed[]} embeds
+ * @property {TemplateRow[]} components
+ */
 
 /**
  * Variável declarada: `maxLength` é o tamanho máximo do valor já escapado.
@@ -61,44 +64,30 @@ export interface MessageTemplate {
  *   fornecido ou ficou vazio após a limpeza. Não passa por escape.
  * - `format`: `'escape'` (padrão) escapa Markdown e menções; `'code'` limpa o
  *   valor e o envolve em crase (o Markdown não é processado dentro do code span).
+ * @typedef {Object} TemplateVariable
+ * @property {string} name
+ * @property {number} maxLength
+ * @property {string} [whenAbsent]
+ * @property {'escape'|'code'} [format]
  */
-export interface TemplateVariable {
-  name: string;
-  maxLength: number;
-  whenAbsent?: string;
-  format?: 'escape' | 'code';
-}
 
-export type TemplateErrorCode =
-  | 'empty_message'
-  | 'empty_embed'
-  | 'empty_text'
-  | 'too_many_embeds'
-  | 'too_many_fields'
-  | 'too_many_rows'
-  | 'too_many_buttons'
-  | 'too_many_options'
-  | 'empty_row'
-  | 'mixed_row'
-  | 'unknown_variable'
-  | 'unknown_emoji'
-  | 'invalid_color'
-  | 'invalid_variable'
-  | 'variable_not_allowed'
-  | 'invalid_url'
-  | 'invalid_custom_id'
-  | 'limit_exceeded'
-  | 'quota_exceeded';
+/**
+ * @typedef {'empty_message'|'empty_embed'|'empty_text'|'too_many_embeds'|'too_many_fields'|'too_many_rows'|'too_many_buttons'|'too_many_options'|'empty_row'|'mixed_row'|'unknown_variable'|'unknown_emoji'|'invalid_color'|'invalid_variable'|'variable_not_allowed'|'invalid_url'|'invalid_custom_id'|'limit_exceeded'|'quota_exceeded'} TemplateErrorCode
+ */
 
 /** Erro de validação com código estável; a mensagem é neutra (falas ao usuário ficam fora daqui). */
 export class TemplateValidationError extends Error {
-  readonly code: TemplateErrorCode;
-  readonly path: string;
-
-  constructor(code: TemplateErrorCode, path: string, message: string) {
+  /**
+   * @param {TemplateErrorCode} code
+   * @param {string} path
+   * @param {string} message
+   */
+  constructor(code, path, message) {
     super(message);
     this.name = 'TemplateValidationError';
+    /** @type {TemplateErrorCode} */
     this.code = code;
+    /** @type {string} */
     this.path = path;
   }
 }
@@ -109,21 +98,24 @@ const ANY_BRACES = /[{}]/u;
 /**
  * Valida o template considerando o pior caso: cada variável ocupa o `maxLength`
  * declarado. Devolve todos os erros encontrados; lista vazia significa válido.
+ * @param {MessageTemplate} template
+ * @param {readonly TemplateVariable[]} variables
+ * @returns {TemplateValidationError[]}
  */
-export function validateTemplate(
-  template: MessageTemplate,
-  variables: readonly TemplateVariable[],
-): TemplateValidationError[] {
-  const errors: TemplateValidationError[] = [];
+export function validateTemplate(template, variables) {
+  /** @type {TemplateValidationError[]} */
+  const errors = [];
   const declared = new Map(variables.map((variable) => [variable.name, variable.maxLength]));
   let embedTotal = 0;
 
-  const fail = (code: TemplateErrorCode, path: string, message: string): void => {
+  /** @param {TemplateErrorCode} code @param {string} path @param {string} message */
+  const fail = (code, path, message) => {
     errors.push(new TemplateValidationError(code, path, message));
   };
 
-  /** Valida um texto com variáveis e devolve o tamanho de pior caso. */
-  const checkText = (path: string, text: string, max: number, required = false): number => {
+  /** Valida um texto com variáveis e devolve o tamanho de pior caso.
+   * @param {string} path @param {string} text @param {number} max @param {boolean} [required] @returns {number} */
+  const checkText = (path, text, max, required = false) => {
     if (required && text.trim() === '') fail('empty_text', path, 'O texto não pode ficar vazio.');
     let size = text.length;
     for (const token of extractVariables(text)) {
@@ -143,8 +135,9 @@ export function validateTemplate(
     return size;
   };
 
-  /** Valor literal (URL, custom_id, opção de menu): variável é proibida. */
-  const checkLiteral = (path: string, text: string): boolean => {
+  /** Valor literal (URL, custom_id, opção de menu): variável é proibida.
+   * @param {string} path @param {string} text @returns {boolean} */
+  const checkLiteral = (path, text) => {
     if (ANY_BRACES.test(text)) {
       fail('variable_not_allowed', path, 'Variáveis não são permitidas neste campo.');
       return false;
@@ -152,7 +145,8 @@ export function validateTemplate(
     return true;
   };
 
-  const checkUrl = (path: string, url: string): void => {
+  /** @param {string} path @param {string} url */
+  const checkUrl = (path, url) => {
     if (!checkLiteral(path, url)) return;
     let valid = false;
     try {
@@ -163,7 +157,8 @@ export function validateTemplate(
     if (!valid) fail('invalid_url', path, 'A URL precisa ser https:// válida.');
   };
 
-  const checkCustomId = (path: string, customId: string): void => {
+  /** @param {string} path @param {string} customId */
+  const checkCustomId = (path, customId) => {
     if (!checkLiteral(path, customId)) return;
     if (customId.length > L.customId || !CUSTOM_ID_PATTERN.test(customId)) {
       fail('invalid_custom_id', path, 'O custom_id precisa seguir kt:<tipo>:<id> com até 100 caracteres.');
@@ -244,7 +239,7 @@ export function validateTemplate(
     }
     menu.options.forEach((option, optionIndex) => {
       const path = `${base}.menu.options[${optionIndex}]`;
-      for (const [part, text] of [['label', option.label], ['value', option.value], ['description', option.description]] as const) {
+      for (const [part, text] of [['label', option.label], ['value', option.value], ['description', option.description]]) {
         if (text === undefined || !checkLiteral(`${path}.${part}`, text)) continue;
         if (text.length > L.selectOptionText || (part !== 'description' && text === '')) {
           fail('limit_exceeded', `${path}.${part}`, `O texto precisa ter de 1 a ${L.selectOptionText} caracteres.`);
@@ -262,14 +257,15 @@ export function validateTemplate(
   return errors;
 }
 
-/** Contagem de botões e menus de um template, para a cota do servidor. */
-export interface TemplateUsage {
-  buttons: number;
-  menus: number;
-}
+/** Contagem de botões e menus de um template, para a cota do servidor.
+ * @typedef {Object} TemplateUsage
+ * @property {number} buttons
+ * @property {number} menus
+ */
 
-export function countTemplateComponents(template: MessageTemplate): TemplateUsage {
-  const usage: TemplateUsage = { buttons: 0, menus: 0 };
+/** @param {MessageTemplate} template @returns {TemplateUsage} */
+export function countTemplateComponents(template) {
+  const usage = { buttons: 0, menus: 0 };
   for (const row of template.components) {
     if (row.kind === 'buttons') usage.buttons += row.buttons.length;
     else usage.menus += 1;
@@ -277,22 +273,31 @@ export function countTemplateComponents(template: MessageTemplate): TemplateUsag
   return usage;
 }
 
-/** Uso atual de um servidor, somando todos os templates dele. */
-export interface GuildUsage extends TemplateUsage {
-  templates: number;
-}
+/** Uso atual de um servidor, somando todos os templates dele.
+ * @typedef {TemplateUsage & {templates: number}} GuildUsage
+ */
 
 /**
  * Recusa quando o servidor já está no limite de templates, ou quando `adding`
  * (os componentes do template a salvar) estoura botões ou menus.
  * Botões e menus são contados separadamente. Não consulta banco.
+ *
+ * `isNewTemplate` (padrão `true`) distingue criação de edição: editar um
+ * template existente não pode ser recusado só porque o servidor já está no
+ * limite de templates, já que a edição não aumenta a contagem de templates.
+ * @param {GuildUsage} currentCount
+ * @param {import('./limits.js').GuildTemplateLimits} [limits]
+ * @param {TemplateUsage} [adding]
+ * @param {boolean} [isNewTemplate]
+ * @returns {TemplateValidationError|null}
  */
 export function checkGuildQuota(
-  currentCount: GuildUsage,
-  limits: GuildTemplateLimits = DEFAULT_GUILD_TEMPLATE_LIMITS,
-  adding: TemplateUsage = { buttons: 0, menus: 0 },
-): TemplateValidationError | null {
-  if (currentCount.templates >= limits.maxTemplates) {
+  currentCount,
+  limits = DEFAULT_GUILD_TEMPLATE_LIMITS,
+  adding = { buttons: 0, menus: 0 },
+  isNewTemplate = true,
+) {
+  if (isNewTemplate && currentCount.templates >= limits.maxTemplates) {
     return new TemplateValidationError('quota_exceeded', 'templates', `O servidor atingiu o limite de ${limits.maxTemplates} templates.`);
   }
   if (currentCount.buttons + adding.buttons > limits.maxButtons) {

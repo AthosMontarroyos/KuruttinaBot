@@ -1,7 +1,7 @@
 import type { GuildTextBasedChannel, TextBasedChannel } from 'discord.js';
 import type { CommandContext, HasPermission } from '#bot/command-system/types.js';
 import { MESSAGE_CATALOG, type MessageCatalogEntry, type MessageKey } from '#bot/application/messages/catalog.js';
-import { fillEmojis, renderTemplate } from '#bot/application/messages/render.js';
+import { fillEmojis, renderTemplate } from '@kuruttina/message-templates';
 import { toCommandReply } from '../messages/toCommandReply.js';
 import { createClearChannelAdapter } from '../moderation/clearAdapter.js';
 import { createMemberModerationAdapter } from '../moderation/memberModerationAdapter.js';

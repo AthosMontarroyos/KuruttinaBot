@@ -1,5 +1,6 @@
 import pg from 'pg';
 import { databaseDiagnostic, DatabaseSettingsError } from './diagnostics.js';
+import * as templates from './templates.js';
 export { readDatabaseConfig } from './config.js';
 /** @typedef {'creator'|'dev'} StaffRole */
 /** @typedef {{devGuildId: string, environment: 'development'|'production'}} BotSettings */
@@ -71,5 +72,20 @@ export function createDatabase(config, environment, onError = () => {}) {
       }, 'get_staff_role');
     },
     close: async () => { closing = true; await pool.end(); },
+    // Persistência de templates de mensagem (etapa 1C); cada chamada abre e fecha sua própria transação.
+    templates: {
+      /** @param {string} guildId @param {{limit?: number, after?: string}} [options] */
+      list: (guildId, options) => connection((client) => templates.list(client, guildId, options), 'list_templates'),
+      /** @param {string} guildId @param {string} name */
+      get: (guildId, name) => connection((client) => templates.get(client, guildId, name), 'get_template'),
+      /** @param {string} guildId */
+      usage: (guildId) => connection((client) => templates.usage(client, guildId), 'template_usage'),
+      /** @param {{guildId: string, name: string, content: unknown, buttonCount: number, menuCount: number, actorId: string}} input */
+      create: (input) => connection((client) => templates.create(client, input), 'create_template'),
+      /** @param {{guildId: string, name: string, expectedVersion: number, content: unknown, buttonCount: number, menuCount: number, actorId: string}} input */
+      update: (input) => connection((client) => templates.update(client, input), 'update_template'),
+      /** @param {string} guildId @param {string} name */
+      remove: (guildId, name) => connection((client) => templates.remove(client, guildId, name), 'remove_template'),
+    },
   };
 }

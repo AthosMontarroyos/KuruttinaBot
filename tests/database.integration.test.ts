@@ -219,7 +219,173 @@ describe('PostgreSQL runtime isolation', () => {
   });
   it('does not grant new objects from the migration owner to runtime', async () => {
     const policies = await admin.query("SELECT relname, relrowsecurity, relforcerowsecurity FROM pg_class WHERE relnamespace = 'bot_private'::regnamespace AND relkind = 'r'");
-    expect(policies.rows).toHaveLength(2);
+    // message_templates é a única tabela nova da etapa 1C; message_components ficou fora do escopo.
+    expect(policies.rows).toHaveLength(3);
     expect(policies.rows.every((row) => row.relrowsecurity && row.relforcerowsecurity)).toBe(true);
+  });
+});
+
+describe('message template persistence (etapa 1C)', () => {
+  let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
+  let admin: pg.Client;
+  let database: ReturnType<typeof createDatabase>;
+
+  const stopOnInterrupt = () => { void dispose().finally(() => process.exit(130)); };
+  const stopOnTerminate = () => { void dispose().finally(() => process.exit(143)); };
+  async function dispose() {
+    process.removeListener('SIGINT', stopOnInterrupt);
+    process.removeListener('SIGTERM', stopOnTerminate);
+    const currentCluster = cluster;
+    cluster = undefined;
+    await Promise.allSettled([admin?.end(), database?.close()]);
+    await currentCluster?.stop();
+  }
+
+  beforeAll(async () => {
+    cluster = await startPostgres();
+    process.once('SIGINT', stopOnInterrupt);
+    process.once('SIGTERM', stopOnTerminate);
+    admin = new pg.Client(cluster.adminConfig);
+    database = createDatabase(cluster.runtimeConfig, 'development');
+    try {
+      await admin.connect();
+      await migrate(admin);
+      await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(cluster.runtimeConfig.password)}`);
+      await initializeAccess(admin, 'development', ids);
+    } catch (error) {
+      await dispose();
+      throw error;
+    }
+  }, 120_000);
+  afterAll(dispose, 30_000);
+
+  it('cria, lê, lista, soma o uso e remove um template', async () => {
+    expect(await database.templates.usage(ids.guildId)).toEqual({ templates: 0, buttons: 0, menus: 0 });
+    const content = { title: 'Boas-vindas', buttons: [{ label: 'Entrar' }] };
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'boas-vindas', content, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+    })).toEqual({ ok: true });
+
+    const stored = await database.templates.get(ids.guildId, 'boas-vindas');
+    expect(stored).toEqual(expect.objectContaining({
+      name: 'boas-vindas', content, buttonCount: 1, menuCount: 0, version: 1, createdBy: ids.creatorId, updatedBy: ids.creatorId,
+    }));
+    expect(await database.templates.get(ids.guildId, 'inexistente')).toBeNull();
+    expect(await database.templates.get('123456789012345678', 'boas-vindas')).toBeNull();
+
+    const listed = await database.templates.list(ids.guildId);
+    expect(listed).toEqual([expect.objectContaining({ name: 'boas-vindas', buttonCount: 1, menuCount: 0, version: 1 })]);
+    expect(await database.templates.usage(ids.guildId)).toEqual({ templates: 1, buttons: 1, menus: 0 });
+
+    expect(await database.templates.remove(ids.guildId, 'boas-vindas')).toBe(true);
+    expect(await database.templates.remove(ids.guildId, 'boas-vindas')).toBe(false);
+    expect(await database.templates.get(ids.guildId, 'boas-vindas')).toBeNull();
+  });
+
+  it('recusa limit acima de 25 e usa o cursor por nome', async () => {
+    await expect(database.templates.list(ids.guildId, { limit: 26 })).rejects.toThrow('limit');
+    for (const name of ['alfa', 'beta', 'gama']) {
+      expect(await database.templates.create({
+        guildId: ids.guildId, name, content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+      })).toEqual({ ok: true });
+    }
+    try {
+      const page = await database.templates.list(ids.guildId, { limit: 2 });
+      expect(page.map((row) => row.name)).toEqual(['alfa', 'beta']);
+      const next = await database.templates.list(ids.guildId, { limit: 2, after: page[1]?.name ?? '' });
+      expect(next.map((row) => row.name)).toEqual(['gama']);
+    } finally {
+      for (const name of ['alfa', 'beta', 'gama']) await database.templates.remove(ids.guildId, name);
+    }
+  });
+
+  it('recusa nomes duplicados', async () => {
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'duplicado', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.create({
+        guildId: ids.guildId, name: 'duplicado', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+      })).toEqual({ ok: false, code: 'duplicate' });
+    } finally {
+      await database.templates.remove(ids.guildId, 'duplicado');
+    }
+  });
+
+  it('bloqueia a cota de botões e menus antes de passar de 50', async () => {
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'cota-a', content: {}, buttonCount: 30, menuCount: 0, actorId: ids.creatorId,
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.create({
+        guildId: ids.guildId, name: 'cota-b', content: {}, buttonCount: 21, menuCount: 0, actorId: ids.creatorId,
+      })).toEqual({ ok: false, code: 'quota' });
+      expect(await database.templates.get(ids.guildId, 'cota-b')).toBeNull();
+    } finally {
+      await database.templates.remove(ids.guildId, 'cota-a');
+    }
+  });
+
+  it('atualiza com concorrência otimista e distingue not_found de conflict', async () => {
+    expect(await database.templates.update({
+      guildId: ids.guildId, name: 'nao-existe', expectedVersion: 1, content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+    })).toEqual({ ok: false, code: 'not_found' });
+
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'versionado', content: { v: 1 }, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.update({
+        guildId: ids.guildId, name: 'versionado', expectedVersion: 7, content: { v: 2 }, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+      })).toEqual({ ok: false, code: 'conflict' });
+
+      expect(await database.templates.update({
+        guildId: ids.guildId, name: 'versionado', expectedVersion: 1, content: { v: 2 }, buttonCount: 2, menuCount: 1, actorId: ids.devId,
+      })).toEqual({ ok: true, version: 2 });
+
+      const updated = await database.templates.get(ids.guildId, 'versionado');
+      expect(updated).toEqual(expect.objectContaining({ content: { v: 2 }, buttonCount: 2, menuCount: 1, version: 2, updatedBy: ids.devId }));
+    } finally {
+      await database.templates.remove(ids.guildId, 'versionado');
+    }
+  });
+
+  it('bloqueia a cota de 100 templates por servidor', async () => {
+    await admin.query('BEGIN');
+    try {
+      await admin.query("SELECT set_config('app.guild_id', $1, true)", [ids.guildId]);
+      await admin.query(
+        `INSERT INTO bot_private.message_templates (guild_id, name, content, created_by, updated_by)
+           SELECT $1, 'seed-' || seed, '{}'::jsonb, $2, $2 FROM generate_series(1, 100) AS seed`,
+        [ids.guildId, ids.creatorId],
+      );
+      await admin.query('COMMIT');
+    } catch (error) {
+      await admin.query('ROLLBACK');
+      throw error;
+    }
+    try {
+      expect(await database.templates.usage(ids.guildId)).toEqual({ templates: 100, buttons: 0, menus: 0 });
+      expect(await database.templates.create({
+        guildId: ids.guildId, name: 'excedente', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+      })).toEqual({ ok: false, code: 'quota' });
+    } finally {
+      await admin.query('DELETE FROM bot_private.message_templates WHERE guild_id = $1', [ids.guildId]);
+    }
+  }, 30_000);
+
+  it('não permite a fuga entre servidores (RLS por guild_id)', async () => {
+    const otherGuild = '123456789012345678';
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'isolado', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.list(otherGuild)).toEqual([]);
+      expect(await database.templates.usage(otherGuild)).toEqual({ templates: 0, buttons: 0, menus: 0 });
+      expect(await database.templates.remove(otherGuild, 'isolado')).toBe(false);
+      expect(await database.templates.get(ids.guildId, 'isolado')).not.toBeNull();
+    } finally {
+      await database.templates.remove(ids.guildId, 'isolado');
+    }
   });
 });

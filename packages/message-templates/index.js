@@ -1,0 +1,48 @@
+/**
+ * Ponto de entrada do motor de templates de mensagem: limites, modelo e
+ * validação, renderização e caso de uso de administração.
+ */
+
+export {
+  DISCORD_MESSAGE_LIMITS,
+  DEFAULT_GUILD_TEMPLATE_LIMITS,
+} from './limits.js';
+/** @typedef {import('./limits.js').GuildTemplateLimits} GuildTemplateLimits */
+
+export {
+  TemplateValidationError,
+  validateTemplate,
+  countTemplateComponents,
+  checkGuildQuota,
+} from './template.js';
+/** @typedef {import('./template.js').TemplateEmbedField} TemplateEmbedField */
+/** @typedef {import('./template.js').TemplateEmbed} TemplateEmbed */
+/** @typedef {import('./template.js').TemplateButton} TemplateButton */
+/** @typedef {import('./template.js').TemplateSelectOption} TemplateSelectOption */
+/** @typedef {import('./template.js').TemplateSelectMenu} TemplateSelectMenu */
+/** @typedef {import('./template.js').TemplateRow} TemplateRow */
+/** @typedef {import('./template.js').MessageTemplate} MessageTemplate */
+/** @typedef {import('./template.js').TemplateVariable} TemplateVariable */
+/** @typedef {import('./template.js').TemplateErrorCode} TemplateErrorCode */
+/** @typedef {import('./template.js').TemplateUsage} TemplateUsage */
+/** @typedef {import('./template.js').GuildUsage} GuildUsage */
+
+export {
+  extractVariables,
+  escapeUserValue,
+  renderTemplate,
+  fillEmojis,
+} from './render.js';
+/** @typedef {import('./render.js').VariableToken} VariableToken */
+
+export {
+  createTemplateAdminService,
+  TemplateAdminError,
+} from './templateAdmin.js';
+/** @typedef {import('./templateAdmin.js').TemplateRecord} TemplateRecord */
+/** @typedef {import('./templateAdmin.js').TemplateSummary} TemplateSummary */
+/** @typedef {import('./templateAdmin.js').TemplateRepositoryPort} TemplateRepositoryPort */
+/** @typedef {import('./templateAdmin.js').TemplateAdminErrorCode} TemplateAdminErrorCode */
+/** @typedef {import('./templateAdmin.js').CreateTemplateInput} CreateTemplateInput */
+/** @typedef {import('./templateAdmin.js').UpdateTemplateInput} UpdateTemplateInput */
+/** @typedef {import('./templateAdmin.js').TemplateAdminService} TemplateAdminService */

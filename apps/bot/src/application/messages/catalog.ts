@@ -9,7 +9,7 @@
  * de chamar `fillEmojis`. Ordem de uso: resolver emojis -> fillEmojis -> renderTemplate.
  */
 
-import type { MessageTemplate, TemplateEmbedField, TemplateVariable } from './template.js';
+import type { MessageTemplate, TemplateEmbedField, TemplateVariable } from '@kuruttina/message-templates';
 
 export interface MessageCatalogEntry {
   template: MessageTemplate;

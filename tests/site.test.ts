@@ -1,13 +1,28 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
+import { createHash } from 'node:crypto';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { readSiteConfig } from '../apps/site/server/config.js';
 import { createSiteServer } from '../apps/site/server/http.js';
 
-const environment = { APP_ENV: 'development', PORT: '3666', SITE_URL: 'http://localhost:3666', ASSETS_BASE_URL: 'https://assets.example.com/' };
+const environment = {
+  SESSION_FILE: '', APP_ENV: 'development', PORT: '3666', SITE_URL: 'http://localhost:3666', ASSETS_BASE_URL: 'https://assets.example.com/',
+  // Role própria do site (kuruttina_site), distinta da do bot; host não local, então vale em development e production.
+  DATABASE_URL: 'postgres://kuruttina_site:test-pw@db.internal:5432/kuruttina',
+};
 describe('site configuration', () => {
   it('exposes only public configuration and keeps the stable avatar path', () => {
     expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: 'test-secret' })).toEqual({
+      target: 'development',
       port: 3666, host: '127.0.0.1', siteUrl: 'http://localhost:3666', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
+      database: {
+        host: 'db.internal', port: 5432, user: 'kuruttina_site', password: 'test-pw', database: 'kuruttina',
+        ssl: { rejectUnauthorized: true },
+        connectionTimeoutMillis: 5000, statement_timeout: 5000, idle_in_transaction_session_timeout: 5000,
+        options: '-c search_path=pg_catalog,bot_private',
+      },
     });
   });
   it.each(['', 'http://assets.example.com', 'https://user:password@assets.example.com', 'https://assets.example.com/?token=secret', 'https://assets.example.com/#fragment'])('rejects invalid asset base %s', (base) => {
@@ -106,6 +121,75 @@ describe('mock login HTTP boundary', () => {
     expect(await (await fetch(origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: true });
     await fetch(origin + '/api/logout', { method: 'POST', headers: { Origin: 'http://localhost:3666', Cookie: pair } });
     expect(await (await fetch(origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: false });
+  });
+});
+
+describe('session persistence across restarts', () => {
+  const start = async (file: string) => {
+    const server = await createSiteServer(readSiteConfig({ ...environment, OWNER_ID: '123456789012345678', SESSION_FILE: file }), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    return { server, origin: `http://127.0.0.1:${address.port}` };
+  };
+  const stop = (server: Server) => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  it('keeps the login after the server restarts and drops it after logout', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'kuruttina-sessions-'));
+    const file = join(directory, 'sessions.json');
+    try {
+      const first = await start(file);
+      const login = await fetch(first.origin + '/api/mock-login', { method: 'POST', headers: { Origin: 'http://localhost:3666' } });
+      const pair = (login.headers.get('set-cookie') ?? '').split(';')[0] ?? '';
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await stop(first.server);
+      const second = await start(file);
+      expect(await (await fetch(second.origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: true });
+      expect(await readFile(file, 'utf8')).not.toContain(pair.split('=')[1] ?? 'missing');
+      await fetch(second.origin + '/api/logout', { method: 'POST', headers: { Origin: 'http://localhost:3666', Cookie: pair } });
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await stop(second.server);
+      const third = await start(file);
+      expect(await (await fetch(third.origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: false });
+      await stop(third.server);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('session lifetime', () => {
+  const day = 24 * 60 * 60 * 1000;
+  const hash = (token: string) => createHash('sha256').update(token).digest('hex');
+  const user = { id: '100000000000000001', label: 'Dev', avatarUrl: null };
+  it('renews up to 7 days of idle time but never past 14 days since login', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'kuruttina-lifetime-'));
+    const file = join(directory, 'sessions.json');
+    const now = Date.now();
+    const created = { fresh: now - 1 * day, nearCap: now - 13 * day, overCap: now - 15 * day };
+    await writeFile(file, JSON.stringify({
+      [hash('fresh')]: { created: created.fresh, expires: now + 2 * day, user, guilds: [] },
+      [hash('near-cap')]: { created: created.nearCap, expires: now + 60 * 60 * 1000, user, guilds: [] },
+      [hash('over-cap')]: { created: created.overCap, expires: now + 3 * day, user, guilds: [] },
+    }));
+    const server = await createSiteServer(readSiteConfig({ ...environment, SESSION_FILE: file }), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    const origin = `http://127.0.0.1:${address.port}`;
+    const check = async (token: string) => (await (await fetch(origin + '/api/session', { headers: { Cookie: `kuruttina_session=${token}` } })).json()) as { authenticated: boolean };
+    try {
+      expect((await check('fresh')).authenticated).toBe(true);
+      expect((await check('near-cap')).authenticated).toBe(true);
+      expect((await check('over-cap')).authenticated).toBe(false);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      const saved = JSON.parse(await readFile(file, 'utf8')) as Record<string, { expires: number }>;
+      expect(Math.abs((saved[hash('fresh')]?.expires ?? 0) - (Date.now() + 7 * day))).toBeLessThan(60_000);
+      expect(Math.abs((saved[hash('near-cap')]?.expires ?? 0) - (created.nearCap + 14 * day))).toBeLessThan(1_000);
+      expect(saved[hash('over-cap')]).toBeUndefined();
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
 

@@ -4,16 +4,17 @@ import { join } from 'node:path';
 import {
   DEFAULT_GUILD_TEMPLATE_LIMITS,
   DISCORD_MESSAGE_LIMITS,
-} from '../apps/bot/src/application/messages/limits.js';
-import {
   checkGuildQuota,
   countTemplateComponents,
   validateTemplate,
+  escapeUserValue,
+  extractVariables,
+  fillEmojis,
+  renderTemplate,
   type MessageTemplate,
   type TemplateVariable,
-} from '../apps/bot/src/application/messages/template.js';
+} from '@kuruttina/message-templates';
 import { MESSAGE_CATALOG, type MessageCatalogEntry } from '../apps/bot/src/application/messages/catalog.js';
-import { escapeUserValue, extractVariables, fillEmojis, renderTemplate } from '../apps/bot/src/application/messages/render.js';
 
 const variables: TemplateVariable[] = [
   { name: 'user.name', maxLength: 32 },
@@ -132,6 +133,18 @@ describe('checkGuildQuota', () => {
   it('accepts injected limits', () => {
     expect(checkGuildQuota({ templates: 2, buttons: 0, menus: 0 }, { maxTemplates: 2, maxButtons: 1, maxSelectMenus: 1 })?.code).toBe('quota_exceeded');
   });
+
+  it('does not refuse by template count on edit (isNewTemplate = false)', () => {
+    const atLimit = { templates: 100, buttons: 0, menus: 0 };
+    expect(checkGuildQuota(atLimit, undefined, { buttons: 0, menus: 0 }, false)).toBeNull();
+    expect(checkGuildQuota(atLimit, undefined, { buttons: 0, menus: 0 }, true)?.code).toBe('quota_exceeded');
+  });
+
+  it('still refuses by button and menu limits on edit', () => {
+    const atLimit = { templates: 100, buttons: 50, menus: 50 };
+    expect(checkGuildQuota(atLimit, undefined, { buttons: 1, menus: 0 }, false)?.path).toBe('buttons');
+    expect(checkGuildQuota(atLimit, undefined, { buttons: 0, menus: 1 }, false)?.path).toBe('menus');
+  });
 });
 
 describe('renderTemplate', () => {
@@ -171,9 +184,9 @@ describe('renderTemplate', () => {
 });
 
 describe('architecture', () => {
-  it('keeps application/messages free of forbidden imports', () => {
-    const directory = join(import.meta.dirname, '../apps/bot/src/application/messages');
-    const files = readdirSync(directory).filter((file) => file.endsWith('.ts'));
+  it('keeps message-templates free of forbidden imports', () => {
+    const directory = join(import.meta.dirname, '../packages/message-templates');
+    const files = readdirSync(directory).filter((file) => file.endsWith('.js'));
     expect(files.length).toBeGreaterThan(0);
     for (const file of files) {
       const source = readFileSync(join(directory, file), 'utf8');

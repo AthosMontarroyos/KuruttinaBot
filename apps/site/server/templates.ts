@@ -1,0 +1,178 @@
+/**
+ * API de templates de mensagem (`/api/guilds/:guildId/templates`), consumida só
+ * pelo painel do site. Autenticação e autorização por servidor vêm de `auth.ts`
+ * (`getAuthorizedGuild`); a validação de regra de negócio vem do motor
+ * compartilhado `@kuruttina/message-templates`. O site nunca importa nada de
+ * `apps/bot` (fronteira entre apps).
+ */
+import { createDatabase } from '@kuruttina/database';
+import { createTemplateAdminService, TemplateAdminError, type TemplateRepositoryPort } from '@kuruttina/message-templates';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { createAuth } from './auth.js';
+import type { readSiteConfig } from './config.js';
+
+type SiteConfig = ReturnType<typeof readSiteConfig>;
+type Auth = ReturnType<typeof createAuth>;
+
+const guildIdPattern = /^[1-9][0-9]{16,19}$/u;
+const namePattern = /^[a-z0-9_-]{1,32}$/u;
+const LIST_PAGE_SIZE = 25;
+
+function sendJson(res: ServerResponse, status: number, body: unknown): void {
+  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(JSON.stringify(body));
+}
+
+async function readJsonBody(req: IncomingMessage, maxBytes: number): Promise<unknown> {
+  const chunks: Buffer[] = [];
+  let total = 0;
+  for await (const chunk of req as AsyncIterable<Buffer>) {
+    total += chunk.length;
+    if (total > maxBytes) throw new Error('body_too_large');
+    chunks.push(chunk);
+  }
+  const text = Buffer.concat(chunks).toString('utf8');
+  return text.trim() === '' ? undefined : JSON.parse(text);
+}
+
+/** Adapta `database.templates` (datas como `Date`, pacote JS) ao port do caso de uso (datas como ISO string). */
+function toIso(value: unknown): string {
+  return value instanceof Date ? value.toISOString() : String(value);
+}
+
+function createTemplateRepository(db: ReturnType<typeof createDatabase>['templates']): TemplateRepositoryPort {
+  return {
+    list: async (guildId, options) => (await db.list(guildId, options)).map((row) => ({ ...row, updatedAt: toIso(row.updatedAt) })),
+    get: async (guildId, name) => {
+      const row = await db.get(guildId, name);
+      return row === null ? null : { ...row, createdAt: toIso(row.createdAt), updatedAt: toIso(row.updatedAt) };
+    },
+    usage: (guildId) => db.usage(guildId),
+    create: (input) => db.create(input),
+    update: (input) => db.update(input),
+    remove: (guildId, name) => db.remove(guildId, name),
+  };
+}
+
+/** Status HTTP e corpo de erro para cada código de `TemplateAdminError`. */
+function adminErrorResponse(error: TemplateAdminError): { status: number; body: Record<string, unknown> } {
+  switch (error.code) {
+    case 'invalid_name': return { status: 422, body: { error: 'invalid_name' } };
+    case 'too_large': return { status: 413, body: { error: 'too_large' } };
+    case 'validation': return { status: 422, body: { error: 'validation', details: (error.details ?? []).slice(0, 5) } };
+    case 'duplicate': return { status: 409, body: { error: 'duplicate' } };
+    case 'quota': return { status: 409, body: { error: 'quota' } };
+    case 'not_found': return { status: 404, body: { error: 'not_found' } };
+    case 'conflict': return { status: 409, body: { error: 'conflict' } };
+    default: return { status: 503, body: { error: 'unavailable' } };
+  }
+}
+
+export function createTemplatesApi(config: SiteConfig, auth: Auth) {
+  const database = createDatabase(config.database, config.target);
+  const service = createTemplateAdminService(createTemplateRepository(database.templates));
+
+  function authorize(req: IncomingMessage, res: ServerResponse, guildId: string): { discordId: string } | undefined {
+    if (!guildIdPattern.test(guildId)) { sendJson(res, 404, { error: 'not_found' }); return undefined; }
+    const authorization = auth.getAuthorizedGuild(req, guildId);
+    if (authorization.status === 'unauthenticated') { sendJson(res, 401, { error: 'unauthenticated' }); return undefined; }
+    if (authorization.status === 'forbidden') { sendJson(res, 404, { error: 'not_found' }); return undefined; }
+    return { discordId: authorization.discordId };
+  }
+
+  async function handleList(req: IncomingMessage, res: ServerResponse, guildId: string, search: string): Promise<void> {
+    const after = new URLSearchParams(search).get('after') ?? undefined;
+    if (after !== undefined && !namePattern.test(after)) { sendJson(res, 404, { error: 'not_found' }); return; }
+    const items = await service.listTemplates(guildId, after === undefined ? { limit: LIST_PAGE_SIZE } : { limit: LIST_PAGE_SIZE, after });
+    const nextCursor = items.length === LIST_PAGE_SIZE ? items[items.length - 1]?.name ?? null : null;
+    sendJson(res, 200, { items, nextCursor });
+  }
+
+  async function handleGet(res: ServerResponse, guildId: string, name: string): Promise<void> {
+    const record = await service.getTemplate(guildId, name);
+    if (record === null) { sendJson(res, 404, { error: 'not_found' }); return; }
+    sendJson(res, 200, record);
+  }
+
+  async function handleCreate(req: IncomingMessage, res: ServerResponse, guildId: string, actorId: string): Promise<void> {
+    let body: unknown;
+    try { body = await readJsonBody(req, 40_000); } catch { sendJson(res, 413, { error: 'too_large' }); return; }
+    if (typeof body !== 'object' || body === null) { sendJson(res, 422, { error: 'invalid_json' }); return; }
+    const { name, contentJson } = body as { name?: unknown; contentJson?: unknown };
+    if (typeof name !== 'string' || typeof contentJson !== 'string') { sendJson(res, 422, { error: 'invalid_json' }); return; }
+    try {
+      const record = await service.createTemplate({ guildId, name, contentJson, actorId });
+      sendJson(res, 201, { name: record.name, version: record.version });
+    } catch (error: unknown) {
+      if (error instanceof TemplateAdminError) { const mapped = adminErrorResponse(error); sendJson(res, mapped.status, mapped.body); return; }
+      throw error;
+    }
+  }
+
+  async function handleUpdate(req: IncomingMessage, res: ServerResponse, guildId: string, name: string, actorId: string): Promise<void> {
+    let body: unknown;
+    try { body = await readJsonBody(req, 40_000); } catch { sendJson(res, 413, { error: 'too_large' }); return; }
+    if (typeof body !== 'object' || body === null) { sendJson(res, 422, { error: 'invalid_json' }); return; }
+    const { expectedVersion, contentJson } = body as { expectedVersion?: unknown; contentJson?: unknown };
+    if (typeof expectedVersion !== 'number' || !Number.isInteger(expectedVersion) || typeof contentJson !== 'string') {
+      sendJson(res, 422, { error: 'invalid_json' });
+      return;
+    }
+    try {
+      const record = await service.updateTemplate({ guildId, name, expectedVersion, contentJson, actorId });
+      sendJson(res, 200, { name: record.name, version: record.version });
+    } catch (error: unknown) {
+      if (error instanceof TemplateAdminError) { const mapped = adminErrorResponse(error); sendJson(res, mapped.status, mapped.body); return; }
+      throw error;
+    }
+  }
+
+  async function handleDelete(res: ServerResponse, guildId: string, name: string): Promise<void> {
+    const record = await service.getTemplate(guildId, name);
+    if (record === null) { sendJson(res, 404, { error: 'not_found' }); return; }
+    await service.removeTemplate(guildId, name);
+    sendJson(res, 200, { ok: true });
+  }
+
+  // Devolve true quando a rota é de templates e já foi respondida.
+  const handle = function handle(req: IncomingMessage, res: ServerResponse, path: string, search: string): boolean {
+    const match = /^\/api\/guilds\/([^/]+)\/templates(?:\/([^/]+))?$/u.exec(path);
+    if (!match) return false;
+    const [, guildId = '', name] = match;
+
+    void (async () => {
+      const authorized = authorize(req, res, guildId);
+      if (!authorized) return;
+
+      try {
+        if (name === undefined) {
+          if (req.method === 'GET' || req.method === 'HEAD') { await handleList(req, res, guildId, search); return; }
+          if (req.method === 'POST') {
+            if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+            await handleCreate(req, res, guildId, authorized.discordId);
+            return;
+          }
+          res.writeHead(405, { Allow: 'GET, HEAD, POST' }).end();
+          return;
+        }
+        if (!namePattern.test(name)) { sendJson(res, 404, { error: 'not_found' }); return; }
+        if (req.method === 'GET' || req.method === 'HEAD') { await handleGet(res, guildId, name); return; }
+        if (req.method === 'PUT') {
+          if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+          await handleUpdate(req, res, guildId, name, authorized.discordId);
+          return;
+        }
+        if (req.method === 'DELETE') {
+          if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+          await handleDelete(res, guildId, name);
+          return;
+        }
+        res.writeHead(405, { Allow: 'GET, HEAD, PUT, DELETE' }).end();
+      } catch {
+        sendJson(res, 503, { error: 'unavailable' });
+      }
+    })();
+    return true;
+  };
+
+  return { handle, close: () => database.close() };
+}

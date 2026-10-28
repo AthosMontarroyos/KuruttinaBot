@@ -19,6 +19,7 @@ const iconPaths = [
   '/icons/theme/theme.svg',
 ] as const;
 const safePublicPath = /^\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/u;
+const dashboardServerPath = /^\/dashboard\/[1-9][0-9]{16,19}$/u;
 
 const escapeAttribute = (value: string): string => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
@@ -79,7 +80,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     if (auth.handle(req, res, path, search)) return;
     if (templatesApi.handle(req, res, path, search)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
-    const asset = assets.get(path);
+    const asset = assets.get(path) ?? (dashboardServerPath.test(path) ? assets.get('/dashboard') : undefined);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }
     res.writeHead(200, { 'Content-Type': asset.type });
     res.end(req.method === 'HEAD' ? undefined : asset.body);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Session } from '../../app/session';
+import type { Session } from '../../lib/session';
 import { AccountMenu } from '../AccountMenu';
 
 const navigation = [

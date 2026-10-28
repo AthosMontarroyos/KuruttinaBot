@@ -7,7 +7,9 @@ metadata:
 
 # Website
 
-A implementação atual usa React, TypeScript, Tailwind, Vite e servidor Node em `apps/site/server`. A direção aprovada é React sem Next.js, construindo uma base/framework próprio com liberdade de organização. Estrutura de pastas e roteamento são decisões do projeto, não convenções impostas por um framework. Veja a [decisão](../../../docs/decisions/react-base.md). Autenticação e painel ainda não existem. O login futuro é exclusivamente Discord, conforme a [decisão de autenticação](../../../docs/decisions/discord-only-authentication.md).
+A implementação atual usa React, TypeScript, Tailwind, Vite e servidor Node em `apps/site/server`. A direção aprovada é React sem Next.js, construindo uma base/framework próprio com liberdade de organização. Estrutura de pastas e roteamento são decisões do projeto, não convenções impostas por um framework. Veja a [decisão](../../../docs/decisions/react-base.md). Autenticação (OAuth Discord) e painel já existem; o login é exclusivamente Discord, conforme a [decisão de autenticação](../../../docs/decisions/discord-only-authentication.md).
+
+Rotas ficam em pastas sob `src/app/`, uma pasta por segmento de URL, com `page.tsx` como arquivo da rota (`app/login/page.tsx` → `/login`); segmento dinâmico usa colchetes (`app/dashboard/[serverId]/page.tsx` → `/dashboard/:serverId`). Uma aba ou seção sem URL própria — por exemplo visão geral, Mensagens e módulos dentro do painel de um servidor — **é visualização, não rota**: o `page.tsx` da rota guarda o estado de qual visualização mostrar, e cada visualização tem sua própria pasta dentro da pasta da rota, com o arquivo principal chamado `view.tsx` (nunca `page.tsx`, para não ser confundida com rota) — ex.: `dashboard/[serverId]/overview/view.tsx`, `.../messages/view.tsx`. Código que só essa visualização usa (dados, subcomponentes) fica dentro da pasta dela, como `.../messages/templates-api.ts`. Só promova uma visualização a rota (com `page.tsx` próprio) quando precisar de URL própria, recarregável e compartilhável. Código usado por mais de uma rota ou visualização vai para `src/components/` ou `src/lib/`.
 
 ## Procedimento
 
@@ -20,7 +22,7 @@ A implementação atual usa React, TypeScript, Tailwind, Vite e servidor Node em
 
 ## Login e administração, somente quando pedidos
 
-A [decisão de login exclusivo via Discord](../../../docs/decisions/discord-only-authentication.md) é requisito obrigatório de qualquer trabalho de autenticação ou painel. Autenticação e painel ainda não estão implementados.
+A [decisão de login exclusivo via Discord](../../../docs/decisions/discord-only-authentication.md) é requisito obrigatório de qualquer trabalho de autenticação ou painel.
 
 Leia [autenticação e administração](references/authentication-and-admin.md): mutations, identidade Discord, autorização pela equipe, sessões, CSRF, erros e administração aplicam-se ao fluxo correspondente. Persistência aciona `database-developer`; publicação e hospedagem acionam `project-operations`. Não crie contas, usuários de teste ou registros privilegiados sem autorização explícita do responsável.
 

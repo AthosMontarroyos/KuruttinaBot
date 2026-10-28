@@ -4,14 +4,16 @@ import { StrictMode, useEffect, useLayoutEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { TopBar } from '../components/desktop/TopBar';
 import { HomePage } from './page';
-import { LoginPage } from './login';
-import { PanelPage } from './panel';
-import { useSession } from './session';
-import { UnderConstructionPage } from './under-construction';
+import { LoginPage } from './login/page';
+import { DashboardPage } from './dashboard/page';
+import { ServerDashboardPage } from './dashboard/[serverId]/page';
+import { ComandosPage } from './comandos/page';
+import { ModulosPage } from './modulos/page';
+import { useSession } from '../lib/session';
 import './globals.css';
 
 const themeStorageKey = 'kuruttina-theme';
-const constructionPages: Record<string, string | undefined> = { '/comandos': 'Comandos', '/modulos': 'Módulos' };
+const serverDashboardPath = /^\/dashboard\/([^/]+)$/u;
 
 function readAvatarUrl(): string {
   const content = document.querySelector('meta[name="kuruttina-avatar"]')?.getAttribute('content') ?? '';
@@ -37,7 +39,7 @@ function RootLayout() {
   const [notice, setNotice] = useState<string | null>(null);
   const avatarUrl = readAvatarUrl();
   const { session, failed, mockLogin, logout } = useSession();
-  const pageTitle = constructionPages[location.pathname];
+  const serverId = serverDashboardPath.exec(location.pathname)?.[1];
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = light ? 'light' : 'dark';
@@ -71,7 +73,19 @@ function RootLayout() {
         Pular para o conteúdo
       </a>
       <TopBar avatarUrl={avatarUrl} light={light} onToggleTheme={toggleTheme} onNotice={showNotice} session={session} onLogout={() => void logout()} />
-      {location.pathname === '/dashboard' ? <PanelPage session={session} failed={failed} onLogout={() => void logout()} /> : location.pathname === '/login' ? <LoginPage session={session} failed={failed} onMockLogin={mockLogin} /> : pageTitle ? <UnderConstructionPage title={pageTitle} /> : <HomePage avatarUrl={avatarUrl} onNotice={showNotice} />}
+      {location.pathname === '/dashboard' ? (
+        <DashboardPage session={session} failed={failed} onLogout={() => void logout()} />
+      ) : serverId ? (
+        <ServerDashboardPage session={session} failed={failed} serverId={serverId} onLogout={() => void logout()} />
+      ) : location.pathname === '/login' ? (
+        <LoginPage session={session} failed={failed} onMockLogin={mockLogin} />
+      ) : location.pathname === '/comandos' ? (
+        <ComandosPage />
+      ) : location.pathname === '/modulos' ? (
+        <ModulosPage />
+      ) : (
+        <HomePage avatarUrl={avatarUrl} onNotice={showNotice} />
+      )}
       <footer className="border-t border-border px-5 pt-5 pb-7 text-[13px] leading-4 font-medium text-subtle min-[701px]:border-0 min-[701px]:px-[5%] min-[701px]:py-6">
         Kuruttina
       </footer>

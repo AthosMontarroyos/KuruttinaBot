@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { card, outlineButton, primaryButton, Skeleton } from '../app/panel';
+import { card, outlineButton, primaryButton, Skeleton } from '../../ui';
 import {
   createTemplate,
   deleteTemplate,
@@ -12,7 +12,7 @@ import {
   type TemplateErrorCode,
   type TemplateSummary,
   type ValidationDetail,
-} from '../app/templatesApi';
+} from './templates-api';
 
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -60,7 +60,7 @@ function emptyForm(): FormState {
   return { name: '', contentJson: '', version: null, error: null, submitting: false };
 }
 
-function MessageTemplatesSection({ guildId }: { guildId: string }) {
+function MessagesView({ guildId }: { guildId: string }) {
   const [items, setItems] = useState<TemplateSummary[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -342,4 +342,4 @@ function MessageTemplatesSection({ guildId }: { guildId: string }) {
   );
 }
 
-export { MessageTemplatesSection };
+export { MessagesView };

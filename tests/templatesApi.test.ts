@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createTemplate, deleteTemplate, getTemplate, listTemplates, updateTemplate } from '../apps/site/src/app/templatesApi.js';
+import { createTemplate, deleteTemplate, getTemplate, listTemplates, updateTemplate } from '../apps/site/src/app/dashboard/[serverId]/messages/templates-api.js';
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });

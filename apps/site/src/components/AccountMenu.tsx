@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { Session } from '../app/session';
+import type { Session } from '../lib/session';
 
 type AccountMenuProps = {
   session: Session | null;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Session } from './session';
+import type { Session } from '../../lib/session';
 
 type LoginPageProps = {
   session: Session | null;

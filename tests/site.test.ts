@@ -267,10 +267,14 @@ describe('public Home HTTP boundary', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/svg+xml');
   });
-  it.each(['/comandos', '/modulos', '/dashboard', '/login'])('serves the shell for the construction page %s', async (path) => {
+  it.each(['/comandos', '/modulos', '/dashboard', '/dashboard/123456789012345678', '/login'])('serves the shell for the construction page %s', async (path) => {
     const response = await fetch(origin + path);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
+  });
+  it.each(['/dashboard/abc', '/dashboard/123', '/dashboard/123456789012345678/extra'])('rejects a malformed dashboard server path %s', async (path) => {
+    const response = await fetch(origin + path);
+    expect(response.status).toBe(404);
   });
   it('rejects mutations, supports HEAD and exposes a light health check', async () => {
     expect((await fetch(origin, { method: 'POST' })).status).toBe(405);

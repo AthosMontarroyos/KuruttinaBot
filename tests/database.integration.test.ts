@@ -219,8 +219,8 @@ describe('PostgreSQL runtime isolation', () => {
   });
   it('does not grant new objects from the migration owner to runtime', async () => {
     const policies = await admin.query("SELECT relname, relrowsecurity, relforcerowsecurity FROM pg_class WHERE relnamespace = 'bot_private'::regnamespace AND relkind = 'r'");
-    // message_templates é a única tabela nova da etapa 1C; message_components ficou fora do escopo.
-    expect(policies.rows).toHaveLength(3);
+    // bot_settings, bot_staff, message_templates, message_components, message_deliveries (etapas 1C/1D) e message_template_folders.
+    expect(policies.rows).toHaveLength(6);
     expect(policies.rows.every((row) => row.relrowsecurity && row.relforcerowsecurity)).toBe(true);
   });
 });
@@ -388,4 +388,191 @@ describe('message template persistence (etapa 1C)', () => {
       await database.templates.remove(ids.guildId, 'isolado');
     }
   });
+
+  it('sincroniza o mapa custom_id -> ação ao criar e ao editar (etapa 1D)', async () => {
+    const replyAction = { type: 'reply', template: 'oi' };
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'com-acao', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+      components: [{ customId: 'kt:btn:a', kind: 'button', action: replyAction }],
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.findComponent(ids.guildId, 'kt:btn:a')).toEqual({ kind: 'button', action: replyAction });
+
+      // Editar reescreve o conjunto inteiro: o antigo custom_id deixa de existir.
+      const editAction = { type: 'delete' };
+      expect(await database.templates.update({
+        guildId: ids.guildId, name: 'com-acao', expectedVersion: 1, content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+        components: [{ customId: 'kt:btn:b', kind: 'button', action: editAction }],
+      })).toEqual({ ok: true, version: 2 });
+
+      expect(await database.templates.findComponent(ids.guildId, 'kt:btn:a')).toBeNull();
+      expect(await database.templates.findComponent(ids.guildId, 'kt:btn:b')).toEqual({ kind: 'button', action: editAction });
+    } finally {
+      await database.templates.remove(ids.guildId, 'com-acao');
+    }
+    expect(await database.templates.findComponent(ids.guildId, 'kt:btn:b')).toBeNull();
+  });
+
+  it('recusa custom_id duplicado entre templates do mesmo servidor', async () => {
+    const action = { type: 'delete' };
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'dono-a', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+      components: [{ customId: 'kt:btn:unico', kind: 'button', action }],
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.create({
+        guildId: ids.guildId, name: 'dono-b', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+        components: [{ customId: 'kt:btn:unico', kind: 'button', action }],
+      })).toEqual({ ok: false, code: 'duplicate_custom_id' });
+      expect(await database.templates.get(ids.guildId, 'dono-b')).toBeNull();
+    } finally {
+      await database.templates.remove(ids.guildId, 'dono-a');
+    }
+  });
+
+  it('cria, lista, renomeia e apaga pastas, isoladas por servidor', async () => {
+    expect(await database.folders.list(ids.guildId)).toEqual([]);
+    const created = await database.folders.create({ guildId: ids.guildId, name: 'Eventos' });
+    expect(created).toEqual({ ok: true, id: expect.any(Number) });
+    const folderId = (created as { ok: true; id: number }).id;
+    try {
+      expect(await database.folders.create({ guildId: ids.guildId, name: 'Eventos' })).toEqual({ ok: false, code: 'duplicate' });
+
+      const otherGuild = '123456789012345678';
+      expect(await database.folders.list(otherGuild)).toEqual([]);
+      expect(await database.folders.list(ids.guildId)).toEqual([
+        expect.objectContaining({ id: folderId, name: 'Eventos' }),
+      ]);
+
+      expect(await database.folders.rename({ guildId: ids.guildId, id: folderId, name: 'Comunicados' })).toEqual({ ok: true });
+      expect(await database.folders.rename({ guildId: otherGuild, id: folderId, name: 'Roubo' })).toEqual({ ok: false, code: 'not_found' });
+      expect(await database.folders.list(ids.guildId)).toEqual([
+        expect.objectContaining({ id: folderId, name: 'Comunicados' }),
+      ]);
+    } finally {
+      expect(await database.folders.remove(ids.guildId, folderId)).toBe(true);
+      expect(await database.folders.remove(ids.guildId, folderId)).toBe(false);
+    }
+  });
+
+  it('list/get trazem folderId e folderName; pasta de outro servidor é rejeitada; apagar a pasta só desarquiva o template', async () => {
+    const created = await database.folders.create({ guildId: ids.guildId, name: 'Com template' });
+    const folderId = (created as { ok: true; id: number }).id;
+    try {
+      expect(await database.templates.create({
+        guildId: ids.guildId, name: 'na-pasta', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId, folderId,
+      })).toEqual({ ok: true });
+      try {
+        expect(await database.templates.get(ids.guildId, 'na-pasta')).toEqual(
+          expect.objectContaining({ folderId, folderName: 'Com template' }),
+        );
+        expect(await database.templates.list(ids.guildId)).toEqual([
+          expect.objectContaining({ name: 'na-pasta', folderId, folderName: 'Com template' }),
+        ]);
+
+        const otherGuild = '123456789012345678';
+        expect(await database.templates.create({
+          guildId: otherGuild, name: 'fuga', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId, folderId,
+        })).toEqual({ ok: false, code: 'invalid_folder' });
+
+        // Apagar a pasta desarquiva o template (ON DELETE SET NULL), nunca o apaga.
+        expect(await database.folders.remove(ids.guildId, folderId)).toBe(true);
+        expect(await database.templates.get(ids.guildId, 'na-pasta')).toEqual(
+          expect.objectContaining({ folderId: null, folderName: null }),
+        );
+      } finally {
+        await database.templates.remove(ids.guildId, 'na-pasta');
+      }
+    } finally {
+      await database.folders.remove(ids.guildId, folderId).catch(() => {});
+    }
+  });
+
+  it('findComponent não encontra custom_id inexistente ou de outro servidor', async () => {
+    expect(await database.templates.findComponent(ids.guildId, 'kt:btn:nada')).toBeNull();
+    const otherGuild = '123456789012345678';
+    expect(await database.templates.create({
+      guildId: ids.guildId, name: 'isolado-componente', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+      components: [{ customId: 'kt:btn:isolado', kind: 'button', action: { type: 'delete' } }],
+    })).toEqual({ ok: true });
+    try {
+      expect(await database.templates.findComponent(otherGuild, 'kt:btn:isolado')).toBeNull();
+    } finally {
+      await database.templates.remove(ids.guildId, 'isolado-componente');
+    }
+  });
+});
+
+describe('fila de entrega de mensagens (etapa 1D)', () => {
+  let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
+  let admin: pg.Client;
+  let database: ReturnType<typeof createDatabase>;
+
+  const stopOnInterrupt = () => { void dispose().finally(() => process.exit(130)); };
+  const stopOnTerminate = () => { void dispose().finally(() => process.exit(143)); };
+  async function dispose() {
+    process.removeListener('SIGINT', stopOnInterrupt);
+    process.removeListener('SIGTERM', stopOnTerminate);
+    const currentCluster = cluster;
+    cluster = undefined;
+    await Promise.allSettled([admin?.end(), database?.close()]);
+    await currentCluster?.stop();
+  }
+
+  beforeAll(async () => {
+    cluster = await startPostgres();
+    process.once('SIGINT', stopOnInterrupt);
+    process.once('SIGTERM', stopOnTerminate);
+    admin = new pg.Client(cluster.adminConfig);
+    database = createDatabase(cluster.runtimeConfig, 'development');
+    try {
+      await admin.connect();
+      await migrate(admin);
+      await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(cluster.runtimeConfig.password)}`);
+      await initializeAccess(admin, 'development', ids);
+    } catch (error) {
+      await dispose();
+      throw error;
+    }
+  }, 120_000);
+  afterAll(dispose, 30_000);
+
+  it('pede o envio, o bot reivindica sem filtro de servidor e marca como enviado', async () => {
+    expect(await database.deliveries.create({
+      guildId: ids.guildId, channelId: '666948364507545600', templateName: 'boas-vindas', requestedBy: ids.creatorId,
+    })).toEqual({ ok: true });
+
+    const claimed = await database.deliveries.claimPending(10);
+    expect(claimed).toEqual([expect.objectContaining({ guildId: ids.guildId, channelId: '666948364507545600', templateName: 'boas-vindas' })]);
+
+    expect(await database.deliveries.markSent(claimed[0]!.id)).toBe(true);
+    // Idempotente: um pedido já concluído não é marcado de novo.
+    expect(await database.deliveries.markSent(claimed[0]!.id)).toBe(false);
+    expect(await database.deliveries.claimPending(10)).toEqual([]);
+  });
+
+  it('marca como falhado com um código estável de erro', async () => {
+    expect(await database.deliveries.create({
+      guildId: ids.guildId, channelId: '666948364507545600', templateName: 'falha', requestedBy: ids.creatorId,
+    })).toEqual({ ok: true });
+    const [pending] = await database.deliveries.claimPending(1);
+    expect(await database.deliveries.markFailed(pending!.id, 'channel_not_found')).toBe(true);
+    expect(await database.deliveries.markFailed(pending!.id, 'channel_not_found')).toBe(false);
+  });
+
+  it('bloqueia a cota de 20 pendências por servidor', async () => {
+    for (let index = 0; index < 20; index++) {
+      expect(await database.deliveries.create({
+        guildId: ids.guildId, channelId: '666948364507545600', templateName: `fila-${index}`, requestedBy: ids.creatorId,
+      })).toEqual({ ok: true });
+    }
+    try {
+      expect(await database.deliveries.create({
+        guildId: ids.guildId, channelId: '666948364507545600', templateName: 'excedente', requestedBy: ids.creatorId,
+      })).toEqual({ ok: false, code: 'quota' });
+    } finally {
+      const pending = await database.deliveries.claimPending(20);
+      for (const item of pending) await database.deliveries.markSent(item.id);
+    }
+  }, 30_000);
 });

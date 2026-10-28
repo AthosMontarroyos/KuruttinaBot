@@ -12,6 +12,7 @@ import { withEmojis } from '#bot/command-system/responses.js';
 import type { CommandReply, CommandContext, HasPermission } from '#bot/command-system/types.js';
 import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, createRenderer, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
+import { handleComponentInteraction, type ComponentActionPort } from '#bot/infrastructure/discord/messages/componentRouter.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 const failureMessage = 'Não consegui executar este comando. Tente de novo daqui a pouco.';
@@ -117,10 +118,19 @@ async function respondToFailure(
   }
 }
 
-export async function handleInteractionCreate(interaction: Interaction, commandsHandler: CommandsHandler): Promise<void> {
-  if (!interaction.isChatInputCommand()) return;
-
-  await handleChatInputCommand(adaptInteraction(interaction), commandsHandler);
+export async function handleInteractionCreate(
+  interaction: Interaction,
+  commandsHandler: CommandsHandler,
+  componentPort?: ComponentActionPort,
+): Promise<void> {
+  if (interaction.isChatInputCommand()) {
+    await handleChatInputCommand(adaptInteraction(interaction), commandsHandler);
+    return;
+  }
+  if (componentPort && (interaction.isButton() || interaction.isAnySelectMenu())) {
+    const emoji = createEmojiResolver(interaction.client.application);
+    await handleComponentInteraction(interaction, componentPort, emoji);
+  }
 }
 
 export async function handleChatInputCommand(

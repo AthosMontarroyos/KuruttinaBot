@@ -1,6 +1,8 @@
 import pg from 'pg';
 import { databaseDiagnostic, DatabaseSettingsError } from './diagnostics.js';
 import * as templates from './templates.js';
+import * as deliveries from './deliveries.js';
+import * as folders from './folders.js';
 export { readDatabaseConfig } from './config.js';
 /** @typedef {'creator'|'dev'} StaffRole */
 /** @typedef {{devGuildId: string, environment: 'development'|'production'}} BotSettings */
@@ -80,12 +82,38 @@ export function createDatabase(config, environment, onError = () => {}) {
       get: (guildId, name) => connection((client) => templates.get(client, guildId, name), 'get_template'),
       /** @param {string} guildId */
       usage: (guildId) => connection((client) => templates.usage(client, guildId), 'template_usage'),
-      /** @param {{guildId: string, name: string, content: unknown, buttonCount: number, menuCount: number, actorId: string}} input */
+      /** @param {{guildId: string, name: string, content: unknown, buttonCount: number, menuCount: number, components?: readonly import('./templates.js').ComponentInput[], actorId: string, folderId?: number|null|undefined}} input */
       create: (input) => connection((client) => templates.create(client, input), 'create_template'),
-      /** @param {{guildId: string, name: string, expectedVersion: number, content: unknown, buttonCount: number, menuCount: number, actorId: string}} input */
+      /** @param {{guildId: string, name: string, expectedVersion: number, content: unknown, buttonCount: number, menuCount: number, components?: readonly import('./templates.js').ComponentInput[], actorId: string, folderId?: number|null|undefined}} input */
       update: (input) => connection((client) => templates.update(client, input), 'update_template'),
       /** @param {string} guildId @param {string} name */
       remove: (guildId, name) => connection((client) => templates.remove(client, guildId, name), 'remove_template'),
+      /** @param {string} guildId @param {string} customId */
+      findComponent: (guildId, customId) => connection((client) => templates.findComponent(client, guildId, customId), 'find_component'),
+      /** @param {string} guildId @param {string} name @param {number|null} folderId */
+      move: (guildId, name, folderId) => connection((client) => templates.move(client, guildId, name, folderId), 'move_template'),
+    },
+    // Pastas de templates de mensagem; só o site administra.
+    folders: {
+      /** @param {{guildId: string, name: string}} input */
+      create: (input) => connection((client) => folders.create(client, input), 'create_folder'),
+      /** @param {string} guildId */
+      list: (guildId) => connection((client) => folders.list(client, guildId), 'list_folders'),
+      /** @param {{guildId: string, id: number, name: string}} input */
+      rename: (input) => connection((client) => folders.rename(client, input), 'rename_folder'),
+      /** @param {string} guildId @param {number} id */
+      remove: (guildId, id) => connection((client) => folders.remove(client, guildId, id), 'remove_folder'),
+    },
+    // Fila de entrega de mensagens (etapa 1D); o bot consome sem filtro de servidor.
+    deliveries: {
+      /** @param {{guildId: string, channelId: string, templateName: string, requestedBy: string}} input */
+      create: (input) => connection((client) => deliveries.create(client, input), 'create_delivery'),
+      /** @param {number} [limit] */
+      claimPending: (limit) => connection((client) => deliveries.claimPending(client, limit), 'claim_deliveries'),
+      /** @param {number} id */
+      markSent: (id) => connection((client) => deliveries.markSent(client, id), 'mark_delivery_sent'),
+      /** @param {number} id @param {string} errorCode */
+      markFailed: (id, errorCode) => connection((client) => deliveries.markFailed(client, id, errorCode), 'mark_delivery_failed'),
     },
   };
 }

@@ -1,4 +1,4 @@
-type TemplateSummary = { name: string; buttonCount: number; menuCount: number; version: number; updatedAt: string };
+type TemplateSummary = { name: string; buttonCount: number; menuCount: number; version: number; updatedAt: string; folderId: number | null; folderName: string | null };
 type TemplateDetail = {
   name: string;
   content: unknown;
@@ -9,10 +9,28 @@ type TemplateDetail = {
   updatedBy: string;
   createdAt: string;
   updatedAt: string;
+  folderId: number | null;
+  folderName: string | null;
 };
+type FolderSummary = { id: number; name: string; createdAt: string };
 type ValidationDetail = { code: string; path: string; message: string };
 
-type TemplateErrorCode = 'unauthenticated' | 'not_found' | 'invalid_name' | 'too_large' | 'validation' | 'duplicate' | 'conflict' | 'quota' | 'unavailable' | 'unknown';
+type TemplateErrorCode =
+  | 'unauthenticated'
+  | 'not_found'
+  | 'invalid_name'
+  | 'invalid_channel_id'
+  | 'too_large'
+  | 'validation'
+  | 'duplicate'
+  | 'conflict'
+  | 'quota'
+  | 'invalid_folder'
+  | 'invalid_folder_name'
+  | 'folder_not_found'
+  | 'duplicate_folder'
+  | 'unavailable'
+  | 'unknown';
 
 type ApiResult<T> =
   | { ok: true; data: T }
@@ -22,7 +40,22 @@ async function parseError(response: Response): Promise<{ error: TemplateErrorCod
   try {
     const body = (await response.json()) as { error?: string; details?: ValidationDetail[] };
     const error = body.error as TemplateErrorCode | undefined;
-    const known: TemplateErrorCode[] = ['unauthenticated', 'not_found', 'invalid_name', 'too_large', 'validation', 'duplicate', 'conflict', 'quota', 'unavailable'];
+    const known: TemplateErrorCode[] = [
+      'unauthenticated',
+      'not_found',
+      'invalid_name',
+      'invalid_channel_id',
+      'too_large',
+      'validation',
+      'duplicate',
+      'conflict',
+      'quota',
+      'invalid_folder',
+      'invalid_folder_name',
+      'folder_not_found',
+      'duplicate_folder',
+      'unavailable',
+    ];
     const resolved = error && known.includes(error) ? error : 'unknown';
     return body.details ? { error: resolved, details: body.details } : { error: resolved };
   } catch {
@@ -49,6 +82,10 @@ function basePath(guildId: string): string {
   return `/api/guilds/${encodeURIComponent(guildId)}/templates`;
 }
 
+function foldersPath(guildId: string): string {
+  return `/api/guilds/${encodeURIComponent(guildId)}/folders`;
+}
+
 async function listTemplates(guildId: string, after?: string): Promise<ApiResult<{ items: TemplateSummary[]; nextCursor: string | null }>> {
   const query = after ? `?after=${encodeURIComponent(after)}` : '';
   return request(`${basePath(guildId)}${query}`, { method: 'GET' });
@@ -58,19 +95,19 @@ async function getTemplate(guildId: string, name: string): Promise<ApiResult<Tem
   return request(`${basePath(guildId)}/${encodeURIComponent(name)}`, { method: 'GET' });
 }
 
-async function createTemplate(guildId: string, name: string, contentJson: string): Promise<ApiResult<{ name: string; version: number }>> {
+async function createTemplate(guildId: string, name: string, contentJson: string, folderId?: number | null): Promise<ApiResult<{ name: string; version: number }>> {
   return request(basePath(guildId), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, contentJson }),
+    body: JSON.stringify({ name, contentJson, folderId: folderId ?? null }),
   });
 }
 
-async function updateTemplate(guildId: string, name: string, expectedVersion: number, contentJson: string): Promise<ApiResult<{ name: string; version: number }>> {
+async function updateTemplate(guildId: string, name: string, expectedVersion: number, contentJson: string, folderId?: number | null): Promise<ApiResult<{ name: string; version: number }>> {
   return request(`${basePath(guildId)}/${encodeURIComponent(name)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ expectedVersion, contentJson }),
+    body: JSON.stringify({ expectedVersion, contentJson, folderId: folderId ?? null }),
   });
 }
 
@@ -78,5 +115,57 @@ async function deleteTemplate(guildId: string, name: string): Promise<ApiResult<
   return request(`${basePath(guildId)}/${encodeURIComponent(name)}`, { method: 'DELETE' });
 }
 
-export { listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate };
-export type { TemplateSummary, TemplateDetail, ValidationDetail, TemplateErrorCode, ApiResult };
+async function moveTemplate(guildId: string, name: string, folderId: number | null): Promise<ApiResult<{ ok: true }>> {
+  return request(`${basePath(guildId)}/${encodeURIComponent(name)}/folder`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folderId }),
+  });
+}
+
+async function requestDelivery(guildId: string, name: string, channelId: string): Promise<ApiResult<{ ok: true }>> {
+  return request(`${basePath(guildId)}/${encodeURIComponent(name)}/deliveries`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ channelId }),
+  });
+}
+
+async function listFolders(guildId: string): Promise<ApiResult<{ items: FolderSummary[] }>> {
+  return request(`${foldersPath(guildId)}`, { method: 'GET' });
+}
+
+async function createFolder(guildId: string, name: string): Promise<ApiResult<{ id: number; name: string }>> {
+  return request(foldersPath(guildId), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+}
+
+async function renameFolder(guildId: string, id: number, name: string): Promise<ApiResult<{ id: number; name: string }>> {
+  return request(`${foldersPath(guildId)}/${encodeURIComponent(String(id))}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+}
+
+async function removeFolder(guildId: string, id: number): Promise<ApiResult<{ ok: true }>> {
+  return request(`${foldersPath(guildId)}/${encodeURIComponent(String(id))}`, { method: 'DELETE' });
+}
+
+export {
+  listTemplates,
+  getTemplate,
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+  moveTemplate,
+  requestDelivery,
+  listFolders,
+  createFolder,
+  renameFolder,
+  removeFolder,
+};
+export type { TemplateSummary, TemplateDetail, FolderSummary, ValidationDetail, TemplateErrorCode, ApiResult };

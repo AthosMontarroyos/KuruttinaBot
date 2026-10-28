@@ -1,5 +1,6 @@
 import { Client, Events, GatewayIntentBits, Options, Partials } from 'discord.js';
 import { createDatabase } from '@kuruttina/database';
+import type { ComponentAction, MessageTemplate } from '@kuruttina/message-templates';
 import { createEmojiImportService } from '#bot/application/emojis/importEmoji.js';
 import { loadCommands } from '#bot/command-system/loadCommands.js';
 import { loadConfig } from '#bot/config.js';
@@ -13,6 +14,8 @@ import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
 import { verifyBotIdentity } from '#bot/infrastructure/discord/identity.js';
 import { createDiscordEmojiAdapter } from '#bot/infrastructure/discord/emojis/emojiAdapter.js';
 import { createEmojiLookup } from '#bot/infrastructure/discord/emojis/emojiLookup.js';
+import type { ComponentActionPort } from '#bot/infrastructure/discord/messages/componentRouter.js';
+import { createDeliveryPoller, type DeliveryDatabasePort } from '#bot/infrastructure/discord/messages/deliveryPoller.js';
 import { createDiscordImageDownloader } from '#bot/infrastructure/images/downloadDiscordImage.js';
 import { createSharpEmojiProcessor } from '#bot/infrastructure/images/sharpEmojiProcessor.js';
 import { configureLogger, log } from '#bot/infrastructure/logging/logger.js';
@@ -42,6 +45,23 @@ export async function startBot(correlationId: string): Promise<void> {
       create: createDiscordEmojiAdapter(client),
     });
     const commandsHandler = new CommandsHandler(commands, database, emojiImport, createEmojiLookup(client));
+    // Adapta `database.templates` ao formato que o roteador de componentes e o
+    // poller de entregas esperam: o conteúdo persistido já passou pela
+    // validação do motor de templates (etapa 1C), então o cast é seguro aqui.
+    const componentPort: ComponentActionPort = {
+      findComponent: async (guildId, customId) => {
+        const component = await database.templates.findComponent(guildId, customId);
+        return component ? { kind: component.kind, action: component.action as ComponentAction } : null;
+      },
+      getTemplate: async (guildId, name) => {
+        const record = await database.templates.get(guildId, name);
+        return record ? { content: record.content as MessageTemplate } : null;
+      },
+    };
+    const deliveryDatabasePort: DeliveryDatabasePort = {
+      deliveries: database.deliveries,
+      templates: { getTemplate: componentPort.getTemplate },
+    };
     const deploymentsHandler = new DeploymentsHandler([
       createCentralDeployment(commandsHandler), createGuildDeployment(commandsHandler, database.getSettings),
     ]);
@@ -52,9 +72,11 @@ export async function startBot(correlationId: string): Promise<void> {
     else log('info', 'command_sync_skipped', { correlationId });
 
     client.once(Events.ClientReady, (readyClient) => handleClientReady(readyClient, config.target, correlationId));
-    client.on(Events.InteractionCreate, (interaction) => { void handleInteractionCreate(interaction, commandsHandler); });
+    client.on(Events.InteractionCreate, (interaction) => { void handleInteractionCreate(interaction, commandsHandler, componentPort); });
     client.on(Events.MessageCreate, (message) => { void handleMessageCreate(message, commandsHandler); });
     log('info', 'events_loaded', { count: 3, events: [Events.ClientReady, Events.InteractionCreate, Events.MessageCreate].join(', '), correlationId });
+    // Poller da fila de entrega (etapa 1D): publica nos canais pedidos pelo site.
+    const deliveryPoller = createDeliveryPoller(client, deliveryDatabasePort);
 
     let stopping = false;
     shutdownListener = (signal: string): void => {
@@ -65,6 +87,7 @@ export async function startBot(correlationId: string): Promise<void> {
       void (async () => {
         try {
           // Stop admission first, let accepted commands finish while Discord remains connected.
+          deliveryPoller.stop();
           await commandsHandler.stop();
           await client?.destroy();
           await database.close();

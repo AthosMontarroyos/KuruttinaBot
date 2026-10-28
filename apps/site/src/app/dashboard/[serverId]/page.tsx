@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '../../../lib/session';
 import { OverviewView } from './overview/view';
-import { MessagesView } from './messages/view';
+import { EmbedsView } from './embeds/view';
 import { ModulesView } from './modules/view';
 import { primaryButton, outlineButton, GuildIcon, Skeleton, Message } from '../ui';
 
-type Section = 'overview' | 'messages' | 'modules';
+type Section = 'overview' | 'embeds' | 'modules';
 
 type ServerDashboardPageProps = {
   session: Session | null;
@@ -67,7 +67,7 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
         <nav className="flex flex-col gap-1" aria-label="Seções do servidor">
           {([
             ['overview', 'Visão geral'],
-            ['messages', 'Mensagens'],
+            ['embeds', 'Embeds'],
             ['modules', 'Módulos'],
           ] as const).map(([target, label]) => (
             <button
@@ -90,8 +90,8 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
       <main id="conteudo" className="flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-5 py-8 min-[701px]:px-[5%]">
         {section === 'overview' ? (
           <OverviewView guild={guild} />
-        ) : section === 'messages' ? (
-          <MessagesView guildId={guild.id} />
+        ) : section === 'embeds' ? (
+          <EmbedsView guildId={guild.id} />
         ) : (
           <ModulesView guildName={guild.name} />
         )}

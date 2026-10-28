@@ -10,14 +10,12 @@
 import {
   checkGuildQuota,
   countTemplateComponents,
+  TEMPLATE_NAME_PATTERN,
   validateTemplate,
 } from './template.js';
 
 /** Tamanho máximo do JSON do template, em bytes UTF-8, antes do parse. */
 const MAX_TEMPLATE_JSON_BYTES = 32768;
-
-/** Nome de template: minúsculas, dígitos, `_` e `-`, de 1 a 32 caracteres. */
-const TEMPLATE_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/u;
 
 /** Formato de um template já persistido, devolvido pelo repositório ao ler.
  * @typedef {Object} TemplateRecord
@@ -30,6 +28,8 @@ const TEMPLATE_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/u;
  * @property {string} updatedBy
  * @property {string} createdAt
  * @property {string} updatedAt
+ * @property {number|null} folderId
+ * @property {string|null} folderName
  */
 
 /** Formato resumido usado em listagens.
@@ -39,6 +39,15 @@ const TEMPLATE_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/u;
  * @property {number} menuCount
  * @property {number} version
  * @property {string} updatedAt
+ * @property {number|null} folderId
+ * @property {string|null} folderName
+ */
+
+/** Pasta de templates, devolvida pelo repositório.
+ * @typedef {Object} FolderSummary
+ * @property {number} id
+ * @property {string} name
+ * @property {string} createdAt
  */
 
 /** Port do repositório de templates: a única dependência externa deste caso de uso.
@@ -46,13 +55,18 @@ const TEMPLATE_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/u;
  * @property {(guildId: string, options?: {limit?: number, after?: string}) => Promise<TemplateSummary[]>} list
  * @property {(guildId: string, name: string) => Promise<TemplateRecord|null>} get
  * @property {(guildId: string) => Promise<import('./template.js').GuildUsage>} usage
- * @property {(input: {guildId: string, name: string, content: import('./template.js').MessageTemplate, buttonCount: number, menuCount: number, actorId: string}) => Promise<{ok: true}|{ok: false, code: 'duplicate'|'quota'}>} create
- * @property {(input: {guildId: string, name: string, expectedVersion: number, content: import('./template.js').MessageTemplate, buttonCount: number, menuCount: number, actorId: string}) => Promise<{ok: true, version: number}|{ok: false, code: 'not_found'|'conflict'|'quota'}>} update
+ * @property {(input: {guildId: string, name: string, content: import('./template.js').MessageTemplate, buttonCount: number, menuCount: number, components: ExtractedComponent[], actorId: string, folderId?: number|null|undefined}) => Promise<{ok: true}|{ok: false, code: 'duplicate'|'duplicate_custom_id'|'quota'|'invalid_folder'}>} create
+ * @property {(input: {guildId: string, name: string, expectedVersion: number, content: import('./template.js').MessageTemplate, buttonCount: number, menuCount: number, components: ExtractedComponent[], actorId: string, folderId?: number|null|undefined}) => Promise<{ok: true, version: number}|{ok: false, code: 'not_found'|'conflict'|'quota'|'duplicate_custom_id'|'invalid_folder'}>} update
  * @property {(guildId: string, name: string) => Promise<boolean>} remove
+ * @property {(guildId: string, name: string, folderId: number|null) => Promise<{ok: true}|{ok: false, code: 'not_found'|'invalid_folder'}>} move
+ * @property {(guildId: string) => Promise<FolderSummary[]>} listFolders
+ * @property {(guildId: string, name: string) => Promise<{ok: true, id: number}|{ok: false, code: 'quota'|'duplicate'}>} createFolder
+ * @property {(guildId: string, id: number, name: string) => Promise<{ok: true}|{ok: false, code: 'not_found'|'duplicate'}>} renameFolder
+ * @property {(guildId: string, id: number) => Promise<boolean>} removeFolder
  */
 
 /**
- * @typedef {'invalid_name'|'too_large'|'validation'|'quota'|'duplicate'|'not_found'|'conflict'} TemplateAdminErrorCode
+ * @typedef {'invalid_name'|'too_large'|'validation'|'quota'|'duplicate'|'duplicate_custom_id'|'not_found'|'conflict'|'invalid_folder'|'invalid_folder_name'|'folder_not_found'|'duplicate_folder'} TemplateAdminErrorCode
  */
 
 /** Erro do caso de uso, com código estável e, quando vier do motor, os detalhes. */
@@ -80,6 +94,7 @@ export class TemplateAdminError extends Error {
  * @property {string} name
  * @property {string} contentJson JSON crú do template, como chega de um anexo ou de texto do comando.
  * @property {string} actorId
+ * @property {number|null} [folderId]
  */
 
 /**
@@ -89,6 +104,7 @@ export class TemplateAdminError extends Error {
  * @property {number} expectedVersion
  * @property {string} contentJson
  * @property {string} actorId
+ * @property {number|null} [folderId]
  */
 
 /**
@@ -98,7 +114,20 @@ export class TemplateAdminError extends Error {
  * @property {(guildId: string, options?: {limit?: number, after?: string}) => Promise<TemplateSummary[]>} listTemplates
  * @property {(guildId: string, name: string) => Promise<TemplateRecord|null>} getTemplate
  * @property {(guildId: string, name: string) => Promise<void>} removeTemplate
+ * @property {(guildId: string, name: string, folderId: number|null) => Promise<void>} moveTemplate
+ * @property {(guildId: string) => Promise<FolderSummary[]>} listFolders
+ * @property {(guildId: string, name: string) => Promise<{id: number, name: string}>} createFolder
+ * @property {(guildId: string, id: number, name: string) => Promise<void>} renameFolder
+ * @property {(guildId: string, id: number) => Promise<void>} removeFolder
  */
+
+/** Mesma regra de nome de pasta da migration: sem espaços nas pontas, 1 a 50 caracteres.
+ * @param {string} name */
+function validateFolderName(name) {
+  if (name.trim() !== name || name.length < 1 || name.length > 50) {
+    throw new TemplateAdminError('invalid_folder_name', 'O nome da pasta precisa ter de 1 a 50 caracteres, sem espaços nas pontas.');
+  }
+}
 
 /** Cria o serviço de administração de templates, injetando o repositório.
  * @param {TemplateRepositoryPort} repository @returns {TemplateAdminService} */
@@ -110,6 +139,37 @@ export function createTemplateAdminService(repository) {
     getTemplate: (guildId, name) => repository.get(guildId, name),
     removeTemplate: async (guildId, name) => {
       await repository.remove(guildId, name);
+    },
+    moveTemplate: async (guildId, name, folderId) => {
+      const result = await repository.move(guildId, name, folderId);
+      if (!result.ok) {
+        /** @type {Record<'not_found'|'invalid_folder', string>} */
+        const messages = { not_found: 'Template não encontrado.', invalid_folder: 'Essa pasta não é válida para este servidor.' };
+        throw new TemplateAdminError(result.code, messages[result.code]);
+      }
+    },
+    listFolders: (guildId) => repository.listFolders(guildId),
+    createFolder: async (guildId, name) => {
+      validateFolderName(name);
+      const result = await repository.createFolder(guildId, name);
+      if (!result.ok) {
+        /** @type {Record<'quota'|'duplicate', string>} */
+        const messages = { quota: 'Cota excedida.', duplicate: 'Já existe uma pasta com esse nome.' };
+        throw new TemplateAdminError(result.code === 'duplicate' ? 'duplicate_folder' : 'quota', messages[result.code]);
+      }
+      return { id: result.id, name };
+    },
+    renameFolder: async (guildId, id, name) => {
+      validateFolderName(name);
+      const result = await repository.renameFolder(guildId, id, name);
+      if (!result.ok) {
+        /** @type {Record<'not_found'|'duplicate', string>} */
+        const messages = { not_found: 'Pasta não encontrada.', duplicate: 'Já existe uma pasta com esse nome.' };
+        throw new TemplateAdminError(result.code === 'duplicate' ? 'duplicate_folder' : 'folder_not_found', messages[result.code]);
+      }
+    },
+    removeFolder: async (guildId, id) => {
+      await repository.removeFolder(guildId, id);
     },
   };
 }
@@ -143,10 +203,42 @@ function quotaErrorMessage(code) {
   return code === 'quota_exceeded' ? 'O servidor atingiu a cota de templates ou componentes.' : 'Cota excedida.';
 }
 
+/** Mapa de `custom_id` -> ação, extraído de um template já validado.
+ * @typedef {Object} ExtractedComponent
+ * @property {string} customId
+ * @property {'button'|'select_option'} kind
+ * @property {import('./template.js').ComponentAction} action
+ */
+
+/** Percorre os componentes do template e devolve só os que têm `action`
+ * definida (botões de link nunca têm ação; ignorados). Pura, sem I/O.
+ * @param {import('./template.js').MessageTemplate} template @returns {ExtractedComponent[]} */
+export function extractComponents(template) {
+  /** @type {ExtractedComponent[]} */
+  const components = [];
+  for (const row of template.components) {
+    if (row.kind === 'buttons') {
+      for (const button of row.buttons) {
+        if (button.style !== 'link' && button.action !== undefined) {
+          components.push({ customId: button.customId, kind: 'button', action: button.action });
+        }
+      }
+      continue;
+    }
+    for (const option of row.menu.options) {
+      if (option.action !== undefined) {
+        components.push({ customId: row.menu.customId, kind: 'select_option', action: option.action });
+      }
+    }
+  }
+  return components;
+}
+
 /** @param {CreateTemplateInput} input @param {TemplateRepositoryPort} repository @returns {Promise<TemplateRecord>} */
 async function createTemplate(input, repository) {
   const template = parseAndValidate(input.name, input.contentJson);
   const componentsUsage = countTemplateComponents(template);
+  const components = extractComponents(template);
 
   const usage = await repository.usage(input.guildId);
   const quotaError = checkGuildQuota(usage, undefined, componentsUsage, true);
@@ -158,10 +250,19 @@ async function createTemplate(input, repository) {
     content: template,
     buttonCount: componentsUsage.buttons,
     menuCount: componentsUsage.menus,
+    components,
     actorId: input.actorId,
+    folderId: input.folderId,
   });
   if (!result.ok) {
-    throw new TemplateAdminError(result.code, result.code === 'duplicate' ? 'Já existe um template com esse nome.' : 'Cota excedida.');
+    /** @type {Record<'duplicate'|'duplicate_custom_id'|'quota'|'invalid_folder', string>} */
+    const messages = {
+      duplicate: 'Já existe um template com esse nome.',
+      duplicate_custom_id: 'Já existe um componente com esse custom_id neste servidor.',
+      quota: 'Cota excedida.',
+      invalid_folder: 'A pasta informada não existe neste servidor.',
+    };
+    throw new TemplateAdminError(result.code, messages[result.code]);
   }
 
   const record = await repository.get(input.guildId, input.name);
@@ -173,6 +274,7 @@ async function createTemplate(input, repository) {
 async function updateTemplate(input, repository) {
   const template = parseAndValidate(input.name, input.contentJson);
   const componentsUsage = countTemplateComponents(template);
+  const components = extractComponents(template);
 
   const previous = await repository.get(input.guildId, input.name);
   if (!previous) throw new TemplateAdminError('not_found', 'Template não encontrado.');
@@ -195,14 +297,18 @@ async function updateTemplate(input, repository) {
     content: template,
     buttonCount: componentsUsage.buttons,
     menuCount: componentsUsage.menus,
+    components,
     actorId: input.actorId,
+    folderId: input.folderId,
   });
   if (!result.ok) {
-    /** @type {Record<'not_found'|'conflict'|'quota', string>} */
+    /** @type {Record<'not_found'|'conflict'|'quota'|'duplicate_custom_id'|'invalid_folder', string>} */
     const messages = {
       not_found: 'Template não encontrado.',
       conflict: 'O template foi alterado por outra pessoa; recarregue e tente de novo.',
       quota: 'Cota excedida.',
+      duplicate_custom_id: 'Já existe um componente com esse custom_id neste servidor.',
+      invalid_folder: 'A pasta informada não existe neste servidor.',
     };
     throw new TemplateAdminError(result.code, messages[result.code]);
   }

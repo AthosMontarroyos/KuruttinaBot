@@ -30,7 +30,15 @@ import {
  */
 
 /**
- * @typedef {{style: 'link', label: string, url: string}|{style: 'primary'|'secondary'|'success'|'danger', label: string, customId: string}} TemplateButton
+ * Ação executada quando alguém interage com um botão ou opção de menu
+ * (roteador de interações, etapa 1D): responder (`reply`), editar a própria
+ * mensagem (`edit`), apagá-la (`delete`) ou enviar DM (`dm`). `reply`, `edit`
+ * e `dm` apontam para outro template pelo nome; `ephemeral` só vale em `reply`.
+ * @typedef {{type: 'reply', template: string, ephemeral?: boolean}|{type: 'edit', template: string}|{type: 'delete'}|{type: 'dm', template: string}} ComponentAction
+ */
+
+/**
+ * @typedef {{style: 'link', label: string, url: string}|{style: 'primary'|'secondary'|'success'|'danger', label: string, customId: string, action?: ComponentAction}} TemplateButton
  */
 
 /**
@@ -38,6 +46,7 @@ import {
  * @property {string} label
  * @property {string} value
  * @property {string} [description]
+ * @property {ComponentAction} [action]
  */
 
 /**
@@ -72,7 +81,7 @@ import {
  */
 
 /**
- * @typedef {'empty_message'|'empty_embed'|'empty_text'|'too_many_embeds'|'too_many_fields'|'too_many_rows'|'too_many_buttons'|'too_many_options'|'empty_row'|'mixed_row'|'unknown_variable'|'unknown_emoji'|'invalid_color'|'invalid_variable'|'variable_not_allowed'|'invalid_url'|'invalid_custom_id'|'limit_exceeded'|'quota_exceeded'} TemplateErrorCode
+ * @typedef {'empty_message'|'empty_embed'|'empty_text'|'too_many_embeds'|'too_many_fields'|'too_many_rows'|'too_many_buttons'|'too_many_options'|'empty_row'|'mixed_row'|'unknown_variable'|'unknown_emoji'|'invalid_color'|'invalid_variable'|'variable_not_allowed'|'invalid_url'|'invalid_custom_id'|'invalid_action'|'limit_exceeded'|'quota_exceeded'} TemplateErrorCode
  */
 
 /** Erro de validação com código estável; a mensagem é neutra (falas ao usuário ficam fora daqui). */
@@ -94,6 +103,13 @@ export class TemplateValidationError extends Error {
 
 const CUSTOM_ID_PATTERN = /^kt:[a-z][a-z0-9_]*:[A-Za-z0-9_-]+$/u;
 const ANY_BRACES = /[{}]/u;
+
+/** Nome de template: minúsculas, dígitos, `_` e `-`, de 1 a 32 caracteres.
+ * Reaproveitada por `templateAdmin.js`, que valida o nome do próprio template. */
+export const TEMPLATE_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/u;
+
+/** Tipos de ação aceitos em um botão não-link ou opção de menu. */
+const ACTION_TYPES = ['reply', 'edit', 'delete', 'dm'];
 
 /**
  * Valida o template considerando o pior caso: cada variável ocupa o `maxLength`
@@ -155,6 +171,28 @@ export function validateTemplate(template, variables) {
       valid = false;
     }
     if (!valid) fail('invalid_url', path, 'A URL precisa ser https:// válida.');
+  };
+
+  /** Ação de um botão ou opção de menu: tipo fechado, `template` exigido (e
+   * validado) em reply/edit/dm, proibido em delete; `ephemeral` só em reply.
+   * O tipo de entrada é permissivo (dado vindo de fora, ainda não validado).
+   * @param {string} path @param {{type: string, template?: unknown, ephemeral?: unknown}} action */
+  const checkAction = (path, action) => {
+    if (!ACTION_TYPES.includes(action.type)) {
+      fail('invalid_action', path, 'Tipo de ação desconhecido.');
+      return;
+    }
+    const needsTemplate = action.type === 'reply' || action.type === 'edit' || action.type === 'dm';
+    if (needsTemplate) {
+      if (typeof action.template !== 'string' || !TEMPLATE_NAME_PATTERN.test(action.template)) {
+        fail('invalid_action', path, 'A ação precisa referenciar um template com nome válido.');
+      }
+    } else if (action.template !== undefined) {
+      fail('invalid_action', path, 'A ação "delete" não aceita template.');
+    }
+    if (action.ephemeral !== undefined && (action.type !== 'reply' || typeof action.ephemeral !== 'boolean')) {
+      fail('invalid_action', path, '"ephemeral" só é válido em ações do tipo reply, como booleano.');
+    }
   };
 
   /** @param {string} path @param {string} customId */
@@ -226,7 +264,10 @@ export function validateTemplate(template, variables) {
         const path = `${base}.buttons[${buttonIndex}]`;
         checkText(`${path}.label`, button.label, L.buttonLabel, true);
         if (button.style === 'link') checkUrl(`${path}.url`, button.url);
-        else checkCustomId(`${path}.customId`, button.customId);
+        else {
+          checkCustomId(`${path}.customId`, button.customId);
+          if (button.action !== undefined) checkAction(`${path}.action`, button.action);
+        }
       });
       return;
     }
@@ -237,6 +278,9 @@ export function validateTemplate(template, variables) {
     if (menu.options.length > L.selectOptions) {
       fail('too_many_options', base, `No máximo ${L.selectOptions} opções por menu.`);
     }
+    // Um menu tem um único custom_id (do Discord); hoje não é possível distinguir qual opção foi
+    // escolhida só pelo custom_id. Até o roteador resolver isso, no máximo uma opção pode ter ação.
+    let optionsWithAction = 0;
     menu.options.forEach((option, optionIndex) => {
       const path = `${base}.menu.options[${optionIndex}]`;
       for (const [part, text] of [['label', option.label], ['value', option.value], ['description', option.description]]) {
@@ -245,7 +289,14 @@ export function validateTemplate(template, variables) {
           fail('limit_exceeded', `${path}.${part}`, `O texto precisa ter de 1 a ${L.selectOptionText} caracteres.`);
         }
       }
+      if (option.action !== undefined) {
+        checkAction(`${path}.action`, option.action);
+        optionsWithAction += 1;
+      }
     });
+    if (optionsWithAction > 1) {
+      fail('invalid_action', `${base}.menu`, 'Por enquanto, no máximo uma opção do menu pode ter ação.');
+    }
   });
 
   const hasBody =

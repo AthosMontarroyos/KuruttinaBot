@@ -114,6 +114,65 @@ describe('validateTemplate', () => {
     expect(codes(withButton({ kind: 'buttons', buttons: [{ style: 'primary', label: 'x', customId: 'abc' }] }))).toContain('invalid_custom_id');
     expect(codes(withButton({ kind: 'buttons', buttons: [{ style: 'primary', label: 'x', customId: `kt:a:${'b'.repeat(100)}` }] }))).toContain('invalid_custom_id');
   });
+
+  describe('component action', () => {
+    const buttonWith = (action: unknown): MessageTemplate => withButton({
+      kind: 'buttons', buttons: [{ style: 'primary', label: 'x', customId: 'kt:a:1', action: action as never }],
+    });
+    const menuOptionWith = (action: unknown): MessageTemplate => ({
+      embeds: [], components: [{ kind: 'select', menu: { customId: 'kt:m:1', options: [{ label: 'a', value: 'a', action: action as never }] } }],
+    });
+
+    it('accepts a valid action on a button and on a select option', () => {
+      expect(codes(buttonWith({ type: 'reply', template: 'oi', ephemeral: true }))).toEqual([]);
+      expect(codes(buttonWith({ type: 'edit', template: 'oi' }))).toEqual([]);
+      expect(codes(buttonWith({ type: 'delete' }))).toEqual([]);
+      expect(codes(buttonWith({ type: 'dm', template: 'oi' }))).toEqual([]);
+      expect(codes(menuOptionWith({ type: 'reply', template: 'oi' }))).toEqual([]);
+    });
+
+    it('rejects an unknown action type', () => {
+      expect(codes(buttonWith({ type: 'unknown' }))).toEqual(['invalid_action']);
+    });
+
+    it('rejects reply/edit/dm without a template', () => {
+      expect(codes(buttonWith({ type: 'reply' }))).toEqual(['invalid_action']);
+      expect(codes(buttonWith({ type: 'edit' }))).toEqual(['invalid_action']);
+      expect(codes(buttonWith({ type: 'dm' }))).toEqual(['invalid_action']);
+    });
+
+    it('rejects a template name outside the pattern', () => {
+      expect(codes(buttonWith({ type: 'reply', template: 'Nome Inválido!' }))).toEqual(['invalid_action']);
+      expect(codes(buttonWith({ type: 'reply', template: 'a'.repeat(33) }))).toEqual(['invalid_action']);
+    });
+
+    it('rejects delete with a template', () => {
+      expect(codes(buttonWith({ type: 'delete', template: 'oi' }))).toEqual(['invalid_action']);
+    });
+
+    it('rejects ephemeral outside reply, or non-boolean', () => {
+      expect(codes(buttonWith({ type: 'edit', template: 'oi', ephemeral: true }))).toEqual(['invalid_action']);
+      expect(codes(buttonWith({ type: 'delete', ephemeral: true }))).toEqual(['invalid_action']);
+      expect(codes(buttonWith({ type: 'reply', template: 'oi', ephemeral: 'yes' }))).toEqual(['invalid_action']);
+    });
+
+    it('rejects more than one select option with an action (um custom_id por menu, não por opção)', () => {
+      const template: MessageTemplate = {
+        embeds: [],
+        components: [{
+          kind: 'select',
+          menu: {
+            customId: 'kt:m:1',
+            options: [
+              { label: 'a', value: 'a', action: { type: 'reply', template: 'oi' } },
+              { label: 'b', value: 'b', action: { type: 'reply', template: 'tchau' } },
+            ],
+          },
+        }],
+      };
+      expect(codes(template)).toEqual(['invalid_action']);
+    });
+  });
 });
 
 describe('checkGuildQuota', () => {

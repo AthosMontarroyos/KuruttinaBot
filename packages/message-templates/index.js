@@ -14,6 +14,7 @@ export {
   validateTemplate,
   countTemplateComponents,
   checkGuildQuota,
+  TEMPLATE_NAME_PATTERN,
 } from './template.js';
 /** @typedef {import('./template.js').TemplateEmbedField} TemplateEmbedField */
 /** @typedef {import('./template.js').TemplateEmbed} TemplateEmbed */
@@ -26,6 +27,7 @@ export {
 /** @typedef {import('./template.js').TemplateErrorCode} TemplateErrorCode */
 /** @typedef {import('./template.js').TemplateUsage} TemplateUsage */
 /** @typedef {import('./template.js').GuildUsage} GuildUsage */
+/** @typedef {import('./template.js').ComponentAction} ComponentAction */
 
 export {
   extractVariables,
@@ -38,11 +40,14 @@ export {
 export {
   createTemplateAdminService,
   TemplateAdminError,
+  extractComponents,
 } from './templateAdmin.js';
 /** @typedef {import('./templateAdmin.js').TemplateRecord} TemplateRecord */
 /** @typedef {import('./templateAdmin.js').TemplateSummary} TemplateSummary */
+/** @typedef {import('./templateAdmin.js').FolderSummary} FolderSummary */
 /** @typedef {import('./templateAdmin.js').TemplateRepositoryPort} TemplateRepositoryPort */
 /** @typedef {import('./templateAdmin.js').TemplateAdminErrorCode} TemplateAdminErrorCode */
 /** @typedef {import('./templateAdmin.js').CreateTemplateInput} CreateTemplateInput */
 /** @typedef {import('./templateAdmin.js').UpdateTemplateInput} UpdateTemplateInput */
 /** @typedef {import('./templateAdmin.js').TemplateAdminService} TemplateAdminService */
+/** @typedef {import('./templateAdmin.js').ExtractedComponent} ExtractedComponent */

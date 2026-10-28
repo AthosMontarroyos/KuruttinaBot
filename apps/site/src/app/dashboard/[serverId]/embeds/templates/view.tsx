@@ -518,20 +518,6 @@ function TemplatesView({ guildId }: { guildId: string }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium" htmlFor="template-folder">Pasta</label>
-            <select
-              id="template-folder"
-              className="min-h-11 rounded-[10px] border border-control bg-transparent px-3 text-sm"
-              value={form.folderId ?? ''}
-              onChange={(event) => setForm((current) => ({ ...current, folderId: event.target.value === '' ? null : Number(event.target.value) }))}
-            >
-              <option value="">Sem pasta</option>
-              {folders.map((folder) => (
-                <option key={folder.id} value={folder.id}>{folder.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium" htmlFor="template-content">Conteúdo (JSON)</label>
             <textarea
               ref={contentInputRef}

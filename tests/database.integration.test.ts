@@ -51,6 +51,7 @@ async function startPostgres() {
   const passwordFile = join(root, 'password');
   const adminPassword = randomBytes(32).toString('hex');
   const runtimePassword = randomBytes(32).toString('hex');
+  const sitePassword = randomBytes(32).toString('hex');
   let initialized = false;
   let started = false;
   try {
@@ -77,6 +78,7 @@ async function startPostgres() {
     return {
       adminConfig: { host, port, database: 'postgres', user: 'postgres', password: adminPassword },
       runtimeConfig: { host, port, database: 'postgres', user: 'kuruttina_bot', password: runtimePassword },
+      siteConfig: { host, port, database: 'postgres', user: 'kuruttina_site', password: sitePassword },
       async stop() {
         try {
           if (started) await run(binaries.pgCtl, ['-D', data, '-m', 'immediate', '-w', 'stop'], { timeout: 15_000 });
@@ -228,7 +230,8 @@ describe('PostgreSQL runtime isolation', () => {
 describe('message template persistence (etapa 1C)', () => {
   let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
   let admin: pg.Client;
-  let database: ReturnType<typeof createDatabase>;
+  let site: ReturnType<typeof createDatabase>;
+  let bot: ReturnType<typeof createDatabase>;
 
   const stopOnInterrupt = () => { void dispose().finally(() => process.exit(130)); };
   const stopOnTerminate = () => { void dispose().finally(() => process.exit(143)); };
@@ -237,7 +240,7 @@ describe('message template persistence (etapa 1C)', () => {
     process.removeListener('SIGTERM', stopOnTerminate);
     const currentCluster = cluster;
     cluster = undefined;
-    await Promise.allSettled([admin?.end(), database?.close()]);
+    await Promise.allSettled([admin?.end(), site?.close(), bot?.close()]);
     await currentCluster?.stop();
   }
 
@@ -246,11 +249,13 @@ describe('message template persistence (etapa 1C)', () => {
     process.once('SIGINT', stopOnInterrupt);
     process.once('SIGTERM', stopOnTerminate);
     admin = new pg.Client(cluster.adminConfig);
-    database = createDatabase(cluster.runtimeConfig, 'development');
+    site = createDatabase(cluster.siteConfig, 'development');
+    bot = createDatabase(cluster.runtimeConfig, 'development');
     try {
       await admin.connect();
       await migrate(admin);
       await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(cluster.runtimeConfig.password)}`);
+      await admin.query(`ALTER ROLE kuruttina_site PASSWORD ${pg.escapeLiteral(cluster.siteConfig.password)}`);
       await initializeAccess(admin, 'development', ids);
     } catch (error) {
       await dispose();
@@ -260,93 +265,97 @@ describe('message template persistence (etapa 1C)', () => {
   afterAll(dispose, 30_000);
 
   it('cria, lê, lista, soma o uso e remove um template', async () => {
-    expect(await database.templates.usage(ids.guildId)).toEqual({ templates: 0, buttons: 0, menus: 0 });
+    expect(await site.templates.usage(ids.guildId)).toEqual({ templates: 0, buttons: 0, menus: 0 });
     const content = { title: 'Boas-vindas', buttons: [{ label: 'Entrar' }] };
-    expect(await database.templates.create({
-      guildId: ids.guildId, name: 'boas-vindas', content, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
-    })).toEqual({ ok: true });
+    try {
+      expect(await site.templates.create({
+        guildId: ids.guildId, name: 'boas-vindas', content, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+      })).toEqual({ ok: true });
 
-    const stored = await database.templates.get(ids.guildId, 'boas-vindas');
-    expect(stored).toEqual(expect.objectContaining({
-      name: 'boas-vindas', content, buttonCount: 1, menuCount: 0, version: 1, createdBy: ids.creatorId, updatedBy: ids.creatorId,
-    }));
-    expect(await database.templates.get(ids.guildId, 'inexistente')).toBeNull();
-    expect(await database.templates.get('123456789012345678', 'boas-vindas')).toBeNull();
+      const stored = await site.templates.get(ids.guildId, 'boas-vindas');
+      expect(stored).toEqual(expect.objectContaining({
+        name: 'boas-vindas', content, buttonCount: 1, menuCount: 0, version: 1, createdBy: ids.creatorId, updatedBy: ids.creatorId,
+      }));
+      expect(await site.templates.get(ids.guildId, 'inexistente')).toBeNull();
+      expect(await site.templates.get('123456789012345678', 'boas-vindas')).toBeNull();
 
-    const listed = await database.templates.list(ids.guildId);
-    expect(listed).toEqual([expect.objectContaining({ name: 'boas-vindas', buttonCount: 1, menuCount: 0, version: 1 })]);
-    expect(await database.templates.usage(ids.guildId)).toEqual({ templates: 1, buttons: 1, menus: 0 });
+      const listed = await site.templates.list(ids.guildId);
+      expect(listed).toEqual([expect.objectContaining({ name: 'boas-vindas', buttonCount: 1, menuCount: 0, version: 1 })]);
+      expect(await site.templates.usage(ids.guildId)).toEqual({ templates: 1, buttons: 1, menus: 0 });
 
-    expect(await database.templates.remove(ids.guildId, 'boas-vindas')).toBe(true);
-    expect(await database.templates.remove(ids.guildId, 'boas-vindas')).toBe(false);
-    expect(await database.templates.get(ids.guildId, 'boas-vindas')).toBeNull();
+      expect(await site.templates.remove(ids.guildId, 'boas-vindas')).toBe(true);
+      expect(await site.templates.remove(ids.guildId, 'boas-vindas')).toBe(false);
+      expect(await site.templates.get(ids.guildId, 'boas-vindas')).toBeNull();
+    } finally {
+      await site.templates.remove(ids.guildId, 'boas-vindas');
+    }
   });
 
   it('recusa limit acima de 25 e usa o cursor por nome', async () => {
-    await expect(database.templates.list(ids.guildId, { limit: 26 })).rejects.toThrow('limit');
+    await expect(site.templates.list(ids.guildId, { limit: 26 })).rejects.toThrow('limit');
     for (const name of ['alfa', 'beta', 'gama']) {
-      expect(await database.templates.create({
+      expect(await site.templates.create({
         guildId: ids.guildId, name, content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
       })).toEqual({ ok: true });
     }
     try {
-      const page = await database.templates.list(ids.guildId, { limit: 2 });
+      const page = await site.templates.list(ids.guildId, { limit: 2 });
       expect(page.map((row) => row.name)).toEqual(['alfa', 'beta']);
-      const next = await database.templates.list(ids.guildId, { limit: 2, after: page[1]?.name ?? '' });
+      const next = await site.templates.list(ids.guildId, { limit: 2, after: page[1]?.name ?? '' });
       expect(next.map((row) => row.name)).toEqual(['gama']);
     } finally {
-      for (const name of ['alfa', 'beta', 'gama']) await database.templates.remove(ids.guildId, name);
+      for (const name of ['alfa', 'beta', 'gama']) await site.templates.remove(ids.guildId, name);
     }
   });
 
   it('recusa nomes duplicados', async () => {
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'duplicado', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.create({
+      expect(await site.templates.create({
         guildId: ids.guildId, name: 'duplicado', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
       })).toEqual({ ok: false, code: 'duplicate' });
     } finally {
-      await database.templates.remove(ids.guildId, 'duplicado');
+      await site.templates.remove(ids.guildId, 'duplicado');
     }
   });
 
   it('bloqueia a cota de botões e menus antes de passar de 50', async () => {
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'cota-a', content: {}, buttonCount: 30, menuCount: 0, actorId: ids.creatorId,
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.create({
+      expect(await site.templates.create({
         guildId: ids.guildId, name: 'cota-b', content: {}, buttonCount: 21, menuCount: 0, actorId: ids.creatorId,
       })).toEqual({ ok: false, code: 'quota' });
-      expect(await database.templates.get(ids.guildId, 'cota-b')).toBeNull();
+      expect(await site.templates.get(ids.guildId, 'cota-b')).toBeNull();
     } finally {
-      await database.templates.remove(ids.guildId, 'cota-a');
+      await site.templates.remove(ids.guildId, 'cota-a');
     }
   });
 
   it('atualiza com concorrência otimista e distingue not_found de conflict', async () => {
-    expect(await database.templates.update({
+    expect(await site.templates.update({
       guildId: ids.guildId, name: 'nao-existe', expectedVersion: 1, content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
     })).toEqual({ ok: false, code: 'not_found' });
 
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'versionado', content: { v: 1 }, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.update({
+      expect(await site.templates.update({
         guildId: ids.guildId, name: 'versionado', expectedVersion: 7, content: { v: 2 }, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
       })).toEqual({ ok: false, code: 'conflict' });
 
-      expect(await database.templates.update({
+      expect(await site.templates.update({
         guildId: ids.guildId, name: 'versionado', expectedVersion: 1, content: { v: 2 }, buttonCount: 2, menuCount: 1, actorId: ids.devId,
       })).toEqual({ ok: true, version: 2 });
 
-      const updated = await database.templates.get(ids.guildId, 'versionado');
+      const updated = await site.templates.get(ids.guildId, 'versionado');
       expect(updated).toEqual(expect.objectContaining({ content: { v: 2 }, buttonCount: 2, menuCount: 1, version: 2, updatedBy: ids.devId }));
     } finally {
-      await database.templates.remove(ids.guildId, 'versionado');
+      await site.templates.remove(ids.guildId, 'versionado');
     }
   });
 
@@ -365,8 +374,8 @@ describe('message template persistence (etapa 1C)', () => {
       throw error;
     }
     try {
-      expect(await database.templates.usage(ids.guildId)).toEqual({ templates: 100, buttons: 0, menus: 0 });
-      expect(await database.templates.create({
+      expect(await site.templates.usage(ids.guildId)).toEqual({ templates: 100, buttons: 0, menus: 0 });
+      expect(await site.templates.create({
         guildId: ids.guildId, name: 'excedente', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
       })).toEqual({ ok: false, code: 'quota' });
     } finally {
@@ -376,129 +385,147 @@ describe('message template persistence (etapa 1C)', () => {
 
   it('não permite a fuga entre servidores (RLS por guild_id)', async () => {
     const otherGuild = '123456789012345678';
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'isolado', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId,
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.list(otherGuild)).toEqual([]);
-      expect(await database.templates.usage(otherGuild)).toEqual({ templates: 0, buttons: 0, menus: 0 });
-      expect(await database.templates.remove(otherGuild, 'isolado')).toBe(false);
-      expect(await database.templates.get(ids.guildId, 'isolado')).not.toBeNull();
+      expect(await site.templates.list(otherGuild)).toEqual([]);
+      expect(await site.templates.usage(otherGuild)).toEqual({ templates: 0, buttons: 0, menus: 0 });
+      expect(await site.templates.remove(otherGuild, 'isolado')).toBe(false);
+      expect(await site.templates.get(ids.guildId, 'isolado')).not.toBeNull();
     } finally {
-      await database.templates.remove(ids.guildId, 'isolado');
+      await site.templates.remove(ids.guildId, 'isolado');
     }
   });
 
   it('sincroniza o mapa custom_id -> ação ao criar e ao editar (etapa 1D)', async () => {
     const replyAction = { type: 'reply', template: 'oi' };
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'com-acao', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
       components: [{ customId: 'kt:btn:a', kind: 'button', action: replyAction }],
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.findComponent(ids.guildId, 'kt:btn:a')).toEqual({ kind: 'button', action: replyAction });
+      expect(await site.templates.findComponent(ids.guildId, 'kt:btn:a')).toEqual({ kind: 'button', action: replyAction });
 
       // Editar reescreve o conjunto inteiro: o antigo custom_id deixa de existir.
       const editAction = { type: 'delete' };
-      expect(await database.templates.update({
+      expect(await site.templates.update({
         guildId: ids.guildId, name: 'com-acao', expectedVersion: 1, content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
         components: [{ customId: 'kt:btn:b', kind: 'button', action: editAction }],
       })).toEqual({ ok: true, version: 2 });
 
-      expect(await database.templates.findComponent(ids.guildId, 'kt:btn:a')).toBeNull();
-      expect(await database.templates.findComponent(ids.guildId, 'kt:btn:b')).toEqual({ kind: 'button', action: editAction });
+      expect(await site.templates.findComponent(ids.guildId, 'kt:btn:a')).toBeNull();
+      expect(await site.templates.findComponent(ids.guildId, 'kt:btn:b')).toEqual({ kind: 'button', action: editAction });
     } finally {
-      await database.templates.remove(ids.guildId, 'com-acao');
+      await site.templates.remove(ids.guildId, 'com-acao');
     }
-    expect(await database.templates.findComponent(ids.guildId, 'kt:btn:b')).toBeNull();
+    expect(await site.templates.findComponent(ids.guildId, 'kt:btn:b')).toBeNull();
   });
 
   it('recusa custom_id duplicado entre templates do mesmo servidor', async () => {
     const action = { type: 'delete' };
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'dono-a', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
       components: [{ customId: 'kt:btn:unico', kind: 'button', action }],
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.create({
+      expect(await site.templates.create({
         guildId: ids.guildId, name: 'dono-b', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
         components: [{ customId: 'kt:btn:unico', kind: 'button', action }],
       })).toEqual({ ok: false, code: 'duplicate_custom_id' });
-      expect(await database.templates.get(ids.guildId, 'dono-b')).toBeNull();
+      expect(await site.templates.get(ids.guildId, 'dono-b')).toBeNull();
     } finally {
-      await database.templates.remove(ids.guildId, 'dono-a');
+      await site.templates.remove(ids.guildId, 'dono-a');
     }
   });
 
   it('cria, lista, renomeia e apaga pastas, isoladas por servidor', async () => {
-    expect(await database.folders.list(ids.guildId)).toEqual([]);
-    const created = await database.folders.create({ guildId: ids.guildId, name: 'Eventos' });
+    expect(await site.folders.list(ids.guildId)).toEqual([]);
+    const created = await site.folders.create({ guildId: ids.guildId, name: 'Eventos' });
     expect(created).toEqual({ ok: true, id: expect.any(Number) });
     const folderId = (created as { ok: true; id: number }).id;
     try {
-      expect(await database.folders.create({ guildId: ids.guildId, name: 'Eventos' })).toEqual({ ok: false, code: 'duplicate' });
+      expect(await site.folders.create({ guildId: ids.guildId, name: 'Eventos' })).toEqual({ ok: false, code: 'duplicate' });
 
       const otherGuild = '123456789012345678';
-      expect(await database.folders.list(otherGuild)).toEqual([]);
-      expect(await database.folders.list(ids.guildId)).toEqual([
+      expect(await site.folders.list(otherGuild)).toEqual([]);
+      expect(await site.folders.list(ids.guildId)).toEqual([
         expect.objectContaining({ id: folderId, name: 'Eventos' }),
       ]);
 
-      expect(await database.folders.rename({ guildId: ids.guildId, id: folderId, name: 'Comunicados' })).toEqual({ ok: true });
-      expect(await database.folders.rename({ guildId: otherGuild, id: folderId, name: 'Roubo' })).toEqual({ ok: false, code: 'not_found' });
-      expect(await database.folders.list(ids.guildId)).toEqual([
+      expect(await site.folders.rename({ guildId: ids.guildId, id: folderId, name: 'Comunicados' })).toEqual({ ok: true });
+      expect(await site.folders.rename({ guildId: otherGuild, id: folderId, name: 'Roubo' })).toEqual({ ok: false, code: 'not_found' });
+      expect(await site.folders.list(ids.guildId)).toEqual([
         expect.objectContaining({ id: folderId, name: 'Comunicados' }),
       ]);
     } finally {
-      expect(await database.folders.remove(ids.guildId, folderId)).toBe(true);
-      expect(await database.folders.remove(ids.guildId, folderId)).toBe(false);
+      expect(await site.folders.remove(ids.guildId, folderId)).toBe(true);
+      expect(await site.folders.remove(ids.guildId, folderId)).toBe(false);
     }
   });
 
   it('list/get trazem folderId e folderName; pasta de outro servidor é rejeitada; apagar a pasta só desarquiva o template', async () => {
-    const created = await database.folders.create({ guildId: ids.guildId, name: 'Com template' });
+    const created = await site.folders.create({ guildId: ids.guildId, name: 'Com template' });
     const folderId = (created as { ok: true; id: number }).id;
     try {
-      expect(await database.templates.create({
+      expect(await site.templates.create({
         guildId: ids.guildId, name: 'na-pasta', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId, folderId,
       })).toEqual({ ok: true });
       try {
-        expect(await database.templates.get(ids.guildId, 'na-pasta')).toEqual(
+        expect(await site.templates.get(ids.guildId, 'na-pasta')).toEqual(
           expect.objectContaining({ folderId, folderName: 'Com template' }),
         );
-        expect(await database.templates.list(ids.guildId)).toEqual([
+        expect(await site.templates.list(ids.guildId)).toEqual([
           expect.objectContaining({ name: 'na-pasta', folderId, folderName: 'Com template' }),
         ]);
 
         const otherGuild = '123456789012345678';
-        expect(await database.templates.create({
+        expect(await site.templates.create({
           guildId: otherGuild, name: 'fuga', content: {}, buttonCount: 0, menuCount: 0, actorId: ids.creatorId, folderId,
         })).toEqual({ ok: false, code: 'invalid_folder' });
 
         // Apagar a pasta desarquiva o template (ON DELETE SET NULL), nunca o apaga.
-        expect(await database.folders.remove(ids.guildId, folderId)).toBe(true);
-        expect(await database.templates.get(ids.guildId, 'na-pasta')).toEqual(
+        expect(await site.folders.remove(ids.guildId, folderId)).toBe(true);
+        expect(await site.templates.get(ids.guildId, 'na-pasta')).toEqual(
           expect.objectContaining({ folderId: null, folderName: null }),
         );
       } finally {
-        await database.templates.remove(ids.guildId, 'na-pasta');
+        await site.templates.remove(ids.guildId, 'na-pasta');
       }
     } finally {
-      await database.folders.remove(ids.guildId, folderId).catch(() => {});
+      await site.folders.remove(ids.guildId, folderId).catch(() => {});
     }
   });
 
   it('findComponent não encontra custom_id inexistente ou de outro servidor', async () => {
-    expect(await database.templates.findComponent(ids.guildId, 'kt:btn:nada')).toBeNull();
+    expect(await site.templates.findComponent(ids.guildId, 'kt:btn:nada')).toBeNull();
     const otherGuild = '123456789012345678';
-    expect(await database.templates.create({
+    expect(await site.templates.create({
       guildId: ids.guildId, name: 'isolado-componente', content: {}, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
       components: [{ customId: 'kt:btn:isolado', kind: 'button', action: { type: 'delete' } }],
     })).toEqual({ ok: true });
     try {
-      expect(await database.templates.findComponent(otherGuild, 'kt:btn:isolado')).toBeNull();
+      expect(await site.templates.findComponent(otherGuild, 'kt:btn:isolado')).toBeNull();
     } finally {
-      await database.templates.remove(ids.guildId, 'isolado-componente');
+      await site.templates.remove(ids.guildId, 'isolado-componente');
+    }
+  });
+
+  it('nega ao bot pastas e o join de pastas, e deixa ler o conteúdo e o custom_id', async () => {
+    await expect(bot.folders.list(ids.guildId)).rejects.toMatchObject({ code: '42501' });
+    await expect(bot.templates.get(ids.guildId, 'inexistente')).rejects.toMatchObject({ code: '42501' });
+
+    const action = { type: 'delete' };
+    expect(await site.templates.create({
+      guildId: ids.guildId, name: 'leitura-bot', content: { title: 'oi' }, buttonCount: 1, menuCount: 0, actorId: ids.creatorId,
+      components: [{ customId: 'kt:btn:leitura', kind: 'button', action }],
+    })).toEqual({ ok: true });
+    try {
+      expect(await bot.templates.getContent(ids.guildId, 'leitura-bot')).toEqual({ content: { title: 'oi' } });
+      expect(await bot.templates.findComponent(ids.guildId, 'kt:btn:leitura')).toEqual({ kind: 'button', action });
+      await expect(bot.templates.get(ids.guildId, 'leitura-bot')).rejects.toMatchObject({ code: '42501' });
+    } finally {
+      await site.templates.remove(ids.guildId, 'leitura-bot');
     }
   });
 });
@@ -506,7 +533,8 @@ describe('message template persistence (etapa 1C)', () => {
 describe('fila de entrega de mensagens (etapa 1D)', () => {
   let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
   let admin: pg.Client;
-  let database: ReturnType<typeof createDatabase>;
+  let site: ReturnType<typeof createDatabase>;
+  let bot: ReturnType<typeof createDatabase>;
 
   const stopOnInterrupt = () => { void dispose().finally(() => process.exit(130)); };
   const stopOnTerminate = () => { void dispose().finally(() => process.exit(143)); };
@@ -515,7 +543,7 @@ describe('fila de entrega de mensagens (etapa 1D)', () => {
     process.removeListener('SIGTERM', stopOnTerminate);
     const currentCluster = cluster;
     cluster = undefined;
-    await Promise.allSettled([admin?.end(), database?.close()]);
+    await Promise.allSettled([admin?.end(), site?.close(), bot?.close()]);
     await currentCluster?.stop();
   }
 
@@ -524,11 +552,13 @@ describe('fila de entrega de mensagens (etapa 1D)', () => {
     process.once('SIGINT', stopOnInterrupt);
     process.once('SIGTERM', stopOnTerminate);
     admin = new pg.Client(cluster.adminConfig);
-    database = createDatabase(cluster.runtimeConfig, 'development');
+    site = createDatabase(cluster.siteConfig, 'development');
+    bot = createDatabase(cluster.runtimeConfig, 'development');
     try {
       await admin.connect();
       await migrate(admin);
       await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(cluster.runtimeConfig.password)}`);
+      await admin.query(`ALTER ROLE kuruttina_site PASSWORD ${pg.escapeLiteral(cluster.siteConfig.password)}`);
       await initializeAccess(admin, 'development', ids);
     } catch (error) {
       await dispose();
@@ -537,42 +567,48 @@ describe('fila de entrega de mensagens (etapa 1D)', () => {
   }, 120_000);
   afterAll(dispose, 30_000);
 
+  it('nega ao bot inserir um pedido de entrega', async () => {
+    await expect(bot.deliveries.create({
+      guildId: ids.guildId, channelId: '666948364507545600', templateName: 'boas-vindas', requestedBy: ids.creatorId,
+    })).rejects.toMatchObject({ code: '42501' });
+  });
+
   it('pede o envio, o bot reivindica sem filtro de servidor e marca como enviado', async () => {
-    expect(await database.deliveries.create({
+    expect(await site.deliveries.create({
       guildId: ids.guildId, channelId: '666948364507545600', templateName: 'boas-vindas', requestedBy: ids.creatorId,
     })).toEqual({ ok: true });
 
-    const claimed = await database.deliveries.claimPending(10);
+    const claimed = await bot.deliveries.claimPending(10);
     expect(claimed).toEqual([expect.objectContaining({ guildId: ids.guildId, channelId: '666948364507545600', templateName: 'boas-vindas' })]);
 
-    expect(await database.deliveries.markSent(claimed[0]!.id)).toBe(true);
+    expect(await bot.deliveries.markSent(claimed[0]!.id)).toBe(true);
     // Idempotente: um pedido já concluído não é marcado de novo.
-    expect(await database.deliveries.markSent(claimed[0]!.id)).toBe(false);
-    expect(await database.deliveries.claimPending(10)).toEqual([]);
+    expect(await bot.deliveries.markSent(claimed[0]!.id)).toBe(false);
+    expect(await bot.deliveries.claimPending(10)).toEqual([]);
   });
 
   it('marca como falhado com um código estável de erro', async () => {
-    expect(await database.deliveries.create({
+    expect(await site.deliveries.create({
       guildId: ids.guildId, channelId: '666948364507545600', templateName: 'falha', requestedBy: ids.creatorId,
     })).toEqual({ ok: true });
-    const [pending] = await database.deliveries.claimPending(1);
-    expect(await database.deliveries.markFailed(pending!.id, 'channel_not_found')).toBe(true);
-    expect(await database.deliveries.markFailed(pending!.id, 'channel_not_found')).toBe(false);
+    const [pending] = await bot.deliveries.claimPending(1);
+    expect(await bot.deliveries.markFailed(pending!.id, 'channel_not_found')).toBe(true);
+    expect(await bot.deliveries.markFailed(pending!.id, 'channel_not_found')).toBe(false);
   });
 
   it('bloqueia a cota de 20 pendências por servidor', async () => {
     for (let index = 0; index < 20; index++) {
-      expect(await database.deliveries.create({
+      expect(await site.deliveries.create({
         guildId: ids.guildId, channelId: '666948364507545600', templateName: `fila-${index}`, requestedBy: ids.creatorId,
       })).toEqual({ ok: true });
     }
     try {
-      expect(await database.deliveries.create({
+      expect(await site.deliveries.create({
         guildId: ids.guildId, channelId: '666948364507545600', templateName: 'excedente', requestedBy: ids.creatorId,
       })).toEqual({ ok: false, code: 'quota' });
     } finally {
-      const pending = await database.deliveries.claimPending(20);
-      for (const item of pending) await database.deliveries.markSent(item.id);
+      const pending = await bot.deliveries.claimPending(20);
+      for (const item of pending) await bot.deliveries.markSent(item.id);
     }
   }, 30_000);
 });

@@ -80,6 +80,9 @@ export function createDatabase(config, environment, onError = () => {}) {
       list: (guildId, options) => connection((client) => templates.list(client, guildId, options), 'list_templates'),
       /** @param {string} guildId @param {string} name */
       get: (guildId, name) => connection((client) => templates.get(client, guildId, name), 'get_template'),
+      /** Leitura do bot: só `message_templates`, sem o join de pastas do site.
+       * @param {string} guildId @param {string} name */
+      getContent: (guildId, name) => connection((client) => templates.getContent(client, guildId, name), 'get_template'),
       /** @param {string} guildId */
       usage: (guildId) => connection((client) => templates.usage(client, guildId), 'template_usage'),
       /** @param {{guildId: string, name: string, content: unknown, buttonCount: number, menuCount: number, components?: readonly import('./templates.js').ComponentInput[], actorId: string, folderId?: number|null|undefined}} input */

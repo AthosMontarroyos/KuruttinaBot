@@ -98,6 +98,25 @@ export async function get(client, guildId, name) {
   }
 }
 
+/** Conteúdo do template para o bot. Não consulta pastas: `kuruttina_bot` não tem GRANT nessa tabela.
+ * @param {import('pg').PoolClient} client @param {string} guildId @param {string} name
+ * @returns {Promise<{content: unknown}|null>} */
+export async function getContent(client, guildId, name) {
+  await withGuild(client, guildId);
+  try {
+    const result = await client.query(
+      `SELECT content FROM bot_private.message_templates WHERE name = $1`,
+      [name],
+    );
+    await client.query('COMMIT');
+    const row = result.rows[0];
+    return row ? { content: row.content } : null;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  }
+}
+
 /** @param {import('pg').PoolClient} client @param {string} guildId
  * @returns {Promise<{templates: number, buttons: number, menus: number}>} */
 export async function usage(client, guildId) {

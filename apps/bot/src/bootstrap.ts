@@ -54,7 +54,7 @@ export async function startBot(correlationId: string): Promise<void> {
         return component ? { kind: component.kind, action: component.action as ComponentAction } : null;
       },
       getTemplate: async (guildId, name) => {
-        const record = await database.templates.get(guildId, name);
+        const record = await database.templates.getContent(guildId, name);
         return record ? { content: record.content as MessageTemplate } : null;
       },
     };

@@ -106,6 +106,30 @@ jobs:
           ref="$1"
           mode="$2"
 
+          require_runtime_databases() {
+            local name status missing=""
+            for name in SITE_DATABASE_URL DATABASE_URL; do
+              status=0
+              doppler run -- bash -c 'value="${!1-}"
+              value="${value//$'\''\r'\''/}"
+              value="${value#"${value%%[![:space:]]*}"}"
+              value="${value%"${value##*[![:space:]]}"}"
+              if [ -z "${value}" ]; then exit 4; fi' bash "${name}" || status=$?
+              if [ "${status}" -eq 4 ]; then
+                missing="${missing:+${missing}, }${name}"
+                continue
+              fi
+              if [ "${status}" -ne 0 ]; then
+                echo "Não foi possível ler ${name}. Os contêineres em execução não foram alterados."
+                return 2
+              fi
+            done
+            if [ -n "${missing}" ]; then
+              echo "Segredos ausentes ou vazios: ${missing}. Os contêineres em execução não foram alterados."
+              return 1
+            fi
+          }
+
           migration_configured() {
             local value status=0
             value="$(doppler secrets get DATABASE_MIGRATION_URL --plain --no-exit-on-missing-secret 2>/dev/null)" || status=$?
@@ -197,6 +221,12 @@ jobs:
           fi
           git checkout --detach "${resolved}"
 
+          if ! require_runtime_databases; then
+            echo "SITE_DATABASE_URL e DATABASE_URL precisam estar preenchidos no Doppler. Os valores não são impressos. Os contêineres em execução não foram alterados."
+            restore_checkout
+            exit 1
+          fi
+
           if ! doppler run -- docker compose build; then
             echo "A construção das imagens falhou. Os contêineres em execução não foram alterados."
             restore_checkout
@@ -253,6 +283,7 @@ jobs:
 
           if [ "${ready}" -ne 1 ]; then
             echo "A publicação não ficou saudável em 120s. Restaurando o commit anterior."
+            doppler run -- docker compose logs site bot --tail 100 || echo "Não foi possível ler os logs de site e bot."
             rollback_activation
           fi
 

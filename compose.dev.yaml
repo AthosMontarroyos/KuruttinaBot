@@ -1,6 +1,8 @@
 # Standalone: doppler run -- docker compose -f compose.dev.yaml up --build -d
 # Doppler injects unsuffixed secrets into this process. Compose passes only the keys below.
 # APP_ENV, HOST, PORT and SITE_URL are fixed here, not in Doppler.
+# Doppler dev must define SITE_DATABASE_URL (site runtime, role kuruttina_site), same name as prd.
+# Doppler dev OWNER_ID is the Dev user used by DevMock. Production compose does not pass OWNER_ID.
 name: kuruttina-dev
 
 services:
@@ -37,5 +39,10 @@ services:
       PORT: "3667"
       SITE_URL: http://localhost:3667
       ASSETS_BASE_URL: ${ASSETS_BASE_URL:-}
+      OWNER_ID: ${OWNER_ID:-}
+      DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DATABASE_URL: ${SITE_DATABASE_URL:-}
+      DATABASE_CA: ${DATABASE_CA:-}
     ports:
       - "127.0.0.1:3667:3667"

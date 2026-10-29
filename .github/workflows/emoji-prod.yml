@@ -43,7 +43,7 @@ jobs:
         run: npm ci --engine-strict
 
       - name: Compilar o bot
-        run: npm run build
+        run: npm run bot build
 
       - name: Instalar Doppler CLI
         uses: dopplerhq/cli-action@v4

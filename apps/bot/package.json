@@ -1,0 +1,12 @@
+{
+  "name": "@kuruttina/bot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --import @kuruttina/config/development --import tsx apps/bot/src/index.ts",
+    "build": "node -e \"require('node:fs').rmSync('dist/apps/bot',{recursive:true,force:true})\" && tsc -p apps/bot/tsconfig.build.json",
+    "start": "node dist/apps/bot/src/index.js",
+    "test": "vitest run --exclude tests/database.integration.test.ts --exclude tests/site.test.ts --exclude tests/site-dev-env.test.ts --exclude tests/templatesApi.test.ts"
+  }
+}

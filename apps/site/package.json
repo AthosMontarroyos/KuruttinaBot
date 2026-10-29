@@ -1,0 +1,12 @@
+{
+  "name": "@kuruttina/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node apps/site/build.mjs && node --import @kuruttina/config/site-development dist/apps/site/index.js",
+    "build": "node apps/site/build.mjs",
+    "start": "node dist/apps/site/index.js",
+    "test": "vitest run tests/site.test.ts tests/site-dev-env.test.ts tests/templatesApi.test.ts"
+  }
+}

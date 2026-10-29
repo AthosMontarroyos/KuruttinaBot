@@ -33,11 +33,13 @@ describe('site development env', () => {
     expect(loadSiteDevelopment({ DATABASE_URL: botUrl, SITE_DATABASE_URL: ' \t' }).databaseUrl).toBe(botUrl);
   });
 
-  it('o script site:dev usa o preload e não chama o Doppler', () => {
-    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { scripts: { 'site:dev': string; dev: string } };
-    expect(pkg.scripts['site:dev']).toContain('--import @kuruttina/config/site-development');
-    expect(pkg.scripts['site:dev']).not.toContain('doppler');
-    expect(pkg.scripts.dev).toContain('--import @kuruttina/config/development');
-    expect(pkg.scripts.dev).not.toContain('site-development');
+  it('o script dev do site usa o preload e não chama o Doppler', () => {
+    const site = JSON.parse(readFileSync(new URL('../apps/site/package.json', import.meta.url), 'utf8')) as { scripts: { dev: string } };
+    const bot = JSON.parse(readFileSync(new URL('../apps/bot/package.json', import.meta.url), 'utf8')) as { scripts: { dev: string } };
+    expect(site.scripts.dev).toContain('--import @kuruttina/config/site-development');
+    expect(site.scripts.dev).not.toContain('doppler');
+    expect(bot.scripts.dev).toContain('--import @kuruttina/config/development');
+    expect(bot.scripts.dev).not.toContain('site-development');
+    expect(bot.scripts.dev).not.toContain('doppler');
   });
 });

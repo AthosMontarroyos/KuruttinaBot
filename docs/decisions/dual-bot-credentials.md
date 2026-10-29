@@ -40,7 +40,7 @@ O contêiner de production na VPS não muda a forma de obter o token: o `compose
 
 ## Atualização — Doppler, 16 de outubro de 2026
 
-Os segredos passam para o Doppler. Os configs `dev` e `prd` usam os mesmos nomes, sem sufixo: `ASSETS_BASE_URL`, `DATABASE_CA`, `DATABASE_URL`, `DATABASE_MIGRATION_URL`, `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_SECRET` e `DISCORD_PUBLIC_KEY`. `APP_ENV` continua escolhendo o comportamento e não o nome da variável. O processo lê uma credencial, a que o config injetou. Production deixa de exigir o par de development.
+Os segredos passam para o Doppler. Os configs `dev` e `prd` usam os mesmos nomes, sem sufixo: `ASSETS_BASE_URL`, `DATABASE_CA`, `DATABASE_URL`, `DATABASE_MIGRATION_URL`, `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_SECRET` e `DISCORD_PUBLIC_KEY`. `APP_ENV` continua escolhendo o comportamento e não o nome da variável. O processo lê uma credencial, a que o config injetou. Production deixa de exigir o par de development. A credencial de runtime do site, role `kuruttina_site`, usa o nome `SITE_DATABASE_URL` nesses mesmos configs. O Compose entrega esse valor como `DATABASE_URL` só no serviço `site`, com `DATABASE_CA`. O bot continua recebendo `DATABASE_URL` e não recebe `SITE_DATABASE_URL`.
 
 O acesso conjunto ao `.env` previsto na seção Remoção fica encerrado para esta capability. Na VPS, o token de serviço somente leitura do config `prd` é configurado para o usuário `deploy`, com escopo `/home/deploy/Projects/KuruttinaBot`. Os workflows de deploy e de comandos rodam `doppler run -- docker compose ...` e não recebem `DOPPLER_TOKEN`. Esse segredo do ambiente GitHub `production` serve só ao workflow de emoji, que lê `DISCORD_BOT_TOKEN` do config `prd`.
 

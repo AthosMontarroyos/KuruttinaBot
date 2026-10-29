@@ -105,6 +105,166 @@ describe('migration_configured', () => {
   });
 });
 
+function runtimeFunction(): string {
+  const match = deployWorkflow.match(/ {10}require_runtime_databases\(\) \{[\s\S]*?\n {10}\}/);
+  if (!match) {
+    throw new Error('require_runtime_databases não está em deploy.yml');
+  }
+  return match[0].replace(/^ {10}/gm, '');
+}
+
+function serviceBlock(source: string, name: string): string {
+  const marker = `\n  ${name}:\n`;
+  const start = source.indexOf(marker);
+  if (start < 0) throw new Error(`serviço ${name} ausente`);
+  const rest = source.slice(start + 1);
+  const next = rest.slice(1).search(/\n  [a-z]/u);
+  return next < 0 ? rest : rest.slice(0, next + 1);
+}
+
+function runRuntime(siteMode: string, botMode: string, siteValue = '', botValue = '', down = false): string {
+  const root = mkdtempSync(path.join(tmpdir(), 'runtime-doppler-'));
+  const doppler = path.join(root, 'doppler');
+  writeFileSync(
+    doppler,
+    `#!/bin/bash
+set -euo pipefail
+if [ "\${1:-}" != "run" ] || [ "\${2:-}" != "--" ]; then
+  echo "doppler run esperado" >&2
+  exit 1
+fi
+if [ "\${DOPPLER_DOWN:-}" = "1" ]; then
+  echo "doppler indisponivel" >&2
+  exit 1
+fi
+script="\$5"
+varname="\$7"
+case "\${varname}" in
+  SITE_DATABASE_URL) mode="\${DOPPLER_SITE}" ;;
+  DATABASE_URL) mode="\${DOPPLER_BOT}" ;;
+  *) echo "nome inesperado" >&2; exit 1 ;;
+esac
+case "\${mode}" in
+  unset) unset "\${varname}" ;;
+  empty) printf -v "\${varname}" '%s' '' ;;
+  blank) printf -v "\${varname}" ' \\t \\r' ;;
+  value)
+    if [ "\${varname}" = "SITE_DATABASE_URL" ]; then
+      printf -v "\${varname}" '%s' "\${DOPPLER_SITE_VALUE}"
+    else
+      printf -v "\${varname}" '%s' "\${DOPPLER_BOT_VALUE}"
+    fi
+    ;;
+  *) echo "modo invalido" >&2; exit 1 ;;
+esac
+export "\${varname}"
+exec bash -c "\${script}" bash "\${varname}"
+`,
+  );
+  chmodSync(doppler, 0o755);
+  const script = path.join(root, 'check.sh');
+  writeFileSync(
+    script,
+    `#!/bin/bash
+set -euo pipefail
+export PATH="$(dirname "$0"):$PATH"
+${runtimeFunction()}
+status=0
+require_runtime_databases || status=$?
+printf 'STATUS=%s\\n' "\${status}"
+`,
+  );
+  chmodSync(script, 0o755);
+  return execFileSync('bash', [script], {
+    encoding: 'utf8',
+    env: {
+      PATH: process.platform === 'win32' ? process.env.PATH : '/usr/bin:/bin',
+      DOPPLER_DOWN: down ? '1' : '',
+      DOPPLER_SITE: siteMode,
+      DOPPLER_BOT: botMode,
+      DOPPLER_SITE_VALUE: siteValue,
+      DOPPLER_BOT_VALUE: botValue,
+      HOME: root,
+    },
+  });
+}
+
+describe('require_runtime_databases', () => {
+  const siteSecret = 'postgres://kuruttina_site:s3cret-site@db.example/kuruttina';
+  const botSecret = 'postgres://kuruttina_bot:s3cret-bot@db.example/kuruttina';
+
+  it('aceita os dois segredos preenchidos e não imprime os valores', () => {
+    const stdout = runRuntime('value', 'value', `  ${siteSecret}\r`, botSecret);
+    expect(stdout).toBe('STATUS=0\n');
+    expect(stdout).not.toContain('s3cret');
+  });
+
+  it('falha com o nome quando um segredo está ausente, vazio ou só espaço', () => {
+    expect(runRuntime('unset', 'value', '', botSecret)).toContain('Segredos ausentes ou vazios: SITE_DATABASE_URL.');
+    expect(runRuntime('empty', 'value', '', botSecret)).toContain('STATUS=1\n');
+    expect(runRuntime('value', 'blank', siteSecret, ' \t \r')).toContain('Segredos ausentes ou vazios: DATABASE_URL.');
+    for (const stdout of [
+      runRuntime('unset', 'empty'),
+      runRuntime('blank', 'blank', ' \t ', ' \t '),
+    ]) {
+      expect(stdout).toContain('SITE_DATABASE_URL');
+      expect(stdout).toContain('DATABASE_URL');
+      expect(stdout).not.toContain('s3cret');
+      expect(stdout).toContain('STATUS=1\n');
+    }
+  });
+
+  it('falha quando o Doppler não responde, sem imprimir valor', () => {
+    const stdout = runRuntime('value', 'value', siteSecret, botSecret, true);
+    expect(stdout).toContain('Não foi possível ler SITE_DATABASE_URL.');
+    expect(stdout).toContain('STATUS=2\n');
+    expect(stdout).not.toContain('s3cret');
+  });
+
+  it('confere os segredos de runtime antes do build e mantém a migration opcional', () => {
+    const call = deployWorkflow.indexOf('if ! require_runtime_databases; then');
+    const build = deployWorkflow.indexOf('if ! doppler run -- docker compose build; then', call);
+    expect(call).toBeGreaterThan(-1);
+    expect(build).toBeGreaterThan(call);
+    expect(deployWorkflow).toContain('Migration ignorada: DATABASE_MIGRATION_URL ausente ou vazio.');
+  });
+
+  it('imprime os logs do site e do bot antes do rollback da espera de saúde', () => {
+    const healthFail = deployWorkflow.slice(deployWorkflow.indexOf('if [ "${ready}" -ne 1 ]'));
+    const logsAt = healthFail.indexOf('doppler run -- docker compose logs site bot --tail 100');
+    const rollbackAt = healthFail.indexOf('rollback_activation');
+    expect(logsAt).toBeGreaterThan(-1);
+    expect(rollbackAt).toBeGreaterThan(logsAt);
+  });
+});
+
+describe('compose database env', () => {
+  it('entrega SITE_DATABASE_URL só ao site, nos dois Composes', () => {
+    for (const file of ['../compose.yaml', '../compose.dev.yaml']) {
+      const source = readFileSync(new URL(file, import.meta.url), 'utf8');
+      const bot = serviceBlock(source, 'bot');
+      const site = serviceBlock(source, 'site');
+      expect(bot).toContain('DATABASE_URL: ${DATABASE_URL:-}');
+      expect(bot).toContain('DATABASE_CA: ${DATABASE_CA:-}');
+      expect(bot).not.toContain('SITE_DATABASE_URL');
+      expect(site).toContain('DATABASE_URL: ${SITE_DATABASE_URL:-}');
+      expect(site).toContain('DATABASE_CA: ${DATABASE_CA:-}');
+      expect(site).not.toContain('DATABASE_URL: ${DATABASE_URL:-}');
+    }
+  });
+
+  it('entrega o DevMock só ao site de desenvolvimento', () => {
+    const production = readFileSync(new URL('../compose.yaml', import.meta.url), 'utf8');
+    const development = readFileSync(new URL('../compose.dev.yaml', import.meta.url), 'utf8');
+    const devSite = serviceBlock(development, 'site');
+    expect(production).not.toContain('OWNER_ID');
+    expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_TOKEN');
+    for (const key of ['OWNER_ID', 'DISCORD_BOT_ID', 'DISCORD_BOT_TOKEN']) {
+      expect(devSite).toContain(`${key}: \${${key}:-}`);
+    }
+  });
+});
+
 describe('consulta de segredo ausente', () => {
   it('publish-commands não usa doppler secrets get', () => {
     const source = readFileSync(new URL('../.github/workflows/publish-commands.yml', import.meta.url), 'utf8');

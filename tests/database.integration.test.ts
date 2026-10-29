@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -103,6 +103,7 @@ describe('PostgreSQL runtime isolation', () => {
   let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
   let admin: pg.Client;
   let runtime: pg.Client;
+  let siteRuntime: pg.Client;
   let database: ReturnType<typeof createDatabase>;
   let runtimeConfig: Awaited<ReturnType<typeof startPostgres>>['runtimeConfig'];
 
@@ -113,7 +114,7 @@ describe('PostgreSQL runtime isolation', () => {
     process.removeListener('SIGTERM', stopOnTerminate);
     const currentCluster = cluster;
     cluster = undefined;
-    await Promise.allSettled([admin?.end(), runtime?.end(), database?.close()]);
+    await Promise.allSettled([admin?.end(), runtime?.end(), siteRuntime?.end(), database?.close()]);
     await currentCluster?.stop();
   }
 
@@ -130,9 +131,12 @@ describe('PostgreSQL runtime isolation', () => {
       await migrate(admin);
       await migrate(admin);
       await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(runtimeConfig.password)}`);
+      await admin.query(`ALTER ROLE kuruttina_site PASSWORD ${pg.escapeLiteral(cluster.siteConfig.password)}`);
       await initializeAccess(admin, 'development', ids);
       await initializeAccess(admin, 'development', ids);
       await runtime.connect();
+      siteRuntime = new pg.Client(cluster.siteConfig);
+      await siteRuntime.connect();
     } catch (error) {
       await dispose();
       throw error;
@@ -224,6 +228,88 @@ describe('PostgreSQL runtime isolation', () => {
     // bot_settings, bot_staff, message_templates, message_components, message_deliveries (etapas 1C/1D) e message_template_folders.
     expect(policies.rows).toHaveLength(6);
     expect(policies.rows.every((row) => row.relrowsecurity && row.relforcerowsecurity)).toBe(true);
+  });
+  it('lets the site read only the active dev user id', async () => {
+    const migration = await readFile(new URL('../packages/database/supabase/migrations/20261029150000_site_active_dev_user_id.sql', import.meta.url), 'utf8');
+    expect(migration).toContain('SECURITY DEFINER');
+    expect(migration).toContain('SET search_path = pg_catalog');
+    expect(migration).toContain('GRANT EXECUTE ON FUNCTION bot_private.active_dev_user_id() TO kuruttina_site');
+    expect(migration).not.toContain('GRANT SELECT ON bot_private.bot_staff');
+    for (const role of ['PUBLIC', 'anon', 'authenticated', 'service_role']) expect(migration).toContain(role);
+
+    const definition = await admin.query(`
+      SELECT p.prosecdef AS security_definer, p.proconfig, p.pronargs, pg_get_function_result(p.oid) AS result,
+             owner.rolname AS owner, p.proacl::text AS acl
+      FROM pg_proc AS p
+      JOIN pg_namespace AS namespace ON namespace.oid = p.pronamespace
+      JOIN pg_roles AS owner ON owner.oid = p.proowner
+      WHERE namespace.nspname = 'bot_private' AND p.proname = 'active_dev_user_id'
+    `);
+    expect(definition.rows).toEqual([{
+      security_definer: true,
+      proconfig: ['search_path=pg_catalog'],
+      pronargs: 0,
+      result: 'text',
+      owner: 'kuruttina_owner',
+      acl: '{kuruttina_owner=X/kuruttina_owner,kuruttina_site=X/kuruttina_owner}',
+    }]);
+    for (const [role, allowed] of [['kuruttina_site', true], ['kuruttina_bot', false], ['public', false]] as const) {
+      const privilege = await admin.query(
+        "SELECT has_function_privilege($1, 'bot_private.active_dev_user_id()', 'EXECUTE') AS ok",
+        [role],
+      );
+      expect(privilege.rows[0]?.ok).toBe(allowed);
+    }
+    for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'DELETE']) {
+      const table = await admin.query('SELECT has_table_privilege($1, $2, $3) AS ok', ['kuruttina_site', 'bot_private.bot_staff', privilege]);
+      expect(table.rows[0]?.ok).toBe(false);
+    }
+    expect((await siteRuntime.query('SELECT session_user AS role')).rows[0]?.role).toBe('kuruttina_site');
+    expect((await siteRuntime.query('SELECT bot_private.active_dev_user_id() AS user_id')).rows).toEqual([{ user_id: ids.devId }]);
+    const siteDatabase = createDatabase(cluster!.siteConfig, 'development');
+    try {
+      expect(await siteDatabase.getActiveDevUserId()).toBe(ids.devId);
+      await admin.query("UPDATE bot_private.bot_staff SET active = false WHERE role = 'dev'");
+      expect(await siteDatabase.getActiveDevUserId()).toBeNull();
+      expect((await siteRuntime.query('SELECT bot_private.active_dev_user_id() AS user_id')).rows).toEqual([{ user_id: null }]);
+    } finally {
+      await admin.query("UPDATE bot_private.bot_staff SET active = true WHERE role = 'dev'");
+      await siteDatabase.close();
+    }
+    expect((await siteRuntime.query('SELECT bot_private.active_dev_user_id() AS user_id')).rows).toEqual([{ user_id: ids.devId }]);
+    await expect(runtime.query('SELECT bot_private.active_dev_user_id()')).rejects.toThrow();
+    await expect(database.getActiveDevUserId()).rejects.toThrow();
+    for (const sql of [
+      'SELECT * FROM bot_private.bot_staff',
+      'SELECT user_id FROM bot_private.bot_staff',
+      'SELECT role FROM bot_private.bot_staff',
+      "SELECT user_id FROM bot_private.bot_staff WHERE role = 'creator'",
+    ]) await expect(siteRuntime.query(sql)).rejects.toThrow();
+    await siteRuntime.query('SET search_path = pg_temp, public');
+    try {
+      expect((await siteRuntime.query('SELECT bot_private.active_dev_user_id() AS user_id')).rows).toEqual([{ user_id: ids.devId }]);
+      await expect(siteRuntime.query('CREATE TEMP TABLE bot_staff (user_id text)')).rejects.toThrow();
+    } finally {
+      await siteRuntime.query('RESET search_path');
+    }
+    await admin.query('REVOKE EXECUTE ON FUNCTION bot_private.active_dev_user_id() FROM kuruttina_site');
+    try {
+      await expect(siteRuntime.query('SELECT bot_private.active_dev_user_id()')).rejects.toThrow();
+    } finally {
+      await admin.query('GRANT EXECUTE ON FUNCTION bot_private.active_dev_user_id() TO kuruttina_site');
+    }
+    expect((await siteRuntime.query('SELECT bot_private.active_dev_user_id() AS user_id')).rows).toEqual([{ user_id: ids.devId }]);
+    for (const role of ['anon', 'authenticated', 'service_role']) await admin.query(`CREATE ROLE ${role} NOLOGIN`);
+    try {
+      for (const role of ['anon', 'authenticated', 'service_role']) {
+        const fn = await admin.query("SELECT has_function_privilege($1, 'bot_private.active_dev_user_id()', 'EXECUTE') AS ok", [role]);
+        const table = await admin.query("SELECT has_table_privilege($1, 'bot_private.bot_staff', 'SELECT') AS ok", [role]);
+        expect(fn.rows[0]?.ok).toBe(false);
+        expect(table.rows[0]?.ok).toBe(false);
+      }
+    } finally {
+      for (const role of ['service_role', 'authenticated', 'anon']) await admin.query(`DROP ROLE ${role}`);
+    }
   });
 });
 

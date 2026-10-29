@@ -14,8 +14,8 @@ const environment = {
 };
 describe('site configuration', () => {
   it('exposes only public configuration and keeps the stable avatar path', () => {
-    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: 'test-secret' })).toEqual({
-      target: 'development',
+    expect(readSiteConfig(environment)).toEqual({
+      target: 'development', devMock: true,
       port: 3666, host: '127.0.0.1', siteUrl: 'http://localhost:3666', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
       database: {
         host: 'db.internal', port: 5432, user: 'kuruttina_site', password: 'test-pw', database: 'kuruttina',
@@ -37,7 +37,7 @@ describe('site configuration', () => {
   it('honors an explicit public site URL and keeps the listen address independent', () => {
     expect(readSiteConfig({ ...environment, PORT: '8080', SITE_URL: 'http://localhost:3666/' }).siteUrl).toBe('http://localhost:3666');
     expect(readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com' })).toMatchObject({
-      port: 3666, host: '127.0.0.1', siteUrl: 'https://kuruttina.athosmontarroyos.com',
+      port: 3666, host: '127.0.0.1', siteUrl: 'https://kuruttina.athosmontarroyos.com', devMock: false,
     });
   });
   it.each([
@@ -74,26 +74,37 @@ describe('site configuration', () => {
 });
 
 describe('mock login configuration', () => {
-  const ownerId = '123456789012345678';
-  it('enables the mock only in development with a valid OWNER_ID', () => {
-    expect(readSiteConfig({ ...environment, OWNER_ID: ownerId }).mockOwnerId).toBe(ownerId);
-    expect(readSiteConfig(environment).mockOwnerId).toBeUndefined();
+  const production = { ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com' };
+  it('enables the mock from APP_ENV and ignores OWNER_ID', () => {
+    expect(readSiteConfig(environment).devMock).toBe(true);
+    expect(readSiteConfig({ ...environment, OWNER_ID: 'abc' }).devMock).toBe(true);
+    expect(readSiteConfig({ ...environment, OWNER_ID: '123456789012345678' }).devMock).toBe(true);
+    expect(JSON.stringify(readSiteConfig({ ...environment, OWNER_ID: '123456789012345678' }))).not.toContain('123456789012345678');
   });
-  it('refuses to start in production when OWNER_ID is present', () => {
-    expect(() => readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com', OWNER_ID: ownerId })).toThrow('login mock');
+  it('keeps the mock off in production even when OWNER_ID or the bot token is present', () => {
+    const config = readSiteConfig({ ...production, OWNER_ID: 'not-a-snowflake', DISCORD_BOT_TOKEN: 'test-secret' });
+    expect(config.devMock).toBe(false);
+    expect(config.mockBotToken).toBeUndefined();
+    expect(JSON.stringify(config)).not.toContain('test-secret');
+    expect(JSON.stringify(config)).not.toContain('OWNER_ID');
   });
-  it.each(['abc', '123', '0123456789012345678'])('rejects invalid OWNER_ID %s', (value) => {
-    expect(() => readSiteConfig({ ...environment, OWNER_ID: value })).toThrow('OWNER_ID');
+  it('reads the bot token only for the development mock', () => {
+    expect(readSiteConfig(environment).mockBotToken).toBeUndefined();
+    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: '  bot-token  ' }).mockBotToken).toBe('bot-token');
+    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: '   ' }).mockBotToken).toBeUndefined();
+    expect(readSiteConfig({ ...production, DISCORD_BOT_TOKEN: 'bot-token' }).mockBotToken).toBeUndefined();
   });
 });
 
 describe('mock login HTTP boundary', () => {
-  const ownerId = '123456789012345678';
+  const devId = '123456789012345678';
+  const page = new URL('../apps/site/index.html', import.meta.url);
+  const publicDir = new URL('../apps/site/public/', import.meta.url);
   let server: Server;
   let origin: string;
   const post = (path: string, headers: Record<string, string> = {}) => fetch(origin + path, { method: 'POST', headers });
   beforeAll(async () => {
-    server = await createSiteServer(readSiteConfig({ ...environment, OWNER_ID: ownerId }), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    server = await createSiteServer(readSiteConfig(environment), page, publicDir, async () => devId);
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     const address = server.address();
     if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
@@ -116,17 +127,69 @@ describe('mock login HTTP boundary', () => {
     expect(cookie).toContain('SameSite=Strict');
     const text = await login.text();
     expect(text).toContain('"label":"Dev"');
-    expect(text).not.toContain(ownerId);
+    expect(text).not.toContain(devId);
     const pair = cookie.split(';')[0] ?? '';
     expect(await (await fetch(origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: true });
     await fetch(origin + '/api/logout', { method: 'POST', headers: { Origin: 'http://localhost:3666', Cookie: pair } });
     expect(await (await fetch(origin + '/api/session', { headers: { Cookie: pair } })).json()).toMatchObject({ authenticated: false });
   });
+  it('fails clearly when there is no active dev and does not open a session', async () => {
+    const absent = await createSiteServer(readSiteConfig(environment), page, publicDir, async () => null);
+    await new Promise<void>((resolve) => absent.listen(0, '127.0.0.1', resolve));
+    const address = absent.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    try {
+      const response = await fetch(`http://127.0.0.1:${address.port}/api/mock-login`, { method: 'POST', headers: { Origin: 'http://localhost:3666' } });
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ error: 'dev_ausente' });
+      expect(response.headers.get('set-cookie')).toBeNull();
+    } finally {
+      await new Promise<void>((resolve, reject) => absent.close((error) => error ? reject(error) : resolve()));
+    }
+  });
+  it('fails closed when the dev lookup fails or returns an invalid id', async () => {
+    for (const loadActiveDevId of [async () => { throw new Error('database down'); }, async () => 'not-a-snowflake']) {
+      const broken = await createSiteServer(readSiteConfig(environment), page, publicDir, loadActiveDevId);
+      await new Promise<void>((resolve) => broken.listen(0, '127.0.0.1', resolve));
+      const address = broken.address();
+      if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+      try {
+        const response = await fetch(`http://127.0.0.1:${address.port}/api/mock-login`, { method: 'POST', headers: { Origin: 'http://localhost:3666' } });
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({ error: 'dev_indisponivel' });
+        expect(response.headers.get('set-cookie')).toBeNull();
+      } finally {
+        await new Promise<void>((resolve, reject) => broken.close((error) => error ? reject(error) : resolve()));
+      }
+    }
+  });
+  it('never enables the mock in production', async () => {
+    let lookups = 0;
+    const production = await createSiteServer(
+      readSiteConfig({ ...environment, APP_ENV: 'production', SITE_URL: 'https://kuruttina.athosmontarroyos.com', OWNER_ID: devId, DISCORD_BOT_TOKEN: 'test-secret' }),
+      page,
+      publicDir,
+      async () => { lookups += 1; return devId; },
+    );
+    await new Promise<void>((resolve) => production.listen(0, '127.0.0.1', resolve));
+    const address = production.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    const base = `http://127.0.0.1:${address.port}`;
+    try {
+      expect(await (await fetch(base + '/api/session')).json()).toEqual({ mock: false, discord: false, authenticated: false });
+      const response = await fetch(base + '/api/mock-login', { method: 'POST', headers: { Origin: 'https://kuruttina.athosmontarroyos.com' } });
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: 'not_found' });
+      expect(lookups).toBe(0);
+    } finally {
+      await new Promise<void>((resolve, reject) => production.close((error) => error ? reject(error) : resolve()));
+    }
+  });
 });
 
 describe('session persistence across restarts', () => {
   const start = async (file: string) => {
-    const server = await createSiteServer(readSiteConfig({ ...environment, OWNER_ID: '123456789012345678', SESSION_FILE: file }), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    const server = await createSiteServer(readSiteConfig({ ...environment, SESSION_FILE: file }), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url), async () => '123456789012345678');
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     const address = server.address();
     if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');

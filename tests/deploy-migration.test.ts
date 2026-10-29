@@ -253,15 +253,19 @@ describe('compose database env', () => {
     }
   });
 
-  it('entrega o DevMock só ao site de desenvolvimento', () => {
+  it('entrega o token do bot ao site de desenvolvimento para a lista de servidores do DevMock', () => {
     const production = readFileSync(new URL('../compose.yaml', import.meta.url), 'utf8');
     const development = readFileSync(new URL('../compose.dev.yaml', import.meta.url), 'utf8');
     const devSite = serviceBlock(development, 'site');
+    const devBot = serviceBlock(development, 'bot');
     expect(production).not.toContain('OWNER_ID');
+    expect(development).not.toContain('OWNER_ID');
+    expect(devSite).toContain('DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}');
+    expect(devSite).not.toContain('DISCORD_BOT_ID');
+    expect(devBot).toContain('DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}');
+    expect(devBot).toContain('DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}');
     expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_TOKEN');
-    for (const key of ['OWNER_ID', 'DISCORD_BOT_ID', 'DISCORD_BOT_TOKEN']) {
-      expect(devSite).toContain(`${key}: \${${key}:-}`);
-    }
+    expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_ID');
   });
 });
 

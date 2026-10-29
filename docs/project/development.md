@@ -52,8 +52,8 @@ Depois de alterar o código, rode de novo o `up --build`. O ambiente foi constru
 | `npm run build` | Compila todas as apps, em sequência, e para na primeira falha. |
 | `npm run bot build` | Limpa `dist/apps/bot` e compila o bot. |
 | `npm run site build` | Limpa somente o destino do site, gera o bundle e compila o servidor. |
-| `npm run bot start` | Executa o build do bot; exige `APP_ENV` explícito no ambiente do processo. |
-| `npm run site start` | Executa o build da Home; exige `APP_ENV` explícito. Em production, exige também `SITE_URL`. |
+| `npm run bot start` | Fora do Docker, executa `node dist/apps/bot/src/index.js`; exige `APP_ENV` explícito. O contêiner chama esse Node diretamente. |
+| `npm run site start` | Fora do Docker, executa `node dist/apps/site/index.js`; exige `APP_ENV` explícito. Em production, exige também `SITE_URL`. O contêiner chama esse Node diretamente. |
 | `npm run start` | Sobe o build de todas as apps ao mesmo tempo; exige `APP_ENV` explícito. Os contêineres não usam este comando. |
 | `npm run typecheck` | Verifica tipos. |
 | `npm test` | Testes herméticos de todas as apps, na mesma cobertura de `vitest` sem `tests/database.integration.test.ts`. |

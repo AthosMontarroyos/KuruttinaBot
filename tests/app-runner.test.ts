@@ -58,6 +58,18 @@ describe('app runner', () => {
     expect(rootPkg.scripts['deploy:commands']).toBe('node dist/apps/bot/src/deployments/deploy-central.js');
   });
 
+  it('starts the container with node exec form and leaves the runner out of the runtime image', () => {
+    const dockerfile = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+    const runtime = dockerfile.split('FROM node:24-bookworm-slim AS runtime')[1] ?? '';
+    expect(runtime).toContain('CMD ["node", "dist/apps/bot/src/index.js"]');
+    expect(runtime).toContain('CMD ["node", "dist/apps/site/index.js"]');
+    expect(runtime).not.toContain('npm');
+    expect(runtime).not.toContain('scripts/run.mjs');
+    expect(runtime).not.toContain('apps/bot/package.json');
+    expect(runtime).not.toContain('apps/site/package.json');
+    expect(dockerfile).toContain('COPY scripts/run.mjs ./scripts/run.mjs');
+  });
+
   it('preserves the bot and site commands', () => {
     const bot = JSON.parse(readFileSync(new URL('../apps/bot/package.json', import.meta.url), 'utf8')) as {
       private: boolean;

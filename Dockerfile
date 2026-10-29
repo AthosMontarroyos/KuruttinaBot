@@ -16,17 +16,14 @@ COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages ./packages
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/scripts/run.mjs ./scripts/run.mjs
-COPY --from=build /app/apps/bot/package.json ./apps/bot/package.json
-COPY --from=build /app/apps/site/package.json ./apps/site/package.json
 RUN chmod -R a+rX,go-w /app
 USER node
 
 FROM runtime AS bot
-CMD ["npm", "run", "bot", "start"]
+CMD ["node", "dist/apps/bot/src/index.js"]
 
 FROM runtime AS site
-CMD ["npm", "run", "site", "start"]
+CMD ["node", "dist/apps/site/index.js"]
 
 FROM runtime AS release
 CMD ["node", "packages/database/cli.js"]

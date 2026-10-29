@@ -4,7 +4,7 @@
     {
       "name": "site",
       "runtimeExecutable": "doppler",
-      "runtimeArgs": ["run", "--only-secrets", "ASSETS_BASE_URL,SITE_DATABASE_URL,DATABASE_CA,DISCORD_BOT_ID,DISCORD_CLIENT_SECRET,DISCORD_BOT_TOKEN", "--", "npm", "run", "site:dev"],
+      "runtimeArgs": ["run", "--only-secrets", "ASSETS_BASE_URL,SITE_DATABASE_URL,DATABASE_CA,DISCORD_BOT_ID,DISCORD_CLIENT_SECRET,DISCORD_BOT_TOKEN", "--", "npm", "run", "site", "dev"],
       "port": 3666
     }
   ]

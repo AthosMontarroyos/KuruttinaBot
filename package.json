@@ -14,17 +14,15 @@
     "node": "^22.14.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
-    "site:build": "node apps/site/build.mjs",
-    "site:start": "node dist/apps/site/index.js",
-    "site:dev": "npm run site:build && node --import @kuruttina/config/site-development dist/apps/site/index.js",
-    "build": "node -e \"require('node:fs').rmSync('dist/apps/bot',{recursive:true,force:true})\" && tsc -p apps/bot/tsconfig.build.json",
-    "build:all": "npm run build && npm run site:build",
+    "dev": "node scripts/run.mjs dev",
+    "build": "node scripts/run.mjs build",
+    "start": "node scripts/run.mjs start",
+    "test": "node scripts/run.mjs test",
+    "bot": "node scripts/run.mjs bot",
+    "site": "node scripts/run.mjs site",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/site/tsconfig.json",
-    "start": "node dist/apps/bot/src/index.js",
     "deploy:commands": "node dist/apps/bot/src/deployments/deploy-central.js",
-    "dev": "node --import @kuruttina/config/development --import tsx apps/bot/src/index.ts",
     "security:secrets": "gitleaks detect --source . --config .gitleaks.toml --redact --verbose",
-    "test": "vitest run --exclude tests/database.integration.test.ts",
     "database:migrate": "node packages/database/cli.js migrate",
     "database:seed": "node packages/database/cli.js seed",
     "test:database": "vitest run tests/database.integration.test.ts"

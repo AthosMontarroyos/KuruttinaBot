@@ -358,7 +358,7 @@ describe('emoji-prod.yml', () => {
     expect(workflow).not.toContain('curl');
     expect(workflow).not.toContain('RUNNER_TEMP');
     expect(workflow).toContain('npm ci --engine-strict');
-    expect(workflow).toContain('npm run build');
+    expect(workflow).toContain('npm run bot build');
     expect(workflow).toContain('doppler run --only-secrets DISCORD_BOT_TOKEN -- node scripts/add-production-emoji.ts');
     expect(workflow).not.toMatch(/echo [^"\n]*\$\{?DOPPLER_TOKEN/u);
     expect(workflow).not.toMatch(/echo [^"\n]*\$\{?DISCORD_BOT_TOKEN/u);

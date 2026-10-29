@@ -6,8 +6,9 @@ COPY packages/database/package.json packages/database/package.json
 RUN npm ci --no-audit --no-fund
 COPY apps ./apps
 COPY packages ./packages
+COPY scripts/run.mjs ./scripts/run.mjs
 COPY tsconfig.json ./
-RUN npm run build && npm run site:build && npm prune --omit=dev
+RUN npm run build && npm prune --omit=dev
 
 FROM node:24-bookworm-slim AS runtime
 WORKDIR /app

@@ -73,6 +73,15 @@ export function createDatabase(config, environment, onError = () => {}) {
         }
       }, 'get_staff_role');
     },
+    // Única leitura de bot_staff concedida a kuruttina_site: a função devolve só o user_id do dev ativo.
+    /** @returns {Promise<string|null>} */
+    getActiveDevUserId: () => connection(async (client) => {
+      const result = await client.query('SELECT bot_private.active_dev_user_id() AS user_id');
+      const userId = result.rows[0]?.user_id;
+      if (userId == null) return null;
+      if (!isDiscordId(userId)) throw new Error('Invalid dev user id');
+      return userId;
+    }, 'get_active_dev'),
     close: async () => { closing = true; await pool.end(); },
     // Persistência de templates de mensagem (etapa 1C); cada chamada abre e fecha sua própria transação.
     templates: {

@@ -85,7 +85,7 @@ function loadSessions(file: string | undefined): Array<[string, Session]> {
   }
 }
 
-export function createAuth(config: SiteConfig) {
+export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<string | null>) {
   const sessions = new Map<string, Session>(loadSessions(config.sessionFile));
   let saveTimer: NodeJS.Timeout | undefined;
   // Grava em disco logo depois da última mudança, de forma atômica; falha de disco não derruba o login.
@@ -131,13 +131,14 @@ export function createAuth(config: SiteConfig) {
   // `id` do Discord nunca sai para o cliente: fica só para auditoria no servidor (ex.: quem criou um template).
   const toPublicUser = ({ label, avatarUrl }: SessionUser): PublicSessionUser => ({ label, avatarUrl });
   const sessionBody = (session: Session | undefined) => ({
-    mock: config.mockOwnerId !== undefined,
+    mock: config.devMock,
     discord: config.oauth !== undefined,
     authenticated: session !== undefined,
     ...(session ? { user: toPublicUser(session.user), guilds: session.guilds } : {}),
   });
 
-  // Servidores do dev no mock: os do bot onde o OWNER_ID é membro. O mock não tem token OAuth do usuário.
+  // Servidores do dev no mock: os do bot em que o user_id ativo de papel dev é membro.
+  // Sem token do bot a sessão abre sem servidores. O mock não tem token OAuth do usuário.
   async function mockGuilds(devId: string): Promise<SessionGuild[]> {
     if (!config.mockBotToken) return [];
     const headers = { Authorization: `Bot ${config.mockBotToken}` };
@@ -148,22 +149,6 @@ export function createAuth(config: SiteConfig) {
       return toSessionGuild((await discordRequest(`/guilds/${guild.id}?with_counts=true`, { headers })) as DiscordGuild);
     }));
     return checked.flatMap((result) => (result.status === 'fulfilled' && result.value ? [result.value] : []));
-  }
-
-  // OWNER_ID pode apontar para o próprio bot. Nesse caso o dev é o dono humano da aplicação (time ou conta), lido pelo token do bot.
-  async function resolveDevId(): Promise<string | undefined> {
-    if (!config.mockOwnerId) return undefined;
-    if (!config.mockBotToken) return config.mockOwnerId;
-    const headers = { Authorization: `Bot ${config.mockBotToken}` };
-    try {
-      const target = (await discordRequest(`/users/${config.mockOwnerId}`, { headers })) as { bot?: unknown };
-      if (target.bot !== true) return config.mockOwnerId;
-      const app = (await discordRequest('/applications/@me', { headers })) as { team?: { owner_user_id?: unknown } | null; owner?: { id?: unknown } };
-      const human = app.team?.owner_user_id ?? app.owner?.id;
-      return typeof human === 'string' && snowflake.test(human) ? human : config.mockOwnerId;
-    } catch {
-      return config.mockOwnerId;
-    }
   }
 
   // Nome e foto do dev no mock, lidos pelo token do bot; sem token ou em falha, cai para "Dev" sem foto.
@@ -245,9 +230,17 @@ export function createAuth(config: SiteConfig) {
   }
 
   async function mockLogin(res: ServerResponse): Promise<void> {
-    if (!config.mockOwnerId) { sendJson(res, 404, { error: 'not_found' }); return; }
+    if (!config.devMock) { sendJson(res, 404, { error: 'not_found' }); return; }
+    let devId: string | null;
     try {
-      const devId = (await resolveDevId()) ?? config.mockOwnerId;
+      devId = await loadActiveDevId();
+    } catch {
+      sendJson(res, 503, { error: 'dev_indisponivel' });
+      return;
+    }
+    if (devId == null) { sendJson(res, 409, { error: 'dev_ausente' }); return; }
+    if (!snowflake.test(devId)) { sendJson(res, 503, { error: 'dev_indisponivel' }); return; }
+    try {
       const [guilds, user] = await Promise.all([mockGuilds(devId), mockProfile(devId)]);
       sendJson(res, 200, sessionBody({ created: 0, expires: 0, user, guilds }), { 'Set-Cookie': openSession(user, guilds) });
     } catch {

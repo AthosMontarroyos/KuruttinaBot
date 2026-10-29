@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { createDatabase } from '@kuruttina/database';
 import { createAuth } from './auth.js';
 import { createTemplatesApi } from './templates.js';
 import type { readSiteConfig } from './config.js';
@@ -44,7 +45,7 @@ async function readPublicFile(directory: URL, pathname: string): Promise<Buffer>
   return readFile(new URL(pathname.slice(1), directory));
 }
 
-export async function createSiteServer(config: SiteConfig, pageFile: URL, staticDirectory: URL) {
+export async function createSiteServer(config: SiteConfig, pageFile: URL, staticDirectory: URL, loadActiveDevId?: () => Promise<string | null>) {
   const template = await readFile(pageFile, 'utf8');
   const html = template.replaceAll('{{AVATAR_URL}}', escapeAttribute(config.avatarUrl));
   const assets = new Map<string, { type: string; body: Buffer | string }>([
@@ -69,8 +70,9 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   await Promise.all(iconPaths.map(async (pathname) => {
     assets.set(pathname, { type: 'image/svg+xml', body: await readPublicFile(staticDirectory, pathname) });
   }));
-  const auth = createAuth(config);
-  const templatesApi = createTemplatesApi(config, auth);
+  const database = createDatabase(config.database, config.target);
+  const auth = createAuth(config, loadActiveDevId ?? (() => database.getActiveDevUserId()));
+  const templatesApi = createTemplatesApi(config, auth, database);
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
     res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${config.assetsOrigin} https://cdn.discordapp.com; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
     res.setHeader('X-Content-Type-Options', 'nosniff');

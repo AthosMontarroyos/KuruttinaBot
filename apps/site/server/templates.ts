@@ -81,8 +81,7 @@ function adminErrorResponse(error: TemplateAdminError): { status: number; body: 
   }
 }
 
-export function createTemplatesApi(config: SiteConfig, auth: Auth) {
-  const database = createDatabase(config.database, config.target);
+export function createTemplatesApi(config: SiteConfig, auth: Auth, database: ReturnType<typeof createDatabase>) {
   const service = createTemplateAdminService(createTemplateRepository(database.templates, database.folders));
 
   function authorize(req: IncomingMessage, res: ServerResponse, guildId: string): { discordId: string } | undefined {

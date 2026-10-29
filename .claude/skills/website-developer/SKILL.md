@@ -24,6 +24,6 @@ Rotas ficam em pastas sob `src/app/`, uma pasta por segmento de URL, com `page.t
 
 A [decisão de login exclusivo via Discord](../../../docs/decisions/discord-only-authentication.md) é requisito obrigatório de qualquer trabalho de autenticação ou painel.
 
-Leia [autenticação e administração](references/authentication-and-admin.md): mutations, identidade Discord, autorização pela equipe, sessões, CSRF, erros e administração aplicam-se ao fluxo correspondente. Persistência aciona `database-developer`; publicação e hospedagem acionam `project-operations`. Não crie contas, usuários de teste ou registros privilegiados sem autorização explícita do responsável.
+Leia [autenticação e administração](references/authentication-and-admin.md): mutations, identidade Discord, autorização pela equipe, sessões, CSRF, erros e administração aplicam-se ao fluxo correspondente. O DevMock só existe com `APP_ENV=development` e lê o dev ativo por `getActiveDevUserId()` em `@kuruttina/database`, nunca por `OWNER_ID`. Persistência aciona `database-developer`; publicação e hospedagem acionam `project-operations`. Não crie contas, usuários de teste ou registros privilegiados sem autorização explícita do responsável.
 
 Atualize esta skill quando mudar o procedimento de trabalho e `docs/project/site.md` quando mudar o comportamento implementado, sem duplicar os dois.

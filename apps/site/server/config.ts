@@ -18,25 +18,25 @@ function readSiteUrl(raw: string | undefined, production: boolean): string {
   return url.origin;
 }
 
-// O login mock existe só em development, com o OWNER_ID do bot dev; production recusa iniciar se o receber.
-function readMockOwnerId(env: NodeJS.ProcessEnv): string | undefined {
-  const raw = env.OWNER_ID?.trim();
-  if (!raw) return undefined;
-  if (env.APP_ENV === 'production') throw new Error('Production não aceita o login mock: remova OWNER_ID do ambiente do site.');
-  if (!/^[1-9][0-9]{16,19}$/u.test(raw)) throw new Error('OWNER_ID inválido para o login mock do site.');
-  return raw;
+// O login mock existe só com APP_ENV=development. O id do dev vem do banco, não de variável de ambiente.
+// Production nunca liga o mock, mesmo que OWNER_ID ou o token do bot estejam no processo.
+function readDevMock(env: NodeJS.ProcessEnv): boolean {
+  return env.APP_ENV === 'development';
+}
+
+function readMockBotToken(env: NodeJS.ProcessEnv, devMock: boolean): string | undefined {
+  if (!devMock) return undefined;
+  const token = env.DISCORD_BOT_TOKEN?.trim() ?? '';
+  return token || undefined;
 }
 
 // OAuth do Discord: o client id é o do próprio bot. Sem o par id/secret o login real fica indisponível, sem derrubar o site.
-function readDiscordOAuth(env: NodeJS.ProcessEnv, siteUrl: string, mockOwnerId: string | undefined) {
+function readDiscordOAuth(env: NodeJS.ProcessEnv, siteUrl: string) {
   const clientId = env.DISCORD_BOT_ID?.trim() ?? '';
   const clientSecret = env.DISCORD_CLIENT_SECRET?.trim() ?? '';
-  const botToken = env.DISCORD_BOT_TOKEN?.trim() ?? '';
-  const oauth = /^[1-9][0-9]{16,19}$/u.test(clientId) && clientSecret
+  return /^[1-9][0-9]{16,19}$/u.test(clientId) && clientSecret
     ? { clientId, clientSecret, redirectUri: `${siteUrl}/auth/callback` }
     : undefined;
-  // O token do bot só é lido para o mock listar os servidores do dev; nunca em production.
-  return { oauth, mockBotToken: mockOwnerId && botToken ? botToken : undefined };
 }
 
 // Arquivo das sessões: em development o padrão persiste em .sessions/ para o login sobreviver a reinícios.
@@ -48,7 +48,7 @@ function readSessionFile(env: NodeJS.ProcessEnv): string | undefined {
 
 export function readSiteConfig(env: NodeJS.ProcessEnv) {
   if (env.APP_ENV !== 'development' && env.APP_ENV !== 'production') throw new Error('APP_ENV inválido para o site.');
-  const mockOwnerId = readMockOwnerId(env);
+  const devMock = readDevMock(env);
   const rawPort = env.PORT ?? '3666';
   if (!/^\d{1,5}$/u.test(rawPort) || Number(rawPort) < 1 || Number(rawPort) > 65535) throw new Error('PORT inválida para o site.');
   let base: URL;
@@ -58,7 +58,8 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   const avatarPath = 'icons/Icons/1.jpg';
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   const siteUrl = readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production');
-  const { oauth, mockBotToken } = readDiscordOAuth(env, siteUrl, mockOwnerId);
+  const oauth = readDiscordOAuth(env, siteUrl);
+  const mockBotToken = readMockBotToken(env, devMock);
   // Role própria do site (`kuruttina_site`), distinta da do bot: privilégios mínimos por capacidade.
   const database = readDatabaseConfig(env, env.APP_ENV, 'runtime', 'kuruttina_site');
   return Object.freeze({
@@ -68,7 +69,7 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
     siteUrl,
     assetsOrigin: base.origin,
     avatarUrl: new URL(avatarPath, base).href,
-    mockOwnerId,
+    devMock,
     mockBotToken,
     oauth,
     sessionFile: readSessionFile(env),

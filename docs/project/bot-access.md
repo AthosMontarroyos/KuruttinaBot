@@ -15,7 +15,7 @@ Os dois projetos receberam a migration e o cadastro inicial em 23/09/2026:
 - Creator: `666948364507545600`.
 - Dev: `1509331533348212808`.
 
-`bot_private.bot_settings` contém um único registro, com guilda e ambiente. `bot_private.bot_staff` contém usuário, papel e status ativo, com um usuário por papel e sem repetição de usuário. IDs são strings de snowflake; não use números JavaScript.
+`bot_private.bot_settings` contém um único registro, com guilda e ambiente. `bot_private.bot_staff` contém usuário, papel e status ativo, com um usuário por papel e sem repetição de usuário. IDs são strings de snowflake; não use números JavaScript. `kuruttina_site` não tem `SELECT` nessa tabela. O DevMock do site, só em development, chama `bot_private.active_dev_user_id()` e recebe apenas o `user_id` do papel `dev` quando `active` é verdadeiro.
 
 Os cadastros são independentes. Alterar uma conta ou guilda em development não altera production.
 

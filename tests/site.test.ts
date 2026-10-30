@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
 import { createHash } from 'node:crypto';
+import { inspect } from 'node:util';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -84,15 +85,21 @@ describe('mock login configuration', () => {
   it('keeps the mock off in production even when OWNER_ID or the bot token is present', () => {
     const config = readSiteConfig({ ...production, OWNER_ID: 'not-a-snowflake', DISCORD_BOT_TOKEN: 'test-secret' });
     expect(config.devMock).toBe(false);
-    expect(config.mockBotToken).toBeUndefined();
-    expect(JSON.stringify(config)).not.toContain('test-secret');
     expect(JSON.stringify(config)).not.toContain('OWNER_ID');
   });
-  it('reads the bot token only for the development mock', () => {
-    expect(readSiteConfig(environment).mockBotToken).toBeUndefined();
-    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: '  bot-token  ' }).mockBotToken).toBe('bot-token');
-    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: '   ' }).mockBotToken).toBeUndefined();
-    expect(readSiteConfig({ ...production, DISCORD_BOT_TOKEN: 'bot-token' }).mockBotToken).toBeUndefined();
+  it('reads the bot token in every environment, trimmed, and treats blank as absent', () => {
+    expect(readSiteConfig(environment).botToken).toBeUndefined();
+    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: '  bot-token  ' }).botToken).toBe('bot-token');
+    expect(readSiteConfig({ ...environment, DISCORD_BOT_TOKEN: '   ' }).botToken).toBeUndefined();
+    expect(readSiteConfig({ ...production, DISCORD_BOT_TOKEN: 'bot-token' }).botToken).toBe('bot-token');
+    expect(readSiteConfig(production).botToken).toBeUndefined();
+  });
+  it('never exposes the bot token through serialization, spread or inspection of the config', () => {
+    const config = readSiteConfig({ ...production, DISCORD_BOT_TOKEN: 'test-secret' });
+    expect(JSON.stringify(config)).not.toContain('test-secret');
+    expect(JSON.stringify({ ...config })).not.toContain('test-secret');
+    expect(inspect(config, { depth: 5 })).not.toContain('test-secret');
+    expect(Object.keys(config)).not.toContain('botToken');
   });
 });
 
@@ -309,6 +316,14 @@ describe('public Home HTTP boundary', () => {
     const html = await response.text();
     expect(html).toContain('https://assets.example.com/icons/Icons/1.jpg');
     expect(html).not.toContain('{{AVATAR_URL}}');
+  });
+  it('allows any https image only on the dashboard, for the message preview', async () => {
+    const dashboard = (await fetch(`${origin}/dashboard`)).headers.get('content-security-policy');
+    const server = (await fetch(`${origin}/dashboard/1422623678205657160`)).headers.get('content-security-policy');
+    const home = (await fetch(origin)).headers.get('content-security-policy');
+    expect(dashboard).toContain("img-src 'self' https:;");
+    expect(server).toContain("img-src 'self' https:;");
+    expect(home).not.toContain("img-src 'self' https:;");
   });
   it.each(['/.env', '/package.json', '/src/config.ts', '/%2e%2e/.env', '/icons/../../.env', '/icons/theme.svg'])('never serves non-allowlisted file %s', async (path) => {
     expect((await fetch(origin + path)).status).toBe(404);

@@ -67,7 +67,7 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
         <nav className="flex flex-col gap-1" aria-label="Seções do servidor">
           {([
             ['overview', 'Visão geral'],
-            ['embeds', 'Embeds'],
+            ['embeds', 'Messages'],
             ['modules', 'Módulos'],
           ] as const).map(([target, label]) => (
             <button

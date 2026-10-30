@@ -14,6 +14,28 @@ vi.mock('#bot/application/messages/catalog.js', () => ({
 }));
 
 describe('toCommandReply', () => {
+  it('converte imagens e ícones do embed para o formato do Discord', () => {
+    const reply = toCommandReply({
+      embeds: [{
+        title: 'T',
+        thumbnail: { url: 'https://exemplo.com/t.png' },
+        image: { url: 'https://exemplo.com/i.png' },
+        footer: { text: 'F', iconUrl: 'https://exemplo.com/f.png' },
+        author: { name: 'A', iconUrl: 'https://exemplo.com/a.png' },
+      }],
+      components: [],
+    });
+    expect(reply).toEqual({
+      embeds: [{
+        title: 'T', color: 0x2b2d31,
+        thumbnail: { url: 'https://exemplo.com/t.png' },
+        image: { url: 'https://exemplo.com/i.png' },
+        footer: { text: 'F', icon_url: 'https://exemplo.com/f.png' },
+        author: { name: 'A', icon_url: 'https://exemplo.com/a.png' },
+      }],
+    });
+  });
+
   it('converte embed completo com a cor padrão', () => {
     const reply = toCommandReply({
       content: 'oi',

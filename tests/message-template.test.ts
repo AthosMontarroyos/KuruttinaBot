@@ -110,6 +110,24 @@ describe('validateTemplate', () => {
     expect(codes(withButton({ kind: 'buttons', buttons: [{ style: 'link', label: 'x', url: 'javascript:alert(1)' }] }))).toContain('invalid_url');
   });
 
+  it('accepts embed images and icons only as https links', () => {
+    const embed = (extra: object) => ({ embeds: [{ title: 'T', ...extra }], components: [] }) as unknown as MessageTemplate;
+    expect(validateTemplate(embed({
+      thumbnail: { url: 'https://example.com/t.png' },
+      image: { url: 'https://example.com/i.png' },
+      author: { name: 'A', iconUrl: 'https://example.com/a.png' },
+      footer: { text: 'F', iconUrl: 'https://example.com/f.png' },
+    }), variables)).toEqual([]);
+    expect(codes(embed({ thumbnail: { url: 'http://example.com/t.png' } }))).toContain('invalid_url');
+    expect(codes(embed({ image: { url: 'javascript:alert(1)' } }))).toContain('invalid_url');
+    expect(codes(embed({ author: { name: 'A', iconUrl: 'ftp://example.com/a.png' } }))).toContain('invalid_url');
+    expect(codes(embed({ footer: { text: 'F', iconUrl: '{user.name}' } }))).toContain('variable_not_allowed');
+  });
+
+  it('treats an embed with only an image as non-empty', () => {
+    expect(codes({ embeds: [{ image: { url: 'https://example.com/i.png' } }], components: [] })).not.toContain('empty_embed');
+  });
+
   it('validates custom_id format and size', () => {
     expect(codes(withButton({ kind: 'buttons', buttons: [{ style: 'primary', label: 'x', customId: 'abc' }] }))).toContain('invalid_custom_id');
     expect(codes(withButton({ kind: 'buttons', buttons: [{ style: 'primary', label: 'x', customId: `kt:a:${'b'.repeat(100)}` }] }))).toContain('invalid_custom_id');

@@ -114,8 +114,10 @@ export function renderTemplate(template, variables, values) {
     if (embed.fields !== undefined) {
       output.fields = embed.fields.map((field) => ({ ...field, name: fill(field.name), value: fill(field.value) }));
     }
-    if (embed.footer !== undefined) output.footer = { text: fill(embed.footer.text) };
+    if (embed.footer !== undefined) output.footer = { ...embed.footer, text: fill(embed.footer.text) };
     if (embed.author !== undefined) output.author = { ...embed.author, name: fill(embed.author.name) };
+    if (embed.thumbnail !== undefined) output.thumbnail = embed.thumbnail;
+    if (embed.image !== undefined) output.image = embed.image;
     return output;
   };
 
@@ -172,7 +174,7 @@ export function fillEmojis(template, emojis) {
         value: fill(field.value, `${base}.fields[${index}].value`),
       }));
     }
-    if (embed.footer !== undefined) output.footer = { text: fill(embed.footer.text, `${base}.footer.text`) };
+    if (embed.footer !== undefined) output.footer = { ...embed.footer, text: fill(embed.footer.text, `${base}.footer.text`) };
     if (embed.author !== undefined) output.author = { ...embed.author, name: fill(embed.author.name, `${base}.author.name`) };
     return output;
   };

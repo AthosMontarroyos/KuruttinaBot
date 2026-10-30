@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { card, outlineButton, primaryButton, Skeleton } from '../../../ui';
+import { ChannelSelect } from '../../../../../components/selectors/ChannelSelect';import { MessageEditor, MessagePreview } from '../../../../../components/message-editor/MessageEditor';
 import {
   createFolder,
   createTemplate,
@@ -21,18 +22,12 @@ import {
   type ValidationDetail,
 } from './templates-api';
 
-const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 const NO_FOLDER_KEY = '__no_folder__';
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : dateFormat.format(date);
-}
 
 function errorMessage(error: TemplateErrorCode, details?: ValidationDetail[]): string {
   switch (error) {
     case 'invalid_name':
-      return 'Esse nome não é válido para um modelo de mensagem.';
+      return 'Esse nome não é válido. Use letras minúsculas, números, _ e -, até 32 caracteres.';
     case 'too_large':
       return 'O conteúdo é grande demais para um modelo de mensagem.';
     case 'validation':
@@ -76,7 +71,7 @@ function folderErrorMessage(error: TemplateErrorCode): string {
 function deliveryErrorMessage(error: TemplateErrorCode): string {
   switch (error) {
     case 'invalid_channel_id':
-      return 'Informe o ID do canal.';
+      return 'Escolha um canal.';
     case 'not_found':
       return 'Esse modelo de mensagem não existe mais.';
     case 'quota':
@@ -174,6 +169,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [detail, setDetail] = useState<TemplateDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [showJson, setShowJson] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -194,7 +190,6 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const [moveError, setMoveError] = useState<string | null>(null);
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const contentInputRef = useRef<HTMLTextAreaElement>(null);
 
   const loadFolders = useCallback(async () => {
     const result = await listFolders(guildId);
@@ -221,7 +216,6 @@ function TemplatesView({ guildId }: { guildId: string }) {
 
   useEffect(() => {
     if (view.kind === 'create') nameInputRef.current?.focus();
-    else if (view.kind === 'edit') contentInputRef.current?.focus();
   }, [view]);
 
   const loadMore = useCallback(async () => {
@@ -262,6 +256,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
 
   const openDetail = useCallback(async (name: string) => {
     setView({ kind: 'detail', name });
+    setShowJson(false);
     setDetail(null);
     setDetailError(null);
     const result = await getTemplate(guildId, name);
@@ -514,19 +509,21 @@ function TemplatesView({ guildId }: { guildId: string }) {
               type="text"
               value={form.name}
               disabled={view.kind === 'edit'}
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              maxLength={32}
+              aria-describedby="template-name-hint"
+              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value.toLowerCase().replace(/\s+/gu, '-').replace(/[^a-z0-9_-]/gu, '') }))}
             />
+            <p id="template-name-hint" className="text-[13px] text-muted">Use letras minúsculas, números, _ e -, até 32 caracteres.</p>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium" htmlFor="template-content">Conteúdo (JSON)</label>
-            <textarea
-              ref={contentInputRef}
-              id="template-content"
-              className="min-h-[220px] rounded-[10px] border border-control bg-transparent px-3 py-2 font-mono text-[13px] leading-5"
-              value={form.contentJson}
-              onChange={(event) => setForm((current) => ({ ...current, contentJson: event.target.value }))}
+          {view.kind === 'edit' && form.version === null ? (
+            form.error ? null : <Skeleton className="h-40" />
+          ) : (
+            <MessageEditor
+              key={view.kind === 'edit' ? view.name : 'create'}
+              initialJson={form.contentJson}
+              onChange={(contentJson) => setForm((current) => ({ ...current, contentJson }))}
             />
-          </div>
+          )}
           {form.error ? <p role="alert" className="text-sm text-red-600">{form.error}</p> : null}
           <div className="flex gap-3">
             <button className={primaryButton} type="button" disabled={form.submitting} onClick={() => void submitForm()}>
@@ -552,17 +549,17 @@ function TemplatesView({ guildId }: { guildId: string }) {
             </div>
           ) : (
             <>
-              <dl className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3 text-sm">
-                <div><dt className="text-muted">Pasta</dt><dd>{detail.folderName ?? 'Sem pasta'}</dd></div>
-                <div><dt className="text-muted">Versão</dt><dd>{detail.version}</dd></div>
-                <div><dt className="text-muted">Botões</dt><dd>{detail.buttonCount}</dd></div>
-                <div><dt className="text-muted">Menus</dt><dd>{detail.menuCount}</dd></div>
-                <div><dt className="text-muted">Atualizado em</dt><dd>{formatDate(detail.updatedAt)}</dd></div>
-              </dl>
-              <pre className="overflow-auto rounded-[10px] border border-control bg-transparent px-3 py-2 font-mono text-[13px] leading-5">
-                {JSON.stringify(detail.content, null, 2)}
-              </pre>
-              <div className="flex gap-3">
+              {showJson ? (
+                <pre className="overflow-auto rounded-[10px] border border-control bg-transparent px-3 py-2 font-mono text-[13px] leading-5">
+                  {JSON.stringify(detail.content, null, 2)}
+                </pre>
+              ) : (
+                <MessagePreview content={detail.content} />
+              )}
+              <div className="flex flex-wrap gap-3">
+                <button className={outlineButton} type="button" aria-pressed={showJson} onClick={() => setShowJson((current) => !current)}>
+                  {showJson ? 'Ver mensagem' : 'Ver JSON'}
+                </button>
                 <button className={outlineButton} type="button" onClick={() => void openEdit(detail.name)}>Editar</button>
                 <button className={outlineButton} type="button" onClick={() => openDelivery(detail.name)}>Enviar ao canal</button>
                 <button className={outlineButton} type="button" onClick={() => setDeleteTarget(detail.name)}>Apagar</button>
@@ -575,17 +572,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
       {deliveryTarget ? (
         <div role="dialog" aria-labelledby="delivery-template-title" className={`${card} flex flex-col gap-3 p-5`}>
           <h2 id="delivery-template-title" className="text-lg font-semibold">Enviar “{deliveryTarget}” a um canal</h2>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium" htmlFor="delivery-channel-id">ID do canal</label>
-            <input
-              id="delivery-channel-id"
-              className="min-h-11 rounded-[10px] border border-control bg-transparent px-3 text-sm"
-              type="text"
-              value={deliveryChannelId}
-              onChange={(event) => setDeliveryChannelId(event.target.value)}
-            />
-          </div>
-          {deliveryError ? <p role="alert" className="text-sm text-red-600">{deliveryError}</p> : null}
+          <ChannelSelect guildId={guildId} value={deliveryChannelId} onChange={setDeliveryChannelId} disabled={deliverySubmitting} />          {deliveryError ? <p role="alert" className="text-sm text-red-600">{deliveryError}</p> : null}
           {deliverySuccess ? <p className="text-sm text-muted">{deliverySuccess}</p> : null}
           <div className="flex gap-3">
             <button className={primaryButton} type="button" disabled={deliverySubmitting} onClick={() => void confirmDelivery()}>Enviar</button>
@@ -669,9 +656,6 @@ function TemplatesView({ guildId }: { guildId: string }) {
                         onClick={() => void openDetail(item.name)}
                       >
                         {item.name}
-                        <span className="block text-[13px] font-normal text-muted">
-                          {item.buttonCount} botões · {item.menuCount} menus · versão {item.version} · atualizado em {formatDate(item.updatedAt)}
-                        </span>
                       </button>
                       <div className="flex gap-2">
                         <button className={outlineButton} type="button" onClick={() => void openEdit(item.name)}>Editar</button>

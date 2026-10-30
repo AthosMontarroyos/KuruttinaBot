@@ -24,8 +24,9 @@ function readDevMock(env: NodeJS.ProcessEnv): boolean {
   return env.APP_ENV === 'development';
 }
 
-function readMockBotToken(env: NodeJS.ProcessEnv, devMock: boolean): string | undefined {
-  if (!devMock) return undefined;
+// Token do bot: o site o usa só no servidor (lista de canais, e no development a lista de servidores do DevMock).
+// Em qualquer ambiente é opcional: sem ele essas leituras ficam indisponíveis, sem derrubar o site.
+function readBotToken(env: NodeJS.ProcessEnv): string | undefined {
   const token = env.DISCORD_BOT_TOKEN?.trim() ?? '';
   return token || undefined;
 }
@@ -59,20 +60,23 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   const siteUrl = readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production');
   const oauth = readDiscordOAuth(env, siteUrl);
-  const mockBotToken = readMockBotToken(env, devMock);
+  const botToken = readBotToken(env);
   // Role própria do site (`kuruttina_site`), distinta da do bot: privilégios mínimos por capacidade.
   const database = readDatabaseConfig(env, env.APP_ENV, 'runtime', 'kuruttina_site');
-  return Object.freeze({
-    target: env.APP_ENV,
+  const target: 'development' | 'production' = env.APP_ENV;
+  const settings = {
+    target,
     port: Number(rawPort),
     host: readHost(env.HOST),
     siteUrl,
     assetsOrigin: base.origin,
     avatarUrl: new URL(avatarPath, base).href,
     devMock,
-    mockBotToken,
     oauth,
     sessionFile: readSessionFile(env),
     database,
-  });
+  };
+  // O token fica não enumerável: o código do servidor o lê, mas JSON.stringify, spread e util.inspect da configuração não o expõem.
+  Object.defineProperty(settings, 'botToken', { value: botToken, enumerable: false });
+  return Object.freeze(settings as typeof settings & { readonly botToken: string | undefined });
 }

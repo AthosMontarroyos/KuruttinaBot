@@ -2,6 +2,8 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { createDatabase } from '@kuruttina/database';
 import { createAuth } from './auth.js';
+import { createDiscordBot } from './discord.js';
+import { createGuildApi } from './guild.js';
 import { createTemplatesApi } from './templates.js';
 import type { readSiteConfig } from './config.js';
 
@@ -73,14 +75,18 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   const database = createDatabase(config.database, config.target);
   const auth = createAuth(config, loadActiveDevId ?? (() => database.getActiveDevUserId()));
   const templatesApi = createTemplatesApi(config, auth, database);
+  const guildApi = createGuildApi(auth, createDiscordBot(config));
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
-    res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${config.assetsOrigin} https://cdn.discordapp.com; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
+    const [path = '', search = ''] = (req.url ?? '').split('?');
+    // Só o painel carrega imagens de qualquer https: a prévia das mensagens mostra os links que o administrador cola.
+    const imageSources = path === '/dashboard' || dashboardServerPath.test(path) ? 'https:' : `${config.assetsOrigin} https://cdn.discordapp.com`;
+    res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${imageSources}; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-cache');
-    const [path = '', search = ''] = (req.url ?? '').split('?');
     if (auth.handle(req, res, path, search)) return;
     if (templatesApi.handle(req, res, path, search)) return;
+    if (guildApi.handle(req, res, path)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
     const asset = assets.get(path) ?? (dashboardServerPath.test(path) ? assets.get('/dashboard') : undefined);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }

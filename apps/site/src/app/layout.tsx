@@ -9,22 +9,12 @@ import { DashboardPage } from './dashboard/page';
 import { ServerDashboardPage } from './dashboard/[serverId]/page';
 import { ComandosPage } from './comandos/page';
 import { ModulosPage } from './modulos/page';
+import { readBotAvatarUrl } from '../lib/bot-avatar';
 import { useSession } from '../lib/session';
 import './globals.css';
 
 const themeStorageKey = 'kuruttina-theme';
 const serverDashboardPath = /^\/dashboard\/([^/]+)$/u;
-
-function readAvatarUrl(): string {
-  const content = document.querySelector('meta[name="kuruttina-avatar"]')?.getAttribute('content') ?? '';
-  try {
-    const url = new URL(content);
-    if (url.protocol !== 'https:' || url.username || url.password) return '';
-    return url.href;
-  } catch {
-    return '';
-  }
-}
 
 function readStoredLightTheme(): boolean {
   try {
@@ -37,7 +27,7 @@ function readStoredLightTheme(): boolean {
 function RootLayout() {
   const [light, setLight] = useState(readStoredLightTheme);
   const [notice, setNotice] = useState<string | null>(null);
-  const avatarUrl = readAvatarUrl();
+  const avatarUrl = readBotAvatarUrl();
   const { session, failed, mockLogin, logout } = useSession();
   const serverId = serverDashboardPath.exec(location.pathname)?.[1];
 

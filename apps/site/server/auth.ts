@@ -140,8 +140,8 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
   // Servidores do dev no mock: os do bot em que o user_id ativo de papel dev é membro.
   // Sem token do bot a sessão abre sem servidores. O mock não tem token OAuth do usuário.
   async function mockGuilds(devId: string): Promise<SessionGuild[]> {
-    if (!config.mockBotToken) return [];
-    const headers = { Authorization: `Bot ${config.mockBotToken}` };
+    if (!config.botToken) return [];
+    const headers = { Authorization: `Bot ${config.botToken}` };
     const botGuilds = (await discordRequest('/users/@me/guilds?limit=100', { headers })) as DiscordGuild[];
     const checked = await Promise.allSettled(botGuilds.slice(0, 25).map(async (guild) => {
       if (typeof guild.id !== 'string' || !snowflake.test(guild.id)) return null;
@@ -154,9 +154,9 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
   // Nome e foto do dev no mock, lidos pelo token do bot; sem token ou em falha, cai para "Dev" sem foto.
   async function mockProfile(devId: string): Promise<SessionUser> {
     const fallback = { id: devId, label: 'Dev', avatarUrl: null };
-    if (!config.mockBotToken) return fallback;
+    if (!config.botToken) return fallback;
     try {
-      const profile = (await discordRequest(`/users/${devId}`, { headers: { Authorization: `Bot ${config.mockBotToken}` } })) as { username?: unknown; global_name?: unknown; avatar?: unknown };
+      const profile = (await discordRequest(`/users/${devId}`, { headers: { Authorization: `Bot ${config.botToken}` } })) as { username?: unknown; global_name?: unknown; avatar?: unknown };
       const name = typeof profile.global_name === 'string' && profile.global_name ? profile.global_name : typeof profile.username === 'string' ? profile.username : 'Dev';
       const avatar = typeof profile.avatar === 'string' && iconHash.test(profile.avatar) ? profile.avatar : null;
       return { id: devId, label: name.slice(0, 64), avatarUrl: avatar ? `https://cdn.discordapp.com/avatars/${devId}/${avatar}.png?size=64` : null };

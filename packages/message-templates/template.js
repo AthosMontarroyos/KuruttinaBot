@@ -24,8 +24,10 @@ import {
  * @property {string} [description]
  * @property {string} [url]
  * @property {TemplateEmbedField[]} [fields]
- * @property {{text: string}} [footer]
- * @property {{name: string, url?: string}} [author]
+ * @property {{text: string, iconUrl?: string}} [footer]
+ * @property {{name: string, url?: string, iconUrl?: string}} [author]
+ * @property {{url: string}} [thumbnail]
+ * @property {{url: string}} [image]
  * @property {number} [color] Cor da barra lateral, como `0x2b2d31`: inteiro entre 0 e 0xFFFFFF.
  */
 
@@ -222,11 +224,17 @@ export function validateTemplate(template, variables) {
     ) {
       fail('invalid_color', `${base}.color`, 'A cor precisa ser um inteiro entre 0 e 0xFFFFFF.');
     }
-    if (embed.footer !== undefined) used += checkText(`${base}.footer.text`, embed.footer.text, L.footerText, true);
+    if (embed.footer !== undefined) {
+      used += checkText(`${base}.footer.text`, embed.footer.text, L.footerText, true);
+      if (embed.footer.iconUrl !== undefined) checkUrl(`${base}.footer.iconUrl`, embed.footer.iconUrl);
+    }
     if (embed.author !== undefined) {
       used += checkText(`${base}.author.name`, embed.author.name, L.authorName, true);
       if (embed.author.url !== undefined) checkUrl(`${base}.author.url`, embed.author.url);
+      if (embed.author.iconUrl !== undefined) checkUrl(`${base}.author.iconUrl`, embed.author.iconUrl);
     }
+    if (embed.thumbnail !== undefined) checkUrl(`${base}.thumbnail.url`, embed.thumbnail.url);
+    if (embed.image !== undefined) checkUrl(`${base}.image.url`, embed.image.url);
     const fields = embed.fields ?? [];
     if (fields.length > L.embedFields) {
       fail('too_many_fields', `${base}.fields`, `No máximo ${L.embedFields} campos por embed.`);
@@ -237,7 +245,7 @@ export function validateTemplate(template, variables) {
       used += checkText(`${path}.value`, field.value, L.fieldValue, true);
     });
     const hasContent =
-      used > 0 || embed.url !== undefined || fields.length > 0 || embed.author !== undefined;
+      used > 0 || embed.url !== undefined || fields.length > 0 || embed.author !== undefined || embed.thumbnail !== undefined || embed.image !== undefined;
     if (!hasContent) fail('empty_embed', base, 'O embed está vazio.');
     embedTotal += used;
   });

@@ -39,7 +39,7 @@ function ChevronRight() {
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button className={`${outlineButton} self-start`} type="button" onClick={onClick}>
-      ← Voltar a Embeds
+      ← Voltar a Messages
     </button>
   );
 }
@@ -85,7 +85,7 @@ function EmbedsView({ guildId }: { guildId: string }) {
 
   return (
     <>
-      <h1 className="text-[28px] font-semibold">Embeds</h1>
+      <h1 className="text-[28px] font-semibold">Messages</h1>
       {section === 'menu' ? (
         <EmbedsMenu onSelect={setSection} />
       ) : section === 'templates' ? (

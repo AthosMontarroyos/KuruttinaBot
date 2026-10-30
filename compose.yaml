@@ -35,6 +35,7 @@ services:
       PORT: "3666"
       SITE_URL: https://kuruttina.athosmontarroyos.com
       ASSETS_BASE_URL: ${ASSETS_BASE_URL:-}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
       DATABASE_URL: ${SITE_DATABASE_URL:-}
       DATABASE_CA: ${DATABASE_CA:-}
     ports:

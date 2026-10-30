@@ -254,7 +254,7 @@ describe('compose database env', () => {
     }
   });
 
-  it('entrega o token do bot ao site de desenvolvimento para a lista de servidores do DevMock', () => {
+  it('entrega o token do bot ao site nos dois Composes (leituras do Discord no servidor, sem o id do bot)', () => {
     const production = readFileSync(new URL('../compose.yaml', import.meta.url), 'utf8');
     const development = readFileSync(new URL('../compose.dev.yaml', import.meta.url), 'utf8');
     const devSite = serviceBlock(development, 'site');
@@ -265,8 +265,10 @@ describe('compose database env', () => {
     expect(devSite).not.toContain('DISCORD_BOT_ID');
     expect(devBot).toContain('DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}');
     expect(devBot).toContain('DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}');
-    expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_TOKEN');
+    // Decisão aprovada em 29 de outubro de 2026 (docs/decisions/site-holds-bot-token.md): o site de produção também recebe o token.
+    expect(serviceBlock(production, 'site')).toContain('DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}');
     expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_ID');
+    expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_TOKEN_PRODUCTION');
   });
 });
 

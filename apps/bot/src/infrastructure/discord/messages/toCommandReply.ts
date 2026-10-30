@@ -25,12 +25,18 @@ function toEmbed(embed: TemplateEmbed): APIEmbed {
         : { name: field.name, value: field.value, inline: field.inline }
     ));
   }
-  if (embed.footer !== undefined) output.footer = { text: embed.footer.text };
-  if (embed.author !== undefined) {
-    output.author = embed.author.url === undefined
-      ? { name: embed.author.name }
-      : { name: embed.author.name, url: embed.author.url };
+  if (embed.footer !== undefined) {
+    output.footer = embed.footer.iconUrl === undefined
+      ? { text: embed.footer.text }
+      : { text: embed.footer.text, icon_url: embed.footer.iconUrl };
   }
+  if (embed.author !== undefined) {
+    output.author = { name: embed.author.name };
+    if (embed.author.url !== undefined) output.author.url = embed.author.url;
+    if (embed.author.iconUrl !== undefined) output.author.icon_url = embed.author.iconUrl;
+  }
+  if (embed.thumbnail !== undefined) output.thumbnail = { url: embed.thumbnail.url };
+  if (embed.image !== undefined) output.image = { url: embed.image.url };
   return output;
 }
 

@@ -110,6 +110,27 @@ const entries = {
     emojis: emojisOf('dancing', 'stats', 'gateway'),
   },
 
+  'clear.invalid_count': plain('{emoji.question} Diga quantas mensagens apagar: um número de **1 a 200**.', emojisOf('question')),
+  'clear.invalid_user': plain('{emoji.id} Não consegui identificar esse usuário. Selecione um usuário válido para a limpeza.', emojisOf('ID')),
+  'clear.busy': plain('{emoji.loading} Já estou limpando este canal. Espere eu terminar para começar outra limpeza.', emojisOf('loading')),
+  'clear.fetch_failed': plain('{emoji.ops} Não consegui buscar as mensagens. Tente de novo daqui a pouco.', emojisOf('ops')),
+  'clear.none': plain('{emoji.search} Não encontrei mensagens para apagar. Só consigo limpar mensagens enviadas há menos de 14 dias.', emojisOf('search')),
+  'clear.none_user': plain(
+    '{emoji.search} Não encontrei mensagens de {user} para apagar. Só consigo limpar mensagens enviadas há menos de 14 dias.',
+    emojisOf('search'),
+    [{ name: 'user', maxLength: 23, format: 'raw' }],
+  ),
+  'clear.failed': plain('{emoji.ops} Não consegui concluir a limpeza. Confira o histórico antes de tentar de novo.', emojisOf('ops')),
+  'clear.success': plain(
+    '{emoji.cleaning} Pronto. Apaguei {count} {noun} em {channel}. {emoji.slap}',
+    emojisOf('cleaning', 'slap'),
+    [
+      { name: 'count', maxLength: 4, format: 'raw' },
+      { name: 'noun', maxLength: 9, format: 'raw' },
+      { name: 'channel', maxLength: 32, format: 'raw' },
+    ],
+  ),
+
   'ban.guild_only': plain('{emoji.channelbrowser} O banimento só pode ser feito em um canal de texto de servidor.', guildOnlyEmojis),
   'ban.missing_permission': plain('{emoji.disappointed} Você precisa da permissão **{permissions}** neste servidor.', userDeniedEmojis, [permissionsVariable]),
   'ban.bot_missing_permission': plain('{emoji.angry} Preciso destas permissões para banir um usuário: **{permissions}**.', botDeniedEmojis, [permissionsVariable]),

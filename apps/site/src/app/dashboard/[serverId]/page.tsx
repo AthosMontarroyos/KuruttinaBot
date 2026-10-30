@@ -6,7 +6,7 @@ import { OverviewView } from './overview/view';
 import { EmbedsView } from './embeds/view';
 import { ModulesView } from './modules/view';
 import { RoleGroupsView } from './role-groups/view';
-import { primaryButton, outlineButton, GuildIcon, Skeleton, Message } from '../ui';
+import { primaryButton, outlineButton, GuildIcon, StatusSkeleton, Message } from '../ui';
 
 type Section = 'overview' | 'embeds' | 'roles' | 'modules';
 
@@ -39,11 +39,7 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
   if (!session?.authenticated) {
     return (
       <main id="conteudo" className="mx-auto w-full max-w-[880px] px-5 py-12">
-        <div role="status" aria-label="Carregando" className="flex flex-col gap-3">
-          <Skeleton className="h-9 w-60" />
-          <Skeleton className="h-[72px]" />
-          <Skeleton className="h-[72px]" />
-        </div>
+        <StatusSkeleton label="Carregando" rows={['h-9 w-60', 'h-[72px]', 'h-[72px]']} />
       </main>
     );
   }
@@ -68,7 +64,7 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
         <nav className="flex flex-col gap-1" aria-label="Seções do servidor">
           {([
             ['overview', 'Visão geral'],
-            ['embeds', 'Messages'],
+            ['embeds', 'Mensagens'],
             ['roles', 'Cargos'],
             ['modules', 'Módulos'],
           ] as const).map(([target, label]) => (

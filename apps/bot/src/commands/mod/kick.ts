@@ -6,13 +6,13 @@ import type {
   CommandContext,
   CommandReply,
   GuildMemberProfile,
-  MemberModerationPort,
 } from '#bot/command-system/types.js';
 import type { MessageKey } from '#bot/application/messages/catalog.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 import {
   MAX_REASON_LENGTH,
   auditReason,
+  authorizeMemberTarget,
   errorDetails,
   parsePrefixTarget,
   parseSlashTarget,
@@ -70,43 +70,6 @@ async function confirmation(
     : context.render('kick.success', { ...values, reason });
 }
 
-async function authorizeKick(
-  context: CommandContext,
-  guild: MemberModerationPort,
-  actorId: string,
-  target: GuildMemberProfile,
-): Promise<GuildMemberProfile | undefined> {
-  if (target.id === guild.ownerId) {
-    await say(context, 'kick.owner');
-    return undefined;
-  }
-
-  const actor = await guild.fetchMember(actorId);
-  if (actor === null || guild.botUserId === null) {
-    await sayKickFailed(context);
-    return undefined;
-  }
-  if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'kick.role_above_actor');
-    return undefined;
-  }
-
-  const bot = await guild.fetchMember(guild.botUserId);
-  if (bot === null) {
-    await sayKickFailed(context);
-    return undefined;
-  }
-  if (target.id === bot.id) {
-    await say(context, 'kick.bot_target');
-    return undefined;
-  }
-  if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'kick.bot_role_below');
-    return undefined;
-  }
-  return actor;
-}
-
 async function execute(context: CommandContext): Promise<void> {
   await context.acknowledge();
 
@@ -156,7 +119,13 @@ async function execute(context: CommandContext): Promise<void> {
 
   let moderator: GuildMemberProfile | undefined;
   try {
-    moderator = await authorizeKick(context, guild, actorId, target);
+    moderator = await authorizeMemberTarget(context, guild, actorId, target, {
+      owner: 'kick.owner',
+      failed: 'kick.failed',
+      roleAboveActor: 'kick.role_above_actor',
+      botTarget: 'kick.bot_target',
+      botRoleBelow: 'kick.bot_role_below',
+    });
   } catch (error: unknown) {
     await reportKickFailure(context, args.userId, error);
     return;

@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ConfirmDialog } from '../../../../components/ConfirmDialog';
 import { RoleSelect } from '../../../../components/selectors/RoleSelect';
+import { errorText } from '../../../../lib/error-messages';
 import { listRoles, type Role } from '../../../../lib/guild-api';
-import { card, outlineButton, primaryButton, Message, Skeleton } from '../../ui';
+import { card, dangerIconButton, outlineButton, primaryButton, Message, StatusSkeleton, TrashIcon } from '../../ui';
 import { createRoleGroup, deleteRoleGroup, listRoleGroups, updateRoleGroup, type RoleGroup, type RoleGroupErrorCode } from './role-groups-api';
 
 const MAX_ROLES = 25;
@@ -17,17 +19,21 @@ type Draft = {
   submitting: boolean;
 };
 
-const errorMessages: Partial<Record<RoleGroupErrorCode, string>> = {
-  invalid_group_name: 'Dê um nome de 1 a 50 caracteres.',
-  invalid_roles: 'Algum cargo não existe mais neste servidor ou não pode ser dado à mão.',
-  duplicate_role: 'Um cargo aparece duas vezes no grupo.',
-  duplicate: 'Já existe um grupo com esse nome.',
-  conflict: 'Este grupo foi alterado em outro lugar. Recarregue antes de salvar.',
-  quota: 'Este servidor já tem o máximo de 25 grupos.',
-  bot_not_in_guild: 'O bot não está neste servidor.',
-  not_found: 'Este grupo não existe mais.',
-  unavailable: 'Não foi possível falar com o servidor agora.',
-};
+function roleGroupError(code: RoleGroupErrorCode, fallback: string): string {
+  return errorText(code, {
+    invalid_group_name: 'Dê um nome de 1 a 50 caracteres.',
+    invalid_roles: 'Algum cargo não existe mais neste servidor ou não pode ser dado à mão.',
+    duplicate_role: 'Um cargo aparece duas vezes no grupo.',
+    duplicate: 'Já existe um grupo com esse nome.',
+    conflict: 'Este grupo foi alterado em outro lugar. Recarregue antes de salvar.',
+    quota: 'Este servidor já tem o máximo de 25 grupos.',
+    bot_not_in_guild: 'O bot não está neste servidor.',
+    not_found: 'Este grupo não existe mais.',
+    too_large: fallback,
+    invalid_json: fallback,
+    unknown: fallback,
+  });
+}
 
 /** Ícone do cargo como o Discord mostra: imagem própria, emoji ou um ponto da cor do cargo. */
 function RoleMark({ role }: { role: Role | undefined }) {
@@ -92,11 +98,14 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RoleGroup | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function load() {
     setLoadError(null);
     const [groupsResult, rolesResult] = await Promise.all([listRoleGroups(guildId), listRoles(guildId)]);
-    if (!groupsResult.ok) { setLoadError(errorMessages[groupsResult.error] ?? 'Não foi possível carregar os grupos.'); return; }
+    if (!groupsResult.ok) { setLoadError(roleGroupError(groupsResult.error, 'Não foi possível carregar os grupos.')); return; }
     setGroups(groupsResult.data.items);
     if (rolesResult.ok) setRolesById(new Map(rolesResult.items.map((role) => [role.id, role])));
   }
@@ -126,7 +135,7 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
       ? await updateRoleGroup(guildId, { id: draft.group.id, expectedVersion: draft.group.version }, input)
       : await createRoleGroup(guildId, input);
     if (!result.ok) {
-      setDraft({ ...draft, submitting: false, error: errorMessages[result.error] ?? 'Não foi possível salvar o grupo.' });
+      setDraft({ ...draft, submitting: false, error: roleGroupError(result.error, 'Não foi possível salvar o grupo.') });
       return;
     }
     setDraft(null);
@@ -134,10 +143,15 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
     await load();
   }
 
-  async function remove(group: RoleGroup) {
-    const result = await deleteRoleGroup(guildId, group.id);
-    if (!result.ok) { setNotice(errorMessages[result.error] ?? 'Não foi possível apagar o grupo.'); return; }
-    if (draft?.group?.id === group.id) setDraft(null);
+  async function confirmRemove() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    const result = await deleteRoleGroup(guildId, deleteTarget.id);
+    setDeleting(false);
+    if (!result.ok) { setDeleteError(roleGroupError(result.error, 'Não foi possível apagar o grupo.')); return; }
+    if (draft?.group?.id === deleteTarget.id) setDraft(null);
+    setDeleteTarget(null);
     setNotice('Grupo apagado.');
     await load();
   }
@@ -147,12 +161,7 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
   }
 
   if (groups === null) {
-    return (
-      <div role="status" aria-label="Carregando grupos de cargos" className="flex flex-col gap-3">
-        <Skeleton className="h-9 w-60" />
-        <Skeleton className="h-[72px]" />
-      </div>
-    );
+    return <StatusSkeleton label="Carregando grupos de cargos" rows={['h-9 w-60', 'h-[72px]']} />;
   }
 
   return (
@@ -166,6 +175,18 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
       </header>
 
       {notice ? <p role="status" className="text-sm text-muted">{notice}</p> : null}
+
+      {deleteTarget ? (
+        <ConfirmDialog
+          titleId="delete-role-group-title"
+          title={`Apagar o grupo “${deleteTarget.name}”?`}
+          description="Essa ação não pode ser desfeita."
+          error={deleteError}
+          busy={deleting}
+          onConfirm={() => void confirmRemove()}
+          onCancel={() => { if (!deleting) setDeleteTarget(null); }}
+        />
+      ) : null}
 
       {draft ? (
         <div className={`${card} flex flex-col gap-4 p-4`}>
@@ -209,7 +230,15 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
                 <span className="text-[15px] font-semibold">{group.name}</span>
                 <div className="flex gap-2">
                   <button className={outlineButton} type="button" onClick={() => startDraft(group)}>Editar</button>
-                  <button className={outlineButton} type="button" onClick={() => void remove(group)}>Apagar</button>
+                  <button
+                    className={dangerIconButton}
+                    type="button"
+                    aria-label={`Apagar grupo ${group.name}`}
+                    title="Apagar"
+                    onClick={() => { setDeleteError(null); setDeleteTarget(group); }}
+                  >
+                    <TrashIcon />
+                  </button>
                 </div>
               </div>
               <ChipList roleIds={group.roleIds} rolesById={rolesById} />

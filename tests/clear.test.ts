@@ -22,12 +22,11 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
   const sendMessage = vi.fn().mockResolvedValue(undefined);
   const deleteReply = vi.fn().mockResolvedValue(undefined);
   const port = mockBulkDeletePort();
+  const emoji = overrides.emoji ?? vi.fn(async (name: string) => `<:${name}:${name}-id>`);
   return {
     apiPing: 42,
     gatewayPing: 84,
-    render: createRenderer(async () => ''),
     acknowledge: vi.fn().mockResolvedValue(undefined),
-    emoji: vi.fn(async (name: string) => `<:${name}:${name}-id>`),
     reply,
     sendMessage,
     deleteReply,
@@ -37,6 +36,8 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     channelId: 'channel-123',
     textChannel: port,
     ...overrides,
+    emoji,
+    render: overrides.render ?? createRenderer(emoji),
   };
 }
 

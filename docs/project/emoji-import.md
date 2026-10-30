@@ -72,7 +72,7 @@ Todos os erros são `EmojiImportError` com `code` seguro para exibição: `empty
 
 ## Proveniência e licença
 
-Importar um emoji de uma guild é reutilizar um asset externo. Conforme a regra de [proveniência e limpeza](../agents/assets.md#regra-proveniência-e-limpeza), a responsabilidade de verificar licença/proveniência compatível é de quem executa a importação; o núcleo não automática essa verificação. A criação não copia binários para o repositório.
+Importar um emoji de uma guild é reutilizar um asset externo. Conforme a regra de [proveniência e limpeza](../agents/assets.md#regra-proveniencia-e-limpeza), a responsabilidade de verificar licença/proveniência compatível é de quem executa a importação; o núcleo não automática essa verificação. A criação não copia binários para o repositório.
 
 ## Lacunas conhecidas (fora do escopo desta implementação)
 

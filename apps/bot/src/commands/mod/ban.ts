@@ -14,6 +14,7 @@ import { log } from '#bot/infrastructure/logging/logger.js';
 import {
   MAX_REASON_LENGTH,
   auditReason,
+  authorizeMemberTarget,
   errorDetails,
   parsePrefixTarget,
   parseSlashTarget,
@@ -70,42 +71,13 @@ async function confirmation(
 }
 
 
-async function authorizeBan(
-  context: CommandContext,
-  guild: MemberModerationPort,
-  actorId: string,
-  target: GuildMemberProfile,
-): Promise<GuildMemberProfile | undefined> {
-  if (target.id === guild.ownerId) {
-    await say(context, 'ban.owner');
-    return undefined;
-  }
-
-  const actor = await guild.fetchMember(actorId);
-  if (actor === null || guild.botUserId === null) {
-    await sayBanFailed(context);
-    return undefined;
-  }
-  if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'ban.role_above_actor');
-    return undefined;
-  }
-
-  const bot = await guild.fetchMember(guild.botUserId);
-  if (bot === null) {
-    await sayBanFailed(context);
-    return undefined;
-  }
-  if (target.id === bot.id) {
-    await say(context, 'ban.bot_target');
-    return undefined;
-  }
-  if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'ban.bot_role_below');
-    return undefined;
-  }
-  return actor;
-}
+const banDenial = {
+  owner: 'ban.owner',
+  failed: 'ban.failed',
+  roleAboveActor: 'ban.role_above_actor',
+  botTarget: 'ban.bot_target',
+  botRoleBelow: 'ban.bot_role_below',
+} as const;
 
 async function resolveBanTarget(
   context: CommandContext,
@@ -115,7 +87,7 @@ async function resolveBanTarget(
   target: GuildMemberProfile | null,
 ): Promise<{ readonly subject: ModeratedUserProfile; readonly moderator: GuildMemberProfile } | undefined> {
   if (target !== null) {
-    const moderator = await authorizeBan(context, guild, actorId, target);
+    const moderator = await authorizeMemberTarget(context, guild, actorId, target, banDenial);
     return moderator === undefined ? undefined : { subject: target, moderator };
   }
 
@@ -136,7 +108,7 @@ async function resolveBanTarget(
 
   const joined = await guild.fetchMember(userId);
   if (joined === null) return { subject: user, moderator: actor };
-  const moderator = await authorizeBan(context, guild, actorId, joined);
+  const moderator = await authorizeMemberTarget(context, guild, actorId, joined, banDenial);
   return moderator === undefined ? undefined : { subject: joined, moderator };
 }
 

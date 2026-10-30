@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
 import type { GuildListError, GuildListResult } from '../../lib/guild-api';
+import { sessionExpired } from '../../lib/error-messages';
 
 type ResourceSelectProps<Item> = {
   guildId: string;
@@ -28,7 +29,7 @@ const control = 'min-h-11 w-full rounded-[10px] border border-control bg-transpa
 function problem(error: GuildListError): string {
   switch (error) {
     case 'bot_not_in_guild': return 'O bot não está neste servidor.';
-    case 'unauthenticated': return 'Sua sessão expirou. Entre de novo para continuar.';
+    case 'unauthenticated': return sessionExpired;
     case 'not_found': return 'Esse servidor não está disponível.';
     default: return 'Não foi possível carregar a lista agora.';
   }

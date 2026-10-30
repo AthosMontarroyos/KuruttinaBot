@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import type { Session } from '../../lib/session';
-import { card, primaryButton, outlineButton, memberFormat, GuildIcon, Skeleton, Message } from './ui';
+import { card, primaryButton, outlineButton, memberFormat, GuildIcon, StatusSkeleton, Message } from './ui';
 
 type DashboardPageProps = {
   session: Session | null;
@@ -30,11 +30,7 @@ function DashboardPage({ session, failed, onLogout }: DashboardPageProps) {
   if (!session?.authenticated) {
     return (
       <main id="conteudo" className="mx-auto w-full max-w-[880px] px-5 py-12">
-        <div role="status" aria-label="Carregando" className="flex flex-col gap-3">
-          <Skeleton className="h-9 w-60" />
-          <Skeleton className="h-[72px]" />
-          <Skeleton className="h-[72px]" />
-        </div>
+        <StatusSkeleton label="Carregando" rows={['h-9 w-60', 'h-[72px]', 'h-[72px]']} />
       </main>
     );
   }

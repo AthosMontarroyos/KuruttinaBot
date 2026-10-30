@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { readSiteConfig } from './config.js';
-import { isDiscordSnowflake, sendJson } from './http-utils.js';
+import { isDiscordSnowflake, requireSameOrigin, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 type SessionGuild = { id: string; name: string; iconUrl: string | null; bannerUrl: string | null; members: number | null };
@@ -301,7 +301,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     if (path !== '/api/mock-login' && path !== '/api/logout') return false;
     if (req.method !== 'POST') { res.writeHead(405, { Allow: 'POST' }).end(); return true; }
     req.resume();
-    if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return true; }
+    if (!requireSameOrigin(req, res, config.siteUrl)) return true;
     if (sessions.delete(hashToken(readCookie(req.headers.cookie, sessionCookie)))) persist();
     if (path === '/api/logout') {
       void sessionBody(undefined).then((body) => sendJson(res, 200, body, { 'Set-Cookie': `${sessionCookie}=; ${cookieAttributes(0, 'Strict')}` }));

@@ -4,4 +4,4 @@ Conteúdo mantido na skill [project-operations](../../.claude/skills/project-ope
 
 ### Regra: proveniência e limpeza
 
-Consulte a [regra na skill](../../.claude/skills/project-operations/references/assets.md#regra-proveniência-e-limpeza).
+Consulte a [regra na skill](../../.claude/skills/project-operations/references/assets.md#regra-proveniencia-e-limpeza).

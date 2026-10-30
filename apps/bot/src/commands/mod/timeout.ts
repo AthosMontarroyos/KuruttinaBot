@@ -6,14 +6,14 @@ import type {
   CommandContext,
   CommandReply,
   GuildMemberProfile,
-  MemberModerationPort,
 } from '#bot/command-system/types.js';
 import type { MessageKey } from '#bot/application/messages/catalog.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 import {
   MAX_REASON_LENGTH,
-  SNOWFLAKE,
   auditReason,
+  authorizeMemberTarget,
+  isSnowflake,
   errorDetails,
   mentionOrSnowflake,
   publishConfirmation,
@@ -157,7 +157,7 @@ function parseDurationPrefix(input: string): DurationParse {
 }
 
 function finishTimeout(userId: string, duration: DurationParse, separateReason?: string): TimeoutArgs {
-  if (!SNOWFLAKE.test(userId)) return { ok: false, reason: 'invalid-user' };
+  if (!isSnowflake(userId)) return { ok: false, reason: 'invalid-user' };
   if (typeof duration === 'string') return { ok: false, reason: durationFailure[duration] };
   if (separateReason !== undefined && duration.rest !== '') return { ok: false, reason: 'invalid-duration' };
   const reason = (separateReason ?? duration.rest).trim();
@@ -215,47 +215,6 @@ async function confirmation(
     length: formatTimeoutDuration(durationMs),
     ...(reason === undefined ? {} : { reason }),
   });
-}
-
-async function authorizeTimeout(
-  context: CommandContext,
-  guild: MemberModerationPort,
-  actorId: string,
-  target: GuildMemberProfile,
-): Promise<GuildMemberProfile | undefined> {
-  if (target.id === guild.ownerId) {
-    await say(context, 'timeout.owner');
-    return undefined;
-  }
-
-  const actor = await guild.fetchMember(actorId);
-  if (actor === null || guild.botUserId === null) {
-    await sayTimeoutFailed(context);
-    return undefined;
-  }
-  if (actorId !== guild.ownerId && actor.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'timeout.role_above_actor');
-    return undefined;
-  }
-
-  const bot = await guild.fetchMember(guild.botUserId);
-  if (bot === null) {
-    await sayTimeoutFailed(context);
-    return undefined;
-  }
-  if (target.id === bot.id) {
-    await say(context, 'timeout.bot_target');
-    return undefined;
-  }
-  if (bot.highestRolePosition <= target.highestRolePosition) {
-    await say(context, 'timeout.bot_role_below');
-    return undefined;
-  }
-  if (target.administrator) {
-    await say(context, 'timeout.administrator');
-    return undefined;
-  }
-  return actor;
 }
 
 async function rejectTimeoutArgs(context: CommandContext, reason: Exclude<TimeoutArgs, { ok: true }>['reason']): Promise<void> {
@@ -327,7 +286,14 @@ async function execute(context: CommandContext): Promise<void> {
 
   let moderator: GuildMemberProfile | undefined;
   try {
-    moderator = await authorizeTimeout(context, guild, actorId, target);
+    moderator = await authorizeMemberTarget(context, guild, actorId, target, {
+      owner: 'timeout.owner',
+      failed: 'timeout.failed',
+      roleAboveActor: 'timeout.role_above_actor',
+      botTarget: 'timeout.bot_target',
+      botRoleBelow: 'timeout.bot_role_below',
+      administrator: 'timeout.administrator',
+    });
   } catch (error: unknown) {
     await reportTimeoutFailure(context, args.userId, error);
     return;

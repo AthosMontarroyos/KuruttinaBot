@@ -4,6 +4,10 @@ import type { Guild } from '../../lib/session';
 const card = 'rounded-[14px] border border-border bg-surface';
 const primaryButton = 'inline-flex min-h-11 items-center justify-center rounded-[10px] border-0 bg-button px-5 text-sm font-semibold text-button-text hover:bg-secondary';
 const outlineButton = 'inline-flex min-h-11 items-center justify-center rounded-[10px] border border-control bg-transparent px-4 text-sm font-medium text-text hover:bg-surface';
+/** Fica vermelho ao passar o mouse e no foco do teclado; usado nos botões de apagar. */
+const dangerHover = 'transition-colors hover:border-red-500 hover:bg-red-500/10 hover:text-red-500 focus-visible:border-red-500 focus-visible:text-red-500';
+/** Mesma altura do `outlineButton` (44px), para alinhar com o Editar. */
+const dangerIconButton = `inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text ${dangerHover}`;
 const memberFormat = new Intl.NumberFormat('pt-BR');
 
 function initials(name: string): string {
@@ -23,6 +27,14 @@ function Skeleton({ className }: { className: string }) {
   return <div className={`animate-pulse rounded-lg bg-border motion-reduce:animate-none ${className}`} />;
 }
 
+function StatusSkeleton({ label, rows }: { label: string; rows: readonly string[] }) {
+  return (
+    <div role="status" aria-label={label} className="flex flex-col gap-3">
+      {rows.map((className, index) => <Skeleton key={`${className}-${index}`} className={className} />)}
+    </div>
+  );
+}
+
 function Message({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return (
     <div className={`${card} flex flex-col items-center gap-3 px-6 py-12 text-center`}>
@@ -33,4 +45,5 @@ function Message({ title, children, action }: { title: string; children: ReactNo
   );
 }
 
-export { card, primaryButton, outlineButton, memberFormat, GuildIcon, Skeleton, Message };
+export { card, primaryButton, outlineButton, dangerHover, dangerIconButton, memberFormat, GuildIcon, Skeleton, StatusSkeleton, Message };
+export { ConstructionIcon, PencilIcon, TrashIcon } from '../../components/icons';

@@ -1,9 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { card, outlineButton, primaryButton, Skeleton } from '../../../ui';
+import { ErrorMessage } from '../../../../../components/ErrorMessage';
+import { FloatingNotice } from '../../../../../components/FloatingNotice';
 import { describeTemplateIssues } from '../../../../../components/message-editor/format-issue';
 import { MessageEditor, MessagePreview } from '../../../../../components/message-editor/MessageEditor';
+import { errorText } from '../../../../../lib/error-messages';
+import { card, dangerHover, dangerIconButton, outlineButton, PencilIcon, primaryButton, StatusSkeleton, TrashIcon } from '../../../ui';
 import { DeleteFolderDialog, DeleteTemplateDialog, NewFolderForm, RenameFolderForm, SendPanel } from './TemplateModals';
 import {
   createFolder,
@@ -26,47 +29,29 @@ import {
 const NO_FOLDER_KEY = '__no_folder__';
 
 function errorMessage(error: TemplateErrorCode, details?: ValidationDetail[]): string {
-  switch (error) {
-    case 'invalid_name':
-      return 'Esse nome não é válido. Use letras minúsculas, números, _ e -, até 32 caracteres.';
-    case 'too_large':
-      return 'O conteúdo é grande demais para um modelo de mensagem.';
-    case 'validation':
-      return details && details.length > 0
-        ? describeTemplateIssues(details).join('\n')
-        : 'O conteúdo do modelo não é válido.';
-    case 'duplicate':
-      return 'Já existe um modelo de mensagem com esse nome.';
-    case 'conflict':
-      return 'Esse modelo foi atualizado por outra pessoa. Recarregue e tente de novo.';
-    case 'quota':
-      return 'Este servidor atingiu o limite de modelos de mensagem.';
-    case 'not_found':
-      return 'Esse modelo de mensagem não existe mais.';
-    case 'invalid_folder':
-      return 'Essa pasta não é válida para este servidor.';
-    case 'unauthenticated':
-      return 'Sua sessão expirou. Entre de novo para continuar.';
-    default:
-      return 'Não foi possível falar com o servidor agora.';
+  if (error === 'validation') {
+    return details && details.length > 0
+      ? describeTemplateIssues(details).join('\n')
+      : 'O conteúdo do modelo não é válido.';
   }
+  return errorText(error, {
+    invalid_name: 'Esse nome não é válido. Use letras minúsculas, números, _ e -, até 32 caracteres.',
+    too_large: 'O conteúdo é grande demais para um modelo de mensagem.',
+    duplicate: 'Já existe um modelo de mensagem com esse nome.',
+    conflict: 'Esse modelo foi atualizado por outra pessoa. Recarregue e tente de novo.',
+    quota: 'Este servidor atingiu o limite de modelos de mensagem.',
+    not_found: 'Esse modelo de mensagem não existe mais.',
+    invalid_folder: 'Essa pasta não é válida para este servidor.',
+  });
 }
 
 function folderErrorMessage(error: TemplateErrorCode): string {
-  switch (error) {
-    case 'invalid_folder_name':
-      return 'Dê um nome válido para a pasta.';
-    case 'duplicate_folder':
-      return 'Já existe uma pasta com esse nome.';
-    case 'folder_not_found':
-      return 'Essa pasta não existe mais.';
-    case 'quota':
-      return 'Este servidor atingiu o limite de pastas.';
-    case 'unauthenticated':
-      return 'Sua sessão expirou. Entre de novo para continuar.';
-    default:
-      return 'Não foi possível falar com o servidor agora.';
-  }
+  return errorText(error, {
+    invalid_folder_name: 'Dê um nome válido para a pasta.',
+    duplicate_folder: 'Já existe uma pasta com esse nome.',
+    folder_not_found: 'Essa pasta não existe mais.',
+    quota: 'Este servidor atingiu o limite de pastas.',
+  });
 }
 
 type View = { kind: 'list' } | { kind: 'create' } | { kind: 'edit'; name: string } | { kind: 'detail'; name: string };
@@ -110,10 +95,6 @@ function groupByFolder(folders: FolderSummary[], items: TemplateSummary[]): Temp
 }
 
 const iconButton = 'inline-flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text hover:bg-surface';
-/** Fica vermelho ao passar o mouse (e no foco do teclado); usado nos botões de apagar. */
-const dangerHover = 'transition-colors hover:border-red-500 hover:bg-red-500/10 hover:text-red-500 focus-visible:border-red-500 focus-visible:text-red-500';
-/** Mesma altura do `outlineButton` (44px), para alinhar com o Editar. */
-const dangerIconButton = `inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text ${dangerHover}`;
 
 function NewFolderIcon() {
   return (
@@ -128,22 +109,6 @@ function FolderIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-4 shrink-0 text-muted" aria-hidden="true">
       <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
-    </svg>
-  );
-}
-
-function PencilIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-4" aria-hidden="true">
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-4" aria-hidden="true">
-      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
     </svg>
   );
 }
@@ -424,11 +389,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
     return (
       <>
         <h2 className="text-[22px] font-semibold">Templates de mensagem</h2>
-        <div role="status" aria-label="Carregando modelos de mensagem" className="flex flex-col gap-3">
-          <Skeleton className="h-11 w-48" />
-          <Skeleton className="h-16" />
-          <Skeleton className="h-16" />
-        </div>
+        <StatusSkeleton label="Carregando modelos de mensagem" rows={['h-11 w-48', 'h-16', 'h-16']} />
       </>
     );
   }
@@ -463,11 +424,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
 
   return (
     <>
-      {editorNotice ? (
-        <div className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center px-4 pt-3">
-          <p key={editorNotice} role="status" className={`pointer-events-auto ${noticeMotion} rounded-xl border border-border bg-surface px-4 py-3 text-sm motion-reduce:animate-none`}>{editorNotice}</p>
-        </div>
-      ) : null}
+      {editorNotice ? <FloatingNotice key={editorNotice} motionClass={noticeMotion}>{editorNotice}</FloatingNotice> : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <h2 className="text-[22px] font-semibold">Templates de mensagem</h2>
         <div className="flex items-center gap-2">
@@ -518,7 +475,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
             <p id="template-name-hint" className="text-[13px] text-muted">Use letras minúsculas, números, _ e -, até 32 caracteres.</p>
           </div>
           {view.kind === 'edit' && form.version === null ? (
-            form.error ? null : <Skeleton className="h-40" />
+            form.error ? null : <StatusSkeleton label="Carregando modelo" rows={['h-40']} />
           ) : (
             <MessageEditor
               key={view.kind === 'edit' ? view.name : 'create'}
@@ -527,11 +484,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
               sendPanel={<SendPanel guildId={guildId} templateName={view.kind === 'edit' ? view.name : null} unsaved={unsaved} />}
             />
           )}
-          {form.error ? (
-            <div role="alert" className="flex flex-col gap-1 text-sm text-red-600">
-              {form.error.split('\n').map((line) => <p key={line}>{line}</p>)}
-            </div>
-          ) : null}
+          {form.error ? <ErrorMessage message={form.error} /> : null}
           <div className="flex gap-3">
             <button className={`${primaryButton} ${unsaved && !form.submitting ? 'animate-save-attention motion-reduce:animate-none' : ''}`} type="button" disabled={form.submitting} onClick={() => void submitForm()}>
               {view.kind === 'edit' ? 'Salvar alterações' : 'Criar modelo'}
@@ -548,14 +501,9 @@ function TemplatesView({ guildId }: { guildId: string }) {
             <button className={outlineButton} type="button" onClick={closeDetail}>Fechar</button>
           </div>
           {detailError ? (
-            <div role="alert" className="flex flex-col gap-1 text-sm text-red-600">
-              {detailError.split('\n').map((line) => <p key={line}>{line}</p>)}
-            </div>
+            <ErrorMessage message={detailError} />
           ) : !detail ? (
-            <div role="status" aria-label="Carregando modelo" className="flex flex-col gap-2">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-28" />
-            </div>
+            <StatusSkeleton label="Carregando modelo" rows={['h-6 w-40', 'h-28']} />
           ) : (
             <>
               {showJson ? (

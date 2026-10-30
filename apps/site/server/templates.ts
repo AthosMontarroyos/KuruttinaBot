@@ -10,7 +10,7 @@ import { createTemplateAdminService, TemplateAdminError, type TemplateRepository
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { createAuth } from './auth.js';
 import type { readSiteConfig } from './config.js';
-import { isDiscordSnowflake, readJsonBody, sendJson } from './http-utils.js';
+import { isDiscordSnowflake, readJsonBody, rejectUnlessGuildAuthorized, requireSameOrigin, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 type Auth = ReturnType<typeof createAuth>;
@@ -68,11 +68,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
   const service = createTemplateAdminService(createTemplateRepository(database.templates, database.folders));
 
   function authorize(req: IncomingMessage, res: ServerResponse, guildId: string): { discordId: string } | undefined {
-    if (!isDiscordSnowflake(guildId)) { sendJson(res, 404, { error: 'not_found' }); return undefined; }
-    const authorization = auth.getAuthorizedGuild(req, guildId);
-    if (authorization.status === 'unauthenticated') { sendJson(res, 401, { error: 'unauthenticated' }); return undefined; }
-    if (authorization.status === 'forbidden') { sendJson(res, 404, { error: 'not_found' }); return undefined; }
-    return { discordId: authorization.discordId };
+    return rejectUnlessGuildAuthorized(res, guildId, () => auth.getAuthorizedGuild(req, guildId));
   }
 
   async function handleList(req: IncomingMessage, res: ServerResponse, guildId: string, search: string): Promise<void> {
@@ -222,7 +218,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
           if (id === undefined) {
             if (req.method === 'GET' || req.method === 'HEAD') { await handleListFolders(res, guildId); return; }
             if (req.method === 'POST') {
-              if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+              if (!requireSameOrigin(req, res, config.siteUrl)) return;
               await handleCreateFolder(req, res, guildId);
               return;
             }
@@ -232,12 +228,12 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
           if (!folderIdPattern.test(id)) { sendJson(res, 404, { error: 'not_found' }); return; }
           const folderId = Number(id);
           if (req.method === 'PUT') {
-            if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+            if (!requireSameOrigin(req, res, config.siteUrl)) return;
             await handleRenameFolder(req, res, guildId, folderId);
             return;
           }
           if (req.method === 'DELETE') {
-            if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+            if (!requireSameOrigin(req, res, config.siteUrl)) return;
             await handleRemoveFolder(res, guildId, folderId);
             return;
           }
@@ -261,7 +257,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
         if (name === undefined) {
           if (req.method === 'GET' || req.method === 'HEAD') { await handleList(req, res, guildId, search); return; }
           if (req.method === 'POST') {
-            if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+            if (!requireSameOrigin(req, res, config.siteUrl)) return;
             await handleCreate(req, res, guildId, authorized.discordId);
             return;
           }
@@ -271,7 +267,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
         if (!namePattern.test(name)) { sendJson(res, 404, { error: 'not_found' }); return; }
         if (subresource === 'deliveries') {
           if (req.method === 'POST') {
-            if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+            if (!requireSameOrigin(req, res, config.siteUrl)) return;
             await handleRequestDelivery(req, res, guildId, name, authorized.discordId);
             return;
           }
@@ -280,7 +276,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
         }
         if (subresource === 'folder') {
           if (req.method === 'PATCH') {
-            if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+            if (!requireSameOrigin(req, res, config.siteUrl)) return;
             await handleMoveTemplate(req, res, guildId, name);
             return;
           }
@@ -289,12 +285,12 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
         }
         if (req.method === 'GET' || req.method === 'HEAD') { await handleGet(res, guildId, name); return; }
         if (req.method === 'PUT') {
-          if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+          if (!requireSameOrigin(req, res, config.siteUrl)) return;
           await handleUpdate(req, res, guildId, name, authorized.discordId);
           return;
         }
         if (req.method === 'DELETE') {
-          if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return; }
+          if (!requireSameOrigin(req, res, config.siteUrl)) return;
           await handleDelete(res, guildId, name);
           return;
         }

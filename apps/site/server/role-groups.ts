@@ -9,7 +9,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { createAuth } from './auth.js';
 import type { readSiteConfig } from './config.js';
 import type { DiscordBot } from './discord.js';
-import { isDiscordSnowflake, readJsonBody, sendJson } from './http-utils.js';
+import { isDiscordSnowflake, readJsonBody, rejectUnlessGuildAuthorized, requireSameOrigin, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 type Auth = ReturnType<typeof createAuth>;
@@ -38,11 +38,7 @@ function parseBody(body: unknown): { ok: true; value: ValidBody } | { ok: false;
 
 export function createRoleGroupsApi(config: SiteConfig, auth: Auth, database: Database, discord: DiscordBot) {
   function authorize(req: IncomingMessage, res: ServerResponse, guildId: string): { discordId: string } | undefined {
-    if (!isDiscordSnowflake(guildId)) { sendJson(res, 404, { error: 'not_found' }); return undefined; }
-    const authorization = auth.getAuthorizedGuild(req, guildId);
-    if (authorization.status === 'unauthenticated') { sendJson(res, 401, { error: 'unauthenticated' }); return undefined; }
-    if (authorization.status === 'forbidden') { sendJson(res, 404, { error: 'not_found' }); return undefined; }
-    return { discordId: authorization.discordId };
+    return rejectUnlessGuildAuthorized(res, guildId, () => auth.getAuthorizedGuild(req, guildId));
   }
 
   /** Confere que todos os cargos existem no servidor e podem ser dados à mão. Responde o erro e devolve `false` se não. */
@@ -126,11 +122,7 @@ export function createRoleGroupsApi(config: SiteConfig, auth: Auth, database: Da
       if (authorization === undefined) return;
       void work(authorization.discordId).catch(() => { if (!res.headersSent) sendJson(res, 503, { error: 'unavailable' }); });
     };
-    const requireOrigin = (): boolean => {
-      if (req.headers.origin === config.siteUrl) return true;
-      sendJson(res, 403, { error: 'forbidden' });
-      return false;
-    };
+    const requireOrigin = (): boolean => requireSameOrigin(req, res, config.siteUrl);
 
     if (id === undefined) {
       if (req.method === 'GET' || req.method === 'HEAD') { run(() => handleList(res, guildId)); return true; }

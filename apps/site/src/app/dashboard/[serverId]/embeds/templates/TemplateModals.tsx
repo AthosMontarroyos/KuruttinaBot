@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { ConfirmDialog } from '../../../../../components/ConfirmDialog';
 import { ChannelSelect } from '../../../../../components/selectors/ChannelSelect';
+import { errorText } from '../../../../../lib/error-messages';
 import { card, outlineButton, primaryButton } from '../../../ui';
 import { requestDelivery, type TemplateErrorCode } from './templates-api';
 
@@ -83,31 +85,24 @@ function DeleteFolderDialog({
   onCancel: () => void;
 }) {
   return (
-    <div role="alertdialog" aria-labelledby="delete-folder-title" className={`${card} flex flex-col gap-3 p-5`}>
-      <h2 id="delete-folder-title" className="text-lg font-semibold">Apagar a pasta “{name}”?</h2>
-      <p className="text-sm text-muted">Os modelos dessa pasta passam para “Sem pasta”. Essa ação não pode ser desfeita.</p>
-      {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}
-      <div className="flex gap-3">
-        <button className={primaryButton} type="button" disabled={deleting} onClick={onConfirm}>Apagar</button>
-        <button className={outlineButton} type="button" disabled={deleting} onClick={onCancel}>Cancelar</button>
-      </div>
-    </div>
+    <ConfirmDialog
+      titleId="delete-folder-title"
+      title={`Apagar a pasta “${name}”?`}
+      description="Os modelos dessa pasta passam para “Sem pasta”. Essa ação não pode ser desfeita."
+      error={error}
+      busy={deleting}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
   );
 }
 
 function deliveryErrorMessage(error: TemplateErrorCode): string {
-  switch (error) {
-    case 'invalid_channel_id':
-      return 'Escolha um canal.';
-    case 'not_found':
-      return 'Esse modelo de mensagem não existe mais.';
-    case 'quota':
-      return 'Este servidor tem muitos envios pendentes. Aguarde ou tente mais tarde.';
-    case 'unauthenticated':
-      return 'Sua sessão expirou. Entre de novo para continuar.';
-    default:
-      return 'Não foi possível falar com o servidor agora.';
-  }
+  return errorText(error, {
+    invalid_channel_id: 'Escolha um canal.',
+    not_found: 'Esse modelo de mensagem não existe mais.',
+    quota: 'Este servidor tem muitos envios pendentes. Aguarde ou tente mais tarde.',
+  });
 }
 
 /** Aba "Enviar" do editor: manda a versão salva do modelo a um canal. */
@@ -156,15 +151,15 @@ function DeleteTemplateDialog({
   onCancel: () => void;
 }) {
   return (
-    <div role="alertdialog" aria-labelledby="delete-template-title" className={`${card} flex flex-col gap-3 p-5`}>
-      <h2 id="delete-template-title" className="text-lg font-semibold">Apagar “{name}”?</h2>
-      <p className="text-sm text-muted">Essa ação não pode ser desfeita.</p>
-      {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}
-      <div className="flex gap-3">
-        <button className={primaryButton} type="button" disabled={deleting} onClick={onConfirm}>Apagar</button>
-        <button className={outlineButton} type="button" disabled={deleting} onClick={onCancel}>Cancelar</button>
-      </div>
-    </div>
+    <ConfirmDialog
+      titleId="delete-template-title"
+      title={`Apagar “${name}”?`}
+      description="Essa ação não pode ser desfeita."
+      error={error}
+      busy={deleting}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
   );
 }
 

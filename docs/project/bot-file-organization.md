@@ -31,6 +31,11 @@ apps/bot/src/
 │   │   │   ├── emojiAdd.ts
 │   │   │   ├── emojiInfo.ts
 │   │   │   └── emojiLookup.ts
+│   │   ├── messages/
+│   │   │   ├── actionValues.ts
+│   │   │   ├── componentRouter.ts
+│   │   │   ├── deliveryPoller.ts
+│   │   │   └── toCommandReply.ts
 │   │   └── identity.ts
 │   ├── images/
 │   └── logging/
@@ -46,7 +51,7 @@ apps/bot/src/
 
 - `commands/`: só módulos registráveis. Cada arquivo executável exporta um comando.
 - `command-system/`: contrato, autorização, descoberta, despacho e montagem de resposta (`withEmojis`).
-- `infrastructure/`: Discord, imagens e logs. `deployCommands.ts` só publica. `emojiAdd.ts` é o executor da importação de emoji no servidor. `emojiInfo.ts` e `emojiLookup.ts` consultam um emoji sem importá-lo. Application Emojis de production ficam no workflow descrito em [Emojis de produção](emojis-prod.md).
+- `infrastructure/`: Discord, imagens e logs. `deployCommands.ts` só publica. `emojiAdd.ts` é o executor da importação de emoji no servidor. `emojiInfo.ts` e `emojiLookup.ts` consultam um emoji sem importá-lo. `messages/` converte o template renderizado (`toCommandReply.ts`), resolve o clique de botão (`componentRouter.ts`), preenche variáveis de ação (`actionValues.ts`) e entrega a fila pedida pelo painel (`deliveryPoller.ts`). Application Emojis de production ficam no workflow descrito em [Emojis de produção](emojis-prod.md).
 - `application/`: casos de uso, sem conhecer commands nem adapters.
 - `events/` e `deployments/`: composição dos transports e dos deploys. `bootstrap.ts` continua sendo o composition root.
 

@@ -20,7 +20,7 @@ O projeto inclui testes automatizados de comportamento, autorização e isolamen
 
 ## Estado do projeto
 
-Em desenvolvimento ativo. O bot e sua camada de persistência estão implementados. A primeira Home responsiva baseada no Figma está disponível para execução local; o painel administrativo e suas integrações continuam previstos para uma etapa futura.
+Em desenvolvimento ativo. O bot, a persistência e a Home estão implementados. A Home tem login exclusivo via Discord, a lista de servidores e o painel de cada servidor, com visão geral, templates de mensagem e grupos de cargos. A área de módulos desse painel e o painel operacional de telemetria (RAM e logs) continuam previstos para uma etapa futura.
 
 O projeto está em replanejamento de identidade visual e stack tecnológica. A direção aprovada, o inventário de mudanças e as decisões pendentes estão no [replanejamento do projeto](docs/project/replanning.md). A nova paleta e a arquitetura futura ainda serão definidas.
 

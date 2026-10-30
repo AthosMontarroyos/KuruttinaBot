@@ -18,6 +18,31 @@ export function isDashboardServerPath(path: string): boolean {
   return id !== undefined && isDiscordSnowflake(id);
 }
 
+type GuildAuthorization =
+  | { readonly status: 'unauthenticated' }
+  | { readonly status: 'forbidden' }
+  | { readonly status: 'ok'; readonly discordId: string };
+
+/** 404 se o id não é snowflake (sem consultar a sessão), 401 sem sessão, 404 sem acesso ao servidor. */
+export function rejectUnlessGuildAuthorized(
+  res: ServerResponse,
+  guildId: string,
+  authorize: () => GuildAuthorization,
+): { discordId: string } | undefined {
+  if (!isDiscordSnowflake(guildId)) { sendJson(res, 404, { error: 'not_found' }); return undefined; }
+  const authorization = authorize();
+  if (authorization.status === 'unauthenticated') { sendJson(res, 401, { error: 'unauthenticated' }); return undefined; }
+  if (authorization.status === 'forbidden') { sendJson(res, 404, { error: 'not_found' }); return undefined; }
+  return { discordId: authorization.discordId };
+}
+
+/** Mutation só segue quando o `Origin` é o da Home. Responde 403 e devolve false caso contrário. */
+export function requireSameOrigin(req: IncomingMessage, res: ServerResponse, siteUrl: string): boolean {
+  if (req.headers.origin === siteUrl) return true;
+  sendJson(res, 403, { error: 'forbidden' });
+  return false;
+}
+
 export function sendJson(
   res: ServerResponse,
   status: number,

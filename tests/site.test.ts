@@ -2,9 +2,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
 import { createHash } from 'node:crypto';
 import { inspect } from 'node:util';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { readSiteConfig } from '../apps/site/server/config.js';
 import { createSiteServer } from '../apps/site/server/http.js';
 
@@ -358,5 +359,64 @@ describe('public Home HTTP boundary', () => {
     expect((await fetch(origin, { method: 'POST' })).status).toBe(405);
     expect(await (await fetch(origin, { method: 'HEAD' })).text()).toBe('');
     expect(await (await fetch(origin + '/healthz')).json()).toEqual({ status: 'ok' });
+  });
+});
+
+describe('build assets not referenced by the HTML', () => {
+  const lazySource = 'export const lazy = 1;';
+  let directory: string;
+  let server: Server;
+  let origin: string;
+  beforeAll(async () => {
+    directory = await mkdtemp(join(tmpdir(), 'kuruttina-assets-'));
+    await writeFile(join(directory, 'index.html'), '<!doctype html><title>Kuruttina</title>');
+    await cp(new URL('../apps/site/public/icons/', import.meta.url), join(directory, 'public', 'icons'), { recursive: true });
+    await mkdir(join(directory, 'public', 'assets', 'nested'), { recursive: true });
+    await writeFile(join(directory, 'public', 'assets', 'lazy-abc123.js'), lazySource);
+    await writeFile(join(directory, 'public', 'assets', 'emojis-abc123.json'), '{"ok":true}');
+    await writeFile(join(directory, 'public', 'assets', 'nested', 'secret.js'), 'secret');
+    await writeFile(join(directory, 'public', 'assets', 'bad name.js'), 'bad');
+    await writeFile(join(directory, 'public', 'assets', '.hidden.js'), 'hidden');
+    server = await createSiteServer(readSiteConfig(environment), pathToFileURL(join(directory, 'index.html')), new URL(`${pathToFileURL(join(directory, 'public')).href}/`));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    origin = `http://127.0.0.1:${address.port}`;
+  });
+  afterAll(async () => {
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    await rm(directory, { recursive: true, force: true });
+  });
+  it('serves a chunk loaded by dynamic import with the JavaScript type and the same content', async () => {
+    const response = await fetch(origin + '/assets/lazy-abc123.js');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/javascript; charset=utf-8');
+    expect(await response.text()).toBe(lazySource);
+  });
+  it('serves a JSON asset with the JSON type', async () => {
+    const response = await fetch(origin + '/assets/emojis-abc123.json');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
+  });
+  it.each(['/assets/nested/secret.js', '/assets/nested', '/assets/bad%20name.js', '/assets/.hidden.js'])('does not publish %s', async (path) => {
+    expect((await fetch(origin + path)).status).toBe(404);
+  });
+  it('keeps building when the assets folder is absent', async () => {
+    const bare = await mkdtemp(join(tmpdir(), 'kuruttina-no-assets-'));
+    try {
+      await writeFile(join(bare, 'index.html'), '<!doctype html><title>Kuruttina</title>');
+      await cp(new URL('../apps/site/public/icons/', import.meta.url), join(bare, 'public', 'icons'), { recursive: true });
+      const plain = await createSiteServer(readSiteConfig(environment), pathToFileURL(join(bare, 'index.html')), new URL(`${pathToFileURL(join(bare, 'public')).href}/`));
+      await new Promise<void>((resolve) => plain.listen(0, '127.0.0.1', resolve));
+      const address = plain.address();
+      if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+      try {
+        expect((await fetch(`http://127.0.0.1:${address.port}/`)).status).toBe(200);
+      } finally {
+        await new Promise<void>((resolve, reject) => plain.close((error) => error ? reject(error) : resolve()));
+      }
+    } finally {
+      await rm(bare, { recursive: true, force: true });
+    }
   });
 });

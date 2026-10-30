@@ -10,14 +10,162 @@ import { createTemplateAdminService, TemplateAdminError, type TemplateRepository
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { createAuth } from './auth.js';
 import type { readSiteConfig } from './config.js';
+import type { DiscordBot } from './discord.js';
 import { isDiscordSnowflake, readJsonBody, rejectUnlessGuildAuthorized, requireSameOrigin, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 type Auth = ReturnType<typeof createAuth>;
+type Database = ReturnType<typeof createDatabase>;
 
 const namePattern = /^[a-z0-9_-]{1,32}$/u;
 const folderIdPattern = /^[1-9][0-9]*$/u;
 const LIST_PAGE_SIZE = 25;
+const UNKNOWN_COMPONENT_MESSAGE = 'O botão aponta para um Component que não existe neste servidor.';
+const UNKNOWN_EMOJI_MESSAGE = 'O botão usa um emoji que não existe neste servidor.';
+const UNKNOWN_MENU_COMPONENT_MESSAGE = 'O menu aponta para um Component que não existe neste servidor.';
+const UNKNOWN_COMPONENT_OPTION_MESSAGE = 'A opção aponta para uma ação do menu que não existe mais.';
+const UNKNOWN_MENU_EMOJI_MESSAGE = 'A opção do menu usa um emoji que não existe neste servidor.';
+/** Mesmo formato de `componentOption` aceito pelo motor de templates (`template.js`). */
+const COMPONENT_OPTION_KEY_PATTERN = /^[a-z0-9]{6,12}$/u;
+
+/** Botão do template que aponta para um Component de botão, com o path real dele no template. */
+type ButtonComponentRef = { path: string; id: number };
+/** Menu do template que aponta para um Component de menu (`menu.component`), com o path real dele no template. */
+type MenuComponentRef = { path: string; id: number };
+/** Opção de menu que aponta para uma opção (`componentOption`) do Component de menu `componentId`. */
+type MenuOptionKeyRef = { path: string; componentId: number; key: string };
+/** Emoji personalizado (`emoji.id`) de botão ou de opção de menu, com o path e a mensagem reais dele. */
+type EmojiRef = { path: string; id: string; message: string };
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+/** Ids de `component` dos botões coloridos do JSON do template. JSON inválido, ou valor que não é inteiro
+ * positivo seguro, fica de fora: o motor de validação já recusa esses casos com `invalid_action`. */
+function collectButtonComponentRefs(contentJson: string): ButtonComponentRef[] {
+  let parsed: unknown;
+  try { parsed = JSON.parse(contentJson); } catch { return []; }
+  const rows = asRecord(parsed)?.components;
+  if (!Array.isArray(rows)) return [];
+  const refs: ButtonComponentRef[] = [];
+  rows.forEach((row: unknown, r: number) => {
+    const record = asRecord(row);
+    if (record?.kind !== 'buttons' || !Array.isArray(record.buttons)) return;
+    const buttons: unknown[] = record.buttons;
+    buttons.forEach((button: unknown, b: number) => {
+      const id = asRecord(button)?.component;
+      if (typeof id === 'number' && Number.isSafeInteger(id) && id >= 1) {
+        refs.push({ path: `components[${r}].buttons[${b}].component`, id });
+      }
+    });
+  });
+  return refs;
+}
+
+/** Id de Component (botão ou menu) do JSON: inteiro seguro maior ou igual a 1; o resto fica de fora. */
+function asComponentId(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1 ? value : undefined;
+}
+
+/** Menus do JSON do template: `menu.component` e as `componentOption` das opções, cada uma com o id do menu.
+ * Valor fora do formato fica de fora: o motor de validação já recusa esses casos com `invalid_action`. */
+function collectMenuRefs(contentJson: string): { components: MenuComponentRef[]; optionKeys: MenuOptionKeyRef[] } {
+  const result: { components: MenuComponentRef[]; optionKeys: MenuOptionKeyRef[] } = { components: [], optionKeys: [] };
+  let parsed: unknown;
+  try { parsed = JSON.parse(contentJson); } catch { return result; }
+  const rows = asRecord(parsed)?.components;
+  if (!Array.isArray(rows)) return result;
+  rows.forEach((row: unknown, r: number) => {
+    const record = asRecord(row);
+    const menu = asRecord(record?.menu);
+    if (record?.kind !== 'select' || menu === undefined) return;
+    const componentId = asComponentId(menu.component);
+    if (componentId !== undefined) result.components.push({ path: `components[${r}].menu.component`, id: componentId });
+    if (componentId === undefined || !Array.isArray(menu.options)) return;
+    const options: unknown[] = menu.options;
+    options.forEach((option: unknown, o: number) => {
+      const key = asRecord(option)?.componentOption;
+      if (typeof key === 'string' && COMPONENT_OPTION_KEY_PATTERN.test(key)) {
+        result.optionKeys.push({ path: `components[${r}].menu.options[${o}].componentOption`, componentId, key });
+      }
+    });
+  });
+  return result;
+}
+
+/** Erros para as referências de Component: botão (`component`) que o servidor não tem; menu (`menu.component`) que o
+ * servidor não tem; e `componentOption` que não existe mais no Component do menu. Só consulta o banco quando há
+ * referência: uma leitura da lista por tipo e uma leitura por Component de menu distinto. Opção de menu cujo
+ * Component já é inexistente não é conferida de novo (o erro do menu já cobre). */
+async function findUnknownComponents(database: Database, guildId: string, contentJson: string) {
+  const buttonRefs = collectButtonComponentRefs(contentJson);
+  const menuRefs = collectMenuRefs(contentJson);
+  const errors: Array<{ code: string; path: string; message: string }> = [];
+  if (buttonRefs.length > 0) {
+    const known = new Set((await database.customActions.list('buttons', guildId)).map((action) => action.id));
+    errors.push(...buttonRefs
+      .filter((ref) => !known.has(ref.id))
+      .map((ref) => ({ code: 'unknown_component', path: ref.path, message: UNKNOWN_COMPONENT_MESSAGE })));
+  }
+  if (menuRefs.components.length > 0) {
+    const knownMenus = new Set((await database.customActions.list('selects', guildId)).map((action) => action.id));
+    errors.push(...menuRefs.components
+      .filter((ref) => !knownMenus.has(ref.id))
+      .map((ref) => ({ code: 'unknown_component', path: ref.path, message: UNKNOWN_MENU_COMPONENT_MESSAGE })));
+    const liveOptionRefs = menuRefs.optionKeys.filter((ref) => knownMenus.has(ref.componentId));
+    const keysByComponent = new Map<number, Set<string>>();
+    for (const componentId of [...new Set(liveOptionRefs.map((ref) => ref.componentId))]) {
+      const config = await database.customActionsConfig.getSelect(guildId, componentId);
+      keysByComponent.set(componentId, new Set((config?.options ?? []).map((option) => option.key)));
+    }
+    errors.push(...liveOptionRefs
+      .filter((ref) => !keysByComponent.get(ref.componentId)?.has(ref.key))
+      .map((ref) => ({ code: 'unknown_component_option', path: ref.path, message: UNKNOWN_COMPONENT_OPTION_MESSAGE })));
+  }
+  return errors;
+}
+
+/** Ids dos emojis personalizados (`emoji.id`) dos botões e das opções de menu do JSON do template. Valor que não é snowflake fica de fora. */
+function collectEmojiRefs(contentJson: string): EmojiRef[] {
+  let parsed: unknown;
+  try { parsed = JSON.parse(contentJson); } catch { return []; }
+  const rows = asRecord(parsed)?.components;
+  if (!Array.isArray(rows)) return [];
+  const refs: EmojiRef[] = [];
+  rows.forEach((row: unknown, r: number) => {
+    const record = asRecord(row);
+    if (record?.kind === 'buttons' && Array.isArray(record.buttons)) {
+      const buttons: unknown[] = record.buttons;
+      buttons.forEach((button: unknown, b: number) => {
+        const id = asRecord(asRecord(button)?.emoji)?.id;
+        if (isDiscordSnowflake(id)) refs.push({ path: `components[${r}].buttons[${b}].emoji`, id, message: UNKNOWN_EMOJI_MESSAGE });
+      });
+      return;
+    }
+    const menu = asRecord(record?.menu);
+    if (record?.kind !== 'select' || menu === undefined || !Array.isArray(menu.options)) return;
+    const options: unknown[] = menu.options;
+    options.forEach((option: unknown, o: number) => {
+      const id = asRecord(asRecord(option)?.emoji)?.id;
+      if (isDiscordSnowflake(id)) refs.push({ path: `components[${r}].menu.options[${o}].emoji`, id, message: UNKNOWN_MENU_EMOJI_MESSAGE });
+    });
+  });
+  return refs;
+}
+
+/** Erros `unknown_guild_emoji` para os botões e as opções de menu com emoji personalizado que o servidor não tem. Só consulta o Discord
+ * quando há algum `emoji.id`. Falha do Discord responde 409 (bot fora do servidor) ou 503 e devolve `undefined`. */
+async function findUnknownEmojis(res: ServerResponse, discord: DiscordBot, guildId: string, contentJson: string) {
+  const refs = collectEmojiRefs(contentJson);
+  if (refs.length === 0) return [];
+  const result = await discord.listEmojis(guildId);
+  if (!result.ok) { sendJson(res, result.reason === 'bot_not_in_guild' ? 409 : 503, { error: result.reason }); return undefined; }
+  const known = new Set(result.items.map((emoji) => emoji.id));
+  return refs
+    .filter((ref) => !known.has(ref.id))
+    .map((ref) => ({ code: 'unknown_guild_emoji' as const, path: ref.path, message: ref.message }));
+}
 
 /** Adapta `database.templates` (datas como `Date`, pacote JS) ao port do caso de uso (datas como ISO string). */
 function toIso(value: unknown): string {
@@ -64,7 +212,7 @@ function adminErrorResponse(error: TemplateAdminError): { status: number; body: 
   }
 }
 
-export function createTemplatesApi(config: SiteConfig, auth: Auth, database: ReturnType<typeof createDatabase>) {
+export function createTemplatesApi(config: SiteConfig, auth: Auth, database: ReturnType<typeof createDatabase>, discord: DiscordBot) {
   const service = createTemplateAdminService(createTemplateRepository(database.templates, database.folders));
 
   function authorize(req: IncomingMessage, res: ServerResponse, guildId: string): { discordId: string } | undefined {
@@ -95,6 +243,11 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
       sendJson(res, 422, { error: 'invalid_folder' });
       return;
     }
+    const unknownComponents = await findUnknownComponents(database, guildId, contentJson);
+    if (unknownComponents.length > 0) { sendJson(res, 422, { error: 'validation', details: unknownComponents.slice(0, 5) }); return; }
+    const unknownEmojis = await findUnknownEmojis(res, discord, guildId, contentJson);
+    if (unknownEmojis === undefined) return;
+    if (unknownEmojis.length > 0) { sendJson(res, 422, { error: 'validation', details: unknownEmojis.slice(0, 5) }); return; }
     try {
       const record = await service.createTemplate({ guildId, name, contentJson, actorId, folderId: folderId ?? null });
       sendJson(res, 201, { name: record.name, version: record.version });
@@ -117,6 +270,11 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
       sendJson(res, 422, { error: 'invalid_folder' });
       return;
     }
+    const unknownComponents = await findUnknownComponents(database, guildId, contentJson);
+    if (unknownComponents.length > 0) { sendJson(res, 422, { error: 'validation', details: unknownComponents.slice(0, 5) }); return; }
+    const unknownEmojis = await findUnknownEmojis(res, discord, guildId, contentJson);
+    if (unknownEmojis === undefined) return;
+    if (unknownEmojis.length > 0) { sendJson(res, 422, { error: 'validation', details: unknownEmojis.slice(0, 5) }); return; }
     try {
       const record = await service.updateTemplate({ guildId, name, expectedVersion, contentJson, actorId, folderId: folderId ?? null });
       sendJson(res, 200, { name: record.name, version: record.version });

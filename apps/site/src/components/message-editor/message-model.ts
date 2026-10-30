@@ -10,6 +10,16 @@ export const LIMITS = {
   fieldValue: 1024,
   footerText: 2048,
   authorName: 256,
+  /** Linhas de componentes por mensagem; mesmo valor de `componentRows` em limits.js. */
+  actionRows: 5,
+  /** Texto de um botão; mesmo valor de `buttonLabel` em limits.js. */
+  buttonLabel: 80,
+  /** Botões por linha; mesmo valor de `buttonsPerRow` em limits.js. */
+  buttonsPerRow: 5,
+  /** Opções por menu de seleção; mesmo valor de `selectOptions` em limits.js. */
+  selectOptions: 25,
+  /** Texto de uma opção (rótulo e descrição); mesmo valor de `selectOptionText` em limits.js. */
+  selectOptionText: 100,
 };
 
 export type EditorField = { key: number; name: string; value: string; inline: boolean };
@@ -45,6 +55,66 @@ export function text(value: unknown): string {
 
 export function record(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+/** Botões de uma linha de botões, ou opções de uma linha de menu; `null` quando a linha não é desses tipos ou não traz a lista. */
+export function rowItems(row: unknown): unknown[] | null {
+  const data = record(row);
+  if (data.kind === 'buttons' && Array.isArray(data.buttons)) return data.buttons;
+  if (data.kind === 'select') {
+    const options = record(data.menu).options;
+    if (Array.isArray(options)) return options;
+  }
+  return null;
+}
+
+const ID_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+/** `length` caracteres `[a-z0-9]` aleatórios. */
+function randomId(length: number): string {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => ID_CHARS.charAt(byte % ID_CHARS.length)).join('');
+}
+
+/** Id do menu de seleção no Discord: `kt:s:` seguido de 8 caracteres `[a-z0-9]`. */
+export function newSelectCustomId(): string {
+  return `kt:s:${randomId(8)}`;
+}
+
+/** Valor de uma opção de menu: `o` seguido de 7 caracteres `[a-z0-9]`, diferente de `taken`. */
+export function newOptionValue(taken: readonly string[]): string {
+  let value = `o${randomId(7)}`;
+  while (taken.includes(value)) value = `o${randomId(7)}`;
+  return value;
+}
+
+/**
+ * Menu de seleção com `customId` e `value` de cada opção: gera o que faltar ou repete (JSON antigo ou escrito à mão),
+ * sem mexer no resto. Outras linhas passam como estão.
+ */
+function withSelectIds(row: unknown): unknown {
+  const data = record(row);
+  if (data.kind !== 'select') return row;
+  const menu = record(data.menu);
+  const customId = text(menu.customId) === '' ? newSelectCustomId() : text(menu.customId);
+  if (!Array.isArray(menu.options)) return { ...data, menu: { ...menu, customId } };
+  const values: string[] = [];
+  const options = menu.options.map((item) => {
+    const option = record(item);
+    let value = text(option.value);
+    if (value === '' || values.includes(value)) value = newOptionValue(values);
+    values.push(value);
+    return { ...option, value };
+  });
+  return { ...data, menu: { ...menu, customId, options } };
+}
+
+/** Linha que vai para o modelo: a pendente e a de botões ou menu sem itens ficam de fora; as demais passam como estão. */
+export function isSavedRow(row: unknown): boolean {
+  if (record(row).kind === 'pending') return false;
+  const items = rowItems(row);
+  return items === null || items.length > 0;
 }
 
 function colorToHex(value: unknown): string {
@@ -92,7 +162,7 @@ export function parseState(json: string): EditorState | null {
         imageUrl: text(record(embed.image).url),
       };
     }),
-    components: Array.isArray(data.components) ? data.components : [],
+    components: Array.isArray(data.components) ? data.components.map(withSelectIds) : [],
   };
 }
 
@@ -115,6 +185,6 @@ export function toTemplate(state: EditorState): Record<string, unknown> {
       ...(embed.fields.some(hasText) ? { fields: embed.fields.filter(hasText).map((field) => ({ name: field.name, value: field.value, ...(field.inline ? { inline: true } : {}) })) } : {}),
       ...(embed.footer !== '' ? { footer: { text: embed.footer, ...(embed.footerIconUrl !== '' ? { iconUrl: embed.footerIconUrl } : {}) } } : {}),
     })),
-    components: state.components,
+    components: state.components.filter(isSavedRow),
   };
 }

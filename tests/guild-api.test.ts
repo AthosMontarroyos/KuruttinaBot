@@ -81,6 +81,24 @@ describe('discord bot reads', () => {
     });
   });
 
+  it('lists the guild emojis by name without case, with the CDN url, skipping unavailable and malformed ones', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, [
+      { id: '600000000000000002', name: 'Zebra', animated: true, available: true },
+      { id: '600000000000000001', name: 'alfa', animated: false },
+      { id: '600000000000000003', name: 'Indisponivel', animated: false, available: false },
+      { id: 'nao-snowflake', name: 'ruim', animated: false },
+    ]));
+    const result = await createDiscordBot(readSiteConfig(environment)).listEmojis(guildId);
+    expect(fetchMock).toHaveBeenCalledWith(`https://discord.com/api/v10/guilds/${guildId}/emojis`, expect.objectContaining({ headers: { Authorization: 'Bot secret-bot-token' } }));
+    expect(result).toEqual({
+      ok: true,
+      items: [
+        { id: '600000000000000001', name: 'alfa', animated: false, url: 'https://cdn.discordapp.com/emojis/600000000000000001.png' },
+        { id: '600000000000000002', name: 'Zebra', animated: true, url: 'https://cdn.discordapp.com/emojis/600000000000000002.gif' },
+      ],
+    });
+  });
+
   it('caches each list for a short time', async () => {
     fetchMock.mockResolvedValue(jsonResponse(200, discordRoles));
     const discord = createDiscordBot(readSiteConfig(environment));
@@ -123,7 +141,7 @@ describe('guild lists API', () => {
   let server: Server;
   let origin = '';
   let authorization: { status: 'unauthenticated' } | { status: 'forbidden' } | { status: 'ok'; discordId: string } = { status: 'ok', discordId: '111111111111111111' };
-  const discord = { listChannels: vi.fn(), listCategories: vi.fn(), listRoles: vi.fn() };
+  const discord = { listChannels: vi.fn(), listCategories: vi.fn(), listRoles: vi.fn(), listEmojis: vi.fn() };
   const authorizedGuilds: string[] = [];
 
   beforeEach(async () => {
@@ -148,6 +166,7 @@ describe('guild lists API', () => {
     ['channels', 'listChannels'],
     ['categories', 'listCategories'],
     ['roles', 'listRoles'],
+    ['emojis', 'listEmojis'],
   ] as const)('returns the %s of an authorized guild without caching them in the browser', async (list, method) => {
     discord[method].mockResolvedValueOnce({ ok: true, items: [{ id: '1', name: 'x' }] });
     const response = await fetch(`${origin}/api/guilds/${guildId}/${list}`);

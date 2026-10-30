@@ -27,3 +27,7 @@ A lista única está em `packages/message-templates/variables.js` (`ACTION_VARIA
 - A revisão por modelo do diff desta funcionalidade não foi aprovada (o revisor recusou arquivo novo fora do formato de diff). As correções apontadas foram feitas e os testes passam, mas o diff final não foi revisado de novo.
 - No Docker de desenvolvimento as sessões do painel não sobrevivem à recriação dos contêineres (veja [referência de deployment](../../.claude/skills/project-operations/references/deployment.md)).
 - O preview não reproduz tudo do Discord: menção aparece como `@nome` sem destaque e o timestamp como data fixa do momento.
+
+## Seletor de emojis
+
+`EmojiPanel` (painel reutilizável: abas de categoria, busca, tons de pele e emojis do servidor) e `EmojiPicker` (gatilho com popover que usa o painel) estão em `apps/site/src/components/selectors/`. Os emojis padrão vêm de `emojibase-data/pt/compact.json`, carregado por `EmojiPanel.tsx` só na primeira abertura do painel (import dinâmico, chunk separado); a montagem das categorias, a busca e os tons (`emoji-data.ts`) são funções puras, testadas em `tests/emoji-data.test.ts`. Escolher um emoji padrão grava `{ name }`; um emoji do servidor grava `{ id, name, animated? }`.

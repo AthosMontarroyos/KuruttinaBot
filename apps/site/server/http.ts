@@ -1,9 +1,10 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { createDatabase } from '@kuruttina/database';
 import { createAuth } from './auth.js';
 import { createDiscordBot } from './discord.js';
 import { createRoleGroupsApi } from './role-groups.js';
+import { createCustomActionsApi } from './custom-actions.js';
 import { createGuildApi } from './guild.js';
 import { createTemplatesApi } from './templates.js';
 import type { readSiteConfig } from './config.js';
@@ -24,12 +25,17 @@ const iconPaths = [
   '/icons/theme/theme.svg',
 ] as const;
 const safePublicPath = /^\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/u;
+const safeBuildAssetName = /^[A-Za-z0-9._-]+$/u;
 const escapeAttribute = (value: string): string => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
 function contentType(pathname: string): string {
   if (pathname.endsWith('.css')) return 'text/css; charset=utf-8';
   if (pathname.endsWith('.js')) return 'text/javascript; charset=utf-8';
+  if (pathname.endsWith('.json') || pathname.endsWith('.map')) return 'application/json; charset=utf-8';
   if (pathname.endsWith('.svg')) return 'image/svg+xml';
+  if (pathname.endsWith('.woff2')) return 'font/woff2';
+  if (pathname.endsWith('.woff')) return 'font/woff';
+  if (pathname.endsWith('.ttf')) return 'font/ttf';
   return 'application/octet-stream';
 }
 
@@ -45,6 +51,20 @@ function referencedPaths(html: string): string[] {
 async function readPublicFile(directory: URL, pathname: string): Promise<Buffer> {
   if (!safePublicPath.test(pathname)) throw new Error('Caminho público inválido.');
   return readFile(new URL(pathname.slice(1), directory));
+}
+
+// Chunks de import() dinâmico não aparecem no HTML: publica todo arquivo regular de assets/ do build.
+async function publishBuildAssets(directory: URL, assets: Map<string, { type: string; body: Buffer | string }>): Promise<void> {
+  const entries = await readdir(new URL('assets/', directory), { withFileTypes: true }).catch((error: unknown) => {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return [];
+    throw error;
+  });
+  await Promise.all(entries.map(async (entry) => {
+    if (!entry.isFile() || entry.name.startsWith('.') || !safeBuildAssetName.test(entry.name)) return;
+    const pathname = `/assets/${entry.name}`;
+    if (assets.has(pathname)) return;
+    assets.set(pathname, { type: contentType(pathname), body: await readPublicFile(directory, pathname) });
+  }));
 }
 
 export async function createSiteServer(config: SiteConfig, pageFile: URL, staticDirectory: URL, loadActiveDevId?: () => Promise<string | null>) {
@@ -69,15 +89,17 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     }
   }));
   if (missingBundledAssets.length > 0) throw new Error('O build da Home não contém todos os arquivos publicados.');
+  await publishBuildAssets(staticDirectory, assets);
   await Promise.all(iconPaths.map(async (pathname) => {
     assets.set(pathname, { type: 'image/svg+xml', body: await readPublicFile(staticDirectory, pathname) });
   }));
   const database = createDatabase(config.database, config.target);
   const auth = createAuth(config, loadActiveDevId ?? (() => database.getActiveDevUserId()));
-  const templatesApi = createTemplatesApi(config, auth, database);
   const discord = createDiscordBot(config);
+  const templatesApi = createTemplatesApi(config, auth, database, discord);
   const guildApi = createGuildApi(auth, discord);
   const roleGroupsApi = createRoleGroupsApi(config, auth, database, discord);
+  const customActionsApi = createCustomActionsApi(config, auth, database, discord);
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
     const [path = '', search = ''] = (req.url ?? '').split('?');
     // Só o painel carrega imagens de qualquer https: a prévia das mensagens mostra os links que o administrador cola.
@@ -90,6 +112,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     if (templatesApi.handle(req, res, path, search)) return;
     if (guildApi.handle(req, res, path)) return;
     if (roleGroupsApi.handle(req, res, path)) return;
+    if (customActionsApi.handle(req, res, path)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
     const asset = assets.get(path) ?? (isDashboardServerPath(path) ? assets.get('/dashboard') : undefined);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }

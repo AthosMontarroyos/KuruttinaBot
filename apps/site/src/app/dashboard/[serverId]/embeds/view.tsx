@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { card, outlineButton, Message } from '../../ui';
+import { card, outlineButton } from '../../ui';
+import { CustomActionsView } from '../custom-actions/view';
 import { TemplatesView } from './templates/view';
 
 type EmbedsSection = 'menu' | 'templates' | 'components';
@@ -17,9 +18,9 @@ function TemplatesIcon() {
   );
 }
 
-function ComponentsIcon({ className = 'size-5' }: { className?: string }) {
+function ComponentsIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
       <rect x="3" y="3" width="7" height="7" rx="1.5" />
       <rect x="14" y="3" width="7" height="7" rx="1.5" />
       <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -67,15 +68,12 @@ function EmbedsMenu({ onSelect }: { onSelect: (section: Exclude<EmbedsSection, '
   );
 }
 
-function ComponentsView({ onBack }: { onBack: () => void }) {
+function ComponentsView({ guildId, onBack }: { guildId: string; onBack: () => void }) {
   return (
     <>
       <BackButton onClick={onBack} />
       <h2 className="text-[22px] font-semibold">Components</h2>
-      <Message title="Components em breve">
-        <ComponentsIcon className="mx-auto mb-3 size-10 text-text" />
-        A criação de botões e menus aparece aqui quando estiver pronta.
-      </Message>
+      <CustomActionsView guildId={guildId} />
     </>
   );
 }
@@ -94,7 +92,7 @@ function EmbedsView({ guildId }: { guildId: string }) {
           <TemplatesView guildId={guildId} />
         </>
       ) : (
-        <ComponentsView onBack={() => setSection('menu')} />
+        <ComponentsView guildId={guildId} onBack={() => setSection('menu')} />
       )}
     </>
   );

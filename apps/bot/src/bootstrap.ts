@@ -57,6 +57,8 @@ export async function startBot(correlationId: string): Promise<void> {
         const record = await database.templates.getContent(guildId, name);
         return record ? { content: record.content as MessageTemplate } : null;
       },
+      getButtonConfig: (guildId, id) => database.customActionsConfig.getButton(guildId, id),
+      getSelectConfig: (guildId, id) => database.customActionsConfig.getSelect(guildId, id),
     };
     const deliveryDatabasePort: DeliveryDatabasePort = {
       deliveries: database.deliveries,

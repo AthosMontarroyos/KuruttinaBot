@@ -193,6 +193,260 @@ describe('validateTemplate', () => {
   });
 });
 
+describe('component de botão (campo component)', () => {
+  const buttonWith = (button: Record<string, unknown>): MessageTemplate => withButton({
+    kind: 'buttons', buttons: [button as never],
+  });
+  const colored = (extra: Record<string, unknown> = {}): MessageTemplate => buttonWith({ style: 'primary', label: 'x', customId: 'kt:a:1', ...extra });
+
+  it('aceita botão colorido com component inteiro positivo', () => {
+    expect(codes(colored({ component: 1 }))).toEqual([]);
+    expect(codes(colored({ component: 42 }))).toEqual([]);
+  });
+
+  it('rejeita component 0, negativo, decimal e string com invalid_action no path do campo', () => {
+    for (const bad of [0, -1, 1.5, '3']) {
+      const errors = validateTemplate(colored({ component: bad }), variables);
+      expect(errors.map((error) => error.code)).toEqual(['invalid_action']);
+      expect(errors[0]?.path).toBe('components[0].buttons[0].component');
+    }
+  });
+
+  it('rejeita component em botão de link com invalid_action', () => {
+    const template = buttonWith({ style: 'link', label: 'x', url: 'https://example.com', component: 1 });
+    const errors = validateTemplate(template, variables);
+    expect(errors.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(errors[0]?.path).toBe('components[0].buttons[0].component');
+    expect(errors[0]?.message).toBe('Botão de link não pode ter ação.');
+  });
+
+  it('botão sem component segue válido (regressão)', () => {
+    expect(codes(colored())).toEqual([]);
+    expect(codes(valid)).toEqual([]);
+  });
+});
+
+describe('emoji de botão (campo emoji)', () => {
+  const buttonWith = (button: Record<string, unknown>): MessageTemplate => withButton({
+    kind: 'buttons', buttons: [button as never],
+  });
+  const colored = (extra: Record<string, unknown> = {}): MessageTemplate => buttonWith({ style: 'primary', label: 'x', customId: 'kt:a:1', ...extra });
+  const link = (extra: Record<string, unknown> = {}): MessageTemplate => buttonWith({ style: 'link', label: 'x', url: 'https://example.com', ...extra });
+  const SNOWFLAKE = '123456789012345678';
+
+  it('aceita emoji unicode em botão colorido e em botão de link', () => {
+    expect(codes(colored({ emoji: { name: '😀' } }))).toEqual([]);
+    expect(codes(link({ emoji: { name: '🔗' } }))).toEqual([]);
+  });
+
+  it('aceita emoji personalizado com id, com e sem animated', () => {
+    expect(codes(colored({ emoji: { id: SNOWFLAKE, name: 'bot_logo' } }))).toEqual([]);
+    expect(codes(colored({ emoji: { id: SNOWFLAKE, name: 'bot_logo', animated: true } }))).toEqual([]);
+    expect(codes(link({ emoji: { id: SNOWFLAKE, name: 'bot_logo', animated: false } }))).toEqual([]);
+  });
+
+  it('rejeita emoji inválido com invalid_emoji no path do campo', () => {
+    const invalid: Array<Record<string, unknown>> = [
+      { id: '12345', name: 'bot_logo' },
+      { id: '0123456789012345678', name: 'bot_logo' },
+      { id: SNOWFLAKE, name: 'a' },
+      { id: SNOWFLAKE, name: 'a b' },
+      { id: SNOWFLAKE, name: 'bot-logo' },
+      { name: '😀', role: 'extra' },
+      { name: '😀', animated: true },
+      { id: SNOWFLAKE, name: 'bot_logo', animated: 'sim' },
+      { name: '' },
+      { name: '   ' },
+      { name: '{user.name}' },
+    ];
+    for (const emoji of invalid) {
+      const errors = validateTemplate(colored({ emoji }), variables);
+      expect(errors.map((error) => error.code), JSON.stringify(emoji)).toEqual(['invalid_emoji']);
+      expect(errors[0]?.path).toBe('components[0].buttons[0].emoji');
+    }
+    expect(codes(link({ emoji: { name: '' } }))).toEqual(['invalid_emoji']);
+  });
+
+  it('rótulo vazio sem emoji continua falhando', () => {
+    expect(codes(colored({ label: '' }))).toEqual(['empty_text']);
+    expect(codes(link({ label: '' }))).toEqual(['empty_text']);
+  });
+
+  it('rótulo vazio com emoji válido passa, nos dois tipos de botão', () => {
+    expect(codes(colored({ label: '', emoji: { name: '😀' } }))).toEqual([]);
+    expect(codes(colored({ label: '', emoji: { id: SNOWFLAKE, name: 'bot_logo' } }))).toEqual([]);
+    expect(codes(link({ label: '', emoji: { name: '🔗' } }))).toEqual([]);
+  });
+
+  it('rótulo vazio com emoji inválido falha pelos dois motivos', () => {
+    expect(codes(colored({ label: '', emoji: { name: '' } })).sort()).toEqual(['empty_text', 'invalid_emoji']);
+  });
+
+  it('botão sem emoji segue válido (regressão)', () => {
+    expect(codes(colored())).toEqual([]);
+    expect(codes(link())).toEqual([]);
+  });
+});
+
+describe('menu de seleção: campos novos (min/max, component, opções)', () => {
+  const SNOWFLAKE = '123456789012345678';
+  const defaultOptions = [{ label: 'a', value: 'a' }, { label: 'b', value: 'b' }];
+  const menuWith = (menu: Record<string, unknown>, options: Array<Record<string, unknown>> = defaultOptions): MessageTemplate => ({
+    embeds: [],
+    components: [{ kind: 'select', menu: { customId: 'kt:m:1', options, ...menu } as never }],
+  });
+  const errorsOf = (template: MessageTemplate) => validateTemplate(template, variables);
+
+  it('aceita menu com todos os campos novos válidos', () => {
+    expect(codes(menuWith({ minValues: 0, maxValues: 2, component: 1 }, [
+      { label: 'a', value: 'a', default: true, componentOption: 'abc123', emoji: { name: '😀' } },
+      { label: 'b', value: 'b', default: false, emoji: { id: SNOWFLAKE, name: 'bot_logo', animated: true } },
+    ]))).toEqual([]);
+  });
+
+  it('aceita minValues e maxValues nos limites 0..25 e 1..25', () => {
+    const many = Array.from({ length: 25 }, (_, index) => ({ label: `o${index}`, value: `v${index}` }));
+    expect(codes(menuWith({ minValues: 0, maxValues: 25 }, many))).toEqual([]);
+    expect(codes(menuWith({ minValues: 25, maxValues: 25 }, many))).toEqual([]);
+  });
+
+  it('rejeita minValues e maxValues fora da faixa ou não inteiros, no path do campo', () => {
+    for (const minValues of [-1, 26, 1.5, '1']) {
+      const errors = errorsOf(menuWith({ minValues }));
+      expect(errors.map((error) => error.code), String(minValues)).toEqual(['invalid_action']);
+      expect(errors[0]?.path).toBe('components[0].menu.minValues');
+    }
+    for (const maxValues of [0, 26, 1.5, '2']) {
+      const errors = errorsOf(menuWith({ maxValues }));
+      expect(errors.map((error) => error.code), String(maxValues)).toEqual(['invalid_action']);
+      expect(errors[0]?.path).toBe('components[0].menu.maxValues');
+    }
+  });
+
+  it('exige minValues <= maxValues', () => {
+    const errors = errorsOf(menuWith({ minValues: 2, maxValues: 1 }));
+    expect(errors.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(errors[0]?.path).toBe('components[0].menu.minValues');
+    expect(codes(menuWith({ minValues: 2, maxValues: 2 }))).toEqual([]);
+  });
+
+  it('exige maxValues <= número de opções quando definido', () => {
+    const errors = errorsOf(menuWith({ maxValues: 3 }));
+    expect(errors.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(errors[0]?.path).toBe('components[0].menu.maxValues');
+    expect(codes(menuWith({ maxValues: 2 }))).toEqual([]);
+  });
+
+  it('component do menu: inteiro positivo, senão invalid_action no path do campo', () => {
+    expect(codes(menuWith({ component: 7 }))).toEqual([]);
+    for (const bad of [0, -1, 1.5, '3']) {
+      const errors = errorsOf(menuWith({ component: bad }));
+      expect(errors.map((error) => error.code), String(bad)).toEqual(['invalid_action']);
+      expect(errors[0]?.path).toBe('components[0].menu.component');
+      expect(errors[0]?.message).toBe('O componente precisa ser um número inteiro positivo.');
+    }
+  });
+
+  it('emoji de opção segue as mesmas regras do emoji de botão', () => {
+    expect(codes(menuWith({}, [
+      { label: 'a', value: 'a', emoji: { name: '😀' } },
+      { label: 'b', value: 'b', emoji: { id: SNOWFLAKE, name: 'bot_logo', animated: true } },
+    ]))).toEqual([]);
+    const invalid: Array<Record<string, unknown>> = [
+      { id: '12345', name: 'bot_logo' },
+      { name: '' },
+      { name: '{user.name}' },
+      { name: '😀', animated: true },
+      { name: '😀', role: 'extra' },
+    ];
+    for (const emoji of invalid) {
+      const errors = errorsOf(menuWith({}, [{ label: 'a', value: 'a', emoji }, { label: 'b', value: 'b' }]));
+      expect(errors.map((error) => error.code), JSON.stringify(emoji)).toEqual(['invalid_emoji']);
+      expect(errors[0]?.path).toBe('components[0].menu.options[0].emoji');
+    }
+  });
+
+  it('default precisa ser booleano e caber em maxValues (ou 1, sem maxValues)', () => {
+    const bothDefault = [{ label: 'a', value: 'a', default: true }, { label: 'b', value: 'b', default: true }];
+    expect(codes(menuWith({ maxValues: 2 }, bothDefault))).toEqual([]);
+    expect(codes(menuWith({}, [{ label: 'a', value: 'a', default: true }, { label: 'b', value: 'b' }]))).toEqual([]);
+    expect(codes(menuWith({}, bothDefault))).toEqual(['invalid_action']);
+    expect(codes(menuWith({ maxValues: 1 }, bothDefault))).toEqual(['invalid_action']);
+    const notBoolean = errorsOf(menuWith({}, [{ label: 'a', value: 'a', default: 'sim' }, { label: 'b', value: 'b' }]));
+    expect(notBoolean.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(notBoolean[0]?.path).toBe('components[0].menu.options[0].default');
+  });
+
+  it('componentOption exige menu.component e chave no formato ^[a-z0-9]{6,12}$', () => {
+    const withKey = (key: unknown, component?: number) => menuWith(
+      component === undefined ? {} : { component },
+      [{ label: 'a', value: 'a', componentOption: key }, { label: 'b', value: 'b' }],
+    );
+    expect(codes(withKey('abc123', 1))).toEqual([]);
+    expect(codes(withKey('abcdefghijkl', 1))).toEqual([]);
+
+    const semComponent = errorsOf(withKey('abc123'));
+    expect(semComponent.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(semComponent[0]?.message).toBe('Escolha a ação do menu antes de vincular a opção.');
+    expect(semComponent[0]?.path).toBe('components[0].menu.options[0].componentOption');
+
+    for (const bad of ['abc12', 'abcdefghijklm', 'ABC123', 'abc-12', '{user.name}', 42]) {
+      const errors = errorsOf(withKey(bad, 1));
+      expect(errors.map((error) => error.code), String(bad)).toEqual(['invalid_action']);
+      expect(errors[0]?.path).toBe('components[0].menu.options[0].componentOption');
+    }
+  });
+
+  it('componentOption e action na mesma opção são recusados', () => {
+    const errors = errorsOf(menuWith({ component: 1 }, [
+      { label: 'a', value: 'a', componentOption: 'abc123', action: { type: 'delete' } },
+      { label: 'b', value: 'b' },
+    ]));
+    expect(errors.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(errors[0]?.path).toBe('components[0].menu.options[0].componentOption');
+  });
+
+  it('rejeita valores de opção repetidos, com mensagem própria', () => {
+    const errors = errorsOf(menuWith({}, [{ label: 'a', value: 'x' }, { label: 'b', value: 'x' }]));
+    expect(errors.map((error) => error.code)).toEqual(['invalid_action']);
+    expect(errors[0]?.message).toBe('Duas opções têm o mesmo valor.');
+    expect(errors[0]?.path).toBe('components[0].menu.options[1].value');
+  });
+
+  it('variáveis não se aplicam a value, componentOption, emoji nem component', () => {
+    expect(codes(menuWith({}, [{ label: 'a', value: '{user.name}' }, { label: 'b', value: 'b' }]))).toEqual(['variable_not_allowed']);
+    expect(codes(menuWith({ component: 1 }, [{ label: 'a', value: 'a', componentOption: '{user.name}' }, { label: 'b', value: 'b' }]))).toEqual(['invalid_action']);
+    expect(codes(menuWith({}, [{ label: 'a', value: 'a', emoji: { name: '{user.name}' } }, { label: 'b', value: 'b' }]))).toEqual(['invalid_emoji']);
+    expect(codes(menuWith({ component: '{user.name}' }))).toEqual(['invalid_action']);
+  });
+
+  it('regressão: menu legado (só customId, options e action) segue válido; uma ação por menu continua', () => {
+    expect(codes(valid)).toEqual([]);
+    expect(codes(menuWith({}, [{ label: 'a', value: 'a', action: { type: 'reply', template: 'oi' } }, { label: 'b', value: 'b' }]))).toEqual([]);
+    expect(codes(menuWith({}, [
+      { label: 'a', value: 'a', action: { type: 'reply', template: 'oi' } },
+      { label: 'b', value: 'b', action: { type: 'delete' } },
+    ]))).toEqual(['invalid_action']);
+  });
+
+  it('renderTemplate devolve os campos novos intactos e não preenche variáveis neles', () => {
+    const template = menuWith({ minValues: 1, maxValues: 2, component: 9 }, [
+      { label: 'a', value: 'a', default: true, componentOption: 'abc123', emoji: { id: SNOWFLAKE, name: 'bot_logo' } },
+      { label: 'b', value: 'b' },
+    ]);
+    expect(codes(template)).toEqual([]);
+    expect(renderTemplate(template, variables, { 'user.name': 'Ana' }).components[0]).toEqual(template.components[0]);
+
+    const unsafe = {
+      embeds: [],
+      components: [{ kind: 'select', menu: { customId: 'kt:m:1', options: [{ label: 'a', value: '{user.name}', componentOption: '{user.name}', emoji: { name: '{user.name}' } }] } }],
+    } as unknown as MessageTemplate;
+    const rendered = renderTemplate(unsafe, variables, { 'user.name': 'Ana' }).components[0];
+    const option = rendered?.kind === 'select' ? rendered.menu.options[0] : undefined;
+    expect(option).toEqual({ label: 'a', value: '{user.name}', componentOption: '{user.name}', emoji: { name: '{user.name}' } });
+  });
+});
+
 describe('checkGuildQuota', () => {
   it('refuses the 101st template', () => {
     expect(checkGuildQuota({ templates: 99, buttons: 0, menus: 0 })).toBeNull();

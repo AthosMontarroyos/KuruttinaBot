@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# As migrations são lidas como LF em qualquer sistema: o checksum gravado pelo migrate não pode depender do autocrlf.
+packages/database/supabase/migrations/*.sql text eol=lf

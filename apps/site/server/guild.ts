@@ -1,6 +1,6 @@
 /**
- * API de leituras do servidor (`GET /api/guilds/:guildId/channels|categories|roles`), consumida só pelo
- * painel do site, nos seletores de canal, categoria e cargo. Autorização por servidor vem de `auth.ts`
+ * API de leituras do servidor (`GET /api/guilds/:guildId/channels|categories|roles|voice-channels|emojis`), consumida só pelo
+ * painel do site, nos seletores de canal, categoria, cargo, canal de voz e emoji. Autorização por servidor vem de `auth.ts`
  * (`getAuthorizedGuild`); a leitura no Discord, de `discord.ts`.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -9,15 +9,17 @@ import type { DiscordBot, DiscordListResult } from './discord.js';
 import { rejectUnlessGuildAuthorized, sendJson } from './http-utils.js';
 
 type Auth = ReturnType<typeof createAuth>;
-type Lists = 'channels' | 'categories' | 'roles';
+type Lists = 'channels' | 'categories' | 'roles' | 'voice-channels' | 'emojis';
 
-const listPath = /^\/api\/guilds\/([^/]+)\/(channels|categories|roles)$/u;
+const listPath = /^\/api\/guilds\/([^/]+)\/(channels|categories|roles|voice-channels|emojis)$/u;
 
 export function createGuildApi(auth: Auth, discord: DiscordBot) {
   const readers: Record<Lists, (guildId: string) => Promise<DiscordListResult<unknown>>> = {
     channels: (guildId) => discord.listChannels(guildId),
     categories: (guildId) => discord.listCategories(guildId),
     roles: (guildId) => discord.listRoles(guildId),
+    'voice-channels': (guildId) => discord.listVoiceChannels(guildId),
+    emojis: (guildId) => discord.listEmojis(guildId),
   };
 
   async function respond(req: IncomingMessage, res: ServerResponse, guildId: string, list: Lists): Promise<void> {

@@ -1,10 +1,15 @@
 import { MessageFlags } from 'discord.js';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ComponentAction, MessageTemplate } from '@kuruttina/message-templates';
 import {
   handleComponentInteraction,
   type ComponentActionPort,
 } from '../apps/bot/src/infrastructure/discord/messages/componentRouter.js';
+import { runComponentFunctions } from '../apps/bot/src/infrastructure/discord/messages/componentFunctions.js';
+
+vi.mock('../apps/bot/src/infrastructure/discord/messages/componentFunctions.js', () => ({
+  runComponentFunctions: vi.fn(async () => undefined),
+}));
 
 const emoji = async (name: string): Promise<string> => `[${name}]`;
 
@@ -14,6 +19,8 @@ function makePort(overrides: Partial<ComponentActionPort> = {}): ComponentAction
   return {
     findComponent: vi.fn().mockResolvedValue(null),
     getTemplate: vi.fn().mockResolvedValue(null),
+    getButtonConfig: vi.fn().mockResolvedValue(null),
+    getSelectConfig: vi.fn().mockResolvedValue(null),
     ...overrides,
   };
 }
@@ -49,8 +56,10 @@ function makeSelectMenuInteraction(overrides: Record<string, unknown> = {}) {
     isAnySelectMenu: () => true,
     isButton: () => false,
     values: ['option-a'],
+    message: { components: [{ type: 1, components: [{ type: 3, custom_id: 'kt:s:3-abc', options: [] }] }] },
     reply: vi.fn(async () => undefined),
     followUp: vi.fn(async () => undefined),
+    editReply: vi.fn(async (_payload?: unknown) => undefined),
     ...overrides,
   };
 }
@@ -223,5 +232,180 @@ describe('component router', () => {
       ),
     );
     expect(busyReplies.length).toBeGreaterThan(0);
+  });
+});
+
+describe('component router com Component de botão', () => {
+  beforeEach(() => {
+    vi.mocked(runComponentFunctions).mockClear();
+  });
+
+  it('resolve o Component pelo custom_id e roda as funções dele', async () => {
+    const functions = [{ type: 'send_message', config: { template: 'answer', ephemeral: true } }];
+    const interaction = makeButtonInteraction({ customId: 'kt:c:7-abc' });
+    const port = makePort({
+      getButtonConfig: vi.fn().mockResolvedValue({ id: 7, name: 'Botão', functions }),
+    });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(port.getButtonConfig).toHaveBeenCalledExactlyOnceWith('666948364507545600', 7);
+    expect(port.findComponent).not.toHaveBeenCalled();
+    expect(runComponentFunctions).toHaveBeenCalledExactlyOnceWith(interaction, functions, {
+      getTemplate: port.getTemplate,
+      emoji,
+    });
+  });
+
+  it('replies that the action is gone when the Component no longer exists', async () => {
+    const interaction = makeButtonInteraction({ customId: 'kt:c:7-abc' });
+    const port = makePort({ getButtonConfig: vi.fn().mockResolvedValue(null) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(interaction.reply).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ content: '[search] Essa ação não está mais disponível.' }),
+    );
+    expect(runComponentFunctions).not.toHaveBeenCalled();
+  });
+
+  it('only acknowledges the click when the Component has no functions', async () => {
+    const interaction = makeButtonInteraction({ customId: 'kt:c:7-abc' });
+    const port = makePort({
+      getButtonConfig: vi.fn().mockResolvedValue({ id: 7, name: 'Vazio', functions: [] }),
+    });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(interaction.deferUpdate).toHaveBeenCalledOnce();
+    expect(runComponentFunctions).not.toHaveBeenCalled();
+  });
+
+  it('keeps resolving legacy kt:b custom_ids through message_components', async () => {
+    const action: ComponentAction = { type: 'reply', template: 'answer' };
+    const interaction = makeButtonInteraction({ customId: 'kt:b:abc' });
+    const port = makePort({
+      findComponent: vi.fn().mockResolvedValue({ kind: 'button', action }),
+      getTemplate: vi.fn().mockResolvedValue({ content: simpleTemplate }),
+    });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(port.getButtonConfig).not.toHaveBeenCalled();
+    expect(port.findComponent).toHaveBeenCalledExactlyOnceWith('666948364507545600', 'kt:b:abc');
+    expect(runComponentFunctions).not.toHaveBeenCalled();
+    expect(interaction.reply).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ content: 'Olá!' }));
+  });
+});
+
+describe('component router com Component de menu', () => {
+  const SELECT_ID_MENU = 'kt:s:3-abc';
+  const keyedConfig = (keepSelection: boolean) => ({
+    id: 3,
+    name: 'Cargos',
+    keepSelection,
+    options: [
+      { key: 'k1abc234', label: 'Azul', functions: [{ type: 'send_message', config: { template: 'ok' } }] },
+      { key: 'z9zzz999', label: 'Verde', functions: [{ type: 'edit_message', config: { template: 'ok' } }] },
+    ],
+  });
+
+  beforeEach(() => {
+    vi.mocked(runComponentFunctions).mockClear();
+  });
+
+  it('roda as funções da opção cuja chave vem antes do : no valor escolhido', async () => {
+    const config = keyedConfig(true);
+    const interaction = makeSelectMenuInteraction({ customId: SELECT_ID_MENU, values: ['k1abc234:0'] });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(config) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(port.getSelectConfig).toHaveBeenCalledExactlyOnceWith('666948364507545600', 3);
+    expect(runComponentFunctions).toHaveBeenCalledExactlyOnceWith(interaction, config.options[0]?.functions, {
+      getTemplate: port.getTemplate,
+      emoji,
+    });
+  });
+
+  it('concatena as funções das opções escolhidas na ordem dos valores e ignora valor sem opção', async () => {
+    const config = keyedConfig(true);
+    const interaction = makeSelectMenuInteraction({
+      customId: SELECT_ID_MENU,
+      values: ['z9zzz999:1', 'naoexiste:7', 'k1abc234:0'],
+    });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(config) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    const expected = [...(config.options[1]?.functions ?? []), ...(config.options[0]?.functions ?? [])];
+    expect(runComponentFunctions).toHaveBeenCalledExactlyOnceWith(interaction, expected, {
+      getTemplate: port.getTemplate,
+      emoji,
+    });
+  });
+
+  it('replies that the option is gone when no value matches an option', async () => {
+    const interaction = makeSelectMenuInteraction({ customId: SELECT_ID_MENU, values: ['naoexiste:0'] });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(keyedConfig(true)) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(interaction.reply).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ content: '[ops] Essa opção não está mais disponível.' }),
+    );
+    expect(runComponentFunctions).not.toHaveBeenCalled();
+  });
+
+  it('replies that the option is gone when the menu Component no longer exists', async () => {
+    const interaction = makeSelectMenuInteraction({ customId: SELECT_ID_MENU, values: ['k1abc234:0'] });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(null) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(interaction.reply).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ content: '[search] Essa opção não está mais disponível.' }),
+    );
+    expect(runComponentFunctions).not.toHaveBeenCalled();
+  });
+
+  it('reedita o menu com os próprios componentes quando keepSelection é false', async () => {
+    const interaction = makeSelectMenuInteraction({ customId: SELECT_ID_MENU, values: ['k1abc234:0'] });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(keyedConfig(false)) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(interaction.editReply).toHaveBeenCalledExactlyOnceWith({ components: interaction.message.components });
+  });
+
+  it('mantém a seleção quando keepSelection é true', async () => {
+    const interaction = makeSelectMenuInteraction({ customId: SELECT_ID_MENU, values: ['k1abc234:0'] });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(keyedConfig(true)) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(interaction.editReply).not.toHaveBeenCalled();
+  });
+
+  it('não reedita o menu quando a escolha edita ou apaga a mensagem', async () => {
+    const interaction = makeSelectMenuInteraction({ customId: SELECT_ID_MENU, values: ['z9zzz999:1'] });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(keyedConfig(false)) });
+
+    await handleComponentInteraction(interaction as never, port, emoji);
+
+    expect(runComponentFunctions).toHaveBeenCalledOnce();
+    expect(interaction.editReply).not.toHaveBeenCalled();
+  });
+
+  it('falha ao reeditar o menu vira log e não lança', async () => {
+    const interaction = makeSelectMenuInteraction({
+      customId: SELECT_ID_MENU,
+      values: ['k1abc234:0'],
+      editReply: vi.fn().mockRejectedValue(new Error('boom')),
+    });
+    const port = makePort({ getSelectConfig: vi.fn().mockResolvedValue(keyedConfig(false)) });
+
+    await expect(handleComponentInteraction(interaction as never, port, emoji)).resolves.toBeUndefined();
+    expect(interaction.editReply).toHaveBeenCalledOnce();
   });
 });

@@ -6,6 +6,7 @@
   "exports": {
     ".": "./index.js",
     "./variables": "./variables.js",
-    "./render": "./render.js"
+    "./render": "./render.js",
+    "./custom-functions": "./custom-functions.js"
   }
 }

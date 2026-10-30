@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from 'react';
 import { EmbedCard, InlineText } from './EmbedCard';
-import { ComponentsPreview } from './ComponentsPreview';
+import { ActionRows } from './ActionRows';
 import { TemplateGuide } from './TemplateGuide';
 import { PreviewProvider } from './preview-values';
 import { ChatMessage, MessagePreview } from './ChatMessagePreview';
-import { LIMITS, emptyEmbed, parseState, toTemplate, type EditorState } from './message-model';
+import { LIMITS, emptyEmbed, isSavedRow, parseState, record, toTemplate, type EditorState } from './message-model';
 
 type MessageEditorProps = {
   /** JSON do modelo de mensagem (`{ content?, embeds, components }`) com que o editor começa; vazio para uma mensagem nova. */
@@ -70,6 +70,7 @@ function MessageEditor({ initialJson, onChange, label = 'Mensagem', allowJson = 
   };
 
   const tab = (active: boolean) => `rounded-[8px] px-3 py-1 text-sm font-medium ${active ? 'bg-border text-text' : 'text-muted hover:text-text'}`;
+  const rowsFull = state.components.length >= LIMITS.actionRows;
 
   return (
     <PreviewProvider>
@@ -110,13 +111,24 @@ function MessageEditor({ initialJson, onChange, label = 'Mensagem', allowJson = 
                 onRemove={() => update({ ...state, embeds: state.embeds.filter((item) => item.key !== embed.key) })}
               />
             ))}
-            <ComponentsPreview rows={state.components} />
-            {state.embeds.length < LIMITS.embeds ? (
-              <button type="button" className="self-start rounded border border-dashed border-[#4e5058] px-3 py-1 text-sm text-[#b5bac1] hover:bg-white/5 hover:text-white" onClick={() => update({ ...state, embeds: [...state.embeds, emptyEmbed()] })}>+ Adicionar embed</button>
-            ) : null}
+            <ActionRows rows={state.components} onChange={(components) => update({ ...state, components })} />
+            <div className="flex flex-wrap gap-2 self-start">
+              {state.embeds.length < LIMITS.embeds ? (
+                <button type="button" className="self-start rounded border border-dashed border-[#4e5058] px-3 py-1 text-sm text-[#b5bac1] hover:bg-white/5 hover:text-white" onClick={() => update({ ...state, embeds: [...state.embeds, emptyEmbed()] })}>+ Adicionar embed</button>
+              ) : null}
+              <button
+                type="button"
+                disabled={rowsFull}
+                title={rowsFull ? 'Máximo de 5 linhas' : undefined}
+                className="rounded border border-dashed border-[#4e5058] px-3 py-1 text-sm text-[#b5bac1] hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#b5bac1]"
+                onClick={() => update({ ...state, components: [...state.components, { kind: 'pending' }] })}
+              >
+                + Action Row
+              </button>
+            </div>
           </ChatMessage>
         )}
-        {panel === null && mode === 'visual' && state.components.length > 0 ? <p className="text-[13px] text-muted">Edite os botões e menus no modo JSON.</p> : null}
+        {panel === null && mode === 'visual' && state.components.some((row) => isSavedRow(row) && record(row).kind !== 'buttons' && record(row).kind !== 'select') ? <p className="text-[13px] text-muted">Linhas de formato desconhecido só podem ser editadas no modo JSON.</p> : null}
       </div>
     </PreviewProvider>
   );

@@ -107,8 +107,16 @@ function NewFolderIcon() {
 
 function FolderIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-4 shrink-0 text-muted" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-6 shrink-0 text-muted" aria-hidden="true">
       <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`size-5 shrink-0 text-muted transition-transform motion-reduce:transition-none ${open ? 'rotate-90' : ''}`} aria-hidden="true">
+      <path d="m9 6 6 6-6 6" />
     </svg>
   );
 }
@@ -142,6 +150,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const [draggedTemplate, setDraggedTemplate] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
+  const [collapsedFolders, setCollapsedFolders] = useState<ReadonlySet<string>>(new Set());
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -369,6 +378,14 @@ function TemplatesView({ guildId }: { guildId: string }) {
     }
   }, [deleteFolderTarget, guildId, loadFirstPage, loadFolders]);
 
+  const toggleFolder = useCallback((key: string) => {
+    setCollapsedFolders((current) => {
+      const next = new Set(current);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }, []);
+
   const handleDropOnGroup = useCallback(async (targetFolderId: number | null) => {
     const name = draggedTemplate;
     setDraggedTemplate(null);
@@ -559,8 +576,24 @@ function TemplatesView({ guildId }: { guildId: string }) {
                 />
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
-                  {group.folderId !== null ? <FolderIcon /> : null}
-                  <h3 className="text-base font-semibold text-muted">{group.name}</h3>
+                  {group.folderId !== null ? (
+                    <button
+                      className="flex min-w-0 items-center gap-2 rounded-[10px] px-1 py-1 text-left hover:bg-surface"
+                      type="button"
+                      aria-expanded={!collapsedFolders.has(group.key)}
+                      aria-controls={`folder-items-${group.key}`}
+                      aria-label={`${collapsedFolders.has(group.key) ? 'Mostrar' : 'Esconder'} modelos da pasta ${group.name}`}
+                      title={collapsedFolders.has(group.key) ? 'Mostrar modelos' : 'Esconder modelos'}
+                      onClick={() => toggleFolder(group.key)}
+                    >
+                      <ChevronIcon open={!collapsedFolders.has(group.key)} />
+                      <FolderIcon />
+                      <h3 className="truncate text-base font-semibold text-muted">{group.name}</h3>
+                      <span className="text-[13px] text-muted">({group.items.length})</span>
+                    </button>
+                  ) : (
+                    <h3 className="text-base font-semibold text-muted">{group.name}</h3>
+                  )}
                   {group.folderId !== null ? (
                     <div className="ml-auto flex gap-1">
                       <button className={iconButton} type="button" aria-label={`Renomear pasta ${group.name}`} title="Renomear pasta" onClick={() => openRenameFolder({ id: group.folderId as number, name: group.name, createdAt: '' })}>
@@ -573,10 +606,10 @@ function TemplatesView({ guildId }: { guildId: string }) {
                   ) : null}
                 </div>
               )}
-              {group.items.length === 0 ? (
-                <p className="rounded-[10px] border border-dashed border-control px-5 py-3 text-[13px] text-muted">Arraste um modelo para cá.</p>
+              {group.folderId !== null && collapsedFolders.has(group.key) ? null : group.items.length === 0 ? (
+                <p id={`folder-items-${group.key}`} className="rounded-[10px] border border-dashed border-control px-5 py-3 text-[13px] text-muted">Arraste um modelo para cá.</p>
               ) : (
-                <ul className="m-0 flex list-none flex-col gap-3 p-0">
+                <ul id={`folder-items-${group.key}`} className="m-0 flex list-none flex-col gap-3 p-0">
                   {group.items.map((item) => (
                     <li
                       key={item.name}

@@ -4,6 +4,8 @@ import * as templates from './templates.js';
 import * as deliveries from './deliveries.js';
 import * as folders from './folders.js';
 import * as roleGroups from './role-groups.js';
+import * as customActions from './custom-actions.js';
+import * as customActionsConfig from './custom-actions-config.js';
 export { readDatabaseConfig } from './config.js';
 /** @typedef {'creator'|'dev'} StaffRole */
 /** @typedef {{devGuildId: string, environment: 'development'|'production'}} BotSettings */
@@ -127,6 +129,27 @@ export function createDatabase(config, environment, onError = () => {}) {
       update: (input) => connection((client) => roleGroups.update(client, input), 'update_role_group'),
       /** @param {string} guildId @param {number} id */
       remove: (guildId, id) => connection((client) => roleGroups.remove(client, guildId, id), 'remove_role_group'),
+    },
+    // Ações personalizadas (botões e menus de seleção); o site administra e o bot só lê (RLS por servidor).
+    customActions: {
+      /** @param {import('./custom-actions.js').CustomActionKind} kind @param {string} guildId */
+      list: (kind, guildId) => connection((client) => customActions.list(client, kind, guildId), 'list_custom_actions'),
+      /** @param {{kind: import('./custom-actions.js').CustomActionKind, guildId: string, name: string, actorId: string}} input */
+      create: (input) => connection((client) => customActions.create(client, input), 'create_custom_action'),
+      /** Apaga a ação; com `rewriteTemplate` e `actorId`, desvincula os templates do servidor na mesma transação. @param {import('./custom-actions.js').CustomActionKind} kind @param {string} guildId @param {number} id @param {import('./custom-actions.js').RewriteTemplate} [rewriteTemplate] @param {string} [actorId] */
+      remove: (kind, guildId, id, rewriteTemplate, actorId) =>
+        connection((client) => customActions.remove(client, kind, guildId, id, rewriteTemplate, actorId), 'remove_custom_action'),
+    },
+    // Configuração das ações personalizadas (funções dos botões, opções dos menus); o site grava e o bot só lê.
+    customActionsConfig: {
+      /** @param {string} guildId @param {number} id */
+      getButton: (guildId, id) => connection((client) => customActionsConfig.getButton(client, guildId, id), 'get_custom_button_config'),
+      /** @param {{guildId: string, id: number, expectedVersion: number, functions: readonly import('./custom-actions-config.js').ConfiguredFunction[], actorId: string}} input */
+      saveButton: (input) => connection((client) => customActionsConfig.saveButton(client, input), 'save_custom_button_config'),
+      /** @param {string} guildId @param {number} id */
+      getSelect: (guildId, id) => connection((client) => customActionsConfig.getSelect(client, guildId, id), 'get_custom_select_config'),
+      /** @param {{guildId: string, id: number, expectedVersion: number, keepSelection: boolean, options: readonly import('./custom-actions-config.js').SelectOptionConfig[], actorId: string}} input */
+      saveSelect: (input) => connection((client) => customActionsConfig.saveSelect(client, input), 'save_custom_select_config'),
     },
     // Fila de entrega de mensagens (etapa 1D); o bot consome sem filtro de servidor.
     deliveries: {

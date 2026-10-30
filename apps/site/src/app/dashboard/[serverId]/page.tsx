@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Session } from '../../../lib/session';
+import { GuildIdProvider } from '../../../lib/guild-context';
 import { OverviewView } from './overview/view';
 import { EmbedsView } from './embeds/view';
 import { ModulesView } from './modules/view';
@@ -86,15 +87,17 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
       </aside>
 
       <main id="conteudo" className="flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-5 py-8 min-[701px]:px-[5%]">
-        {section === 'overview' ? (
-          <OverviewView guild={guild} />
-        ) : section === 'embeds' ? (
-          <EmbedsView guildId={guild.id} />
-        ) : section === 'roles' ? (
-          <RoleGroupsView guildId={guild.id} />
-        ) : (
-          <ModulesView guildName={guild.name} />
-        )}
+        <GuildIdProvider guildId={guild.id} name={guild.name} iconUrl={guild.iconUrl}>
+          {section === 'overview' ? (
+            <OverviewView guild={guild} />
+          ) : section === 'embeds' ? (
+            <EmbedsView guildId={guild.id} />
+          ) : section === 'roles' ? (
+            <RoleGroupsView guildId={guild.id} />
+          ) : (
+            <ModulesView guildName={guild.name} />
+          )}
+        </GuildIdProvider>
       </main>
     </div>
   );

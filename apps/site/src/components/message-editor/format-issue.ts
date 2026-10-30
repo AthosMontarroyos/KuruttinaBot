@@ -68,17 +68,35 @@ function describeEmbedPart(issue: TemplateIssue): string | null {
 }
 
 function describeComponent(issue: TemplateIssue): string | null {
-  const button = /^components\[(\d+)\]\.buttons\[(\d+)\]\.(label|url)$/u.exec(issue.path);
+  const button = /^components\[(\d+)\]\.buttons\[(\d+)\]\.(label|url|component|emoji)$/u.exec(issue.path);
   if (button?.[1] !== undefined && button[2] !== undefined) {
     const where = `No botão ${at(button, 2)}`;
-    if (button[3] === 'label' && issue.code === 'empty_text') return `${where}, falta o texto.`;
+    if (button[3] === 'label' && issue.code === 'empty_text') return `${where}, falta o texto ou um emoji.`;
     if (button[3] === 'label' && issue.code === 'limit_exceeded') return `${where}, o texto passou de ${limits.buttonLabel} caracteres.`;
     if (button[3] === 'url' && issue.code === 'invalid_url') return `${where}, o link precisa ser uma URL https://.`;
+    if (button[3] === 'component' && issue.code === 'unknown_component') return `${where}, este botão aponta para um Component que não existe mais.`;
+    if (button[3] === 'emoji' && issue.code === 'invalid_emoji') return `${where}, o emoji não é válido.`;
+    if (button[3] === 'emoji' && issue.code === 'unknown_guild_emoji') return `${where}, o emoji não existe mais neste servidor.`;
   }
   const option = /^components\[(\d+)\]\.menu\.options\[(\d+)\]\.(label|value)$/u.exec(issue.path);
   if (option?.[2] !== undefined && issue.code === 'limit_exceeded') {
     const part = option[3] === 'label' ? 'o texto' : 'o valor';
     return `Na opção ${at(option, 2)} do menu, ${part} precisa ter de 1 a ${limits.selectOptionText} caracteres.`;
+  }
+  const menu = /^components\[(\d+)\]\.menu\.(minValues|maxValues|component)$/u.exec(issue.path);
+  if (menu?.[1] !== undefined && menu[2] !== undefined) {
+    const row = at(menu, 1);
+    if (menu[2] === 'component' && issue.code === 'unknown_component') return 'Este menu aponta para um Component que não existe mais.';
+    if (menu[2] === 'minValues' && issue.code === 'invalid_action') return `Na linha ${row}, o mínimo de seleções precisa ser de 0 a ${limits.selectOptions} e não pode passar do máximo.`;
+    if (menu[2] === 'maxValues' && issue.code === 'invalid_action') return `Na linha ${row}, o máximo de seleções precisa ser de 1 a ${limits.selectOptions} e não pode passar do número de opções.`;
+  }
+  const menuOption = /^components\[(\d+)\]\.menu\.options\[(\d+)\]\.(componentOption|emoji|default)$/u.exec(issue.path);
+  if (menuOption?.[2] !== undefined && menuOption[3] !== undefined) {
+    const number = at(menuOption, 2);
+    if (menuOption[3] === 'componentOption' && issue.code === 'unknown_component_option') return `A opção ${number} aponta para uma ação do menu que não existe mais.`;
+    if (menuOption[3] === 'emoji' && issue.code === 'unknown_guild_emoji') return `A opção ${number} usa um emoji que não existe mais neste servidor.`;
+    if (menuOption[3] === 'emoji' && issue.code === 'invalid_emoji') return `A opção ${number} usa um emoji inválido.`;
+    if (menuOption[3] === 'default' && issue.code === 'invalid_action') return `A opção ${number} tem um valor inválido em "selecionada por padrão".`;
   }
   if (issue.code === 'empty_row') return 'Uma linha de botões ou o menu está vazio.';
   if (issue.code === 'too_many_buttons') return `Uma linha passou de ${limits.buttonsPerRow} botões.`;

@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { readSiteConfig } from './config.js';
+import { isDiscordSnowflake, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 type SessionGuild = { id: string; name: string; iconUrl: string | null; members: number | null };
@@ -23,7 +24,6 @@ const oauthTtlSeconds = 10 * 60;
 const maxSessions = 20;
 const maxPending = 50;
 const maxGuilds = 100;
-const snowflake = /^[1-9][0-9]{16,19}$/u;
 const iconHash = /^(?:a_)?[a-f0-9]{1,64}$/u;
 // ADMINISTRATOR (0x8) ou MANAGE_GUILD (0x20): quem pode configurar um servidor.
 const manageBits = 0x28n;
@@ -39,10 +39,6 @@ function readCookie(header: string | undefined, name: string): string {
   return '';
 }
 
-function sendJson(res: ServerResponse, status: number, body: unknown, headers: Record<string, string | string[]> = {}): void {
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers }).end(JSON.stringify(body));
-}
-
 async function discordRequest(path: string, init: RequestInit): Promise<unknown> {
   const response = await fetch(discordApi + path, { ...init, signal: AbortSignal.timeout(5_000) });
   if (!response.ok) throw new Error(`Discord respondeu ${response.status}.`);
@@ -50,7 +46,7 @@ async function discordRequest(path: string, init: RequestInit): Promise<unknown>
 }
 
 function toSessionGuild(raw: DiscordGuild): SessionGuild | null {
-  if (typeof raw.id !== 'string' || !snowflake.test(raw.id) || typeof raw.name !== 'string') return null;
+  if (typeof raw.id !== 'string' || !isDiscordSnowflake(raw.id) || typeof raw.name !== 'string') return null;
   const icon = typeof raw.icon === 'string' && iconHash.test(raw.icon) ? raw.icon : null;
   return {
     id: raw.id,
@@ -75,9 +71,9 @@ function loadSessions(file: string | undefined): Array<[string, Session]> {
       const user = value.user;
       if (!/^[a-f0-9]{64}$/u.test(key) || typeof value.expires !== 'number' || typeof value.created !== 'number') return [];
       if (value.expires <= now || value.created + absoluteTtlSeconds * 1000 <= now) return [];
-      if (!user || typeof user.id !== 'string' || !snowflake.test(user.id)) return [];
+      if (!user || typeof user.id !== 'string' || !isDiscordSnowflake(user.id)) return [];
       if (typeof user.label !== 'string' || !(user.avatarUrl === null || typeof user.avatarUrl === 'string') || !Array.isArray(value.guilds)) return [];
-      const guilds = value.guilds.filter((guild): guild is SessionGuild => typeof guild?.id === 'string' && snowflake.test(guild.id) && typeof guild.name === 'string');
+      const guilds = value.guilds.filter((guild): guild is SessionGuild => typeof guild?.id === 'string' && isDiscordSnowflake(guild.id) && typeof guild.name === 'string');
       return [[key, { created: value.created, expires: Math.min(value.expires, value.created + absoluteTtlSeconds * 1000), user, guilds: guilds.slice(0, maxGuilds) }] as [string, Session]];
     }).slice(0, maxSessions);
   } catch {
@@ -144,7 +140,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     const headers = { Authorization: `Bot ${config.botToken}` };
     const botGuilds = (await discordRequest('/users/@me/guilds?limit=100', { headers })) as DiscordGuild[];
     const checked = await Promise.allSettled(botGuilds.slice(0, 25).map(async (guild) => {
-      if (typeof guild.id !== 'string' || !snowflake.test(guild.id)) return null;
+      if (typeof guild.id !== 'string' || !isDiscordSnowflake(guild.id)) return null;
       await discordRequest(`/guilds/${guild.id}/members/${devId}`, { headers });
       return toSessionGuild((await discordRequest(`/guilds/${guild.id}?with_counts=true`, { headers })) as DiscordGuild);
     }));
@@ -213,7 +209,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
       if (typeof token.access_token !== 'string') throw new Error('Resposta de token inválida.');
       const headers = { Authorization: `Bearer ${token.access_token}` };
       const profile = (await discordRequest('/users/@me', { headers })) as { id?: unknown; username?: unknown; global_name?: unknown; avatar?: unknown };
-      if (typeof profile.id !== 'string' || !snowflake.test(profile.id)) throw new Error('Identidade inválida.');
+      if (typeof profile.id !== 'string' || !isDiscordSnowflake(profile.id)) throw new Error('Identidade inválida.');
       const name = typeof profile.global_name === 'string' && profile.global_name ? profile.global_name : typeof profile.username === 'string' ? profile.username : 'Usuário';
       const avatar = typeof profile.avatar === 'string' && iconHash.test(profile.avatar) ? profile.avatar : null;
       const rawGuilds = (await discordRequest('/users/@me/guilds?with_counts=true', { headers })) as DiscordGuild[];
@@ -239,7 +235,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
       return;
     }
     if (devId == null) { sendJson(res, 409, { error: 'dev_ausente' }); return; }
-    if (!snowflake.test(devId)) { sendJson(res, 503, { error: 'dev_indisponivel' }); return; }
+    if (!isDiscordSnowflake(devId)) { sendJson(res, 503, { error: 'dev_indisponivel' }); return; }
     try {
       const [guilds, user] = await Promise.all([mockGuilds(devId), mockProfile(devId)]);
       sendJson(res, 200, sessionBody({ created: 0, expires: 0, user, guilds }), { 'Set-Cookie': openSession(user, guilds) });

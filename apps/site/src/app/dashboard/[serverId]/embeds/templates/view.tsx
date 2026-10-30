@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { card, outlineButton, primaryButton, Skeleton } from '../../../ui';
-import { ChannelSelect } from '../../../../../components/selectors/ChannelSelect';import { MessageEditor, MessagePreview } from '../../../../../components/message-editor/MessageEditor';
+import { describeTemplateIssues } from '../../../../../components/message-editor/format-issue';
+import { MessageEditor, MessagePreview } from '../../../../../components/message-editor/MessageEditor';
+import { DeleteFolderDialog, DeleteTemplateDialog, DeliveryDialog, NewFolderForm, RenameFolderForm } from './TemplateModals';
 import {
   createFolder,
   createTemplate,
@@ -32,7 +34,7 @@ function errorMessage(error: TemplateErrorCode, details?: ValidationDetail[]): s
       return 'O conteúdo é grande demais para um modelo de mensagem.';
     case 'validation':
       return details && details.length > 0
-        ? `O conteúdo tem um problema: ${details.map((item) => item.message).join('; ')}`
+        ? describeTemplateIssues(details).join('\n')
         : 'O conteúdo do modelo não é válido.';
     case 'duplicate':
       return 'Já existe um modelo de mensagem com esse nome.';
@@ -167,6 +169,9 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const [folders, setFolders] = useState<FolderSummary[]>([]);
   const [view, setView] = useState<View>({ kind: 'list' });
   const [form, setForm] = useState<FormState>(emptyForm());
+  const [savedBaseline, setSavedBaseline] = useState<{ name: string; contentJson: string } | null>(null);
+  const [saveConfirmed, setSaveConfirmed] = useState(false);
+  const [saveNoticeVisible, setSaveNoticeVisible] = useState(false);
   const [detail, setDetail] = useState<TemplateDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [showJson, setShowJson] = useState(false);
@@ -218,6 +223,16 @@ function TemplatesView({ guildId }: { guildId: string }) {
     if (view.kind === 'create') nameInputRef.current?.focus();
   }, [view]);
 
+  useEffect(() => {
+    if (!saveConfirmed) return undefined;
+    const leaveAt = window.setTimeout(() => setSaveNoticeVisible(false), 2200);
+    const clearAt = window.setTimeout(() => setSaveConfirmed(false), 2520);
+    return () => {
+      window.clearTimeout(leaveAt);
+      window.clearTimeout(clearAt);
+    };
+  }, [saveConfirmed]);
+
   const loadMore = useCallback(async () => {
     if (!nextCursor) return;
     setLoadingMore(true);
@@ -233,22 +248,28 @@ function TemplatesView({ guildId }: { guildId: string }) {
 
   const openCreate = useCallback(() => {
     setForm(emptyForm());
+    setSavedBaseline({ name: '', contentJson: '' });
+    setSaveConfirmed(false);
     setView({ kind: 'create' });
   }, []);
 
   const openEdit = useCallback(async (name: string) => {
     setView({ kind: 'edit', name });
+    setSavedBaseline(null);
+    setSaveConfirmed(false);
     setForm({ ...emptyForm(), name, submitting: false });
     const result = await getTemplate(guildId, name);
     if (result.ok) {
+      const contentJson = JSON.stringify(result.data.content, null, 2);
       setForm({
         name: result.data.name,
-        contentJson: JSON.stringify(result.data.content, null, 2),
+        contentJson,
         folderId: result.data.folderId,
         version: result.data.version,
         error: null,
         submitting: false,
       });
+      setSavedBaseline({ name: result.data.name, contentJson });
     } else {
       setForm((current) => ({ ...current, error: errorMessage(result.error, result.details) }));
     }
@@ -267,6 +288,8 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const closeForm = useCallback(() => {
     setView({ kind: 'list' });
     setForm(emptyForm());
+    setSavedBaseline(null);
+    setSaveConfirmed(false);
     createButtonRef.current?.focus();
   }, []);
 
@@ -288,17 +311,32 @@ function TemplatesView({ guildId }: { guildId: string }) {
       setForm((current) => ({ ...current, error: 'O conteúdo precisa ser um JSON válido.' }));
       return;
     }
+    const contentJson = form.contentJson;
     setForm((current) => ({ ...current, submitting: true, error: null }));
     const result = view.kind === 'edit'
-      ? await updateTemplate(guildId, view.name, form.version ?? 0, form.contentJson, form.folderId)
-      : await createTemplate(guildId, form.name, form.contentJson, form.folderId);
+      ? await updateTemplate(guildId, view.name, form.version ?? 0, contentJson, form.folderId)
+      : await createTemplate(guildId, form.name, contentJson, form.folderId);
     if (result.ok) {
-      await loadFirstPage();
-      closeForm();
+      setForm((current) => ({
+        ...current,
+        name: result.data.name,
+        version: result.data.version,
+        submitting: false,
+        error: null,
+      }));
+      setSavedBaseline({ name: result.data.name, contentJson });
+      setSaveNoticeVisible(true);
+      setSaveConfirmed(true);
+      if (view.kind === 'create') setView({ kind: 'edit', name: result.data.name });
+      const listed = await listTemplates(guildId);
+      if (listed.ok) {
+        setItems(listed.data.items);
+        setNextCursor(listed.data.nextCursor);
+      }
     } else {
       setForm((current) => ({ ...current, submitting: false, error: errorMessage(result.error, result.details) }));
     }
-  }, [closeForm, form.contentJson, form.folderId, form.name, form.version, guildId, loadFirstPage, view]);
+  }, [form.contentJson, form.folderId, form.name, form.version, guildId, view]);
 
   const openDelivery = useCallback((name: string) => {
     setDeliveryTarget(name);
@@ -451,9 +489,19 @@ function TemplatesView({ guildId }: { guildId: string }) {
   }
 
   const groups = groupByFolder(folders, items);
+  const editing = view.kind === 'create' || view.kind === 'edit';
+  const unsaved = savedBaseline !== null && (form.name !== savedBaseline.name || form.contentJson !== savedBaseline.contentJson);
+  const savedNotice = editing && !unsaved && saveConfirmed;
+  const editorNotice = !editing ? null : unsaved ? 'As alterações ainda não foram salvas.' : savedNotice ? 'Alterações salvas.' : null;
+  const noticeMotion = savedNotice && !saveNoticeVisible ? 'animate-notice-out' : 'animate-notice-in';
 
   return (
     <>
+      {editorNotice ? (
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center px-4 pt-3">
+          <p key={editorNotice} role="status" className={`pointer-events-auto ${noticeMotion} rounded-xl border border-border bg-surface px-4 py-3 text-sm motion-reduce:animate-none`}>{editorNotice}</p>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <h2 className="text-[22px] font-semibold">Templates de mensagem</h2>
         <div className="flex items-center gap-2">
@@ -465,40 +513,28 @@ function TemplatesView({ guildId }: { guildId: string }) {
       </div>
 
       {showFolderForm ? (
-        <div className={`${card} flex flex-col gap-2 p-4`}>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="sr-only" htmlFor="new-folder-name">Nome da nova pasta</label>
-            <input
-              id="new-folder-name"
-              autoFocus
-              className="min-h-9 flex-1 rounded-[10px] border border-control bg-transparent px-3 text-sm"
-              type="text"
-              value={folderForm.name}
-              onChange={(event) => setFolderForm((current) => ({ ...current, name: event.target.value }))}
-            />
-            <button className={primaryButton} type="button" disabled={folderForm.submitting} onClick={() => void submitFolderForm()}>Criar pasta</button>
-            <button className={outlineButton} type="button" onClick={closeFolderForm}>Cancelar</button>
-          </div>
-          {folderForm.error ? <p role="alert" className="text-sm text-red-600">{folderForm.error}</p> : null}
-        </div>
+        <NewFolderForm
+          form={folderForm}
+          onChange={(name) => setFolderForm((current) => ({ ...current, name }))}
+          onSubmit={() => void submitFolderForm()}
+          onCancel={closeFolderForm}
+        />
       ) : null}
 
       {moveError ? <p role="alert" className="text-sm text-red-600">{moveError}</p> : null}
 
       {deleteFolderTarget ? (
-        <div role="alertdialog" aria-labelledby="delete-folder-title" className={`${card} flex flex-col gap-3 p-5`}>
-          <h2 id="delete-folder-title" className="text-lg font-semibold">Apagar a pasta “{deleteFolderTarget.name}”?</h2>
-          <p className="text-sm text-muted">Os modelos dessa pasta passam para “Sem pasta”. Essa ação não pode ser desfeita.</p>
-          {deleteFolderError ? <p role="alert" className="text-sm text-red-600">{deleteFolderError}</p> : null}
-          <div className="flex gap-3">
-            <button className={primaryButton} type="button" disabled={deletingFolder} onClick={() => void confirmDeleteFolder()}>Apagar</button>
-            <button className={outlineButton} type="button" disabled={deletingFolder} onClick={() => setDeleteFolderTarget(null)}>Cancelar</button>
-          </div>
-        </div>
+        <DeleteFolderDialog
+          name={deleteFolderTarget.name}
+          error={deleteFolderError}
+          deleting={deletingFolder}
+          onConfirm={() => void confirmDeleteFolder()}
+          onCancel={() => setDeleteFolderTarget(null)}
+        />
       ) : null}
 
       {view.kind === 'create' || view.kind === 'edit' ? (
-        <div className={`${card} flex flex-col gap-4 p-5`}>
+        <div className={`${card} flex animate-notice-in flex-col gap-4 p-5 motion-reduce:animate-none`}>
           <h2 className="text-lg font-semibold">{view.kind === 'edit' ? `Editar “${view.name}”` : 'Criar modelo de mensagem'}</h2>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium" htmlFor="template-name">Nome</label>
@@ -524,9 +560,13 @@ function TemplatesView({ guildId }: { guildId: string }) {
               onChange={(contentJson) => setForm((current) => ({ ...current, contentJson }))}
             />
           )}
-          {form.error ? <p role="alert" className="text-sm text-red-600">{form.error}</p> : null}
+          {form.error ? (
+            <div role="alert" className="flex flex-col gap-1 text-sm text-red-600">
+              {form.error.split('\n').map((line) => <p key={line}>{line}</p>)}
+            </div>
+          ) : null}
           <div className="flex gap-3">
-            <button className={primaryButton} type="button" disabled={form.submitting} onClick={() => void submitForm()}>
+            <button className={`${primaryButton} ${unsaved && !form.submitting ? 'animate-save-attention motion-reduce:animate-none' : ''}`} type="button" disabled={form.submitting} onClick={() => void submitForm()}>
               {view.kind === 'edit' ? 'Salvar alterações' : 'Criar modelo'}
             </button>
             <button className={outlineButton} type="button" onClick={closeForm}>Cancelar</button>
@@ -541,7 +581,9 @@ function TemplatesView({ guildId }: { guildId: string }) {
             <button className={outlineButton} type="button" onClick={closeDetail}>Fechar</button>
           </div>
           {detailError ? (
-            <p role="alert" className="text-sm text-red-600">{detailError}</p>
+            <div role="alert" className="flex flex-col gap-1 text-sm text-red-600">
+              {detailError.split('\n').map((line) => <p key={line}>{line}</p>)}
+            </div>
           ) : !detail ? (
             <div role="status" aria-label="Carregando modelo" className="flex flex-col gap-2">
               <Skeleton className="h-6 w-40" />
@@ -570,27 +612,27 @@ function TemplatesView({ guildId }: { guildId: string }) {
       ) : null}
 
       {deliveryTarget ? (
-        <div role="dialog" aria-labelledby="delivery-template-title" className={`${card} flex flex-col gap-3 p-5`}>
-          <h2 id="delivery-template-title" className="text-lg font-semibold">Enviar “{deliveryTarget}” a um canal</h2>
-          <ChannelSelect guildId={guildId} value={deliveryChannelId} onChange={setDeliveryChannelId} disabled={deliverySubmitting} />          {deliveryError ? <p role="alert" className="text-sm text-red-600">{deliveryError}</p> : null}
-          {deliverySuccess ? <p className="text-sm text-muted">{deliverySuccess}</p> : null}
-          <div className="flex gap-3">
-            <button className={primaryButton} type="button" disabled={deliverySubmitting} onClick={() => void confirmDelivery()}>Enviar</button>
-            <button className={outlineButton} type="button" onClick={closeDelivery}>Fechar</button>
-          </div>
-        </div>
+        <DeliveryDialog
+          templateName={deliveryTarget}
+          guildId={guildId}
+          channelId={deliveryChannelId}
+          submitting={deliverySubmitting}
+          error={deliveryError}
+          success={deliverySuccess}
+          onChannelChange={setDeliveryChannelId}
+          onConfirm={() => void confirmDelivery()}
+          onClose={closeDelivery}
+        />
       ) : null}
 
       {deleteTarget ? (
-        <div role="alertdialog" aria-labelledby="delete-template-title" className={`${card} flex flex-col gap-3 p-5`}>
-          <h2 id="delete-template-title" className="text-lg font-semibold">Apagar “{deleteTarget}”?</h2>
-          <p className="text-sm text-muted">Essa ação não pode ser desfeita.</p>
-          {deleteError ? <p role="alert" className="text-sm text-red-600">{deleteError}</p> : null}
-          <div className="flex gap-3">
-            <button className={primaryButton} type="button" disabled={deleting} onClick={() => void confirmDelete()}>Apagar</button>
-            <button className={outlineButton} type="button" disabled={deleting} onClick={() => setDeleteTarget(null)}>Cancelar</button>
-          </div>
-        </div>
+        <DeleteTemplateDialog
+          name={deleteTarget}
+          error={deleteError}
+          deleting={deleting}
+          onConfirm={() => void confirmDelete()}
+          onCancel={() => setDeleteTarget(null)}
+        />
       ) : null}
 
       {items.length === 0 ? (
@@ -607,21 +649,14 @@ function TemplatesView({ guildId }: { guildId: string }) {
               onDragLeave={() => setDragOverKey((current) => (current === group.key ? null : current))}
               onDrop={(event) => { event.preventDefault(); void handleDropOnGroup(group.folderId); }}
             >
-              {renameTarget?.id === group.folderId ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="sr-only" htmlFor={`rename-folder-${group.folderId}`}>Nome da pasta</label>
-                  <input
-                    id={`rename-folder-${group.folderId}`}
-                    autoFocus
-                    className="min-h-9 flex-1 rounded-[10px] border border-control bg-transparent px-3 text-sm"
-                    type="text"
-                    value={renameForm.name}
-                    onChange={(event) => setRenameForm((current) => ({ ...current, name: event.target.value }))}
-                  />
-                  <button className={primaryButton} type="button" disabled={renameForm.submitting} onClick={() => void submitRenameFolder()}>Salvar</button>
-                  <button className={outlineButton} type="button" onClick={closeRenameFolder}>Cancelar</button>
-                  {renameForm.error ? <p role="alert" className="w-full text-sm text-red-600">{renameForm.error}</p> : null}
-                </div>
+              {renameTarget?.id === group.folderId && group.folderId !== null ? (
+                <RenameFolderForm
+                  folderId={group.folderId}
+                  form={renameForm}
+                  onChange={(name) => setRenameForm((current) => ({ ...current, name }))}
+                  onSubmit={() => void submitRenameFolder()}
+                  onCancel={closeRenameFolder}
+                />
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   {group.folderId !== null ? <FolderIcon /> : null}

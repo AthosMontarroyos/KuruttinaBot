@@ -3,6 +3,7 @@ import { validateCommandAccess } from '#bot/command-system/access.js';
 import { withEmojis } from '#bot/command-system/responses.js';
 import type { ChatInputCommand, BulkDeletePort, CommandAccess, CommandContext, CommandMessage } from '#bot/command-system/types.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
+import { errorDetails } from '#bot/infrastructure/discord/moderation/modUtils.js';
 
 const { ManageMessages, ViewChannel, ReadMessageHistory } = PermissionFlagsBits;
 
@@ -32,16 +33,6 @@ const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
 /** Per-guild+channel concurrency lock (per process instance). */
 const activeChannels = new Set<string>();
-
-function errorDetails(error: unknown): { errorName: string; errorCode?: string | number } {
-  const code = error !== null && typeof error === 'object' && 'code' in error ? error.code : undefined;
-  return {
-    errorName: error instanceof Error ? error.name : 'UnknownError',
-    ...(typeof code === 'number' || (typeof code === 'string' && /^[A-Z0-9_]{1,64}$/u.test(code))
-      ? { errorCode: code }
-      : {}),
-  };
-}
 
 function tryAcquireLock(key: string): boolean {
   if (activeChannels.has(key)) return false;

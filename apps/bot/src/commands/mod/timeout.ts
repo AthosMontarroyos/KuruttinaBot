@@ -10,11 +10,16 @@ import type {
 } from '#bot/command-system/types.js';
 import type { MessageKey } from '#bot/application/messages/catalog.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
+import {
+  MAX_REASON_LENGTH,
+  SNOWFLAKE,
+  auditReason,
+  errorDetails,
+  mentionOrSnowflake,
+  publishConfirmation,
+} from '#bot/infrastructure/discord/moderation/modUtils.js';
 
 const { ModerateMembers } = PermissionFlagsBits;
-
-/** Discord audit-log reason limit is 512. The visible reason stays shorter. */
-const MAX_REASON_LENGTH = 200;
 const SECOND_MS = 1_000;
 const MINUTE_MS = 60 * SECOND_MS;
 const HOUR_MS = 60 * MINUTE_MS;
@@ -53,9 +58,6 @@ const DURATION_PART = new RegExp(
   String.raw`^(\d{1,7})(?:\s*(semanas|semana|segundos|segundo|minutos|minuto|horas|hora|dias|dia|segs|seg|mins|min|hrs|hr|sem)|\s*([smhdw]))(?=$|[\s,]|\d)`,
   'iu',
 );
-
-const SNOWFLAKE = /^\d{17,20}$/u;
-const MENTION = /^<@!?(\d{17,20})>$/u;
 
 const access: CommandAccess = {
   kind: 'guild',
@@ -115,10 +117,6 @@ function parseSlashArgs(options: NonNullable<CommandContext['options']>): Timeou
   if (typeof duration !== 'string') return { ok: false, reason: 'missing-duration' };
   if (reason !== undefined && typeof reason !== 'string') return { ok: false, reason: 'invalid-duration' };
   return finishTimeout(userId, parseDurationPrefix(duration), typeof reason === 'string' ? reason : '');
-}
-
-function mentionOrSnowflake(token: string): string | undefined {
-  return MENTION.exec(token)?.[1] ?? (SNOWFLAKE.test(token) ? token : undefined);
 }
 
 function readDurationPart(input: string): { amount: number; unit: string; length: number } | null {
@@ -189,22 +187,6 @@ export function formatTimeoutDuration(ms: number): string {
   return `${parts.slice(0, -1).join(', ')} e ${last}`;
 }
 
-function auditReason(moderatorId: string, durationMs: number, reason: string | undefined): string {
-  const base = `Moderador ${moderatorId} por ${formatTimeoutDuration(durationMs)}`;
-  if (reason === undefined) return base.slice(0, 512);
-  return `${base}: ${reason.replace(/\s+/gu, ' ').trim()}`.slice(0, 512);
-}
-
-function errorDetails(error: unknown): { errorName: string; errorCode?: string | number } {
-  const code = error !== null && typeof error === 'object' && 'code' in error ? error.code : undefined;
-  return {
-    errorName: error instanceof Error ? error.name : 'UnknownError',
-    ...(typeof code === 'number' || (typeof code === 'string' && /^[A-Z0-9_]{1,64}$/u.test(code))
-      ? { errorCode: code }
-      : {}),
-  };
-}
-
 async function say(context: CommandContext, key: MessageKey): Promise<void> {
   await context.reply(await context.render(key));
 }
@@ -233,20 +215,6 @@ async function confirmation(
     length: formatTimeoutDuration(durationMs),
     ...(reason === undefined ? {} : { reason }),
   });
-}
-
-async function publishConfirmation(context: CommandContext, message: CommandReply): Promise<void> {
-  try {
-    if (context.sendMessage) await context.sendMessage(message);
-    else await context.reply(message);
-  } catch (error: unknown) {
-    log('error', 'timeout_confirm_failed', { guildId: context.guildId, ...errorDetails(error) });
-    try { await context.reply(message); } catch { /* O castigo já concluiu. */ }
-    return;
-  }
-  if (context.sendMessage && context.deleteReply) {
-    try { await context.deleteReply(); } catch { /* O indicador efêmero pode expirar. */ }
-  }
 }
 
 async function authorizeTimeout(
@@ -368,7 +336,7 @@ async function execute(context: CommandContext): Promise<void> {
 
   let outcome: 'timed-out' | 'missing';
   try {
-    outcome = await guild.timeout(args.userId, args.durationMs, auditReason(actorId, args.durationMs, args.reason));
+    outcome = await guild.timeout(args.userId, args.durationMs, auditReason(actorId, args.reason, `por ${formatTimeoutDuration(args.durationMs)}`));
   } catch (error: unknown) {
     await reportTimeoutFailure(context, args.userId, error);
     return;
@@ -378,7 +346,7 @@ async function execute(context: CommandContext): Promise<void> {
     return;
   }
 
-  await publishConfirmation(context, await confirmation(context, target, moderator, args.durationMs, args.reason));
+  await publishConfirmation(context, await confirmation(context, target, moderator, args.durationMs, args.reason), 'timeout_confirm_failed');
 }
 
 export const command = {

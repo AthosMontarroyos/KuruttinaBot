@@ -79,11 +79,28 @@ describe('toCommandReply', () => {
     }]);
   });
 
-  it('falha com menu de seleção', () => {
-    expect(() => toCommandReply({
+  it('converte menu de seleção sem enviar a ação da opção', () => {
+    const reply = toCommandReply({
       embeds: [],
-      components: [{ kind: 'select', menu: { customId: 'm', options: [{ label: 'a', value: 'b' }] } }],
-    })).toThrow(/menu/);
+      components: [{
+        kind: 'select',
+        menu: {
+          customId: 'kt:menu:roles',
+          placeholder: 'Escolha',
+          options: [{ label: 'Cargo', value: 'cargo', description: 'Um cargo', action: { type: 'delete' } }],
+        },
+      }],
+    });
+    if (typeof reply === 'string') throw new Error('esperava resposta com componentes');
+    expect(reply.components).toEqual([{
+      type: ComponentType.ActionRow,
+      components: [{
+        type: ComponentType.StringSelect,
+        custom_id: 'kt:menu:roles',
+        placeholder: 'Escolha',
+        options: [{ label: 'Cargo', value: 'cargo', description: 'Um cargo' }],
+      }],
+    }]);
   });
 });
 

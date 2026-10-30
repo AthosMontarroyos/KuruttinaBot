@@ -10,31 +10,14 @@ import { createTemplateAdminService, TemplateAdminError, type TemplateRepository
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { createAuth } from './auth.js';
 import type { readSiteConfig } from './config.js';
+import { isDiscordSnowflake, readJsonBody, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 type Auth = ReturnType<typeof createAuth>;
 
-const guildIdPattern = /^[1-9][0-9]{16,19}$/u;
 const namePattern = /^[a-z0-9_-]{1,32}$/u;
-const channelIdPattern = /^[1-9][0-9]{16,19}$/u;
 const folderIdPattern = /^[1-9][0-9]*$/u;
 const LIST_PAGE_SIZE = 25;
-
-function sendJson(res: ServerResponse, status: number, body: unknown): void {
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(JSON.stringify(body));
-}
-
-async function readJsonBody(req: IncomingMessage, maxBytes: number): Promise<unknown> {
-  const chunks: Buffer[] = [];
-  let total = 0;
-  for await (const chunk of req as AsyncIterable<Buffer>) {
-    total += chunk.length;
-    if (total > maxBytes) throw new Error('body_too_large');
-    chunks.push(chunk);
-  }
-  const text = Buffer.concat(chunks).toString('utf8');
-  return text.trim() === '' ? undefined : JSON.parse(text);
-}
 
 /** Adapta `database.templates` (datas como `Date`, pacote JS) ao port do caso de uso (datas como ISO string). */
 function toIso(value: unknown): string {
@@ -85,7 +68,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
   const service = createTemplateAdminService(createTemplateRepository(database.templates, database.folders));
 
   function authorize(req: IncomingMessage, res: ServerResponse, guildId: string): { discordId: string } | undefined {
-    if (!guildIdPattern.test(guildId)) { sendJson(res, 404, { error: 'not_found' }); return undefined; }
+    if (!isDiscordSnowflake(guildId)) { sendJson(res, 404, { error: 'not_found' }); return undefined; }
     const authorization = auth.getAuthorizedGuild(req, guildId);
     if (authorization.status === 'unauthenticated') { sendJson(res, 401, { error: 'unauthenticated' }); return undefined; }
     if (authorization.status === 'forbidden') { sendJson(res, 404, { error: 'not_found' }); return undefined; }
@@ -177,7 +160,7 @@ export function createTemplatesApi(config: SiteConfig, auth: Auth, database: Ret
     try { body = await readJsonBody(req, 2_000); } catch { sendJson(res, 413, { error: 'too_large' }); return; }
     if (typeof body !== 'object' || body === null) { sendJson(res, 422, { error: 'invalid_json' }); return; }
     const { channelId } = body as { channelId?: unknown };
-    if (typeof channelId !== 'string' || !channelIdPattern.test(channelId)) { sendJson(res, 422, { error: 'invalid_channel_id' }); return; }
+    if (!isDiscordSnowflake(channelId)) { sendJson(res, 422, { error: 'invalid_channel_id' }); return; }
     const record = await service.getTemplate(guildId, name);
     if (record === null) { sendJson(res, 404, { error: 'not_found' }); return; }
     const result = await database.deliveries.create({ guildId, channelId, templateName: name, requestedBy: actorId });

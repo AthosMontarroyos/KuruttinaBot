@@ -6,16 +6,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { createAuth } from './auth.js';
 import type { DiscordBot, DiscordListResult } from './discord.js';
+import { isDiscordSnowflake, sendJson } from './http-utils.js';
 
 type Auth = ReturnType<typeof createAuth>;
 type Lists = 'channels' | 'categories' | 'roles';
 
-const guildIdPattern = /^[1-9][0-9]{16,19}$/u;
 const listPath = /^\/api\/guilds\/([^/]+)\/(channels|categories|roles)$/u;
-
-function sendJson(res: ServerResponse, status: number, body: unknown): void {
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(JSON.stringify(body));
-}
 
 export function createGuildApi(auth: Auth, discord: DiscordBot) {
   const readers: Record<Lists, (guildId: string) => Promise<DiscordListResult<unknown>>> = {
@@ -25,7 +21,7 @@ export function createGuildApi(auth: Auth, discord: DiscordBot) {
   };
 
   async function respond(req: IncomingMessage, res: ServerResponse, guildId: string, list: Lists): Promise<void> {
-    if (!guildIdPattern.test(guildId)) { sendJson(res, 404, { error: 'not_found' }); return; }
+    if (!isDiscordSnowflake(guildId)) { sendJson(res, 404, { error: 'not_found' }); return; }
     const authorization = auth.getAuthorizedGuild(req, guildId);
     if (authorization.status === 'unauthenticated') { sendJson(res, 401, { error: 'unauthenticated' }); return; }
     if (authorization.status === 'forbidden') { sendJson(res, 404, { error: 'not_found' }); return; }

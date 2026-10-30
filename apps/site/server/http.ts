@@ -6,6 +6,7 @@ import { createDiscordBot } from './discord.js';
 import { createGuildApi } from './guild.js';
 import { createTemplatesApi } from './templates.js';
 import type { readSiteConfig } from './config.js';
+import { isDashboardServerPath } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 const iconPaths = [
@@ -22,8 +23,6 @@ const iconPaths = [
   '/icons/theme/theme.svg',
 ] as const;
 const safePublicPath = /^\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/u;
-const dashboardServerPath = /^\/dashboard\/[1-9][0-9]{16,19}$/u;
-
 const escapeAttribute = (value: string): string => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
 function contentType(pathname: string): string {
@@ -79,7 +78,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
     const [path = '', search = ''] = (req.url ?? '').split('?');
     // Só o painel carrega imagens de qualquer https: a prévia das mensagens mostra os links que o administrador cola.
-    const imageSources = path === '/dashboard' || dashboardServerPath.test(path) ? 'https:' : `${config.assetsOrigin} https://cdn.discordapp.com`;
+    const imageSources = path === '/dashboard' || isDashboardServerPath(path) ? 'https:' : `${config.assetsOrigin} https://cdn.discordapp.com`;
     res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' ${imageSources}; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
@@ -88,7 +87,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     if (templatesApi.handle(req, res, path, search)) return;
     if (guildApi.handle(req, res, path)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
-    const asset = assets.get(path) ?? (dashboardServerPath.test(path) ? assets.get('/dashboard') : undefined);
+    const asset = assets.get(path) ?? (isDashboardServerPath(path) ? assets.get('/dashboard') : undefined);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }
     res.writeHead(200, { 'Content-Type': asset.type });
     res.end(req.method === 'HEAD' ? undefined : asset.body);

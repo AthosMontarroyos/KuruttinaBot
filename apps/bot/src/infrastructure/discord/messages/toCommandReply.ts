@@ -1,6 +1,6 @@
 import { ButtonStyle, ComponentType } from 'discord.js';
-import type { APIActionRowComponent, APIButtonComponent, APIEmbed } from 'discord.js';
-import type { MessageTemplate, TemplateButton, TemplateEmbed } from '@kuruttina/message-templates';
+import type { APIActionRowComponent, APIButtonComponent, APIEmbed, APIStringSelectComponent } from 'discord.js';
+import type { MessageTemplate, TemplateButton, TemplateEmbed, TemplateSelectMenu } from '@kuruttina/message-templates';
 import type { CommandReply } from '#bot/command-system/types.js';
 
 /** Cor padrão dos embeds quando o template não define uma. */
@@ -47,14 +47,28 @@ function toButton(button: TemplateButton): APIButtonComponent {
   return { type: ComponentType.Button, style: BUTTON_STYLES[button.style], label: button.label, custom_id: button.customId };
 }
 
+function toSelect(menu: TemplateSelectMenu): APIStringSelectComponent {
+  return {
+    type: ComponentType.StringSelect,
+    custom_id: menu.customId,
+    ...(menu.placeholder !== undefined ? { placeholder: menu.placeholder } : {}),
+    options: menu.options.map((option) => ({
+      label: option.label,
+      value: option.value,
+      ...(option.description !== undefined ? { description: option.description } : {}),
+    })),
+  };
+}
+
 /**
- * Converte um template já renderizado no formato enviado ao Discord. Menus não são suportados.
+ * Converte um template já renderizado no formato enviado ao Discord.
+ * A ação de cada opção fica no banco; o menu enviado só carrega rótulo, valor e descrição.
  * Texto puro (sem embed nem componente) volta como string, como as falas já são enviadas hoje.
  */
 export function toCommandReply(template: MessageTemplate): CommandReply {
-  const components: APIActionRowComponent<APIButtonComponent>[] = template.components.map((row) => {
+  const components: APIActionRowComponent<APIButtonComponent | APIStringSelectComponent>[] = template.components.map((row) => {
     if (row.kind === 'select') {
-      throw new Error('toCommandReply: menu de seleção ainda não é suportado.');
+      return { type: ComponentType.ActionRow, components: [toSelect(row.menu)] };
     }
     return { type: ComponentType.ActionRow, components: row.buttons.map(toButton) };
   });

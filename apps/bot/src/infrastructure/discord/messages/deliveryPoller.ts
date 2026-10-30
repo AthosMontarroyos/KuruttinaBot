@@ -30,6 +30,7 @@ const NOT_TEXT_CHANNEL = 'not_text_channel';
 const TEMPLATE_NOT_FOUND = 'template_not_found';
 const MISSING_PERMISSION = 'missing_permission';
 const SEND_FAILED = 'send_failed';
+const RENDER_FAILED = 'render_failed';
 
 /** Discord reporta permissão insuficiente com esses códigos de erro de API. */
 const MISSING_PERMISSION_API_CODES = new Set([50001, 50013]);
@@ -96,7 +97,18 @@ export function createDeliveryPoller(
       return;
     }
 
-    const reply = toCommandReply(record.content);
+    let reply;
+    try {
+      reply = toCommandReply(record.content);
+    } catch (error) {
+      log('error', 'delivery_render_failed', {
+        id: delivery.id,
+        guildId: delivery.guildId,
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+      });
+      await fail(delivery, RENDER_FAILED);
+      return;
+    }
     const content = typeof reply === 'string'
       ? { content: reply, allowedMentions: { parse: [] as const } }
       : { ...reply, allowedMentions: { parse: [] as const } };

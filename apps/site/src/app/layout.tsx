@@ -10,6 +10,7 @@ import { ServerDashboardPage } from './dashboard/[serverId]/page';
 import { ComandosPage } from './comandos/page';
 import { ModulosPage } from './modulos/page';
 import { readBotAvatarUrl } from '../lib/bot-avatar';
+import { usePathname } from '../lib/navigation';
 import { useSession } from '../lib/session';
 import './globals.css';
 
@@ -29,7 +30,8 @@ function RootLayout() {
   const [notice, setNotice] = useState<string | null>(null);
   const avatarUrl = readBotAvatarUrl();
   const { session, failed, mockLogin, logout } = useSession();
-  const serverId = serverDashboardPath.exec(location.pathname)?.[1];
+  const pathname = usePathname();
+  const serverId = serverDashboardPath.exec(pathname)?.[1];
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = light ? 'light' : 'dark';
@@ -63,15 +65,15 @@ function RootLayout() {
         Pular para o conteúdo
       </a>
       <TopBar avatarUrl={avatarUrl} light={light} onToggleTheme={toggleTheme} onNotice={showNotice} session={session} onLogout={() => void logout()} />
-      {location.pathname === '/dashboard' ? (
+      {pathname === '/dashboard' ? (
         <DashboardPage session={session} failed={failed} onLogout={() => void logout()} />
       ) : serverId ? (
         <ServerDashboardPage session={session} failed={failed} serverId={serverId} onLogout={() => void logout()} />
-      ) : location.pathname === '/login' ? (
+      ) : pathname === '/login' ? (
         <LoginPage session={session} failed={failed} onMockLogin={mockLogin} />
-      ) : location.pathname === '/comandos' ? (
+      ) : pathname === '/comandos' ? (
         <ComandosPage />
-      ) : location.pathname === '/modulos' ? (
+      ) : pathname === '/modulos' ? (
         <ModulosPage />
       ) : (
         <HomePage avatarUrl={avatarUrl} onNotice={showNotice} />

@@ -1,5 +1,5 @@
 import type { StaffRole } from '@kuruttina/database';
-import type { APIActionRowComponent, APIButtonComponent, APIEmbed, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
+import type { APIActionRowComponent, APIButtonComponent, APIEmbed, APIStringSelectComponent, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import type { MessageKey } from '#bot/application/messages/catalog.js';
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
@@ -7,7 +7,7 @@ import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js'
 export type CommandReply = string | {
   content?: string;
   embeds: APIEmbed[];
-  components?: readonly APIActionRowComponent<APIButtonComponent>[];
+  components?: readonly APIActionRowComponent<APIButtonComponent | APIStringSelectComponent>[];
 };
 
 export interface HasPermission {

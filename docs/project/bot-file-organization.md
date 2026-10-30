@@ -24,7 +24,8 @@ apps/bot/src/
 │   │   │   └── commandContext.ts
 │   │   ├── moderation/
 │   │   │   ├── clearAdapter.ts
-│   │   │   └── memberModerationAdapter.ts
+│   │   │   ├── memberModerationAdapter.ts
+│   │   │   └── modUtils.ts
 │   │   ├── emojis/
 │   │   │   ├── emojiAdapter.ts
 │   │   │   ├── emojiAdd.ts

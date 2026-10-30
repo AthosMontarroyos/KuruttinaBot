@@ -5,6 +5,7 @@
  * com IDs já validados; qualquer novo uso do token entra neste arquivo.
  */
 import type { readSiteConfig } from './config.js';
+import { isDiscordSnowflake } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
 
@@ -20,7 +21,6 @@ type RawChannel = { id?: unknown; name?: unknown; type?: unknown; parent_id?: un
 type RawRole = { id?: unknown; name?: unknown; color?: unknown; position?: unknown; managed?: unknown };
 
 const discordApi = 'https://discord.com/api/v10';
-const snowflake = /^[1-9][0-9]{16,19}$/u;
 const CATEGORY = 4;
 const channelTypes: Record<number, GuildChannel['type']> = { 0: 'text', 5: 'announcement' };
 const cacheMs = 30_000;
@@ -31,7 +31,7 @@ const position = (value: unknown): number => (typeof value === 'number' && Numbe
 
 function rawChannels(raw: unknown): RawChannel[] {
   if (!Array.isArray(raw)) return [];
-  return (raw as RawChannel[]).slice(0, maxItems).filter((entry) => typeof entry?.id === 'string' && snowflake.test(entry.id));
+  return (raw as RawChannel[]).slice(0, maxItems).filter((entry) => typeof entry?.id === 'string' && isDiscordSnowflake(entry.id));
 }
 
 function categoriesOf(entries: RawChannel[]): Map<string, { name: string; position: number }> {
@@ -69,7 +69,7 @@ function toRoles(raw: unknown, guildId: string): GuildRole[] {
   if (!Array.isArray(raw)) return [];
   return (raw as RawRole[])
     .slice(0, maxItems)
-    .filter((entry) => typeof entry?.id === 'string' && snowflake.test(entry.id) && entry.id !== guildId && typeof entry.name === 'string')
+    .filter((entry) => typeof entry?.id === 'string' && isDiscordSnowflake(entry.id) && entry.id !== guildId && typeof entry.name === 'string')
     .sort((a, b) => position(b.position) - position(a.position))
     .map((entry) => ({
       id: entry.id as string,
@@ -84,7 +84,7 @@ export function createDiscordBot(config: SiteConfig) {
 
   /** Lê um caminho do Discord com o token do bot. Sem token, sem o bot no servidor ou com o Discord fora do ar, devolve só o motivo. */
   async function read(guildId: string, path: string): Promise<{ ok: true; json: unknown } | { ok: false; reason: 'unavailable' | 'bot_not_in_guild' }> {
-    if (!config.botToken || !snowflake.test(guildId)) return { ok: false, reason: 'unavailable' };
+    if (!config.botToken || !isDiscordSnowflake(guildId)) return { ok: false, reason: 'unavailable' };
     const cached = cache.get(path);
     if (cached && cached.expires > Date.now()) return { ok: true, json: cached.json };
     let response: Response;

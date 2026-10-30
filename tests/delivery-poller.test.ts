@@ -4,6 +4,12 @@ import {
   createDeliveryPoller,
   type DeliveryDatabasePort,
 } from '../apps/bot/src/infrastructure/discord/messages/deliveryPoller.js';
+import { toCommandReply } from '../apps/bot/src/infrastructure/discord/messages/toCommandReply.js';
+
+vi.mock('../apps/bot/src/infrastructure/discord/messages/toCommandReply.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../apps/bot/src/infrastructure/discord/messages/toCommandReply.js')>();
+  return { ...actual, toCommandReply: vi.fn(actual.toCommandReply) };
+});
 
 const simpleTemplate: MessageTemplate = { content: 'Olá!', embeds: [], components: [] };
 
@@ -161,5 +167,29 @@ describe('delivery poller', () => {
 
     expect(database.deliveries.markFailed).toHaveBeenCalledExactlyOnceWith(6, 'channel_not_found');
     expect(database.deliveries.markSent).toHaveBeenCalledExactlyOnceWith(7);
+  });
+
+  it('fails with render_failed when the template cannot be converted', async () => {
+    vi.mocked(toCommandReply).mockImplementationOnce(() => {
+      throw new Error('componente desconhecido');
+    });
+    const send = vi.fn().mockResolvedValue(undefined);
+    const channel = textChannel('guild-1', send);
+    const database = makeDatabase({
+      deliveries: {
+        claimPending: vi.fn().mockResolvedValueOnce([
+          { id: 8, guildId: 'guild-1', channelId: 'channel-1', templateName: 'broken' },
+        ]).mockResolvedValue([]),
+        markSent: vi.fn().mockResolvedValue(true),
+        markFailed: vi.fn().mockResolvedValue(true),
+      },
+    });
+    const client = makeClient(channel);
+
+    await runOneTick(client, database, 1);
+
+    expect(send).not.toHaveBeenCalled();
+    expect(database.deliveries.markFailed).toHaveBeenCalledExactlyOnceWith(8, 'render_failed');
+    expect(database.deliveries.markSent).not.toHaveBeenCalled();
   });
 });

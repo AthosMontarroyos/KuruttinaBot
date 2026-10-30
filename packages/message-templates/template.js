@@ -40,21 +40,47 @@ import {
  */
 
 /**
- * @typedef {{style: 'link', label: string, url: string}|{style: 'primary'|'secondary'|'success'|'danger', label: string, customId: string, action?: ComponentAction}} TemplateButton
+ * Emoji mostrado no botão (opcional). Emoji padrão (unicode): só `name`, por exemplo `{ name: '😀' }`.
+ * Emoji personalizado do servidor: `id` (snowflake) e `name` (nome cadastrado no servidor, letras,
+ * números e `_`), com `animated` opcional, só junto de `id`. Variáveis `{...}` não valem em emoji.
+ * @typedef {{name: string, id?: string, animated?: boolean}} TemplateButtonEmoji
  */
 
 /**
+ * Botão de link (`style: 'link'`, abre `url`) ou botão colorido (`customId`, com `action` opcional).
+ * `component` (opcional, só em botão colorido) é o id inteiro de um Component de botão do servidor
+ * (tabela `custom_buttons`): é ele que define a ação executada no clique. Botão de link não tem ação.
+ * `emoji` (opcional, vale para os dois tipos) aparece ao lado do rótulo. Sem `emoji`, o rótulo é
+ * obrigatório; com `emoji` válido, o rótulo pode ficar vazio (o Discord exige rótulo ou emoji).
+ * @typedef {{style: 'link', label: string, url: string, emoji?: TemplateButtonEmoji}|{style: 'primary'|'secondary'|'success'|'danger', label: string, customId: string, action?: ComponentAction, component?: number, emoji?: TemplateButtonEmoji}} TemplateButton
+ */
+
+/**
+ * Opção de um menu. `action` (legado, no máximo uma opção por menu) é a ação executada ao escolher a opção.
+ * `componentOption` é a chave (`^[a-z0-9]{6,12}$`) de uma opção do Component de menu indicado em `menu.component`;
+ * exige `menu.component` e não combina com `action`. `default: true` deixa a opção selecionada por padrão
+ * (no máximo `maxValues` opções, ou 1 quando `maxValues` não existe). `emoji` segue as mesmas regras do emoji de botão.
  * @typedef {Object} TemplateSelectOption
  * @property {string} label
- * @property {string} value
+ * @property {string} value Único dentro do menu.
  * @property {string} [description]
  * @property {ComponentAction} [action]
+ * @property {TemplateButtonEmoji} [emoji]
+ * @property {boolean} [default]
+ * @property {string} [componentOption]
  */
 
 /**
+ * Menu de seleção. `minValues` (0..25) e `maxValues` (1..25) limitam quantas opções o usuário escolhe;
+ * com os dois, `minValues <= maxValues`, e `maxValues` não passa de `options.length`.
+ * `component` (opcional) é o id inteiro de um Component de menu do servidor (tabela `custom_selects`): é ele
+ * que define a ação do menu. Sem `component`, valem só as ações por opção (`action`).
  * @typedef {Object} TemplateSelectMenu
  * @property {string} customId
  * @property {string} [placeholder]
+ * @property {number} [minValues]
+ * @property {number} [maxValues]
+ * @property {number} [component]
  * @property {TemplateSelectOption[]} options
  */
 
@@ -88,7 +114,7 @@ import {
  */
 
 /**
- * @typedef {'empty_message'|'empty_embed'|'empty_text'|'too_many_embeds'|'too_many_fields'|'too_many_rows'|'too_many_buttons'|'too_many_options'|'empty_row'|'mixed_row'|'unknown_variable'|'unknown_emoji'|'invalid_color'|'invalid_variable'|'variable_not_allowed'|'invalid_url'|'invalid_custom_id'|'invalid_action'|'limit_exceeded'|'quota_exceeded'} TemplateErrorCode
+ * @typedef {'empty_message'|'empty_embed'|'empty_text'|'too_many_embeds'|'too_many_fields'|'too_many_rows'|'too_many_buttons'|'too_many_options'|'empty_row'|'mixed_row'|'unknown_variable'|'unknown_emoji'|'invalid_color'|'invalid_emoji'|'invalid_variable'|'variable_not_allowed'|'invalid_url'|'invalid_custom_id'|'invalid_action'|'limit_exceeded'|'quota_exceeded'} TemplateErrorCode
  */
 
 /** Erro de validação com código estável; a mensagem é neutra (falas ao usuário ficam fora daqui). */
@@ -117,6 +143,56 @@ export const TEMPLATE_NAME_PATTERN = /^[a-z0-9_-]{1,32}$/u;
 
 /** Tipos de ação aceitos em um botão não-link ou opção de menu. */
 const ACTION_TYPES = ['reply', 'edit', 'delete', 'dm'];
+
+/** Id de Component de botão: inteiro seguro maior ou igual a 1. O tipo de entrada é permissivo (dado de fora).
+ * @param {unknown} value @returns {boolean} */
+function isComponentId(value) {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1;
+}
+
+/** Id de emoji personalizado: snowflake do Discord, sem zero à esquerda. */
+const EMOJI_ID_PATTERN = /^[1-9][0-9]{16,19}$/u;
+/** Nome de emoji personalizado cadastrado no servidor. */
+const CUSTOM_EMOJI_NAME_PATTERN = /^[A-Za-z0-9_]{2,32}$/u;
+/** Campos aceitos em `emoji`; qualquer outro é recusado. */
+const EMOJI_KEYS = ['name', 'id', 'animated'];
+/** Chave de uma opção de Component de menu: de 6 a 12 letras minúsculas ou dígitos. */
+const COMPONENT_OPTION_KEY_PATTERN = /^[a-z0-9]{6,12}$/u;
+/** Maior quantidade de opções escolhíveis em um menu (`minValues`/`maxValues`). */
+const SELECT_VALUES_MAX = 25;
+
+/** Quantidade de escolhas do menu: inteiro seguro entre `min` e 25. O tipo de entrada é permissivo.
+ * @param {unknown} value @param {number} min @returns {value is number} */
+function isSelectCount(value, min) {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= SELECT_VALUES_MAX;
+}
+
+/** Motivo pelo qual o emoji do botão é inválido, ou `null` quando é válido. Nunca avalia variáveis.
+ * O tipo de entrada é permissivo (dado vindo de fora, ainda não validado).
+ * @param {unknown} emoji @returns {string|null} */
+function emojiProblem(emoji) {
+  if (typeof emoji !== 'object' || emoji === null || Array.isArray(emoji)) return 'O emoji precisa ser um objeto.';
+  const prototype = Object.getPrototypeOf(emoji);
+  if (prototype !== Object.prototype && prototype !== null) return 'O emoji precisa ser um objeto simples.';
+  const extra = Object.keys(emoji).filter((key) => !EMOJI_KEYS.includes(key));
+  if (extra.length > 0) return `O emoji aceita só os campos name, id e animated (sobra: ${extra.join(', ')}).`;
+  const { name, id, animated } = /** @type {{name?: unknown, id?: unknown, animated?: unknown}} */ (emoji);
+  if (typeof name !== 'string' || name.length < 1 || name.length > 32) {
+    return 'O nome do emoji precisa ter de 1 a 32 caracteres.';
+  }
+  if (ANY_BRACES.test(name)) return 'Variáveis não são permitidas em emoji.';
+  if (id !== undefined) {
+    if (typeof id !== 'string' || !EMOJI_ID_PATTERN.test(id)) return 'O id do emoji personalizado precisa ser um snowflake do Discord.';
+    if (!CUSTOM_EMOJI_NAME_PATTERN.test(name)) return 'O nome do emoji personalizado precisa ter de 2 a 32 letras, números ou _.';
+  } else if (name.trim() === '') {
+    return 'O emoji padrão precisa ter um caractere, não só espaços.';
+  }
+  if (animated !== undefined) {
+    if (id === undefined) return '"animated" só é aceito junto de "id".';
+    if (typeof animated !== 'boolean') return '"animated" precisa ser booleano.';
+  }
+  return null;
+}
 
 /**
  * Valida o template considerando o pior caso: cada variável ocupa o `maxLength`
@@ -289,11 +365,22 @@ export function validateTemplate(template, variables) {
       }
       row.buttons.forEach((button, buttonIndex) => {
         const path = `${base}.buttons[${buttonIndex}]`;
-        checkText(`${path}.label`, button.label, L.buttonLabel, true);
-        if (button.style === 'link') checkUrl(`${path}.url`, button.url);
-        else {
+        // Emoji válido dispensa o rótulo (o Discord exige rótulo OU emoji); sem emoji, o rótulo segue obrigatório.
+        const emojiError = button.emoji === undefined ? null : emojiProblem(button.emoji);
+        const hasValidEmoji = button.emoji !== undefined && emojiError === null;
+        checkText(`${path}.label`, button.label, L.buttonLabel, !hasValidEmoji);
+        if (emojiError !== null) fail('invalid_emoji', `${path}.emoji`, emojiError);
+        // `component` existe só no ramo colorido do tipo; a checagem lê pelo campo cru (dado de fora, não validado).
+        const { component } = /** @type {{component?: unknown}} */ (button);
+        if (button.style === 'link') {
+          checkUrl(`${path}.url`, button.url);
+          if (component !== undefined) fail('invalid_action', `${path}.component`, 'Botão de link não pode ter ação.');
+        } else {
           checkCustomId(`${path}.customId`, button.customId);
           if (button.action !== undefined) checkAction(`${path}.action`, button.action);
+          if (component !== undefined && !isComponentId(component)) {
+            fail('invalid_action', `${path}.component`, 'O componente precisa ser um número inteiro positivo.');
+          }
         }
       });
       return;
@@ -305,9 +392,30 @@ export function validateTemplate(template, variables) {
     if (menu.options.length > L.selectOptions) {
       fail('too_many_options', base, `No máximo ${L.selectOptions} opções por menu.`);
     }
+    // Campos novos do menu são lidos pelo campo cru (dado de fora, não validado).
+    const { minValues, maxValues, component: menuComponent } = /** @type {{minValues?: unknown, maxValues?: unknown, component?: unknown}} */ (menu);
+    if (minValues !== undefined && !isSelectCount(minValues, 0)) {
+      fail('invalid_action', `${base}.menu.minValues`, 'O mínimo de opções precisa ser um inteiro de 0 a 25.');
+    }
+    if (maxValues !== undefined && !isSelectCount(maxValues, 1)) {
+      fail('invalid_action', `${base}.menu.maxValues`, 'O máximo de opções precisa ser um inteiro de 1 a 25.');
+    }
+    if (isSelectCount(minValues, 0) && isSelectCount(maxValues, 1) && minValues > maxValues) {
+      fail('invalid_action', `${base}.menu.minValues`, 'O mínimo de opções não pode ser maior que o máximo.');
+    }
+    if (isSelectCount(maxValues, 1) && maxValues > menu.options.length) {
+      fail('invalid_action', `${base}.menu.maxValues`, 'O máximo de opções não pode passar do número de opções do menu.');
+    }
+    if (menuComponent !== undefined && !isComponentId(menuComponent)) {
+      fail('invalid_action', `${base}.menu.component`, 'O componente precisa ser um número inteiro positivo.');
+    }
+
     // Um menu tem um único custom_id (do Discord); hoje não é possível distinguir qual opção foi
     // escolhida só pelo custom_id. Até o roteador resolver isso, no máximo uma opção pode ter ação.
     let optionsWithAction = 0;
+    let defaultOptions = 0;
+    /** @type {Set<string>} */
+    const values = new Set();
     menu.options.forEach((option, optionIndex) => {
       const path = `${base}.menu.options[${optionIndex}]`;
       for (const [part, text] of [['label', option.label], ['value', option.value], ['description', option.description]]) {
@@ -316,13 +424,42 @@ export function validateTemplate(template, variables) {
           fail('limit_exceeded', `${path}.${part}`, `O texto precisa ter de 1 a ${L.selectOptionText} caracteres.`);
         }
       }
+      if (typeof option.value === 'string') {
+        if (values.has(option.value)) fail('invalid_action', `${path}.value`, 'Duas opções têm o mesmo valor.');
+        values.add(option.value);
+      }
       if (option.action !== undefined) {
         checkAction(`${path}.action`, option.action);
         optionsWithAction += 1;
       }
+      // Mesma regra do emoji de botão: emoji válido, ou erro `invalid_emoji` no path da opção.
+      const emojiError = option.emoji === undefined ? null : emojiProblem(option.emoji);
+      if (emojiError !== null) fail('invalid_emoji', `${path}.emoji`, emojiError);
+
+      const { default: isDefault, componentOption } = /** @type {{default?: unknown, componentOption?: unknown}} */ (option);
+      if (isDefault !== undefined && typeof isDefault !== 'boolean') {
+        fail('invalid_action', `${path}.default`, '"default" precisa ser booleano.');
+      } else if (isDefault === true) {
+        defaultOptions += 1;
+      }
+      if (componentOption !== undefined) {
+        if (option.action !== undefined) {
+          fail('invalid_action', `${path}.componentOption`, 'Uma opção não pode ter ação e chave de componente ao mesmo tempo.');
+        }
+        if (menuComponent === undefined) {
+          fail('invalid_action', `${path}.componentOption`, 'Escolha a ação do menu antes de vincular a opção.');
+        } else if (typeof componentOption !== 'string' || !COMPONENT_OPTION_KEY_PATTERN.test(componentOption)) {
+          fail('invalid_action', `${path}.componentOption`, 'A chave da opção precisa ter de 6 a 12 letras minúsculas ou números.');
+        }
+      }
     });
     if (optionsWithAction > 1) {
       fail('invalid_action', `${base}.menu`, 'Por enquanto, no máximo uma opção do menu pode ter ação.');
+    }
+    // Sem `maxValues`, o usuário escolhe uma opção: o limite de padrões é 1. Com `maxValues` inválido, o erro acima já cobre.
+    const defaultLimit = maxValues === undefined ? 1 : maxValues;
+    if (isSelectCount(defaultLimit, 1) && defaultOptions > defaultLimit) {
+      fail('invalid_action', `${base}.menu`, 'O menu tem mais opções padrão do que o máximo de escolhas.');
     }
   });
 

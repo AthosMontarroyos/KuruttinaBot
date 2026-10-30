@@ -29,6 +29,11 @@ export {
 /** @typedef {import('./template.js').GuildUsage} GuildUsage */
 /** @typedef {import('./template.js').ComponentAction} ComponentAction */
 
+/** Tira a referência a um Component apagado de um template (função pura). */
+export { unlinkComponent } from './unlink.js';
+/** @typedef {import('./unlink.js').UnlinkKind} UnlinkKind */
+/** @typedef {import('./unlink.js').UnlinkResult} UnlinkResult */
+
 export {
   extractVariables,
   escapeUserValue,

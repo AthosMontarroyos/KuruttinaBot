@@ -224,12 +224,63 @@ describe('PostgreSQL runtime isolation', () => {
     expect(roles.rows[0]).toEqual({ rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolbypassrls: false });
   });
   it('does not grant new objects from the migration owner to runtime', async () => {
-    const policies = await admin.query("SELECT relname, relrowsecurity, relforcerowsecurity FROM pg_class WHERE relnamespace = 'bot_private'::regnamespace AND relkind = 'r'");
-    // bot_settings, bot_staff, message_templates, message_components, message_deliveries (etapas 1C/1D), message_template_folders,
-    // role_groups, role_group_roles, custom_buttons, custom_selects e as tabelas de configuração das ações
-    // (custom_button_functions, custom_select_options, custom_select_option_functions).
-    expect(policies.rows).toHaveLength(13);
-    expect(policies.rows.every((row) => row.relrowsecurity && row.relforcerowsecurity)).toBe(true);
+    const policies = await admin.query(`
+      SELECT relname, relrowsecurity, relforcerowsecurity
+      FROM pg_class
+      WHERE relnamespace = 'bot_private'::regnamespace AND relkind = 'r'
+      ORDER BY relname
+    `);
+    // Inventário fechado das tabelas de bot_private. role_groups e role_group_roles
+    // (20261030120000_role_groups.sql) seguem o mesmo isolamento: RLS habilitada e forçada,
+    // sem grant para PUBLIC nem para as roles de API. Uma tabela nova entra aqui pelo nome.
+    const appTables = [
+      'bot_settings',
+      'bot_staff',
+      'custom_button_functions',
+      'custom_buttons',
+      'custom_select_option_functions',
+      'custom_select_options',
+      'custom_selects',
+      'message_components',
+      'message_deliveries',
+      'message_template_folders',
+      'message_templates',
+      'role_group_roles',
+      'role_groups',
+    ];
+    expect(policies.rows).toEqual(appTables.map((relname) => ({ relname, relrowsecurity: true, relforcerowsecurity: true })));
+
+    const grants = await admin.query(`
+      SELECT class.relname, COALESCE(grantee.rolname, 'PUBLIC') AS grantee, privilege.privilege_type, privilege.is_grantable
+      FROM pg_class AS class
+      CROSS JOIN LATERAL aclexplode(class.relacl) AS privilege
+      LEFT JOIN pg_roles AS grantee ON grantee.oid = privilege.grantee
+      WHERE class.relnamespace = 'bot_private'::regnamespace
+        AND class.relkind = 'r'
+        AND privilege.grantee IS DISTINCT FROM class.relowner
+      ORDER BY class.relname, grantee, privilege.privilege_type
+    `);
+    const siteWrite = ['DELETE', 'INSERT', 'SELECT', 'UPDATE'];
+    const tableGrants: Record<string, Partial<Record<'kuruttina_bot' | 'kuruttina_site', string[]>>> = {
+      bot_settings: { kuruttina_bot: ['SELECT'] },
+      bot_staff: { kuruttina_bot: ['SELECT'] },
+      custom_button_functions: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      custom_buttons: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      custom_select_option_functions: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      custom_select_options: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      custom_selects: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      message_components: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      message_deliveries: { kuruttina_bot: ['SELECT', 'UPDATE'], kuruttina_site: ['INSERT', 'SELECT'] },
+      message_template_folders: { kuruttina_site: siteWrite },
+      message_templates: { kuruttina_bot: siteWrite, kuruttina_site: siteWrite },
+      role_group_roles: { kuruttina_bot: ['SELECT'], kuruttina_site: ['DELETE', 'INSERT', 'SELECT'] },
+      role_groups: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+    };
+    expect(Object.keys(tableGrants).sort()).toEqual(appTables);
+    const expectedGrants = Object.entries(tableGrants).flatMap(([relname, roles]) => Object.entries(roles).flatMap(([grantee, privileges]) =>
+      (privileges ?? []).map((privilege_type) => ({ relname, grantee, privilege_type, is_grantable: false })),
+    )).sort((left, right) => left.relname.localeCompare(right.relname) || left.grantee.localeCompare(right.grantee) || left.privilege_type.localeCompare(right.privilege_type));
+    expect(grants.rows).toEqual(expectedGrants);
   });
   it('lets the site read only the active dev user id', async () => {
     const migration = await readFile(new URL('../packages/database/supabase/migrations/20261029150000_site_active_dev_user_id.sql', import.meta.url), 'utf8');

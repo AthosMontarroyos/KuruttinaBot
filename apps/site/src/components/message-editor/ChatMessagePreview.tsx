@@ -5,6 +5,7 @@ import { readBotAvatarUrl } from '../../lib/bot-avatar';
 import { EmbedCard, InlineText } from './EmbedCard';
 import { ComponentsPreview } from './ComponentsPreview';
 import { DISCORD_FONT, LIMITS, parseState } from './message-model';
+import { PreviewProvider, usePreviewBotName } from './preview-values';
 
 function BotAvatar({ url }: { url: string }) {
   const [failed, setFailed] = useState(false);
@@ -16,6 +17,7 @@ function BotAvatar({ url }: { url: string }) {
 
 /** Moldura de mensagem do bot, como aparece no chat do Discord. */
 export function ChatMessage({ children }: { children: ReactNode }) {
+  const botName = usePreviewBotName();
   const [avatarUrl] = useState(readBotAvatarUrl);
   const [time] = useState(() => new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date()));
   return (
@@ -23,7 +25,7 @@ export function ChatMessage({ children }: { children: ReactNode }) {
       <BotAvatar url={avatarUrl} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-white">Kuruttina</span>
+          <span className="font-medium text-white">{botName}</span>
           <span className="rounded bg-[#5865f2] px-1.5 text-[10px] font-semibold uppercase leading-4 text-white">App</span>
           <span className="text-xs text-[#949ba4]">Hoje às {time}</span>
         </div>
@@ -38,10 +40,12 @@ export function MessagePreview({ content }: { content: unknown }) {
   const [state] = useState(() => parseState(JSON.stringify(content)));
   if (!state) return null;
   return (
-    <ChatMessage>
-      <InlineText rich readOnly label="Texto da mensagem" placeholder="" maxLength={LIMITS.content} value={state.content} onChange={() => undefined} />
-      {state.embeds.map((embed, index) => <EmbedCard key={embed.key} readOnly embed={embed} index={index} />)}
-      <ComponentsPreview rows={state.components} />
-    </ChatMessage>
+    <PreviewProvider>
+      <ChatMessage>
+        <InlineText rich readOnly label="Texto da mensagem" placeholder="" maxLength={LIMITS.content} value={state.content} onChange={() => undefined} />
+        {state.embeds.map((embed, index) => <EmbedCard key={embed.key} readOnly embed={embed} index={index} />)}
+        <ComponentsPreview rows={state.components} />
+      </ChatMessage>
+    </PreviewProvider>
   );
 }

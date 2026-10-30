@@ -4,7 +4,7 @@
  */
 type Channel = { id: string; name: string; type: 'text' | 'announcement'; category: string | null };
 type Category = { id: string; name: string };
-type Role = { id: string; name: string; color: string | null; managed: boolean };
+type Role = { id: string; name: string; color: string | null; managed: boolean; iconUrl: string | null; unicodeEmoji: string | null };
 
 type GuildListError = 'unauthenticated' | 'not_found' | 'bot_not_in_guild' | 'unavailable';
 type GuildListResult<T> = { ok: true; items: T[] } | { ok: false; error: GuildListError };

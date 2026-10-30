@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
-type Guild = { id: string; name: string; iconUrl: string | null; members: number | null };
-type Session = { mock: boolean; discord: boolean; authenticated: boolean; user?: { label: string; avatarUrl: string | null }; guilds?: Guild[] };
+/** `bannerUrl` pode faltar (servidor sem banner ou sessão gravada antes do campo existir). */
+type Guild = { id: string; name: string; iconUrl: string | null; bannerUrl?: string | null; members: number | null };
+type Bot = { id: string; name: string; avatarUrl: string | null };
+type Session = { mock: boolean; discord: boolean; authenticated: boolean; user?: { label: string; avatarUrl: string | null }; guilds?: Guild[]; bot?: Bot };
 
 async function callSession(path: string, method: 'GET' | 'POST'): Promise<Session | null> {
   try {
@@ -37,4 +39,4 @@ function useSession() {
 }
 
 export { useSession };
-export type { Guild, Session };
+export type { Bot, Guild, Session };

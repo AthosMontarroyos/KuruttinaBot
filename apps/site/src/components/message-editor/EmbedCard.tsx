@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { activeFormats, applyFormat, parseInline, type Format, type InlineNode } from './markdown-format';
 import { LIMITS, hasText, takeKey, type EditorEmbed, type EditorField } from './message-model';
+import { usePreviewImage, usePreviewText } from './preview-values';
 
 function Link({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -141,6 +142,7 @@ type InlineTextProps = {
 
 /** Texto que aparece formatado como no Discord e vira campo de edição ao receber foco. */
 export function InlineText({ value, onChange, placeholder, label, maxLength, className = '', multiline = true, readOnly = false, rich = false }: InlineTextProps) {
+  const fill = usePreviewText();
   const [editing, setEditing] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
   const fieldRef = useRef<HTMLTextAreaElement>(null);
@@ -175,7 +177,9 @@ export function InlineText({ value, onChange, placeholder, label, maxLength, cla
     onChange(result.text);
   };
 
-  const content = value !== '' ? (rich ? renderBlocks(value) : renderInline(value)) : null;
+  // Variáveis aparecem com os valores de exemplo; se o texto ficar vazio (ex.: servidor sem banner), mostra a chave.
+  const shown = fill(value) || value;
+  const content = shown !== '' ? (rich ? renderBlocks(shown) : renderInline(shown)) : null;
 
   if (readOnly) {
     if (value === '') return null;
@@ -255,15 +259,18 @@ type ImageSlotProps = {
 function ImageSlot({ url, onChange = () => undefined, label, readOnly = false, className = '', imageClassName, iconClassName = 'size-5', align = 'left' }: ImageSlotProps) {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
+  const resolve = usePreviewImage();
+  const { variable, src } = resolve(url);
 
-  useEffect(() => setFailed(false), [url]);
+  useEffect(() => setFailed(false), [src]);
 
-  const validLink = /^https:\/\/[^\s/]+/u.test(url);
-  const picture = url !== '' && validLink && !failed
-    ? <img src={url} alt="" referrerPolicy="no-referrer" className={imageClassName} onError={() => setFailed(true)} />
-    : <ImageIcon className={`${iconClassName} ${url === '' ? 'text-[#80848e]' : validLink ? 'text-white' : 'text-red-400'}`} />;
+  // Variável de imagem é um link válido; sem valor (ex.: servidor sem banner) mostra o ícone, sem erro.
+  const validLink = variable !== null || /^https:\/\/[^\s/]+/u.test(url);
+  const picture = src !== '' && validLink && !failed
+    ? <img src={src} alt="" referrerPolicy="no-referrer" className={imageClassName} onError={() => setFailed(true)} />
+    : <ImageIcon className={`${iconClassName} ${url === '' || variable !== null ? 'text-[#80848e]' : validLink ? 'text-white' : 'text-red-400'}`} />;
 
-  if (readOnly) return url === '' ? null : <div className={className}>{picture}</div>;
+  if (readOnly) return url === '' || (variable !== null && src === '') ? null : <div className={className}>{picture}</div>;
 
   return (
     <div className={`relative ${className}`}>
@@ -289,7 +296,7 @@ function ImageSlot({ url, onChange = () => undefined, label, readOnly = false, c
             }}
           />
           {url !== '' && !validLink ? <p role="alert" className="rounded bg-[#1e1f22] px-2 py-1 text-xs text-red-400">Use o link público da imagem, começando com https://. Links blob: ou de arquivos do computador não funcionam.</p> : null}
-          {validLink && failed ? <p role="alert" className="rounded bg-[#1e1f22] px-2 py-1 text-xs text-red-400">Não foi possível carregar essa imagem. Confira se o link abre direto a imagem.</p> : null}
+          {validLink && failed && variable === null ? <p role="alert" className="rounded bg-[#1e1f22] px-2 py-1 text-xs text-red-400">Não foi possível carregar essa imagem. Confira se o link abre direto a imagem.</p> : null}
         </div>
       ) : null}
     </div>

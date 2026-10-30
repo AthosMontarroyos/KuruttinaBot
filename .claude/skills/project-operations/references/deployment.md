@@ -29,6 +29,8 @@ doppler run -- docker compose -f compose.dev.yaml up --build -d
 doppler run -- docker compose -f compose.dev.yaml down
 ```
 
+**SHOULD:** Recriar os contêineres do `compose.dev.yaml` derruba as sessões do painel: o padrão de development grava `.sessions/` dentro do contêiner e o Compose de desenvolvimento não tem volume para ela. Quem estava logado vê "Sua sessão expirou" na lista de modelos e precisa clicar em "Entrar como dev" de novo; o servidor não caiu. Para conferir o painel depois de um `up --build`, faça login de novo (um volume em `.sessions/` resolveria, ainda não foi feito).
+
 **MUST:** O Compose interpola somente as chaves listadas em cada serviço, a partir do ambiente do processo. Não há `env_file` com segredos. O site recebe `ASSETS_BASE_URL`, `DATABASE_CA`, `DATABASE_URL` interpolado de `SITE_DATABASE_URL` (role `kuruttina_site`; o config Doppler `dev` precisa desse nome) e `DISCORD_BOT_TOKEN`, e fixa `APP_ENV=development`, `HOST=0.0.0.0`, `PORT=3667` e `SITE_URL=http://localhost:3667`. O DevMock liga por `APP_ENV=development` e lê o usuário ativo de papel `dev` pela função `bot_private.active_dev_user_id()`. `DISCORD_BOT_TOKEN` serve para listar os servidores do bot em que esse usuário é membro (DevMock) e os canais de um servidor (seleção de canal). O site não recebe `OWNER_ID` nem `DISCORD_BOT_ID`. O bot fixa `APP_ENV=development` e `AUTO_SYNC_COMMANDS=false`, e recebe `DISCORD_BOT_TOKEN`, `DISCORD_BOT_ID`, `DATABASE_URL` e `DATABASE_CA` do config Doppler `dev`. O bot não recebe `SITE_DATABASE_URL`. Credencial administrativa, token do túnel, client secret e chave pública ficam de fora. Um valor que o serviço define explicitamente não é sobrescrito pelo Doppler.
 
 ## Configuração

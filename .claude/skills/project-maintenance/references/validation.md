@@ -10,6 +10,8 @@ Leia este documento quando alterar código, CI, contratos ou automações. Execu
 
 **SHOULD:** Atualize a referência de desenvolvimento e a documentação do contrato sempre que o modo de operar mudar. Segredos ficam no Doppler, nos configs `dev` e `prd`. O README apresenta o produto, suas funcionalidades e licença; atualize-o quando esses aspectos mudarem, mantendo instruções de execução e configuração na documentação de manutenção. Registre decisão duradoura em ADR curto. Remova código morto e não versione outputs, segredos ou dumps. Commits pequenos não descartam mudanças alheias.
 
+**SHOULD:** Com um worktree do kuru ativo em `.kuru/worktrees/`, `npm test` e `npx vitest run` na raiz executam também os testes copiados dele, e esses falham (sem `node_modules` próprio); `tests/app-runner.test.ts` também falha, porque o `vitest list` do runner enxerga arquivos a mais (nem `--exclude '.kuru/**'` evita essa falha). Dois testes de processo desse arquivo também falharam no Windows sem causa investigada. `tests/database.integration.test.ts` exige PostgreSQL e fica ignorado sem ele. Não atribua essas falhas à mudança sem comparar. A suíte completa pode deixar um arquivo vazio chamado `{` na raiz (origem não investigada): apague-o e não o inclua em commit.
+
 ## Definition of Done
 
 Confirme, conforme o risco: escopo proporcional; dependências sem ciclo; entrada validada; autorização server-side; secrets fora de artefatos/logs; queries e pools limitados; startup/shutdown corretos; testes e build aprovados; documentação e ADR atualizados; resultado com validação e riscos materiais.

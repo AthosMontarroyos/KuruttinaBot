@@ -11,14 +11,15 @@ type SiteConfig = ReturnType<typeof readSiteConfig>;
 
 export type GuildChannel = { id: string; name: string; type: 'text' | 'announcement'; category: string | null };
 export type GuildCategory = { id: string; name: string };
-export type GuildRole = { id: string; name: string; color: string | null; managed: boolean };
+/** `iconUrl` e `unicodeEmoji` são os ícones que o Discord dá ao cargo (ambos podem faltar). */
+export type GuildRole = { id: string; name: string; color: string | null; managed: boolean; iconUrl: string | null; unicodeEmoji: string | null };
 
 export type DiscordListResult<T> =
   | { readonly ok: true; readonly items: T[] }
   | { readonly ok: false; readonly reason: 'unavailable' | 'bot_not_in_guild' };
 
 type RawChannel = { id?: unknown; name?: unknown; type?: unknown; parent_id?: unknown; position?: unknown };
-type RawRole = { id?: unknown; name?: unknown; color?: unknown; position?: unknown; managed?: unknown };
+type RawRole = { id?: unknown; name?: unknown; color?: unknown; position?: unknown; managed?: unknown; icon?: unknown; unicode_emoji?: unknown };
 
 const discordApi = 'https://discord.com/api/v10';
 const CATEGORY = 4;
@@ -76,6 +77,10 @@ function toRoles(raw: unknown, guildId: string): GuildRole[] {
       name: (entry.name as string).slice(0, 100),
       color: typeof entry.color === 'number' && entry.color > 0 && entry.color <= 0xffffff ? `#${entry.color.toString(16).padStart(6, '0')}` : null,
       managed: entry.managed === true,
+      iconUrl: typeof entry.icon === 'string' && /^[A-Za-z0-9_]+$/u.test(entry.icon)
+        ? `https://cdn.discordapp.com/role-icons/${entry.id as string}/${entry.icon}.png`
+        : null,
+      unicodeEmoji: typeof entry.unicode_emoji === 'string' && entry.unicode_emoji.length > 0 ? entry.unicode_emoji.slice(0, 32) : null,
     }));
 }
 

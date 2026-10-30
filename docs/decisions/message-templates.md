@@ -35,8 +35,20 @@ O motor ficava em `apps/bot/src/application/messages/` (`limits.ts`, `template.t
 
 - **1B:** catálogo de falas padrão (`apps/bot/src/application/messages/catalog.ts`) e `context.render(chave, valores)`, que resolve emojis, preenche o template e converte para `CommandReply`. Os comandos `ping`, `ban`, `kick`, `timeout`, `untimeout`, `unban` e as falas do `emojiInfo` passaram a usar esse caminho, com o texto preservado por um snapshot de 199 cenários gravado antes da migração.
 - **1C:** persistência por servidor em `bot_private.message_templates` (migration `20261027221916_message_templates.sql`), com RLS por `guild_id`, cota de 100 templates e 50 botões/menus aplicada também por trigger no banco, e o caso de uso `templateAdmin` (`createTemplate`/`updateTemplate`/`listTemplates`/`getTemplate`/`removeTemplate`), que valida nome, tamanho do JSON, o motor e a cota antes de persistir. `checkGuildQuota` ganhou um 4º parâmetro, `isNewTemplate`, para uma edição não ser recusada só por o servidor já estar no limite de templates (só botões e menus continuam contados na edição).
-- Templates de usuário não declaram variáveis nesta etapa (lista de variáveis sempre vazia); só o catálogo de falas do bot usa `{chave}`.
+- Templates de usuário não declaravam variáveis nesta etapa (lista sempre vazia); só o catálogo de falas do bot usava `{chave}`. Superado pela seção seguinte.
+
+## Variáveis de ação compartilhadas (30 de outubro de 2026)
+
+Pedido do responsável: uma lista única de variáveis pré-definidas das ações do bot, usada pelo bot e pelo site. `packages/message-templates/variables.js` guarda `ACTION_VARIABLES` (`user.id`, `user.name`, `user.mention`, `user.avatar`, `guild.id`, `guild.name`, `guild.avatar`, `guild.banner`, `guild.membercount`, `nowtimestamp`) e `buildActionValues`, que monta os valores a partir de dados simples. O pedido escrevia `{user.metion}`; a chave ficou `user.mention`.
+
+- **Validação:** `templateAdmin` valida templates de usuário com essa lista, no site e no bot. Isso revoga a regra da etapa 1C de que templates de usuário não declaram variáveis.
+- **Formato `raw`:** sem escape, só para valores que o bot gera em formato fixo (ID numérico, menção `<@id>`, URL do CDN do Discord com caracteres seguros, número, `<t:N:f>`). Valor fora do formato é descartado em `buildActionValues`; maior que `maxLength` vira vazio. Nomes de usuário e de servidor continuam escapados (Markdown e menções). A revisão por modelo apontou que aceitar qualquer `https://` em valor `raw` permitiria `@everyone` em URL; por isso só `https://cdn.discordapp.com/`.
+- **Imagens (revisa os itens 3 e 5 da decisão):** as variáveis marcadas `image: true` (`user.avatar`, `guild.avatar`, `guild.banner`) valem sozinhas nos campos de imagem do embed (miniatura, imagem, ícone do autor e do rodapé). Link clicável, `custom_id` e menu continuam sem variável. Sem valor, a imagem é omitida e um embed que ficaria vazio é descartado. Motivo: o responsável quer ver a foto, o ícone e o banner como imagem, não como link no texto.
+- **Entrega de teste:** a entrega pedida pelo painel não tem usuário disparando; o bot (`client.user`) faz o papel do usuário, igual ao preview. Sem isso `{user.avatar}` ficava vazio e a imagem sumia. Uma ação com usuário real passa o membro.
+- **Preview no site:** troca as variáveis por valores de exemplo com `renderText`, as mesmas regras do `renderTemplate`. O bot faz o papel do usuário e o servidor é o aberto no painel; o perfil do bot vem de `/users/@me` pelo token do bot (cabe na [decisão do token](site-holds-bot-token.md)) e sai em `/api/session`, com o banner da guilda. Servidor sem banner fica vazio. Detalhes em [editor de mensagens](../project/message-editor.md).
+- **Interface:** a lista aparece na aba Variáveis do editor, e o envio ao canal virou a aba Enviar (o botão e o diálogo "Enviar ao canal" da lista saíram).
+- **Pendente:** diff sem aprovação do revisor por modelo (veja o doc de estado); sessões do Docker de desenvolvimento não persistem entre recriações.
 
 ## Condição de revisão
 
-Reavaliar quando houver emoji em botões, variáveis em templates de usuário, necessidade de variáveis em URL, ou o roteamento de interações de botões e menus (módulo futuro).
+Reavaliar quando houver emoji em botões, variável em link clicável, a primeira ação com usuário real (como a entrada de um membro), ou o roteamento de interações de botões e menus (módulo futuro).

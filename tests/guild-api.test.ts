@@ -27,8 +27,8 @@ const discordChannels = [
 
 const discordRoles = [
   { id: guildId, name: '@everyone', color: 0, position: 0, managed: false },
-  { id: '400000000000000001', name: 'Membro', color: 0, position: 1, managed: false },
-  { id: '400000000000000003', name: 'Admin', color: 0xff0000, position: 5, managed: false },
+  { id: '400000000000000001', name: 'Membro', color: 0, position: 1, managed: false, icon: null, unicode_emoji: '🛡️' },
+  { id: '400000000000000003', name: 'Admin', color: 0xff0000, position: 5, managed: false, icon: 'abc123', unicode_emoji: null },
   { id: '400000000000000002', name: 'Kuruttina', color: 0x5865f2, position: 3, managed: true },
 ];
 
@@ -71,9 +71,12 @@ describe('discord bot reads', () => {
     expect(result).toEqual({
       ok: true,
       items: [
-        { id: '400000000000000003', name: 'Admin', color: '#ff0000', managed: false },
-        { id: '400000000000000002', name: 'Kuruttina', color: '#5865f2', managed: true },
-        { id: '400000000000000001', name: 'Membro', color: null, managed: false },
+        {
+          id: '400000000000000003', name: 'Admin', color: '#ff0000', managed: false,
+          iconUrl: 'https://cdn.discordapp.com/role-icons/400000000000000003/abc123.png', unicodeEmoji: null,
+        },
+        { id: '400000000000000002', name: 'Kuruttina', color: '#5865f2', managed: true, iconUrl: null, unicodeEmoji: null },
+        { id: '400000000000000001', name: 'Membro', color: null, managed: false, iconUrl: null, unicodeEmoji: '🛡️' },
       ],
     });
   });

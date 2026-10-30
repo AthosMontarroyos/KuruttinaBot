@@ -79,6 +79,10 @@ function fillText(text, declared, values) {
     const variable = KEY_PATTERN.test(inner) ? declared.get(inner) : undefined;
     if (variable === undefined) return raw;
     const value = Object.hasOwn(values, inner) ? /** @type {string} */ (values[inner]) : '';
+    if (variable.format === 'raw') {
+      // Valores do próprio bot em formato fixo (ID, menção, URL, número); nada de texto livre.
+      return value !== '' && value.length <= variable.maxLength ? value : (variable.whenAbsent ?? '');
+    }
     if (variable.format === 'code') {
       const cleaned = cleanForCode(value, variable.maxLength);
       if (cleaned !== '') return `\`${cleaned}\``;
@@ -87,6 +91,18 @@ function fillText(text, declared, values) {
     const escaped = escapeUserValue(value, variable.maxLength);
     return escaped === '' ? (variable.whenAbsent ?? '') : escaped;
   });
+}
+
+/**
+ * Preenche as variáveis declaradas em um texto avulso, com as mesmas regras de
+ * `renderTemplate` (escape, formato, ausente vira vazio). Serve ao preview do site.
+ * @param {string} text
+ * @param {readonly import('./template.js').TemplateVariable[]} variables
+ * @param {Readonly<Record<string, string>>} values
+ * @returns {string}
+ */
+export function renderText(text, variables, values) {
+  return fillText(text, new Map(variables.map((variable) => [variable.name, variable])), values);
 }
 
 /**
@@ -103,6 +119,18 @@ export function renderTemplate(template, variables, values) {
   /** @param {string} text @returns {string} */
   const fill = (text) => fillText(text, declared, values);
 
+  /** Imagem que é só `{variável de imagem}`: vira o valor, ou `undefined` quando o valor falta.
+   * Qualquer outra URL passa como está.
+   * @param {string} url @returns {string|undefined} */
+  const image = (url) => {
+    const key = /^\{([a-z]+(?:\.[a-z]+)*)\}$/u.exec(url)?.[1];
+    if (key === undefined) return url;
+    const variable = declared.get(key);
+    if (variable?.image !== true) return url;
+    const value = Object.hasOwn(values, key) ? /** @type {string} */ (values[key]) : '';
+    return value !== '' && value.length <= variable.maxLength ? value : undefined;
+  };
+
   /** @param {import('./template.js').TemplateEmbed} embed @returns {import('./template.js').TemplateEmbed} */
   const renderEmbed = (embed) => {
     /** @type {import('./template.js').TemplateEmbed} */
@@ -114,10 +142,20 @@ export function renderTemplate(template, variables, values) {
     if (embed.fields !== undefined) {
       output.fields = embed.fields.map((field) => ({ ...field, name: fill(field.name), value: fill(field.value) }));
     }
-    if (embed.footer !== undefined) output.footer = { ...embed.footer, text: fill(embed.footer.text) };
-    if (embed.author !== undefined) output.author = { ...embed.author, name: fill(embed.author.name) };
-    if (embed.thumbnail !== undefined) output.thumbnail = embed.thumbnail;
-    if (embed.image !== undefined) output.image = embed.image;
+    if (embed.footer !== undefined) {
+      const { iconUrl, ...footer } = embed.footer;
+      const icon = iconUrl === undefined ? undefined : image(iconUrl);
+      output.footer = { ...footer, text: fill(footer.text), ...(icon === undefined ? {} : { iconUrl: icon }) };
+    }
+    if (embed.author !== undefined) {
+      const { iconUrl, ...author } = embed.author;
+      const icon = iconUrl === undefined ? undefined : image(iconUrl);
+      output.author = { ...author, name: fill(author.name), ...(icon === undefined ? {} : { iconUrl: icon }) };
+    }
+    const thumbnail = embed.thumbnail === undefined ? undefined : image(embed.thumbnail.url);
+    if (thumbnail !== undefined) output.thumbnail = { url: thumbnail };
+    const picture = embed.image === undefined ? undefined : image(embed.image.url);
+    if (picture !== undefined) output.image = { url: picture };
     return output;
   };
 
@@ -131,7 +169,8 @@ export function renderTemplate(template, variables, values) {
 
   /** @type {import('./template.js').MessageTemplate} */
   const output = {
-    embeds: template.embeds.map(renderEmbed),
+    // Um embed que só tinha imagem de variável ausente (ex.: servidor sem banner) ficaria vazio: o Discord o recusa.
+    embeds: template.embeds.map(renderEmbed).filter((embed) => Object.keys(embed).length > 0),
     components: template.components.map(renderRow),
   };
   if (template.content !== undefined) output.content = fill(template.content);

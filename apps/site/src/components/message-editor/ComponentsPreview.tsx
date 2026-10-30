@@ -1,6 +1,7 @@
 'use client';
 
 import { text, record } from './message-model';
+import { usePreviewText } from './preview-values';
 
 const buttonStyles: Record<string, string> = {
   primary: 'bg-[#5865f2] text-white',
@@ -12,6 +13,7 @@ const buttonStyles: Record<string, string> = {
 
 /** Botões e menus do modelo, só para conferir como ficam; a edição deles é pelo modo JSON. */
 export function ComponentsPreview({ rows }: { rows: unknown[] }) {
+  const fill = usePreviewText();
   if (rows.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
@@ -25,7 +27,7 @@ export function ComponentsPreview({ rows }: { rows: unknown[] }) {
                 const style = text(item.style);
                 return (
                   <span key={buttonIndex} className={`rounded px-4 py-1.5 text-sm font-medium ${buttonStyles[style] ?? buttonStyles.secondary}`}>
-                    {text(item.label)}{style === 'link' ? ' ↗' : ''}
+                    {fill(text(item.label))}{style === 'link' ? ' ↗' : ''}
                   </span>
                 );
               })}

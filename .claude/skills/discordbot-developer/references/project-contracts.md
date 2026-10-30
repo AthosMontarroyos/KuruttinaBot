@@ -58,6 +58,10 @@ Contrato, executor compartilhado, adapter e teste ficam fora de `commands/`. Ond
 
 **Regra:** No startup, valide config e conexão antes de declarar readiness. No shutdown, pare de aceitar trabalho, encerre timers/collectors, destrua client Discord e feche pool com timeout.
 
+### Regra: variáveis de ação e entrega de templates
+
+**MUST:** A entrega de um template renderiza com `ACTION_VARIABLES` e `renderTemplate` antes de `toCommandReply`; os valores vêm de `actionValuesFor(guild, user?)` (`infrastructure/discord/messages/actionValues.ts`), que só converte objetos do discord.js. Sem usuário disparando (entrega pedida pelo painel), o bot (`client.user`) faz o papel do usuário. Uma ação nova com usuário real (entrada de membro, por exemplo) passa esse membro. Variável nova entra em `packages/message-templates/variables.js`, nunca no bot; valor `raw` só em formato fixo gerado pelo bot (ID, menção, URL do CDN, número). Veja [editor de mensagens](../../../../docs/project/message-editor.md).
+
 ### Regra: voz das respostas
 
 **Nível:** MUST

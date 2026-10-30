@@ -1,6 +1,7 @@
 import type { Channel, Client, GuildTextBasedChannel } from 'discord.js';
-import type { MessageTemplate } from '@kuruttina/message-templates';
+import { ACTION_VARIABLES, renderTemplate, type MessageTemplate } from '@kuruttina/message-templates';
 import { log } from '#bot/infrastructure/logging/logger.js';
+import { actionValuesFor } from './actionValues.js';
 import { toCommandReply } from './toCommandReply.js';
 
 /** Pedido de entrega pendente, como devolvido por `database.deliveries.claimPending`. */
@@ -99,7 +100,9 @@ export function createDeliveryPoller(
 
     let reply;
     try {
-      reply = toCommandReply(record.content);
+      // Entrega de teste do painel: não há usuário disparando, então o bot faz esse papel, como no preview do site.
+      const values = 'guild' in channel ? actionValuesFor(channel.guild, client.user ?? undefined) : {};
+      reply = toCommandReply(renderTemplate(record.content, ACTION_VARIABLES, values));
     } catch (error) {
       log('error', 'delivery_render_failed', {
         id: delivery.id,

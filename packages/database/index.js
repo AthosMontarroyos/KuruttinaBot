@@ -3,6 +3,7 @@ import { databaseDiagnostic, DatabaseSettingsError } from './diagnostics.js';
 import * as templates from './templates.js';
 import * as deliveries from './deliveries.js';
 import * as folders from './folders.js';
+import * as roleGroups from './role-groups.js';
 export { readDatabaseConfig } from './config.js';
 /** @typedef {'creator'|'dev'} StaffRole */
 /** @typedef {{devGuildId: string, environment: 'development'|'production'}} BotSettings */
@@ -115,6 +116,17 @@ export function createDatabase(config, environment, onError = () => {}) {
       rename: (input) => connection((client) => folders.rename(client, input), 'rename_folder'),
       /** @param {string} guildId @param {number} id */
       remove: (guildId, id) => connection((client) => folders.remove(client, guildId, id), 'remove_folder'),
+    },
+    // Grupos de cargos: o site administra; o bot lê com `list` (RLS por servidor, sem escrita).
+    roleGroups: {
+      /** @param {string} guildId */
+      list: (guildId) => connection((client) => roleGroups.list(client, guildId), 'list_role_groups'),
+      /** @param {{guildId: string, name: string, roleIds: readonly string[], actorId: string}} input */
+      create: (input) => connection((client) => roleGroups.create(client, input), 'create_role_group'),
+      /** @param {{guildId: string, id: number, expectedVersion: number, name: string, roleIds: readonly string[], actorId: string}} input */
+      update: (input) => connection((client) => roleGroups.update(client, input), 'update_role_group'),
+      /** @param {string} guildId @param {number} id */
+      remove: (guildId, id) => connection((client) => roleGroups.remove(client, guildId, id), 'remove_role_group'),
     },
     // Fila de entrega de mensagens (etapa 1D); o bot consome sem filtro de servidor.
     deliveries: {

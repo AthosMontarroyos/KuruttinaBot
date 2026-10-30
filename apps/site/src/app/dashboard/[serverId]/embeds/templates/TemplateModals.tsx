@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { ChannelSelect } from '../../../../../components/selectors/ChannelSelect';
 import { card, outlineButton, primaryButton } from '../../../ui';
+import { requestDelivery, type TemplateErrorCode } from './templates-api';
 
 type FolderForm = { name: string; error: string | null; submitting: boolean };
 
@@ -93,36 +95,48 @@ function DeleteFolderDialog({
   );
 }
 
-function DeliveryDialog({
-  templateName,
-  guildId,
-  channelId,
-  submitting,
-  error,
-  success,
-  onChannelChange,
-  onConfirm,
-  onClose,
-}: {
-  templateName: string;
-  guildId: string;
-  channelId: string;
-  submitting: boolean;
-  error: string | null;
-  success: string | null;
-  onChannelChange: (channelId: string) => void;
-  onConfirm: () => void;
-  onClose: () => void;
-}) {
+function deliveryErrorMessage(error: TemplateErrorCode): string {
+  switch (error) {
+    case 'invalid_channel_id':
+      return 'Escolha um canal.';
+    case 'not_found':
+      return 'Esse modelo de mensagem não existe mais.';
+    case 'quota':
+      return 'Este servidor tem muitos envios pendentes. Aguarde ou tente mais tarde.';
+    case 'unauthenticated':
+      return 'Sua sessão expirou. Entre de novo para continuar.';
+    default:
+      return 'Não foi possível falar com o servidor agora.';
+  }
+}
+
+/** Aba "Enviar" do editor: manda a versão salva do modelo a um canal. */
+function SendPanel({ guildId, templateName, unsaved }: { guildId: string; templateName: string | null; unsaved: boolean }) {
+  const [channelId, setChannelId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  if (templateName === null) return <p className="text-sm text-muted">Salve o modelo para poder enviá-lo a um canal.</p>;
+
+  const send = async () => {
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
+    const result = await requestDelivery(guildId, templateName, channelId.trim());
+    setSubmitting(false);
+    if (result.ok) setSuccess('Pedido de envio registrado. Pode levar alguns instantes.');
+    else setError(deliveryErrorMessage(result.error));
+  };
+
   return (
-    <div role="dialog" aria-labelledby="delivery-template-title" className={`${card} flex flex-col gap-3 p-5`}>
-      <h2 id="delivery-template-title" className="text-lg font-semibold">Enviar “{templateName}” a um canal</h2>
-      <ChannelSelect guildId={guildId} value={channelId} onChange={onChannelChange} disabled={submitting} />
+    <div className="flex flex-col gap-3">
+      {unsaved ? <p className="text-sm text-muted">Há alterações não salvas: o envio usa a versão salva do modelo.</p> : null}
+      <ChannelSelect guildId={guildId} value={channelId} onChange={setChannelId} disabled={submitting} />
       {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}
       {success ? <p className="text-sm text-muted">{success}</p> : null}
-      <div className="flex gap-3">
-        <button className={primaryButton} type="button" disabled={submitting} onClick={onConfirm}>Enviar</button>
-        <button className={outlineButton} type="button" onClick={onClose}>Fechar</button>
+      <div>
+        <button className={primaryButton} type="button" disabled={submitting} onClick={() => void send()}>Enviar</button>
       </div>
     </div>
   );
@@ -154,4 +168,4 @@ function DeleteTemplateDialog({
   );
 }
 
-export { DeleteFolderDialog, DeleteTemplateDialog, DeliveryDialog, NewFolderForm, RenameFolderForm };
+export { DeleteFolderDialog, DeleteTemplateDialog, NewFolderForm, RenameFolderForm, SendPanel };

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { card, outlineButton, primaryButton, Skeleton } from '../../../ui';
 import { describeTemplateIssues } from '../../../../../components/message-editor/format-issue';
 import { MessageEditor, MessagePreview } from '../../../../../components/message-editor/MessageEditor';
-import { DeleteFolderDialog, DeleteTemplateDialog, DeliveryDialog, NewFolderForm, RenameFolderForm } from './TemplateModals';
+import { DeleteFolderDialog, DeleteTemplateDialog, NewFolderForm, RenameFolderForm, SendPanel } from './TemplateModals';
 import {
   createFolder,
   createTemplate,
@@ -15,7 +15,6 @@ import {
   moveTemplate,
   removeFolder,
   renameFolder,
-  requestDelivery,
   updateTemplate,
   type FolderSummary,
   type TemplateDetail,
@@ -70,21 +69,6 @@ function folderErrorMessage(error: TemplateErrorCode): string {
   }
 }
 
-function deliveryErrorMessage(error: TemplateErrorCode): string {
-  switch (error) {
-    case 'invalid_channel_id':
-      return 'Escolha um canal.';
-    case 'not_found':
-      return 'Esse modelo de mensagem não existe mais.';
-    case 'quota':
-      return 'Este servidor tem muitos envios pendentes. Aguarde ou tente mais tarde.';
-    case 'unauthenticated':
-      return 'Sua sessão expirou. Entre de novo para continuar.';
-    default:
-      return 'Não foi possível falar com o servidor agora.';
-  }
-}
-
 type View = { kind: 'list' } | { kind: 'create' } | { kind: 'edit'; name: string } | { kind: 'detail'; name: string };
 
 type FormState = {
@@ -126,6 +110,10 @@ function groupByFolder(folders: FolderSummary[], items: TemplateSummary[]): Temp
 }
 
 const iconButton = 'inline-flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text hover:bg-surface';
+/** Fica vermelho ao passar o mouse (e no foco do teclado); usado nos botões de apagar. */
+const dangerHover = 'transition-colors hover:border-red-500 hover:bg-red-500/10 hover:text-red-500 focus-visible:border-red-500 focus-visible:text-red-500';
+/** Mesma altura do `outlineButton` (44px), para alinhar com o Editar. */
+const dangerIconButton = `inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text ${dangerHover}`;
 
 function NewFolderIcon() {
   return (
@@ -165,7 +153,8 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [listError, setListError] = useState(false);
+  // `unauthenticated` é sessão expirada (ex.: o servidor foi reiniciado); qualquer outra falha é `unavailable`.
+  const [listError, setListError] = useState<false | 'unauthenticated' | 'unavailable'>(false);
   const [folders, setFolders] = useState<FolderSummary[]>([]);
   const [view, setView] = useState<View>({ kind: 'list' });
   const [form, setForm] = useState<FormState>(emptyForm());
@@ -178,11 +167,6 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [deliveryTarget, setDeliveryTarget] = useState<string | null>(null);
-  const [deliveryChannelId, setDeliveryChannelId] = useState('');
-  const [deliverySubmitting, setDeliverySubmitting] = useState(false);
-  const [deliveryError, setDeliveryError] = useState<string | null>(null);
-  const [deliverySuccess, setDeliverySuccess] = useState<string | null>(null);
   const [showFolderForm, setShowFolderForm] = useState(false);
   const [folderForm, setFolderForm] = useState<FolderFormState>(emptyFolderForm());
   const [renameTarget, setRenameTarget] = useState<FolderSummary | null>(null);
@@ -209,7 +193,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
       setItems(result.data.items);
       setNextCursor(result.data.nextCursor);
     } else {
-      setListError(true);
+      setListError(result.error === 'unauthenticated' ? 'unauthenticated' : 'unavailable');
     }
     setLoading(false);
   }, [guildId]);
@@ -241,7 +225,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
       setItems((current) => [...current, ...result.data.items]);
       setNextCursor(result.data.nextCursor);
     } else {
-      setListError(true);
+      setListError(result.error === 'unauthenticated' ? 'unauthenticated' : 'unavailable');
     }
     setLoadingMore(false);
   }, [guildId, nextCursor]);
@@ -337,33 +321,6 @@ function TemplatesView({ guildId }: { guildId: string }) {
       setForm((current) => ({ ...current, submitting: false, error: errorMessage(result.error, result.details) }));
     }
   }, [form.contentJson, form.folderId, form.name, form.version, guildId, view]);
-
-  const openDelivery = useCallback((name: string) => {
-    setDeliveryTarget(name);
-    setDeliveryChannelId('');
-    setDeliveryError(null);
-    setDeliverySuccess(null);
-  }, []);
-
-  const closeDelivery = useCallback(() => {
-    setDeliveryTarget(null);
-    setDeliveryChannelId('');
-    setDeliveryError(null);
-    setDeliverySuccess(null);
-  }, []);
-
-  const confirmDelivery = useCallback(async () => {
-    if (!deliveryTarget) return;
-    setDeliverySubmitting(true);
-    setDeliveryError(null);
-    const result = await requestDelivery(guildId, deliveryTarget, deliveryChannelId.trim());
-    setDeliverySubmitting(false);
-    if (result.ok) {
-      setDeliverySuccess('Pedido de envio registrado. Pode levar alguns instantes.');
-    } else {
-      setDeliveryError(deliveryErrorMessage(result.error));
-    }
-  }, [deliveryChannelId, deliveryTarget, guildId]);
 
   const confirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
@@ -481,8 +438,17 @@ function TemplatesView({ guildId }: { guildId: string }) {
       <>
         <h2 className="text-[22px] font-semibold">Templates de mensagem</h2>
         <div className={`${card} flex flex-col items-center gap-3 px-6 py-12 text-center`}>
-          <p className="max-w-[420px] text-sm leading-6 text-muted">Não foi possível falar com o servidor agora.</p>
-          <button className={primaryButton} type="button" onClick={() => void loadFirstPage()}>Tentar de novo</button>
+          {listError === 'unauthenticated' ? (
+            <>
+              <p className="max-w-[420px] text-sm leading-6 text-muted">Sua sessão expirou. Entre de novo para continuar.</p>
+              <button className={primaryButton} type="button" onClick={() => location.assign('/login')}>Entrar de novo</button>
+            </>
+          ) : (
+            <>
+              <p className="max-w-[420px] text-sm leading-6 text-muted">Não foi possível falar com o servidor agora.</p>
+              <button className={primaryButton} type="button" onClick={() => void loadFirstPage()}>Tentar de novo</button>
+            </>
+          )}
         </div>
       </>
     );
@@ -558,6 +524,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
               key={view.kind === 'edit' ? view.name : 'create'}
               initialJson={form.contentJson}
               onChange={(contentJson) => setForm((current) => ({ ...current, contentJson }))}
+              sendPanel={<SendPanel guildId={guildId} templateName={view.kind === 'edit' ? view.name : null} unsaved={unsaved} />}
             />
           )}
           {form.error ? (
@@ -603,26 +570,11 @@ function TemplatesView({ guildId }: { guildId: string }) {
                   {showJson ? 'Ver mensagem' : 'Ver JSON'}
                 </button>
                 <button className={outlineButton} type="button" onClick={() => void openEdit(detail.name)}>Editar</button>
-                <button className={outlineButton} type="button" onClick={() => openDelivery(detail.name)}>Enviar ao canal</button>
                 <button className={outlineButton} type="button" onClick={() => setDeleteTarget(detail.name)}>Apagar</button>
               </div>
             </>
           )}
         </div>
-      ) : null}
-
-      {deliveryTarget ? (
-        <DeliveryDialog
-          templateName={deliveryTarget}
-          guildId={guildId}
-          channelId={deliveryChannelId}
-          submitting={deliverySubmitting}
-          error={deliveryError}
-          success={deliverySuccess}
-          onChannelChange={setDeliveryChannelId}
-          onConfirm={() => void confirmDelivery()}
-          onClose={closeDelivery}
-        />
       ) : null}
 
       {deleteTarget ? (
@@ -635,7 +587,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
         />
       ) : null}
 
-      {items.length === 0 ? (
+      {editing ? null : items.length === 0 ? (
         <div className={`${card} flex flex-col items-center gap-3 px-6 py-12 text-center`}>
           <p className="max-w-[420px] text-sm leading-6 text-muted">Nenhum modelo de mensagem criado ainda neste servidor.</p>
         </div>
@@ -666,7 +618,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
                       <button className={iconButton} type="button" aria-label={`Renomear pasta ${group.name}`} title="Renomear pasta" onClick={() => openRenameFolder({ id: group.folderId as number, name: group.name, createdAt: '' })}>
                         <PencilIcon />
                       </button>
-                      <button className={iconButton} type="button" aria-label={`Apagar pasta ${group.name}`} title="Apagar pasta" onClick={() => setDeleteFolderTarget({ id: group.folderId as number, name: group.name, createdAt: '' })}>
+                      <button className={`${iconButton} ${dangerHover}`} type="button" aria-label={`Apagar pasta ${group.name}`} title="Apagar pasta" onClick={() => setDeleteFolderTarget({ id: group.folderId as number, name: group.name, createdAt: '' })}>
                         <TrashIcon />
                       </button>
                     </div>
@@ -692,10 +644,11 @@ function TemplatesView({ guildId }: { guildId: string }) {
                       >
                         {item.name}
                       </button>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <button className={outlineButton} type="button" onClick={() => void openEdit(item.name)}>Editar</button>
-                        <button className={outlineButton} type="button" onClick={() => openDelivery(item.name)}>Enviar ao canal</button>
-                        <button className={outlineButton} type="button" onClick={() => setDeleteTarget(item.name)}>Apagar</button>
+                        <button className={dangerIconButton} type="button" aria-label={`Apagar modelo ${item.name}`} title="Apagar" onClick={() => setDeleteTarget(item.name)}>
+                          <TrashIcon />
+                        </button>
                       </div>
                     </li>
                   ))}
@@ -706,7 +659,7 @@ function TemplatesView({ guildId }: { guildId: string }) {
         </div>
       )}
 
-      {nextCursor ? (
+      {!editing && nextCursor ? (
         <button className={outlineButton} type="button" disabled={loadingMore} onClick={() => void loadMore()}>
           {loadingMore ? 'Carregando…' : 'Carregar mais'}
         </button>

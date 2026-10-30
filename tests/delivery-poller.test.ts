@@ -50,6 +50,59 @@ async function runOneTick(client: never, database: DeliveryDatabasePort, expecte
 }
 
 describe('delivery poller', () => {
+  it('fills user and guild variables, using the bot as the user, including the image fields', async () => {
+    const template: MessageTemplate = {
+      content: 'Oi {user.name} em {guild.name} ({guild.membercount})',
+      embeds: [{
+        title: '{user.mention}',
+        thumbnail: { url: '{user.avatar}' },
+        image: { url: '{guild.banner}' },
+        author: { name: 'a', iconUrl: '{guild.avatar}' },
+        footer: { text: 'f', iconUrl: '{user.avatar}' },
+      }],
+      components: [],
+    };
+    const send = vi.fn().mockResolvedValue(undefined);
+    const channel = {
+      ...textChannel('guild-1', send),
+      guild: {
+        id: '987654321098765432',
+        name: 'Casa',
+        memberCount: 6,
+        iconURL: () => 'https://cdn.discordapp.com/icons/9/i.png?size=256',
+        bannerURL: () => null,
+      },
+    };
+    const botUser = {
+      id: '123456789012345678',
+      displayName: 'Kuruttina Dev',
+      displayAvatarURL: () => 'https://cdn.discordapp.com/avatars/1/b.png?size=256',
+    };
+    const client = { channels: { fetch: vi.fn().mockResolvedValue(channel) }, user: botUser } as never;
+    const database = makeDatabase({
+      deliveries: {
+        claimPending: vi.fn().mockResolvedValueOnce([
+          { id: 1, guildId: 'guild-1', channelId: 'channel-1', templateName: 'welcome' },
+        ]).mockResolvedValue([]),
+        markSent: vi.fn().mockResolvedValue(true),
+        markFailed: vi.fn().mockResolvedValue(true),
+      },
+      templates: { getTemplate: vi.fn().mockResolvedValue({ content: template }) },
+    });
+
+    await runOneTick(client, database, 1);
+
+    const sent = send.mock.calls[0]?.[0];
+    expect(sent.content).toBe('Oi Kuruttina Dev em Casa (6)');
+    expect(sent.embeds[0]).toMatchObject({
+      title: '<@123456789012345678>',
+      thumbnail: { url: 'https://cdn.discordapp.com/avatars/1/b.png?size=256' },
+      author: { name: 'a', icon_url: 'https://cdn.discordapp.com/icons/9/i.png?size=256' },
+      footer: { text: 'f', icon_url: 'https://cdn.discordapp.com/avatars/1/b.png?size=256' },
+    });
+    expect(sent.embeds[0]).not.toHaveProperty('image');
+  });
+
   it('sends the rendered template and marks the delivery as sent', async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     const channel = textChannel('guild-1', send);

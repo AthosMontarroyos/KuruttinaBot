@@ -3,8 +3,7 @@
  * obter e remover). Não acessa banco: recebe um repositório (port) injetado,
  * no mesmo estilo de `application/emojis/importEmoji.ts`.
  *
- * Templates de usuário não declaram variáveis nesta etapa: `validateTemplate`
- * é sempre chamado com a lista de variáveis vazia.
+ * Templates de usuário podem usar só as variáveis de `ACTION_VARIABLES`.
  */
 
 import {
@@ -13,6 +12,7 @@ import {
   TEMPLATE_NAME_PATTERN,
   validateTemplate,
 } from './template.js';
+import { ACTION_VARIABLES } from './variables.js';
 
 /** Tamanho máximo do JSON do template, em bytes UTF-8, antes do parse. */
 const MAX_TEMPLATE_JSON_BYTES = 32768;
@@ -190,8 +190,7 @@ function parseAndValidate(name, contentJson) {
     throw new TemplateAdminError('validation', 'O JSON do template é inválido.');
   }
   const template = parsed;
-  // Templates de usuário não declaram variáveis nesta etapa.
-  const errors = validateTemplate(template, []);
+  const errors = validateTemplate(template, ACTION_VARIABLES);
   if (errors.length > 0) {
     throw new TemplateAdminError('validation', 'O template não passou na validação.', errors);
   }

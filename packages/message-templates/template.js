@@ -75,11 +75,16 @@ import {
  *   fornecido ou ficou vazio após a limpeza. Não passa por escape.
  * - `format`: `'escape'` (padrão) escapa Markdown e menções; `'code'` limpa o
  *   valor e o envolve em crase (o Markdown não é processado dentro do code span).
+ * - `format: 'raw'`: sem escape, só para valores que o bot gera em formato fixo
+ *   (ID, menção, URL, número); valor maior que `maxLength` vira `whenAbsent`.
+ * - `image`: o valor é uma URL de imagem; pode ser usado sozinho (`{chave}`) nos
+ *   campos de imagem do embed (miniatura, imagem, ícone do autor e do rodapé).
  * @typedef {Object} TemplateVariable
  * @property {string} name
  * @property {number} maxLength
  * @property {string} [whenAbsent]
- * @property {'escape'|'code'} [format]
+ * @property {'escape'|'code'|'raw'} [format]
+ * @property {boolean} [image]
  */
 
 /**
@@ -124,6 +129,7 @@ export function validateTemplate(template, variables) {
   /** @type {TemplateValidationError[]} */
   const errors = [];
   const declared = new Map(variables.map((variable) => [variable.name, variable.maxLength]));
+  const imageVariables = new Set(variables.filter((variable) => variable.image === true).map((variable) => variable.name));
   let embedTotal = 0;
 
   /** @param {TemplateErrorCode} code @param {string} path @param {string} message */
@@ -173,6 +179,19 @@ export function validateTemplate(template, variables) {
       valid = false;
     }
     if (!valid) fail('invalid_url', path, 'A URL precisa ser https:// válida.');
+  };
+
+  /** Imagem do embed: URL https literal ou exatamente `{variável de imagem}`.
+   * @param {string} path @param {string} url */
+  const checkImageUrl = (path, url) => {
+    const token = extractVariables(url)[0];
+    if (token !== undefined && token.raw === url) {
+      if (token.key === null || !imageVariables.has(token.key)) {
+        fail('variable_not_allowed', path, 'Só variáveis de imagem são permitidas neste campo.');
+      }
+      return;
+    }
+    checkUrl(path, url);
   };
 
   /** Ação de um botão ou opção de menu: tipo fechado, `template` exigido (e
@@ -226,15 +245,15 @@ export function validateTemplate(template, variables) {
     }
     if (embed.footer !== undefined) {
       used += checkText(`${base}.footer.text`, embed.footer.text, L.footerText, true);
-      if (embed.footer.iconUrl !== undefined) checkUrl(`${base}.footer.iconUrl`, embed.footer.iconUrl);
+      if (embed.footer.iconUrl !== undefined) checkImageUrl(`${base}.footer.iconUrl`, embed.footer.iconUrl);
     }
     if (embed.author !== undefined) {
       used += checkText(`${base}.author.name`, embed.author.name, L.authorName, true);
       if (embed.author.url !== undefined) checkUrl(`${base}.author.url`, embed.author.url);
-      if (embed.author.iconUrl !== undefined) checkUrl(`${base}.author.iconUrl`, embed.author.iconUrl);
+      if (embed.author.iconUrl !== undefined) checkImageUrl(`${base}.author.iconUrl`, embed.author.iconUrl);
     }
-    if (embed.thumbnail !== undefined) checkUrl(`${base}.thumbnail.url`, embed.thumbnail.url);
-    if (embed.image !== undefined) checkUrl(`${base}.image.url`, embed.image.url);
+    if (embed.thumbnail !== undefined) checkImageUrl(`${base}.thumbnail.url`, embed.thumbnail.url);
+    if (embed.image !== undefined) checkImageUrl(`${base}.image.url`, embed.image.url);
     const fields = embed.fields ?? [];
     if (fields.length > L.embedFields) {
       fail('too_many_fields', `${base}.fields`, `No máximo ${L.embedFields} campos por embed.`);

@@ -33,9 +33,15 @@ export {
   extractVariables,
   escapeUserValue,
   renderTemplate,
+  renderText,
   fillEmojis,
 } from './render.js';
 /** @typedef {import('./render.js').VariableToken} VariableToken */
+
+export { ACTION_VARIABLES, buildActionValues } from './variables.js';
+/** @typedef {import('./variables.js').ActionVariable} ActionVariable */
+/** @typedef {import('./variables.js').ActionUser} ActionUser */
+/** @typedef {import('./variables.js').ActionGuild} ActionGuild */
 
 export {
   createTemplateAdminService,

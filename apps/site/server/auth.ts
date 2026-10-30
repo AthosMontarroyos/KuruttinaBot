@@ -6,13 +6,15 @@ import type { readSiteConfig } from './config.js';
 import { isDiscordSnowflake, sendJson } from './http-utils.js';
 
 type SiteConfig = ReturnType<typeof readSiteConfig>;
-type SessionGuild = { id: string; name: string; iconUrl: string | null; members: number | null };
+type SessionGuild = { id: string; name: string; iconUrl: string | null; bannerUrl: string | null; members: number | null };
+/** Perfil do bot (nome, ID e foto) que o preview das mensagens usa no lugar do usuário que dispara a ação. */
+type BotProfile = { id: string; name: string; avatarUrl: string | null };
 // `id` é o Discord ID canônico de quem logou: usado só no servidor (auditoria de quem criou/editou
 // um template) e nunca devolvido ao cliente em `sessionBody` (exposição mínima).
 type SessionUser = { id: string; label: string; avatarUrl: string | null };
 type PublicSessionUser = { label: string; avatarUrl: string | null };
 type Session = { created: number; expires: number; user: SessionUser; guilds: SessionGuild[] };
-type DiscordGuild = { id?: unknown; name?: unknown; icon?: unknown; owner?: unknown; permissions?: unknown; approximate_member_count?: unknown };
+type DiscordGuild = { id?: unknown; name?: unknown; icon?: unknown; banner?: unknown; owner?: unknown; permissions?: unknown; approximate_member_count?: unknown };
 
 const discordApi = 'https://discord.com/api/v10';
 const sessionCookie = 'kuruttina_session';
@@ -48,10 +50,12 @@ async function discordRequest(path: string, init: RequestInit): Promise<unknown>
 function toSessionGuild(raw: DiscordGuild): SessionGuild | null {
   if (typeof raw.id !== 'string' || !isDiscordSnowflake(raw.id) || typeof raw.name !== 'string') return null;
   const icon = typeof raw.icon === 'string' && iconHash.test(raw.icon) ? raw.icon : null;
+  const banner = typeof raw.banner === 'string' && iconHash.test(raw.banner) ? raw.banner : null;
   return {
     id: raw.id,
     name: raw.name.slice(0, 100),
     iconUrl: icon ? `https://cdn.discordapp.com/icons/${raw.id}/${icon}.png?size=64` : null,
+    bannerUrl: banner ? `https://cdn.discordapp.com/banners/${raw.id}/${banner}.png?size=1024` : null,
     members: typeof raw.approximate_member_count === 'number' ? raw.approximate_member_count : null,
   };
 }
@@ -126,12 +130,34 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
   };
   // `id` do Discord nunca sai para o cliente: fica só para auditoria no servidor (ex.: quem criou um template).
   const toPublicUser = ({ label, avatarUrl }: SessionUser): PublicSessionUser => ({ label, avatarUrl });
-  const sessionBody = (session: Session | undefined) => ({
-    mock: config.devMock,
-    discord: config.oauth !== undefined,
-    authenticated: session !== undefined,
-    ...(session ? { user: toPublicUser(session.user), guilds: session.guilds } : {}),
-  });
+  // Perfil do bot lido pelo token do bot e guardado por 10 minutos; sem token ou em falha, o preview usa o padrão.
+  let botCache: { value: BotProfile | null; expires: number } | undefined;
+  async function botProfile(): Promise<BotProfile | null> {
+    if (!config.botToken) return null;
+    if (botCache && botCache.expires > Date.now()) return botCache.value;
+    let value: BotProfile | null = null;
+    try {
+      const raw = (await discordRequest('/users/@me', { headers: { Authorization: `Bot ${config.botToken}` } })) as { id?: unknown; username?: unknown; global_name?: unknown; avatar?: unknown };
+      if (typeof raw.id === 'string' && isDiscordSnowflake(raw.id)) {
+        const name = typeof raw.global_name === 'string' && raw.global_name ? raw.global_name : raw.username;
+        const avatar = typeof raw.avatar === 'string' && iconHash.test(raw.avatar) ? raw.avatar : null;
+        if (typeof name === 'string' && name !== '') value = { id: raw.id, name: name.slice(0, 32), avatarUrl: avatar ? `https://cdn.discordapp.com/avatars/${raw.id}/${avatar}.png?size=256` : null };
+      }
+    } catch {
+      value = null;
+    }
+    botCache = { value, expires: Date.now() + (value ? 600_000 : 30_000) };
+    return value;
+  }
+  const sessionBody = async (session: Session | undefined) => {
+    const bot = session ? await botProfile() : null;
+    return {
+      mock: config.devMock,
+      discord: config.oauth !== undefined,
+      authenticated: session !== undefined,
+      ...(session ? { user: toPublicUser(session.user), guilds: session.guilds, ...(bot ? { bot } : {}) } : {}),
+    };
+  };
 
   // Servidores do dev no mock: os do bot em que o user_id ativo de papel dev é membro.
   // Sem token do bot a sessão abre sem servidores. O mock não tem token OAuth do usuário.
@@ -238,7 +264,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     if (!isDiscordSnowflake(devId)) { sendJson(res, 503, { error: 'dev_indisponivel' }); return; }
     try {
       const [guilds, user] = await Promise.all([mockGuilds(devId), mockProfile(devId)]);
-      sendJson(res, 200, sessionBody({ created: 0, expires: 0, user, guilds }), { 'Set-Cookie': openSession(user, guilds) });
+      sendJson(res, 200, await sessionBody({ created: 0, expires: 0, user, guilds }), { 'Set-Cookie': openSession(user, guilds) });
     } catch {
       sendJson(res, 502, { error: 'discord_indisponivel' });
     }
@@ -268,7 +294,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     if (!path.startsWith('/api/')) return false;
     if (path === '/api/session') {
       if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return true; }
-      sendJson(res, 200, sessionBody(currentSession(req)));
+      void sessionBody(currentSession(req)).then((body) => sendJson(res, 200, body));
       return true;
     }
     // Outras rotas de API (ex.: templates de mensagem) são de outro módulo; não decide 404 por elas.
@@ -278,7 +304,7 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     if (req.headers.origin !== config.siteUrl) { sendJson(res, 403, { error: 'forbidden' }); return true; }
     if (sessions.delete(hashToken(readCookie(req.headers.cookie, sessionCookie)))) persist();
     if (path === '/api/logout') {
-      sendJson(res, 200, sessionBody(undefined), { 'Set-Cookie': `${sessionCookie}=; ${cookieAttributes(0, 'Strict')}` });
+      void sessionBody(undefined).then((body) => sendJson(res, 200, body, { 'Set-Cookie': `${sessionCookie}=; ${cookieAttributes(0, 'Strict')}` }));
     } else {
       void mockLogin(res);
     }

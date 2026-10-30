@@ -113,7 +113,8 @@ function runtimeFunction(): string {
   return match[0].replace(/^ {10}/gm, '');
 }
 
-function serviceBlock(source: string, name: string): string {
+function serviceBlock(raw: string, name: string): string {
+  const source = raw.replace(/\r\n/gu, '\n');
   const marker = `\n  ${name}:\n`;
   const start = source.indexOf(marker);
   if (start < 0) throw new Error(`serviço ${name} ausente`);

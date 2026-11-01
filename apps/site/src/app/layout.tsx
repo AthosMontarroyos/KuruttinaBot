@@ -3,6 +3,7 @@
 import { StrictMode, useEffect, useLayoutEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { TopBar } from '../components/desktop/TopBar';
+import { Footer } from '../components/Footer';
 import { HomePage } from './page';
 import { LoginPage } from './login/page';
 import { DashboardPage } from './dashboard/page';
@@ -78,9 +79,7 @@ function RootLayout() {
       ) : (
         <HomePage avatarUrl={avatarUrl} onNotice={showNotice} />
       )}
-      <footer className="border-t border-border px-5 pt-5 pb-7 text-[13px] leading-4 font-medium text-subtle min-[701px]:border-0 min-[701px]:px-[5%] min-[701px]:py-6">
-        Kuruttina
-      </footer>
+      <Footer />
       {notice ? (
         <aside className="fixed right-6 bottom-6 z-20 flex max-w-[min(440px,calc(100%-40px))] items-center gap-5 rounded-xl border border-border bg-surface p-5" aria-label="Aviso">
           <p role="status" aria-live="polite">{notice}</p>

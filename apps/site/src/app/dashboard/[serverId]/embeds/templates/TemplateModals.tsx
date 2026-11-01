@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ConfirmDialog } from '../../../../../components/ConfirmDialog';
 import { ChannelSelect } from '../../../../../components/selectors/ChannelSelect';
 import { errorText } from '../../../../../lib/error-messages';
-import { card, outlineButton, primaryButton } from '../../../ui';
+import { card, outlineButton, SaveButton } from '../../../ui';
 import { requestDelivery, type TemplateErrorCode } from './templates-api';
 
 type FolderForm = { name: string; error: string | null; submitting: boolean };
@@ -32,7 +32,7 @@ function NewFolderForm({
           value={form.name}
           onChange={(event) => onChange(event.target.value)}
         />
-        <button className={primaryButton} type="button" disabled={form.submitting} onClick={onSubmit}>Criar pasta</button>
+        <SaveButton saving={form.submitting} savingLabel="Criando…" onClick={onSubmit}>Criar pasta</SaveButton>
         <button className={outlineButton} type="button" onClick={onCancel}>Cancelar</button>
       </div>
       {form.error ? <p role="alert" className="text-sm text-red-600">{form.error}</p> : null}
@@ -64,7 +64,7 @@ function RenameFolderForm({
         value={form.name}
         onChange={(event) => onChange(event.target.value)}
       />
-      <button className={primaryButton} type="button" disabled={form.submitting} onClick={onSubmit}>Salvar</button>
+      <SaveButton saving={form.submitting} onClick={onSubmit}>Salvar</SaveButton>
       <button className={outlineButton} type="button" onClick={onCancel}>Cancelar</button>
       {form.error ? <p role="alert" className="w-full text-sm text-red-600">{form.error}</p> : null}
     </div>
@@ -131,7 +131,7 @@ function SendPanel({ guildId, templateName, unsaved }: { guildId: string; templa
       {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}
       {success ? <p className="text-sm text-muted">{success}</p> : null}
       <div>
-        <button className={primaryButton} type="button" disabled={submitting} onClick={() => void send()}>Enviar</button>
+        <SaveButton saving={submitting} savingLabel="Enviando…" onClick={() => void send()}>Enviar</SaveButton>
       </div>
     </div>
   );

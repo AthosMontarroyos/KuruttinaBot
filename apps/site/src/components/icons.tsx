@@ -25,4 +25,14 @@ function TrashIcon({ className = 'size-4' }: IconProps) {
   );
 }
 
-export { ConstructionIcon, PencilIcon, TrashIcon };
+/** Arco que gira enquanto uma ação está em andamento; parado quando o usuário prefere menos movimento. */
+function SpinnerIcon({ className = 'size-4' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className={`${className} animate-spin motion-reduce:animate-none`} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" className="opacity-25" />
+      <path d="M21 12a9 9 0 0 0-9-9" />
+    </svg>
+  );
+}
+
+export { ConstructionIcon, PencilIcon, SpinnerIcon, TrashIcon };

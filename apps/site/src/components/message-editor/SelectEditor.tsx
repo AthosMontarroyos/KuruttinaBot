@@ -14,7 +14,7 @@ type ComponentList = { status: 'idle' } | { status: 'loading' } | { status: 'rea
 type ActionOption = { key: string; label: string };
 type ActionLoad = { status: 'loading' } | { status: 'ready'; options: ActionOption[] } | { status: 'error'; missing: boolean };
 
-const addButtonClass = 'rounded bg-[#383a40] px-3 py-1 text-sm font-medium text-[#dbdee1] hover:bg-[#4e5058] hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#383a40] disabled:hover:text-[#dbdee1]';
+const addButtonClass = 'shrink-0 rounded bg-[#383a40] px-2 py-1 text-xs font-medium text-[#dbdee1] hover:bg-[#4e5058] hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#383a40] disabled:hover:text-[#dbdee1]';
 const iconButtonClass = 'flex size-6 shrink-0 items-center justify-center rounded text-[#b5bac1] hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#b5bac1]';
 const arrowButtonClass = 'flex h-4 w-5 items-center justify-center rounded text-[10px] text-[#b5bac1] hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#b5bac1]';
 const fieldInput = 'min-h-8 w-full rounded bg-[#1e1f22] px-2 text-sm text-[#dbdee1] outline outline-1 focus:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-60';
@@ -81,9 +81,9 @@ type SelectRowEditorProps = {
 };
 
 /**
- * Cartão de um menu de seleção: placeholder no topo (com engrenagem do menu e X), a lista de opções
- * (reordenar, emoji, rótulo, descrição, engrenagem e remover) e "+ Adicionar opção".
- * Renderizado dentro do cabeçalho da linha. A lista de Components de menu é carregada na primeira abertura
+ * Menu de seleção compacto, dentro do cabeçalho da linha: na mesma linha do "Linha N" ficam a engrenagem do menu, o
+ * placeholder e "+ Opção"; abaixo, uma linha por opção (reordenar, engrenagem, emoji, rótulo, descrição e remover).
+ * O componente usa `display: contents`, então seus itens entram direto no flex do cabeçalho. A lista de Components de menu é carregada na primeira abertura
  * do popover do menu; a de cada Component escolhido, na primeira abertura do popover de uma opção.
  */
 export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
@@ -204,7 +204,7 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
   return (
     <div
       ref={rootRef}
-      className="flex w-full flex-col gap-3 rounded-[8px] bg-[#2b2d31] p-3"
+      className="contents"
       onKeyDown={(event) => {
         if (openKey !== null && event.key === 'Escape') {
           event.stopPropagation();
@@ -213,7 +213,7 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
         }
       }}
     >
-      <div className="flex items-center gap-2">
+      <div className="contents">
         <div data-popover-key="menu" className="relative">
           <button
             type="button"
@@ -292,22 +292,23 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
           aria-label="Texto do menu"
           placeholder="Texto do menu (opcional)"
           value={text(menu.placeholder)}
-          className="min-w-0 flex-1 rounded bg-[#1e1f22] px-2 py-1.5 text-sm text-[#dbdee1] placeholder:text-[#949ba4] focus:outline focus:outline-1 focus:outline-[#5865f2]"
+          className="min-w-[9rem] flex-1 rounded bg-[#2b2d31] px-2 py-1 text-sm text-[#dbdee1] placeholder:text-[#949ba4] focus:outline focus:outline-1 focus:outline-[#5865f2]"
           onChange={(event) => setMenu(withField(menu, 'placeholder', event.target.value))}
         />
         <button
           type="button"
-          aria-label="Remover menu"
-          title="Remover menu (a linha fica vazia)"
-          className={iconButtonClass}
-          onClick={() => onChange({ kind: 'pending' })}
+          aria-label="Adicionar opção"
+          disabled={full}
+          title={full ? `Máximo de ${LIMITS.selectOptions} opções por menu` : 'Adicionar opção'}
+          className={addButtonClass}
+          onClick={add}
         >
-          <CloseIcon />
+          + Opção
         </button>
       </div>
 
       {options.length === 0 ? null : (
-        <ol aria-label="Opções do menu" className="flex flex-col gap-2">
+        <ol aria-label="Opções do menu" className="order-last flex w-full basis-full flex-col gap-1">
           {options.map((item, index) => {
             const option = record(item);
             const number = index + 1;
@@ -320,8 +321,8 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
             const optionAcaoId = `${id}-opcao-${index}-acao`;
 
             return (
-              <li key={text(option.value) || `index-${index}`} className="flex items-start gap-2 rounded bg-[#1e1f22] p-2">
-                <div className="flex flex-col items-center">
+              <li key={text(option.value) || `index-${index}`} className="flex items-center gap-1.5 rounded bg-[#2b2d31] px-1.5 py-1">
+                <div className="flex items-center">
                   <button
                     type="button"
                     aria-label={`Mover opção ${number} para cima`}
@@ -342,7 +343,7 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
                   </button>
                 </div>
 
-                <div data-popover-key={optionKey} className="relative mt-1">
+                <div data-popover-key={optionKey} className="relative">
                   <button
                     type="button"
                     data-gear-key={optionKey}
@@ -403,14 +404,14 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
                   onChange={(next) => patchOption(index, withEmoji(option, next))}
                 />
 
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3">
                   <input
                     type="text"
                     aria-label={`Rótulo da opção ${number}`}
                     placeholder="Rótulo"
                     maxLength={LIMITS.selectOptionText}
                     value={text(option.label)}
-                    className="min-w-0 border-0 bg-transparent p-0 text-sm font-semibold text-white placeholder:text-white/60 focus:outline-none"
+                    className="min-w-[7rem] flex-1 basis-32 border-0 bg-transparent p-0 text-sm font-semibold text-white placeholder:text-white/60 focus:outline-none"
                     onChange={(event) => patchOption(index, { ...option, label: event.target.value })}
                   />
                   <input
@@ -419,7 +420,7 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
                     placeholder="Descrição (opcional)"
                     maxLength={LIMITS.selectOptionText}
                     value={text(option.description)}
-                    className="min-w-0 border-0 bg-transparent p-0 text-xs text-[#b5bac1] placeholder:text-[#949ba4] focus:outline-none"
+                    className="min-w-[7rem] flex-[2] basis-40 border-0 bg-transparent p-0 text-xs text-[#b5bac1] placeholder:text-[#949ba4] focus:outline-none"
                     onChange={(event) => patchOption(index, withField(option, 'description', event.target.value))}
                   />
                 </div>
@@ -437,18 +438,6 @@ export function SelectRowEditor({ row, onChange }: SelectRowEditorProps) {
           })}
         </ol>
       )}
-
-      <div>
-        <button
-          type="button"
-          disabled={full}
-          title={full ? `Máximo de ${LIMITS.selectOptions} opções por menu` : undefined}
-          className={addButtonClass}
-          onClick={add}
-        >
-          + Adicionar opção
-        </button>
-      </div>
     </div>
   );
 }

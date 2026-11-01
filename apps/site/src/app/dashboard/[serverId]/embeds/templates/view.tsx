@@ -6,7 +6,7 @@ import { FloatingNotice } from '../../../../../components/FloatingNotice';
 import { describeTemplateIssues } from '../../../../../components/message-editor/format-issue';
 import { MessageEditor, MessagePreview } from '../../../../../components/message-editor/MessageEditor';
 import { errorText } from '../../../../../lib/error-messages';
-import { card, dangerHover, dangerIconButton, outlineButton, PencilIcon, primaryButton, StatusSkeleton, TrashIcon } from '../../../ui';
+import { card, dangerHover, dangerIconButton, outlineButton, PencilIcon, primaryButton, SaveButton, StatusSkeleton, TrashIcon } from '../../../ui';
 import { DeleteFolderDialog, DeleteTemplateDialog, NewFolderForm, RenameFolderForm, SendPanel } from './TemplateModals';
 import {
   createFolder,
@@ -438,10 +438,16 @@ function TemplatesView({ guildId }: { guildId: string }) {
   const savedNotice = editing && !unsaved && saveConfirmed;
   const editorNotice = !editing ? null : unsaved ? 'As alterações ainda não foram salvas.' : savedNotice ? 'Alterações salvas.' : null;
   const noticeMotion = savedNotice && !saveNoticeVisible ? 'animate-notice-out' : 'animate-notice-in';
+  const savingLabel = view.kind === 'edit' ? 'Salvando…' : 'Criando…';
+  const noticeAction = unsaved ? (
+    <SaveButton size="sm" saving={form.submitting} savingLabel={savingLabel} onClick={() => void submitForm()}>
+      {view.kind === 'edit' ? 'Salvar' : 'Criar'}
+    </SaveButton>
+  ) : null;
 
   return (
     <>
-      {editorNotice ? <FloatingNotice key={editorNotice} motionClass={noticeMotion}>{editorNotice}</FloatingNotice> : null}
+      {editorNotice ? <FloatingNotice key={editorNotice} motionClass={noticeMotion} action={noticeAction}>{editorNotice}</FloatingNotice> : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <h2 className="text-[22px] font-semibold">Templates de mensagem</h2>
         <div className="flex items-center gap-2">
@@ -503,9 +509,9 @@ function TemplatesView({ guildId }: { guildId: string }) {
           )}
           {form.error ? <ErrorMessage message={form.error} /> : null}
           <div className="flex gap-3">
-            <button className={`${primaryButton} ${unsaved && !form.submitting ? 'animate-save-attention motion-reduce:animate-none' : ''}`} type="button" disabled={form.submitting} onClick={() => void submitForm()}>
+            <SaveButton saving={form.submitting} savingLabel={savingLabel} attention={unsaved} onClick={() => void submitForm()}>
               {view.kind === 'edit' ? 'Salvar alterações' : 'Criar modelo'}
-            </button>
+            </SaveButton>
             <button className={outlineButton} type="button" onClick={closeForm}>Cancelar</button>
           </div>
         </div>

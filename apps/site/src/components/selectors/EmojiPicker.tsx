@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useGuild } from '../../lib/guild-context';
+import { EmojiGlyph } from './EmojiGlyph';
 import { EmojiPanel, type EmojiValue } from './EmojiPanel';
 
 export type { EmojiValue } from './EmojiPanel';
@@ -22,10 +23,7 @@ export type EmojiPickerProps = {
 const triggerClass = 'inline-flex size-5 shrink-0 items-center justify-center rounded text-white/80 hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 const actionButton = 'rounded bg-[#383a40] px-3 py-1 text-sm font-medium text-[#dbdee1] hover:bg-[#4e5058] hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#383a40] disabled:hover:text-[#dbdee1]';
 
-/** Imagem de um emoji personalizado do Discord. */
-export function emojiImageUrl(id: string, animated?: boolean): string {
-  return `https://cdn.discordapp.com/emojis/${id}.${animated ? 'gif' : 'png'}?size=32`;
-}
+export { emojiImageUrl } from './EmojiGlyph';
 
 function SmileIcon() {
   return (
@@ -39,8 +37,7 @@ function SmileIcon() {
 }
 
 function TriggerContent({ value }: { value: EmojiValue | null }) {
-  if (value?.id) return <img src={emojiImageUrl(value.id, value.animated)} alt="" className="size-5" />;
-  if (value) return <span aria-hidden="true" className="text-sm leading-none">{value.name}</span>;
+  if (value) return <EmojiGlyph name={value.name} id={value.id} animated={value.animated} imageClass="size-5" textClass="text-sm leading-none" />;
   return <SmileIcon />;
 }
 

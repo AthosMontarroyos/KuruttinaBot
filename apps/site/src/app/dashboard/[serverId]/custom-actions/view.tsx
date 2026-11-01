@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { errorText } from '../../../../lib/error-messages';
-import { card, primaryButton, StatusSkeleton } from '../../ui';
+import { card, primaryButton, SaveButton, StatusSkeleton } from '../../ui';
 import { createCustomAction, deleteCustomAction, listCustomActions, type CustomAction, type CustomActionErrorCode, type CustomActionKind } from './custom-actions-api';
 import { ButtonConfigModal, compactDangerIconButton, compactOutlineButton, compactPrimaryButton, SelectConfigModal } from './config-modal';
 
@@ -139,10 +139,10 @@ function ActionPanel({ guildId, kind, title, description }: { guildId: string; k
               onChange={(event) => { setName(event.target.value); setFormError(null); }}
             />
           </div>
-          <button className={primaryButton} type="submit" disabled={!canCreate}>Criar</button>
+          <SaveButton type="submit" saving={creating} savingLabel="Criando…" disabled={!canCreate}>Criar</SaveButton>
         </form>
 
-        {formError ? <p role="alert" className="text-sm text-red-600">{formError.text}</p> : null}
+        {formError ? <p role="alert" className="text-sm text-danger">{formError.text}</p> : null}
         {notice ? <p role="status" className="text-sm text-muted">{notice}</p> : null}
         {sessionLost ? (
           <button className={primaryButton} type="button" onClick={() => location.assign('/login')}>Entrar de novo</button>
@@ -195,7 +195,7 @@ function ActionPanel({ guildId, kind, title, description }: { guildId: string; k
             })}
           </ul>
         )}
-        {deleteError?.text ? <p role="alert" className="text-sm text-red-600">{deleteError.text}</p> : null}
+        {deleteError?.text ? <p role="alert" className="text-sm text-danger">{deleteError.text}</p> : null}
       </>
     );
   }

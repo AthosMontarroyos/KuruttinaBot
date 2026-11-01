@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react';
 import type { GuildListError, GuildListResult } from '../../lib/guild-api';
 import { sessionExpired } from '../../lib/error-messages';
 
@@ -15,6 +15,8 @@ type ResourceSelectProps<Item> = {
   load: (guildId: string) => Promise<GuildListResult<Item>>;
   /** As `<option>`/`<optgroup>` da lista carregada. */
   renderOptions: (items: Item[]) => ReactNode;
+  /** Estilo do campo fechado para o item escolhido (cargo colorido); sem ele o campo usa o visual padrão. */
+  valueStyle?: (items: Item[], value: string) => CSSProperties | undefined;
   /** Primeira opção, sem valor: "Escolha um canal". */
   placeholder: string;
   /** Texto quando o servidor não tem nenhum item. */
@@ -39,7 +41,7 @@ function problem(error: GuildListError): string {
  * Base dos seletores (canal, cargo, categoria): carrega a lista sozinha; se ela não puder ser carregada,
  * mostra o motivo, deixa tentar de novo e aceita o ID digitado, para o fluxo não travar.
  */
-function ResourceSelect<Item>({ guildId, value, onChange, label, disabled = false, load, renderOptions, placeholder, emptyMessage, manualPlaceholder, loadingLabel }: ResourceSelectProps<Item>) {
+function ResourceSelect<Item>({ guildId, value, onChange, label, disabled = false, load, renderOptions, valueStyle, placeholder, emptyMessage, manualPlaceholder, loadingLabel }: ResourceSelectProps<Item>) {
   const id = useId();
   const [state, setState] = useState<{ status: 'loading' } | { status: 'ready'; items: Item[] } | { status: 'failed'; error: GuildListError }>({ status: 'loading' });
 
@@ -61,7 +63,7 @@ function ResourceSelect<Item>({ guildId, value, onChange, label, disabled = fals
         state.items.length === 0 ? (
           <p className="text-sm text-muted">{emptyMessage}</p>
         ) : (
-          <select id={id} className={control} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
+          <select id={id} className={control} style={valueStyle?.(state.items, value)} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
             <option className="bg-surface text-text" value="">{placeholder}</option>
             {renderOptions(state.items)}
           </select>
@@ -89,5 +91,5 @@ function ResourceSelect<Item>({ guildId, value, onChange, label, disabled = fals
   );
 }
 
-export { ResourceSelect };
+export { ResourceSelect, problem as guildListProblem };
 export type { ResourceSelectProps };

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../../../components/ConfirmDialog';
+import { RoleMark } from '../../../../components/selectors/RoleMark';
 import { RoleSelect } from '../../../../components/selectors/RoleSelect';
 import { errorText } from '../../../../lib/error-messages';
 import { listRoles, type Role } from '../../../../lib/guild-api';
-import { card, dangerIconButton, outlineButton, primaryButton, Message, StatusSkeleton, TrashIcon } from '../../ui';
+import { card, dangerIconButton, outlineButton, primaryButton, Message, SaveButton, StatusSkeleton, TrashIcon } from '../../ui';
 import { createRoleGroup, deleteRoleGroup, listRoleGroups, updateRoleGroup, type RoleGroup, type RoleGroupErrorCode } from './role-groups-api';
 
 const MAX_ROLES = 25;
@@ -33,13 +34,6 @@ function roleGroupError(code: RoleGroupErrorCode, fallback: string): string {
     invalid_json: fallback,
     unknown: fallback,
   });
-}
-
-/** Ícone do cargo como o Discord mostra: imagem própria, emoji ou um ponto da cor do cargo. */
-function RoleMark({ role }: { role: Role | undefined }) {
-  if (role?.iconUrl) return <img src={role.iconUrl} alt="" width={16} height={16} className="size-4 shrink-0 rounded-sm" />;
-  if (role?.unicodeEmoji) return <span aria-hidden="true" className="shrink-0 text-sm leading-4">{role.unicodeEmoji}</span>;
-  return <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-border" style={{ background: role?.color ?? 'transparent' }} />;
 }
 
 type PreviewProps = { roleIds: string[]; rolesById: Map<string, Role>; onRemove?: ((roleId: string) => void) | undefined };
@@ -212,7 +206,7 @@ function RoleGroupsView({ guildId }: { guildId: string }) {
           {draft.error ? <p role="alert" className="text-sm text-red-600">{draft.error}</p> : null}
 
           <div className="flex flex-wrap gap-2">
-            <button className={primaryButton} type="button" disabled={draft.submitting} onClick={() => void save()}>Salvar grupo</button>
+            <SaveButton saving={draft.submitting} onClick={() => void save()}>Salvar grupo</SaveButton>
             <button className={outlineButton} type="button" disabled={draft.submitting} onClick={() => setDraft(null)}>Cancelar</button>
           </div>
         </div>

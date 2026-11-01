@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { listRoles, type GuildListResult, type Role } from '../../lib/guild-api';
 import { ResourceSelect } from './ResourceSelect';
 
@@ -22,8 +23,16 @@ async function listAssignableRoles(guildId: string): Promise<GuildListResult<Rol
   return result.ok ? { ok: true, items: result.items.filter((role) => !role.managed) } : result;
 }
 
+// Cargo sem cor no Discord (padrão) mantém a cor do texto do campo.
 function renderRoles(roles: Role[]) {
-  return roles.map((role) => <option key={role.id} className="bg-surface text-text" value={role.id}>{`@ ${role.name}`}</option>);
+  return roles.map((role) => (
+    <option key={role.id} className="bg-surface text-text" style={role.color ? { color: role.color } : undefined} value={role.id}>{`@ ${role.name}`}</option>
+  ));
+}
+
+function roleValueStyle(roles: Role[], roleId: string): CSSProperties | undefined {
+  const color = roles.find((role) => role.id === roleId)?.color;
+  return color ? { color } : undefined;
 }
 
 /**
@@ -41,6 +50,7 @@ function RoleSelect({ guildId, value, onChange, label = 'Cargo', includeManaged 
       disabled={disabled}
       load={includeManaged ? listRoles : listAssignableRoles}
       renderOptions={renderRoles}
+      valueStyle={roleValueStyle}
       placeholder="Escolha um cargo"
       emptyMessage={includeManaged ? 'Este servidor não tem cargos.' : 'Este servidor não tem cargos que possam ser dados.'}
       manualPlaceholder="ID do cargo"
@@ -49,5 +59,5 @@ function RoleSelect({ guildId, value, onChange, label = 'Cargo', includeManaged 
   );
 }
 
-export { RoleSelect };
+export { RoleSelect, listAssignableRoles };
 export type { RoleSelectProps };

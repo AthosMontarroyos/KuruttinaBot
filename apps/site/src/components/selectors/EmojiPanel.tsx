@@ -17,6 +17,8 @@ import {
   type RawEmoji,
   type SkinTone,
 } from './emoji-data';
+import { keepRenderable } from './emoji-support';
+import { EmojiGlyph } from './EmojiGlyph';
 
 /** Emoji de um botão: unicode (`{ name }`) ou personalizado do servidor (`{ id, name, animated? }`). */
 export type EmojiValue = { name: string; id?: string; animated?: boolean };
@@ -29,7 +31,7 @@ let emojiDataCache: Promise<EmojiCategory[]> | null = null;
  */
 function loadEmojiData(): Promise<EmojiCategory[]> {
   emojiDataCache ??= import('emojibase-data/pt/compact.json').then(
-    (module: { default: RawEmoji[] }) => buildCategories(module.default),
+    (module: { default: RawEmoji[] }) => keepRenderable(buildCategories(module.default)),
     (error: unknown) => {
       emojiDataCache = null;
       throw error;
@@ -178,7 +180,9 @@ const UnicodeGrid = memo(function UnicodeGrid({ emojis, tone, onHover, onPick }:
           onFocus={() => onHover(emoji)}
           onClick={() => onPick(emoji)}
         >
-          <span aria-hidden="true" className="text-[24px] leading-none">{applySkinTone(emoji, tone)}</span>
+          <span aria-hidden="true" className="flex">
+            <EmojiGlyph name={applySkinTone(emoji, tone)} imageClass="size-6" textClass="text-[24px] leading-none" />
+          </span>
         </button>
       ))}
     </div>
@@ -224,7 +228,9 @@ function Preview({ hover, tone }: { hover: Hover | null; tone: SkinTone }) {
   }
   return (
     <>
-      <span aria-hidden="true" className="shrink-0 text-[32px] leading-none">{applySkinTone(hover.emoji, tone)}</span>
+      <span aria-hidden="true" className="flex shrink-0">
+        <EmojiGlyph name={applySkinTone(hover.emoji, tone)} imageClass="size-8" textClass="text-[32px] leading-none" />
+      </span>
       <span className="truncate text-xs text-[#dbdee1]">{hover.emoji.label}</span>
     </>
   );
@@ -248,8 +254,12 @@ export function EmojiPanel({ guildId, onSelect, className, autoFocusSearch = fal
   const [hover, setHover] = useState<Hover | null>(null);
   const [activeId, setActiveId] = useState<SectionId>(guildId === null ? 'pessoas' : 'servidor');
 
+  // Categoria que ficou sem emojis (o sistema não desenha nenhum, como as bandeiras no Windows) some junto com a aba.
+  const defs = data.status === 'ready'
+    ? CATEGORY_DEFS.filter((def) => data.categories.some((category) => category.id === def.id && category.emojis.length > 0))
+    : CATEGORY_DEFS;
   const firstSection: SectionId = guildId === null ? 'pessoas' : 'servidor';
-  const sections: SectionId[] = guildId === null ? CATEGORY_DEFS.map((def) => def.id) : ['servidor', ...CATEGORY_DEFS.map((def) => def.id)];
+  const sections: SectionId[] = guildId === null ? defs.map((def) => def.id) : ['servidor', ...defs.map((def) => def.id)];
   const shownActive = sections.includes(activeId) ? activeId : firstSection;
   const contentId = `${uid}-conteudo`;
 
@@ -428,7 +438,7 @@ export function EmojiPanel({ guildId, onSelect, className, autoFocusSearch = fal
 
   const renderSections = (): ReactNode => {
     const categoryBody: ReactNode = data.status === 'ready'
-      ? data.categories.map((category) => renderSection(
+      ? data.categories.filter((category) => category.emojis.length > 0).map((category) => renderSection(
         category.id,
         category.label,
         <UnicodeGrid emojis={category.emojis} tone={tone} onHover={hoverUnicode} onPick={pickUnicode} />,
@@ -470,7 +480,7 @@ export function EmojiPanel({ guildId, onSelect, className, autoFocusSearch = fal
           onKeyDown={onTabKeyDown}
         >
           {guildId !== null ? renderTab('servidor', serverTabLabel, serverTabContent) : null}
-          {CATEGORY_DEFS.map((def) => renderTab(def.id, def.label))}
+          {defs.map((def) => renderTab(def.id, def.label))}
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">

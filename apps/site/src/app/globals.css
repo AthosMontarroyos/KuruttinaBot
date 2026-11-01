@@ -2,16 +2,23 @@
 
 @theme {
   --font-sans: "Outfit", ui-sans-serif, sans-serif;
-  --color-background: #050505;
-  --color-surface: #141414;
-  --color-border: #2a2a2a;
-  --color-text: #f5f5f5;
-  --color-muted: #a3a3a3;
-  --color-subtle: #8a8a8a;
-  --color-button: #f4f4f4;
-  --color-button-text: #111111;
-  --color-secondary: #c8c8c8;
-  --color-control: #737373;
+  --color-background: #0b0d16;
+  --color-surface: #141726;
+  --color-border: #2a2f47;
+  --color-text: #f4f1ea;
+  --color-muted: #a9adc2;
+  --color-subtle: #8b90a8;
+  --color-control: #6b7190;
+  --color-button: #e9b949;
+  --color-button-text: #1a1405;
+  --color-secondary: #f2c75f;
+  --color-accent: #e9b949;
+  --color-accent-text: #1a1405;
+  --color-accent-fg: #e9b949;
+  --color-accent-soft: rgb(233 185 73 / 0.14);
+  --color-danger: #f2707e;
+  --color-success: #5fcf9a;
+  --color-warning: #f0a050;
 }
 
 :root {
@@ -21,24 +28,29 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-background: #fafafa;
-  --color-surface: #ededed;
-  --color-border: #d1d1d1;
-  --color-text: #111111;
-  --color-muted: #555555;
-  --color-subtle: #666666;
-  --color-button: #0a0a0a;
-  --color-button-text: #fafafa;
-  --color-secondary: #3a3a3a;
+  --color-background: #faf8f3;
+  --color-surface: #f0ece2;
+  --color-border: #d9d3c3;
+  --color-text: #14162a;
+  --color-muted: #55597a;
+  --color-subtle: #666b88;
+  --color-control: #8a8fa8;
+  --color-button: #e9b949;
+  --color-button-text: #1a1405;
+  --color-secondary: #d4a02e;
+  --color-accent: #e9b949;
+  --color-accent-text: #1a1405;
+  --color-accent-fg: #8f5f00;
+  --color-accent-soft: rgb(233 185 73 / 0.18);
+  --color-danger: #c4283c;
+  --color-success: #1f7a4f;
+  --color-warning: #b45f06;
 }
 
 /* Os SVGs trazem cor fixa pensada para o tema escuro; no claro, escurecem ou invertem. */
 :root[data-theme="light"] button img[src^="/icons/"],
 :root[data-theme="light"] a.icon-link img[src^="/icons/"] {
   filter: brightness(0.4);
-}
-:root[data-theme="light"] button.action-icon img[src^="/icons/"] {
-  filter: invert(1);
 }
 
 @layer base {
@@ -66,15 +78,15 @@
   }
   button:focus-visible,
   a:focus-visible {
-    outline: 2px solid var(--color-text);
+    outline: 2px solid var(--color-accent-fg);
     outline-offset: 5px;
   }
   button:active {
     transform: translateY(1px);
   }
   ::selection {
-    background: var(--color-text);
-    color: var(--color-background);
+    background: var(--color-accent);
+    color: var(--color-accent-text);
   }
   img {
     display: block;
@@ -121,10 +133,10 @@
 
   @keyframes save-attention {
     0%, 100% {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-button) 50%, transparent);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 50%, transparent);
     }
     55% {
-      box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-button) 0%, transparent);
+      box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-accent) 0%, transparent);
     }
   }
 }

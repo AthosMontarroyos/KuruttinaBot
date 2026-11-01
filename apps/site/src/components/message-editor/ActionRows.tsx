@@ -44,7 +44,7 @@ export function ActionRows({ rows, onChange }: ActionRowsProps) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       {rows.map((row, index) => {
         const number = index + 1;
         const kind = text(record(row).kind);
@@ -52,7 +52,7 @@ export function ActionRows({ rows, onChange }: ActionRowsProps) {
         const label = typeLabel(kind);
         return (
           <div key={index} className="rounded-[8px] bg-[#2b2d31]">
-            <div className="flex flex-wrap items-center gap-2 rounded-t-[8px] bg-[#1e1f22] px-3 py-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-[8px] bg-[#1e1f22] px-2.5 py-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-[#b5bac1]">Linha {number}</span>
               <button type="button" aria-label={`Mover linha ${number} para cima`} disabled={index === 0} className={headerButton} onClick={() => moveUp(index)}>▲</button>
               {kind === 'buttons' ? (
@@ -67,15 +67,12 @@ export function ActionRows({ rows, onChange }: ActionRowsProps) {
                   <button type="button" className={choiceButton} onClick={() => replace(index, { kind: 'buttons', buttons: [] })}>+ Botão</button>
                   <button type="button" className={choiceButton} onClick={() => replace(index, { kind: 'select', menu: { customId: newSelectCustomId(), options: [] } })}>+ Menu de seleção</button>
                 </div>
-              ) : kind === 'select' ? null : (
+              ) : kind === 'select' ? (
+                <SelectRowEditor row={row} onChange={(next) => replace(index, next)} />
+              ) : (
                 <span className="text-xs text-[#949ba4]">{label ?? 'Formato desconhecido'}</span>
               )}
               <button type="button" aria-label={`Remover linha ${number}`} className={`${headerButton} ml-auto`} onClick={() => remove(index)}>×</button>
-              {kind === 'select' ? (
-                <div className="order-last w-full">
-                  <SelectRowEditor row={row} onChange={(next) => replace(index, next)} />
-                </div>
-              ) : null}
             </div>
           </div>
         );

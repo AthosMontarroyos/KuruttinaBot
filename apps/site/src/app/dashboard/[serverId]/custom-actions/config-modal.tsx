@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { isFunctionConfigComplete, MAX_FUNCTIONS, MAX_OPTIONS, MAX_OPTION_LABEL } from '@kuruttina/message-templates/custom-functions';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { isFunctionConfigComplete, MAX_FUNCTIONS, MAX_OPTIONS, MAX_OPTION_LABEL, MAX_ROLES_PER_FUNCTION } from '@kuruttina/message-templates/custom-functions';
+import { RoleMultiPicker } from '../../../../components/selectors/RoleMultiPicker';
 import { errorText } from '../../../../lib/error-messages';
-import { card, dangerHover, outlineButton, primaryButton, StatusSkeleton } from '../../ui';
+import { card, dangerHover, outlineButton, primaryButton, SaveButton, StatusSkeleton } from '../../ui';
 import {
   getButtonConfig,
   getSelectConfig,
@@ -10,7 +11,7 @@ import {
   type CustomActionErrorCode,
   type CustomFunction,
 } from './custom-actions-api';
-import { defaultFunctionConfig, FunctionConfigEditor, functionTypeMeta } from './function-config';
+import { defaultFunctionConfig, FunctionConfigEditor, functionTypeMeta, readRoleIds, rolesOnlyFieldKey } from './function-config';
 
 export const compactPrimaryButton = 'inline-flex min-h-8 items-center justify-center rounded-[10px] border-0 bg-button px-3 text-sm font-semibold text-button-text hover:bg-secondary';
 export const compactOutlineButton = 'inline-flex min-h-8 items-center justify-center rounded-[10px] border border-control bg-transparent px-3 text-sm font-medium text-text hover:bg-surface';
@@ -208,11 +209,25 @@ function FunctionConfigPanel({
 export function FunctionList({ guildId, functions, onChange, disabled = false }: { guildId: string; functions: CustomFunction[]; onChange: (next: CustomFunction[]) => void; disabled?: boolean }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [typesOpen, setTypesOpen] = useState(false);
+  // Funções só de cargos não abrem o painel em fluxo: a engrenagem abre o `RoleMultiPicker` flutuante sobre o chip.
+  const [rolesPicker, setRolesPicker] = useState<{ index: number; anchor: HTMLElement } | null>(null);
+  const [autoOpenIndex, setAutoOpenIndex] = useState<number | null>(null);
+  const closeRolesPicker = useCallback(() => setRolesPicker(null), []);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const typesId = useId();
   const openFn = openIndex === null ? undefined : functions[openIndex];
+  const pickerFn = rolesPicker === null ? undefined : functions[rolesPicker.index];
+  const pickerKey = pickerFn === undefined ? null : rolesOnlyFieldKey(pickerFn.type);
+
+  // Função de cargos recém-adicionada: abre o painel sobre o chip assim que ele existe.
+  useEffect(() => {
+    if (autoOpenIndex === null) return;
+    const chip = rootRef.current?.querySelectorAll<HTMLElement>('[data-function-chip]')[autoOpenIndex];
+    if (chip) setRolesPicker({ index: autoOpenIndex, anchor: chip });
+    setAutoOpenIndex(null);
+  }, [autoOpenIndex]);
 
   // Clique fora fecha a lista de tipos.
   useEffect(() => {
@@ -225,6 +240,7 @@ export function FunctionList({ guildId, functions, onChange, disabled = false }:
   }, [typesOpen]);
 
   function removeAt(index: number) {
+    setRolesPicker(null);
     setOpenIndex((current) => {
       if (current === null || current === index) return null;
       return current > index ? current - 1 : current;
@@ -247,10 +263,11 @@ export function FunctionList({ guildId, functions, onChange, disabled = false }:
       <div className="flex flex-wrap items-center gap-2">
         {functions.map((fn, index) => {
           const label = functionLabel(fn.type);
-          const expanded = openIndex === index;
+          const rolesOnly = rolesOnlyFieldKey(fn.type) !== null;
+          const expanded = rolesOnly ? rolesPicker?.index === index : openIndex === index;
           const incomplete = !isFunctionConfigComplete(fn);
           return (
-            <span key={`${index}-${fn.type}`} className="inline-flex min-h-8 items-center gap-1 rounded-full border border-control py-0.5 pl-3 pr-1 text-sm">
+            <span key={`${index}-${fn.type}`} data-function-chip="" className="inline-flex min-h-8 items-center gap-1 rounded-full border border-control py-0.5 pl-3 pr-1 text-sm">
               {incomplete ? (
                 <span role="img" aria-label="Configuração incompleta" title="Configuração incompleta" className="inline-block size-2 shrink-0 rounded-full bg-amber-500" />
               ) : null}
@@ -260,9 +277,16 @@ export function FunctionList({ guildId, functions, onChange, disabled = false }:
                 disabled={disabled}
                 aria-label={`Configurar ${label}`}
                 aria-expanded={expanded}
-                aria-controls={panelId}
-                onClick={() => {
+                aria-controls={rolesOnly ? undefined : panelId}
+                onClick={(event) => {
                   setTypesOpen(false);
+                  if (rolesOnly) {
+                    const chip = event.currentTarget.parentElement;
+                    setOpenIndex(null);
+                    setRolesPicker(expanded || !chip ? null : { index, anchor: chip });
+                    return;
+                  }
+                  setRolesPicker(null);
                   setOpenIndex(expanded ? null : index);
                 }}
                 className={`inline-flex size-7 items-center justify-center rounded-full hover:bg-surface disabled:opacity-50 ${expanded ? 'bg-surface text-text' : 'text-muted'}`}
@@ -291,6 +315,7 @@ export function FunctionList({ guildId, functions, onChange, disabled = false }:
           disabled={disabled || functions.length >= MAX_FUNCTIONS}
           onClick={() => {
             setOpenIndex(null);
+            setRolesPicker(null);
             setTypesOpen((value) => !value);
           }}
           className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-full border border-dashed border-control px-2 text-sm font-semibold text-text hover:bg-surface disabled:opacity-50"
@@ -305,8 +330,20 @@ export function FunctionList({ guildId, functions, onChange, disabled = false }:
           onPick={(type) => {
             setTypesOpen(false);
             onChange([...functions, { type, config: defaultFunctionConfig(type) }]);
-            setOpenIndex(functions.length);
+            if (rolesOnlyFieldKey(type) !== null) setAutoOpenIndex(functions.length);
+            else setOpenIndex(functions.length);
           }}
+        />
+      ) : null}
+      {rolesPicker !== null && pickerFn !== undefined && pickerKey !== null ? (
+        <RoleMultiPicker
+          guildId={guildId}
+          value={readRoleIds(pickerFn.config[pickerKey])}
+          anchor={rolesPicker.anchor}
+          max={MAX_ROLES_PER_FUNCTION}
+          disabled={disabled}
+          onChange={(roleIds) => onChange(functions.map((item, i) => (i === rolesPicker.index ? { ...item, config: { ...item.config, [pickerKey]: roleIds } } : item)))}
+          onClose={closeRolesPicker}
         />
       ) : null}
       {openIndex !== null && openFn !== undefined ? (
@@ -460,7 +497,7 @@ function ConfigModalShell({
         {blockedMessage ? <p aria-live="polite" className="text-sm text-muted">{blockedMessage}</p> : null}
 
         <footer className="flex flex-wrap justify-end gap-3">
-          <button className={primaryButton} type="button" disabled={!canSave} onClick={onSave}>{saving ? 'Salvando…' : 'Salvar'}</button>
+          <SaveButton saving={saving} disabled={!canSave} onClick={onSave}>Salvar</SaveButton>
           <button className={outlineButton} type="button" disabled={saving} onClick={requestClose}>Cancelar</button>
         </footer>
       </div>

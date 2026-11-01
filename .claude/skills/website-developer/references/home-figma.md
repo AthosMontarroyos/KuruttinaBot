@@ -8,7 +8,7 @@ Implementação: React e Tailwind em `apps/site/src`, com bundle Vite e o servid
 
 ## Direção da superfície
 
-- Fundo #050505, superfície #141414, borda #2a2a2a, texto #f5f5f5, texto secundário #a3a3a3, rodapé #8a8a8a.
+- Paleta Noite & Ouro: fundo #0b0d16, superfície #141726, borda #2a2f47, texto #f4f1ea, muted #a9adc2, acento ouro #e9b949; claro em papel #faf8f3. O acento ouro vem dos olhos da mascote; as cores do Discord no preview do editor são exceção.
 - Outfit 400/500/600/700, via Google Fonts. Título 64px desktop e 40px celular.
 - Controles arredondados; foto 420 × 520 desktop, 350 × 420 a 390px de viewport. Espaçamento externo 5% desktop e 20px celular.
 - Layout fluido nas larguras intermediárias. O Figma tem uma inconsistência de largura no frame de apresentação desktop (804px mais 420px de foto e espaços excedem o frame); a implementação respeita o enquadramento da screenshot e o limite do viewport.

@@ -1,6 +1,6 @@
 'use client';
 
-import { emojiImageUrl } from '../selectors/EmojiPicker';
+import { EmojiGlyph } from '../selectors/EmojiGlyph';
 import { text, record } from './message-model';
 import { usePreviewText } from './preview-values';
 
@@ -27,7 +27,7 @@ export function ComponentRowPreview({ row }: { row: unknown }) {
           const emojiId = text(emoji.id);
           return (
             <span key={buttonIndex} className={`inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-sm font-medium ${buttonStyles[style] ?? buttonStyles.secondary}`}>
-              {emojiId !== '' ? <img src={emojiImageUrl(emojiId, emoji.animated === true)} alt={emojiName} className="size-4" /> : emojiName}
+              {emojiId !== '' || emojiName !== '' ? <EmojiGlyph name={emojiName} id={emojiId} animated={emoji.animated === true} alt={emojiName} imageClass="size-4" /> : null}
               {fill(text(item.label))}{style === 'link' ? ' ↗' : ''}
             </span>
           );
@@ -46,7 +46,7 @@ export function ComponentRowPreview({ row }: { row: unknown }) {
     return (
       <div className="flex max-w-[400px] items-center justify-between rounded bg-[#1e1f22] px-3 py-2 text-sm text-[#b5bac1]">
         <span className="flex min-w-0 items-center gap-1.5">
-          {emojiId !== '' ? <img src={emojiImageUrl(emojiId, emoji.animated === true)} alt={emojiName} className="size-4" /> : emojiName}
+          {emojiId !== '' || emojiName !== '' ? <EmojiGlyph name={emojiName} id={emojiId} animated={emoji.animated === true} alt={emojiName} imageClass="size-4" /> : null}
           {text(menu.placeholder) || 'Escolha uma opção'}
         </span>
         <span aria-hidden="true">⌄</span>

@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
+import { SpinnerIcon } from '../../components/icons';
 import type { Guild } from '../../lib/session';
 
 const card = 'rounded-[14px] border border-border bg-surface';
 const primaryButton = 'inline-flex min-h-11 items-center justify-center rounded-[10px] border-0 bg-button px-5 text-sm font-semibold text-button-text hover:bg-secondary';
-const outlineButton = 'inline-flex min-h-11 items-center justify-center rounded-[10px] border border-control bg-transparent px-4 text-sm font-medium text-text hover:bg-surface';
+const outlineButton = 'inline-flex min-h-11 items-center justify-center rounded-[10px] border border-control bg-transparent px-4 text-sm font-medium text-text hover:border-accent-fg hover:text-accent-fg';
 /** Fica vermelho ao passar o mouse e no foco do teclado; usado nos botões de apagar. */
-const dangerHover = 'transition-colors hover:border-red-500 hover:bg-red-500/10 hover:text-red-500 focus-visible:border-red-500 focus-visible:text-red-500';
+const dangerHover = 'transition-colors hover:border-danger hover:bg-danger/10 hover:text-danger focus-visible:border-danger focus-visible:text-danger';
 /** Mesma altura do `outlineButton` (44px), para alinhar com o Editar. */
 const dangerIconButton = `inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text ${dangerHover}`;
 const memberFormat = new Intl.NumberFormat('pt-BR');
@@ -45,5 +46,44 @@ function Message({ title, children, action }: { title: string; children: ReactNo
   );
 }
 
-export { card, primaryButton, outlineButton, dangerHover, dangerIconButton, memberFormat, GuildIcon, Skeleton, StatusSkeleton, Message };
-export { ConstructionIcon, PencilIcon, TrashIcon } from '../../components/icons';
+type SaveButtonProps = {
+  /** O que o botão salva ("Salvar alterações", "Criar pasta", "Enviar"); é a única parte que muda de um uso para outro. */
+  children: ReactNode;
+  /** Gravação em andamento: mostra o spinner e `savingLabel` e desativa o botão. */
+  saving: boolean;
+  /** Texto enquanto grava; padrão "Salvando…". */
+  savingLabel?: string;
+  /** `md` (padrão) é o botão dos formulários; `sm` cabe em avisos e linhas compactas. */
+  size?: 'md' | 'sm';
+  /** Pulsa para chamar atenção quando há alterações por salvar. */
+  attention?: boolean;
+  disabled?: boolean;
+  type?: 'button' | 'submit';
+  onClick?: () => void;
+};
+
+const saveButtonSize = { md: 'min-h-11 px-5', sm: 'min-h-8 px-3' } as const;
+
+/**
+ * Botão padrão de gravar do painel: sempre o mesmo visual e o mesmo comportamento (spinner e texto de "Salvando…"
+ * enquanto grava). Use em todo botão que salva, cria ou envia; só o texto, o tamanho e o que ele grava mudam.
+ *
+ *     <SaveButton saving={saving} onClick={() => void save()}>Salvar grupo</SaveButton>
+ */
+function SaveButton({ children, saving, savingLabel = 'Salvando…', size = 'md', attention = false, disabled = false, type = 'button', onClick }: SaveButtonProps) {
+  const pulse = attention && !saving && !disabled ? 'animate-save-attention motion-reduce:animate-none' : '';
+  return (
+    <button
+      className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] border-0 bg-button text-sm font-semibold text-button-text hover:bg-secondary ${saveButtonSize[size]} ${saving ? 'cursor-wait opacity-80' : ''} ${pulse}`}
+      type={type}
+      disabled={saving || disabled}
+      aria-busy={saving}
+      onClick={onClick}
+    >
+      {saving ? <><SpinnerIcon />{savingLabel}</> : children}
+    </button>
+  );
+}
+
+export { card, primaryButton, outlineButton, dangerHover, dangerIconButton, memberFormat, GuildIcon, Skeleton, StatusSkeleton, Message, SaveButton };
+export { ConstructionIcon, PencilIcon, SpinnerIcon, TrashIcon } from '../../components/icons';

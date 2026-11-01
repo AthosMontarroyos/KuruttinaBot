@@ -1,10 +1,8 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { CUSTOM_FUNCTION_TYPES, MAX_ROLES_PER_FUNCTION } from '@kuruttina/message-templates/custom-functions';
+﻿import { useEffect, useId, useState } from 'react';
+import { CUSTOM_FUNCTION_TYPES } from '@kuruttina/message-templates/custom-functions';
 import { ChannelSelect } from '../../../../components/selectors/ChannelSelect';
-import { RoleSelect } from '../../../../components/selectors/RoleSelect';
 import { VoiceChannelSelect } from '../../../../components/selectors/VoiceChannelSelect';
 import { errorText } from '../../../../lib/error-messages';
-import { dangerHover } from '../../ui';
 import { listTemplates, type TemplateErrorCode } from '../embeds/templates/templates-api';
 import type { CustomFunction } from './custom-actions-api';
 
@@ -33,16 +31,15 @@ export function defaultFunctionConfig(type: string): Record<string, unknown> {
 }
 
 /** Lista de IDs de cargo sem entradas vazias ou inválidas. */
-function readRoleIds(value: unknown): string[] {
+export function readRoleIds(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item !== '') : [];
 }
 
-function XIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="size-4" aria-hidden="true">
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  );
+/** Chave do campo de cargos quando ele é o único campo do tipo (adicionar, remover, alternar, definir cargos); senão `null`. */
+export function rolesOnlyFieldKey(type: string): string | null {
+  const fields = functionTypeMeta[type]?.fields ?? [];
+  const [field] = fields;
+  return fields.length === 1 && field?.kind === 'roles' ? field.key : null;
 }
 
 type TemplateList = { status: 'loading' } | { status: 'ready'; names: string[] } | { status: 'failed'; error: TemplateErrorCode };
@@ -86,7 +83,7 @@ function TemplateField({ guildId, label, value, disabled, onChange }: { guildId:
       ) : null}
       {list.status === 'failed' ? (
         <div className="flex flex-col items-start gap-2">
-          <p role="alert" className="text-sm text-red-600">{errorText(list.error)}</p>
+          <p role="alert" className="text-sm text-danger">{errorText(list.error)}</p>
           <button type="button" className={compactOutline} onClick={() => setAttempt((value) => value + 1)}>Tentar de novo</button>
         </div>
       ) : null}
@@ -105,85 +102,6 @@ function TemplateField({ guildId, label, value, disabled, onChange }: { guildId:
         </select>
       ) : null}
     </div>
-  );
-}
-
-type RoleRow = { key: number; roleId: string };
-
-/** Lista de cargos: um seletor por linha, sem repetir cargo e sem linhas vazias no valor salvo. */
-function RolesField({ guildId, label, roleIds, disabled, onChange }: { guildId: string; label: string; roleIds: string[]; disabled: boolean; onChange: (roleIds: string[]) => void }) {
-  const nextKey = useRef(roleIds.length);
-  const [rows, setRows] = useState<RoleRow[]>(() => roleIds.map((roleId, key) => ({ key, roleId })));
-  const [duplicate, setDuplicate] = useState(false);
-
-  function commit(next: RoleRow[]) {
-    setRows(next);
-    onChange(next.map((row) => row.roleId).filter((roleId) => roleId !== ''));
-  }
-
-  function pickRole(key: number, roleId: string) {
-    if (roleId !== '' && rows.some((row) => row.key !== key && row.roleId === roleId)) {
-      setDuplicate(true);
-      return;
-    }
-    setDuplicate(false);
-    commit(rows.map((row) => (row.key === key ? { ...row, roleId } : row)));
-  }
-
-  function removeRow(key: number) {
-    setDuplicate(false);
-    commit(rows.filter((row) => row.key !== key));
-  }
-
-  function addRow() {
-    if (rows.length >= MAX_ROLES_PER_FUNCTION) return;
-    const key = nextKey.current;
-    nextKey.current += 1;
-    commit([...rows, { key, roleId: '' }]);
-  }
-
-  return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="mb-1 text-sm font-medium">{label}</legend>
-      {rows.length === 0 ? <p className="text-sm text-muted">Nenhum cargo escolhido ainda.</p> : null}
-      <ol className="flex flex-col gap-2">
-        {rows.map((row, index) => (
-          <li key={row.key} className="flex items-end gap-2">
-            <div className="min-w-0 flex-1">
-              <RoleSelect
-                guildId={guildId}
-                label={`Cargo ${index + 1}`}
-                value={row.roleId}
-                disabled={disabled}
-                onChange={(roleId) => pickRole(row.key, roleId)}
-              />
-            </div>
-            <button
-              type="button"
-              aria-label={`Remover cargo ${index + 1}`}
-              title="Remover"
-              disabled={disabled}
-              onClick={() => removeRow(row.key)}
-              className={`inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-control bg-transparent text-text disabled:opacity-50 ${dangerHover}`}
-            >
-              <XIcon />
-            </button>
-          </li>
-        ))}
-      </ol>
-      {duplicate ? <p role="alert" className="text-sm text-red-600">Esse cargo já foi escolhido.</p> : null}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-muted">{`${rows.length}/${MAX_ROLES_PER_FUNCTION}`}</span>
-        <button
-          type="button"
-          className={compactOutline}
-          disabled={disabled || rows.length >= MAX_ROLES_PER_FUNCTION}
-          onClick={addRow}
-        >
-          Adicionar cargo
-        </button>
-      </div>
-    </fieldset>
   );
 }
 
@@ -221,7 +139,7 @@ function FunctionFieldControl({ guildId, field, value, disabled, onChange }: { g
     case 'voice_channel':
       return <VoiceChannelSelect guildId={guildId} label={field.label} value={text} disabled={disabled} onChange={onChange} />;
     case 'roles':
-      return <RolesField guildId={guildId} label={field.label} roleIds={readRoleIds(value)} disabled={disabled} onChange={onChange} />;
+      return null; // Cargos são editados no painel flutuante da engrenagem (`RoleMultiPicker`), não neste formulário.
     case 'boolean':
       return <SwitchField label={field.label} checked={value === true} disabled={disabled} onChange={onChange} />;
   }

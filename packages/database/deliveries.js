@@ -2,21 +2,26 @@
  * O site só insere e lê o próprio servidor; o bot lê a fila inteira (sem
  * `app.guild_id`, pela policy `message_deliveries_bot_poll`) e atualiza o
  * status. Cada operação abre e fecha sua própria transação.
- * @typedef {{id: number, guildId: string, channelId: string, templateName: string}} PendingDelivery */
+ * @typedef {{id: number, guildId: string, channelId: string, templateName: string|null, content: unknown|null, requestedBy: string}} PendingDelivery */
 
 import { withGuildTransaction, withTransaction } from './transaction.js';
 
-/** Pede o envio de um template a um canal. Respeita a cota de 20 pendências por servidor.
+/** Pede o envio a um canal: um template salvo (`templateName`) ou um conteúdo avulso (`content`), nunca os dois.
+ * Respeita a cota de 20 pendências por servidor.
  * @param {import('pg').PoolClient} client
- * @param {{guildId: string, channelId: string, templateName: string, requestedBy: string}} input
+ * @param {{guildId: string, channelId: string, templateName?: string, content?: unknown, requestedBy: string}} input
  * @returns {Promise<{ok: true}|{ok: false, code: 'quota'}>} */
-export async function create(client, { guildId, channelId, templateName, requestedBy }) {
+export async function create(client, { guildId, channelId, templateName, content, requestedBy }) {
+  const hasTemplate = templateName != null;
+  const hasContent = content != null;
+  if (hasTemplate === hasContent) throw new Error('Entrega exige exatamente um entre templateName e content.');
   try {
     return await withGuildTransaction(client, guildId, async (tx) => {
+      // O conteúdo vai como texto JSON e é convertido para jsonb pelo próprio parâmetro.
       await tx.query(
-        `INSERT INTO bot_private.message_deliveries (guild_id, channel_id, template_name, requested_by)
-         VALUES ($1, $2, $3, $4)`,
-        [guildId, channelId, templateName, requestedBy],
+        `INSERT INTO bot_private.message_deliveries (guild_id, channel_id, template_name, content, requested_by)
+         VALUES ($1, $2, $3, $4::jsonb, $5)`,
+        [guildId, channelId, templateName ?? null, hasContent ? JSON.stringify(content) : null, requestedBy],
       );
       return { ok: true };
     });
@@ -32,7 +37,7 @@ export async function create(client, { guildId, channelId, templateName, request
 export async function claimPending(client, limit = 10) {
   return withTransaction(client, async (tx) => {
     const result = await tx.query(
-      `SELECT id, guild_id, channel_id, template_name FROM bot_private.message_deliveries
+      `SELECT id, guild_id, channel_id, template_name, content, requested_by FROM bot_private.message_deliveries
          WHERE status = 'pending' ORDER BY id LIMIT $1`,
       [limit],
     );
@@ -40,6 +45,7 @@ export async function claimPending(client, limit = 10) {
       // `id` é bigint (string no driver pg); convertido para o tipo declarado, mesmo sem bug ativo hoje
       // (só volta ao banco via query parametrizada), para não surpreender quem usar aritmética nele depois.
       id: Number(row.id), guildId: row.guild_id, channelId: row.channel_id, templateName: row.template_name,
+      content: row.content, requestedBy: row.requested_by,
     }));
   });
 }

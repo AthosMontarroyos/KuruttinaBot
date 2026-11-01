@@ -34,6 +34,7 @@ export type MemberEventErrorCode =
   | 'invalid_channel'
   | 'conflict'
   | 'bot_not_in_guild'
+  | 'quota'
   | 'unavailable'
   | 'unknown';
 
@@ -41,12 +42,17 @@ export type MemberEventResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: MemberEventErrorCode; details?: ValidationDetail[] };
 
+export type MemberEventTestInput = {
+  channelId: string;
+  contentJson: string;
+};
+
 const knownErrors: MemberEventErrorCode[] = [
   'unauthenticated', 'not_found', 'invalid_json', 'too_large', 'validation', 'channel_required',
-  'invalid_channel', 'conflict', 'bot_not_in_guild', 'unavailable',
+  'invalid_channel', 'conflict', 'bot_not_in_guild', 'quota', 'unavailable',
 ];
 
-async function request<T>(method: 'GET' | 'PUT', path: string, body?: unknown): Promise<MemberEventResult<T>> {
+async function request<T>(method: 'GET' | 'PUT' | 'POST', path: string, body?: unknown): Promise<MemberEventResult<T>> {
   let response: Response;
   try {
     response = await fetch(path, {
@@ -75,4 +81,9 @@ export function listMemberEvents(guildId: string) {
 
 export function saveMemberEvent(guildId: string, event: MemberEventKind, input: MemberEventInput) {
   return request<{ event: MemberEventKind; version: number }>('PUT', `${base(guildId)}/${event}`, input);
+}
+
+/** Envia a mensagem de teste ao canal escolhido, sem salvar a configuração. */
+export function testMemberEvent(guildId: string, event: MemberEventKind, input: MemberEventTestInput) {
+  return request<{ ok: true }>('POST', `${base(guildId)}/${event}/test`, input);
 }

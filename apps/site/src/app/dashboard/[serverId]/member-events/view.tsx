@@ -3,16 +3,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { ErrorMessage } from '../../../../components/ErrorMessage';
 import { FloatingNotice } from '../../../../components/FloatingNotice';
+import { SegmentedControl } from '../../../../components/SegmentedControl';
+import { SwitchField } from '../../../../components/Switch';
 import { ChannelSelect } from '../../../../components/selectors/ChannelSelect';
 import { describeTemplateIssues } from '../../../../components/message-editor/format-issue';
 import { MessageEditor } from '../../../../components/message-editor/MessageEditor';
 import { errorText, serverUnavailable, sessionExpired } from '../../../../lib/error-messages';
 import { card, Message, primaryButton, SaveButton, StatusSkeleton } from '../../ui';
-import { listMemberEvents, saveMemberEvent, type MemberEvent, type MemberEventErrorCode, type MemberEventKind, type ValidationDetail } from './member-events-api';
+import { listMemberEvents, saveMemberEvent, testMemberEvent, type MemberEvent, type MemberEventErrorCode, type MemberEventKind, type ValidationDetail } from './member-events-api';
 
 /** Modelo que o editor começa quando ainda não há mensagem salva para o evento. */
 const DEFAULT_CONTENT: Record<MemberEventKind, string> = {
   join: JSON.stringify({
+    content: '{user.mention}',
     embeds: [{ title: 'Bem-vindo(a), {user.name}!', description: '{user.mention} entrou em **{guild.name}**.\nAgora somos {guild.membercount} membros.', thumbnail: { url: '{user.avatar}' } }],
     components: [],
   }),
@@ -22,9 +25,23 @@ const DEFAULT_CONTENT: Record<MemberEventKind, string> = {
   }),
 };
 
-const COPY: Record<MemberEventKind, { tab: string; toggle: string; editorLabel: string }> = {
-  join: { tab: 'Entrada', toggle: 'Enviar mensagem quando alguém entrar', editorLabel: 'Mensagem de entrada' },
-  leave: { tab: 'Saída', toggle: 'Enviar mensagem quando alguém sair', editorLabel: 'Mensagem de saída' },
+const COPY: Record<MemberEventKind, { tab: string; toggle: string; toggleHint: string; ignoreBotsHint: string; editorLabel: string; testHint: string }> = {
+  join: {
+    tab: 'Entrada',
+    toggle: 'Enviar mensagem quando alguém entrar',
+    toggleHint: 'O bot avisa no canal escolhido a cada novo membro.',
+    ignoreBotsHint: 'Não avisa quando quem entra é outro bot.',
+    editorLabel: 'Mensagem de entrada',
+    testHint: 'Envia esta mensagem ao canal escolhido, como se você tivesse entrado.',
+  },
+  leave: {
+    tab: 'Saída',
+    toggle: 'Enviar mensagem quando alguém sair',
+    toggleHint: 'O bot avisa no canal escolhido quando um membro deixa o servidor.',
+    ignoreBotsHint: 'Não avisa quando quem sai é outro bot.',
+    editorLabel: 'Mensagem de saída',
+    testHint: 'Envia esta mensagem ao canal escolhido, como se você tivesse saído.',
+  },
 };
 
 const EVENTS: MemberEventKind[] = ['join', 'leave'];
@@ -40,10 +57,15 @@ type TabData = {
   /** Valor atual do formulário. */
   draft: Settings;
   submitting: boolean;
+  /** Mensagem de teste em envio; desativa Testar e Salvar enquanto envia. */
+  testing: boolean;
   error: string | null;
 };
 
 type Data = Record<MemberEventKind, TabData>;
+
+/** Aviso flutuante no canto da tela; `leaving` começa a animação de saída antes de sumir. */
+type Notice = { id: number; leaving: boolean; text: string };
 
 type LoadError = 'unauthenticated' | 'unavailable';
 
@@ -57,7 +79,7 @@ function buildData(items: MemberEvent[]): Data {
     const settings: Settings = item
       ? { enabled: item.enabled, channelId: item.channelId ?? '', ignoreBots: item.ignoreBots, contentJson: item.contentJson }
       : { enabled: false, channelId: '', ignoreBots: false, contentJson: DEFAULT_CONTENT[event] };
-    return { version: item?.version ?? null, saved: settings, draft: settings, submitting: false, error: null };
+    return { version: item?.version ?? null, saved: settings, draft: settings, submitting: false, testing: false, error: null };
   };
   return { join: make('join'), leave: make('leave') };
 }
@@ -73,6 +95,7 @@ function saveError(error: MemberEventErrorCode, details?: ValidationDetail[]): s
     invalid_channel: 'Esse canal não existe mais neste servidor. Escolha outro.',
     conflict: 'Outra pessoa alterou isso. Recarregue e tente de novo.',
     bot_not_in_guild: 'O bot não está neste servidor.',
+    quota: 'Há testes demais na fila. Espere um pouco e tente de novo.',
     not_found: 'Esta configuração não existe mais. Recarregue a página.',
     too_large: 'A mensagem é grande demais.',
     invalid_json: 'Não foi possível salvar a mensagem. Tente de novo.',
@@ -88,7 +111,7 @@ function MemberEventsView({ guildId }: { guildId: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [loadError, setLoadError] = useState<LoadError | null>(null);
   const [active, setActive] = useState<MemberEventKind>('join');
-  const [notice, setNotice] = useState<{ id: number; leaving: boolean } | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const noticeSeq = useRef(0);
   const noticeId = notice?.id;
 
@@ -126,6 +149,11 @@ function MemberEventsView({ guildId }: { guildId: string }) {
     });
   }
 
+  function showNotice(text: string) {
+    noticeSeq.current += 1;
+    setNotice({ id: noticeSeq.current, leaving: false, text });
+  }
+
   async function save(event: MemberEventKind) {
     if (!data) return;
     const { draft, version } = data[event];
@@ -152,8 +180,31 @@ function MemberEventsView({ guildId }: { guildId: string }) {
       return;
     }
     patchTab(event, { version: result.data.version, saved: draft, submitting: false, error: null });
-    noticeSeq.current += 1;
-    setNotice({ id: noticeSeq.current, leaving: false });
+    showNotice('Alterações salvas.');
+  }
+
+  /** Envia o rascunho atual como teste, sem precisar salvar antes. */
+  async function test(event: MemberEventKind) {
+    if (!data) return;
+    const { draft } = data[event];
+    if (draft.channelId === '') {
+      patchTab(event, { error: 'Escolha o canal onde a mensagem será enviada.' });
+      return;
+    }
+    try {
+      JSON.parse(draft.contentJson);
+    } catch {
+      patchTab(event, { error: 'O conteúdo precisa ser um JSON válido.' });
+      return;
+    }
+    patchTab(event, { testing: true, error: null });
+    const result = await testMemberEvent(guildId, event, { channelId: draft.channelId, contentJson: draft.contentJson });
+    if (!result.ok) {
+      patchTab(event, { testing: false, error: saveError(result.error, result.details) });
+      return;
+    }
+    patchTab(event, { testing: false });
+    showNotice('Mensagem de teste enviada. Ela chega ao canal em instantes.');
   }
 
   const header = (
@@ -164,7 +215,7 @@ function MemberEventsView({ guildId }: { guildId: string }) {
   );
 
   const floating = notice ? (
-    <FloatingNotice key={notice.id} motionClass={notice.leaving ? 'animate-notice-out' : 'animate-notice-in'}>Alterações salvas.</FloatingNotice>
+    <FloatingNotice key={notice.id} motionClass={notice.leaving ? 'animate-notice-out' : 'animate-notice-in'}>{notice.text}</FloatingNotice>
   ) : null;
 
   if (loadError) {
@@ -201,50 +252,55 @@ function MemberEventsView({ guildId }: { guildId: string }) {
       {floating}
       {header}
 
-      <div className="flex gap-1 self-start" role="group" aria-label="Evento">
-        {EVENTS.map((event) => (
-          <button
-            key={event}
-            type="button"
-            className={`min-h-11 rounded-[8px] px-4 text-sm font-medium ${active === event ? 'bg-border text-text' : 'text-muted hover:text-text'}`}
-            aria-pressed={active === event}
-            onClick={() => setActive(event)}
-          >
-            {COPY[event].tab}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Evento"
+        options={EVENTS.map((event) => ({ value: event, label: COPY[event].tab }))}
+        value={active}
+        onChange={setActive}
+      />
 
       <div className={`${card} flex flex-col gap-5 p-5`}>
-        <label className="flex min-h-11 items-center gap-3 text-sm font-medium">
-          <input
-            type="checkbox"
-            className="size-4 accent-[#5865f2]"
-            checked={tab.draft.enabled}
-            disabled={tab.submitting}
-            onChange={(event) => updateDraft(active, { enabled: event.target.checked })}
-          />
-          {copy.toggle}
-        </label>
-
-        <ChannelSelect
-          key={active}
-          guildId={guildId}
-          value={tab.draft.channelId}
-          onChange={(channelId) => updateDraft(active, { channelId })}
+        <SwitchField
+          boxed
+          label={copy.toggle}
+          description={copy.toggleHint}
+          checked={tab.draft.enabled}
           disabled={tab.submitting}
+          onChange={(enabled) => updateDraft(active, { enabled })}
         />
 
-        <label className="flex min-h-11 items-center gap-3 text-sm font-medium">
-          <input
-            type="checkbox"
-            className="size-4 accent-[#5865f2]"
-            checked={tab.draft.ignoreBots}
-            disabled={tab.submitting}
-            onChange={(event) => updateDraft(active, { ignoreBots: event.target.checked })}
-          />
-          Ignorar bots
-        </label>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-end gap-3">
+            <div className="min-w-0 flex-1">
+              <ChannelSelect
+                key={active}
+                guildId={guildId}
+                value={tab.draft.channelId}
+                onChange={(channelId) => updateDraft(active, { channelId })}
+                disabled={tab.submitting}
+              />
+            </div>
+            <SaveButton
+              variant="outline"
+              saving={tab.testing}
+              savingLabel="Enviando…"
+              disabled={tab.draft.channelId === '' || tab.submitting}
+              onClick={() => void test(active)}
+            >
+              Testar
+            </SaveButton>
+          </div>
+          <p className="text-sm leading-6 text-muted">{copy.testHint}</p>
+        </div>
+
+        <SwitchField
+          boxed
+          label="Ignorar bots"
+          description={copy.ignoreBotsHint}
+          checked={tab.draft.ignoreBots}
+          disabled={tab.submitting}
+          onChange={(ignoreBots) => updateDraft(active, { ignoreBots })}
+        />
 
         <MessageEditor
           key={`${active}-${tab.version ?? 'novo'}`}
@@ -257,7 +313,7 @@ function MemberEventsView({ guildId }: { guildId: string }) {
         {tab.error ? <ErrorMessage message={tab.error} /> : null}
 
         <div className="flex flex-wrap gap-3">
-          <SaveButton saving={tab.submitting} attention={dirty} onClick={() => void save(active)}>Salvar</SaveButton>
+          <SaveButton saving={tab.submitting} disabled={tab.testing} attention={dirty} onClick={() => void save(active)}>Salvar</SaveButton>
         </div>
       </div>
     </>

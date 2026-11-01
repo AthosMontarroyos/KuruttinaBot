@@ -50,6 +50,7 @@ function makeGuild(channels: Record<string, unknown> = {}) {
 
 function makeMember(guild: ReturnType<typeof makeGuild>, bot = false) {
   return {
+    id: '111111111111111111',
     guild,
     user: {
       id: '111111111111111111',
@@ -181,12 +182,25 @@ describe('member events', () => {
     });
   });
 
-  it('sends with allowed mentions parse set to empty', async () => {
+  it('sends with allowed mentions limited to the member who joined', async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     const guild = makeGuild({ 'channel-1': makeChannel(GUILD_ID, send) });
 
     await handleMemberEvent('join', makeMember(guild), makeDatabase({ join: joinConfig }));
 
-    expect(send).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ allowedMentions: { parse: [] } }));
+    expect(send).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      allowedMentions: { parse: [], users: ['111111111111111111'] },
+    }));
+  });
+
+  it('never allows everyone, here or role mentions, only the member id in users', async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    const guild = makeGuild({ 'channel-1': makeChannel(GUILD_ID, send) });
+
+    await handleMemberEvent('join', makeMember(guild), makeDatabase({ join: joinConfig }));
+
+    const sent = send.mock.calls[0]?.[0];
+    expect(sent.allowedMentions.users).toEqual(['111111111111111111']);
+    expect(sent.allowedMentions.parse).toEqual([]);
   });
 });

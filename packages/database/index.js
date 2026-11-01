@@ -163,7 +163,8 @@ export function createDatabase(config, environment, onError = () => {}) {
     },
     // Fila de entrega de mensagens (etapa 1D); o bot consome sem filtro de servidor.
     deliveries: {
-      /** @param {{guildId: string, channelId: string, templateName: string, requestedBy: string}} input */
+      /** Informe `templateName` (template salvo) ou `content` (mensagem avulsa de teste do painel), nunca os dois.
+       * @param {{guildId: string, channelId: string, templateName?: string, content?: unknown, requestedBy: string}} input */
       create: (input) => connection((client) => deliveries.create(client, input), 'create_delivery'),
       /** @param {number} [limit] */
       claimPending: (limit) => connection((client) => deliveries.claimPending(client, limit), 'claim_deliveries'),

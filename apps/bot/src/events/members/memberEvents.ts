@@ -57,9 +57,10 @@ export async function handleMemberEvent(
     // Quem entrou ou saiu é o usuário das variáveis `{user.*}`; `{guild.membercount}` já vem atualizado pelo discord.js.
     const values = actionValuesFor(member.guild, member.user);
     const reply = toCommandReply(renderTemplate(config.content as MessageTemplate, ACTION_VARIABLES, values));
+    // Menção em embed nunca notifica; só a do texto da mensagem, e só deste membro.
     const content = typeof reply === 'string'
-      ? { content: reply, allowedMentions: { parse: [] as const } }
-      : { ...reply, allowedMentions: { parse: [] as const } };
+      ? { content: reply, allowedMentions: { parse: [] as const, users: [member.id] } }
+      : { ...reply, allowedMentions: { parse: [] as const, users: [member.id] } };
     await channel.send(content);
   } catch (error) {
     // Do not log message content or user names: canal apagado e falta de permissão caem aqui também.

@@ -4,6 +4,9 @@
  * passa pelo mesmo motor de validação dos templates (`validateTemplate` com `ACTION_VARIABLES`). O canal é
  * conferido no Discord com a mesma lista do seletor de canais, não confiando no navegador. Botões e menus
  * ainda não são permitidos nessas mensagens.
+ *
+ * `POST .../:event/test` testa o rascunho do painel: manda a mensagem ao canal escolhido sem salvar nada. Não exige
+ * o evento ligado nem canal salvo. A entrega é criada em `database.deliveries`, que pode recusar por cota (409).
  */
 import { createDatabase } from '@kuruttina/database';
 import { ACTION_VARIABLES, validateTemplate, type MessageTemplate } from '@kuruttina/message-templates';
@@ -23,7 +26,7 @@ type MemberEvent = (typeof MEMBER_EVENTS)[number];
 
 const MAX_BODY_BYTES = 40_000;
 const MAX_CONTENT_BYTES = 32_768;
-const memberEventPath = /^\/api\/guilds\/([^/]+)\/member-events(?:\/([^/]+))?$/u;
+const memberEventPath = /^\/api\/guilds\/([^/]+)\/member-events(?:\/([^/]+)(\/test)?)?$/u;
 
 const INVALID_JSON_DETAIL: Detail = { code: 'invalid_json', path: '', message: 'O JSON da mensagem é inválido.' };
 const COMPONENTS_NOT_ALLOWED_DETAIL: Detail = {
@@ -65,6 +68,17 @@ function parseEnvelope(body: unknown): Envelope | undefined {
   };
 }
 
+/** Envelope do corpo do teste: canal e texto do rascunho. */
+type TestEnvelope = { channelId: string; contentJson: string };
+
+/** Confere os tipos do corpo do teste. Devolve `undefined` quando algum campo tem tipo errado. */
+function parseTestEnvelope(body: unknown): TestEnvelope | undefined {
+  if (!isRecord(body)) return undefined;
+  const { channelId, contentJson } = body;
+  if (typeof channelId !== 'string' || typeof contentJson !== 'string') return undefined;
+  return { channelId, contentJson };
+}
+
 /** Forma mínima que o motor de validação exige para não quebrar: `embeds` e `components` em lista, e `content` texto quando existe. */
 function hasTemplateShape(value: unknown): value is MessageTemplate {
   return isRecord(value)
@@ -82,17 +96,33 @@ export function createMemberEventsApi(config: SiteConfig, auth: Auth, database: 
     sendJson(res, 422, { error: 'validation', details: details.slice(0, 5) });
   }
 
-  /** Lê e confere o envelope do PUT. Responde o erro e devolve `undefined` se o corpo não serve. */
-  async function readEnvelope(req: IncomingMessage, res: ServerResponse): Promise<Envelope | undefined> {
+  /** Lê o corpo JSON e confere os tipos com `parse`. Responde o erro e devolve `undefined` se o corpo não serve. */
+  async function readEnvelope<T>(req: IncomingMessage, res: ServerResponse, parse: (body: unknown) => T | undefined): Promise<T | undefined> {
     let body: unknown;
     try { body = await readJsonBody(req, MAX_BODY_BYTES); } catch (error: unknown) {
       if (error instanceof Error && error.message === 'body_too_large') sendJson(res, 413, { error: 'too_large' });
       else sendJson(res, 422, { error: 'invalid_json' });
       return undefined;
     }
-    const envelope = parseEnvelope(body);
+    const envelope = parse(body);
     if (envelope === undefined) { sendJson(res, 422, { error: 'invalid_json' }); return undefined; }
     return envelope;
+  }
+
+  /** Confere o texto da mensagem com as regras do PUT e do teste. Responde o erro e devolve `undefined` se não serve. */
+  function validateContent(res: ServerResponse, contentJson: string): MessageTemplate | undefined {
+    if (Buffer.byteLength(contentJson, 'utf8') > MAX_CONTENT_BYTES) { sendJson(res, 413, { error: 'too_large' }); return undefined; }
+
+    let parsed: unknown;
+    try { parsed = JSON.parse(contentJson); } catch { sendValidation(res, [INVALID_JSON_DETAIL]); return undefined; }
+    if (!hasTemplateShape(parsed)) { sendValidation(res, [INVALID_JSON_DETAIL]); return undefined; }
+    const errors = validateTemplate(parsed, ACTION_VARIABLES);
+    if (errors.length > 0) {
+      sendValidation(res, errors.map((error) => ({ code: error.code, path: error.path, message: error.message })));
+      return undefined;
+    }
+    if (parsed.components.length > 0) { sendValidation(res, [COMPONENTS_NOT_ALLOWED_DETAIL]); return undefined; }
+    return parsed;
   }
 
   /** Confere que o canal existe no servidor, na mesma lista do seletor. Falha do Discord responde 409 ou 503. */
@@ -120,19 +150,10 @@ export function createMemberEventsApi(config: SiteConfig, auth: Auth, database: 
   }
 
   async function handleUpdate(req: IncomingMessage, res: ServerResponse, guildId: string, event: MemberEvent, actorId: string): Promise<void> {
-    const envelope = await readEnvelope(req, res);
+    const envelope = await readEnvelope(req, res, parseEnvelope);
     if (envelope === undefined) return;
-    if (Buffer.byteLength(envelope.contentJson, 'utf8') > MAX_CONTENT_BYTES) { sendJson(res, 413, { error: 'too_large' }); return; }
-
-    let parsed: unknown;
-    try { parsed = JSON.parse(envelope.contentJson); } catch { sendValidation(res, [INVALID_JSON_DETAIL]); return; }
-    if (!hasTemplateShape(parsed)) { sendValidation(res, [INVALID_JSON_DETAIL]); return; }
-    const errors = validateTemplate(parsed, ACTION_VARIABLES);
-    if (errors.length > 0) {
-      sendValidation(res, errors.map((error) => ({ code: error.code, path: error.path, message: error.message })));
-      return;
-    }
-    if (parsed.components.length > 0) { sendValidation(res, [COMPONENTS_NOT_ALLOWED_DETAIL]); return; }
+    const parsed = validateContent(res, envelope.contentJson);
+    if (parsed === undefined) return;
 
     if (envelope.enabled && envelope.channelId === null) { sendJson(res, 422, { error: 'channel_required' }); return; }
     if (envelope.channelId !== null) {
@@ -155,11 +176,26 @@ export function createMemberEventsApi(config: SiteConfig, auth: Auth, database: 
     sendJson(res, 200, { event, version: result.version });
   }
 
+  /** Testa o rascunho: manda a mensagem ao canal escolhido sem salvar. Não exige evento ligado nem canal salvo. */
+  async function handleTest(req: IncomingMessage, res: ServerResponse, guildId: string, actorId: string): Promise<void> {
+    const envelope = await readEnvelope(req, res, parseTestEnvelope);
+    if (envelope === undefined) return;
+    const content = validateContent(res, envelope.contentJson);
+    if (content === undefined) return;
+    if (!isDiscordSnowflake(envelope.channelId)) { sendJson(res, 422, { error: 'invalid_channel' }); return; }
+    if (!(await assertChannelExists(res, guildId, envelope.channelId))) return;
+
+    const result = await database.deliveries.create({ guildId, channelId: envelope.channelId, content, requestedBy: actorId });
+    // Sem cota para mais uma entrega: nenhuma mensagem de teste é enviada.
+    if (result.ok === false) { sendJson(res, 409, { error: 'quota' }); return; }
+    sendJson(res, 202, { ok: true });
+  }
+
   // Devolve true quando a rota é de mensagens de entrada e saída e já foi (ou será) respondida.
   const handle = function handle(req: IncomingMessage, res: ServerResponse, path: string): boolean {
     const match = memberEventPath.exec(path);
     if (!match) return false;
-    const [, guildId = '', event] = match;
+    const [, guildId = '', event, testSuffix] = match;
     const run = (work: (discordId: string) => Promise<void>) => {
       const authorization = authorize(req, res, guildId);
       if (authorization === undefined) return;
@@ -174,6 +210,14 @@ export function createMemberEventsApi(config: SiteConfig, auth: Auth, database: 
     }
 
     if (!isMemberEvent(event)) { sendJson(res, 404, { error: 'not_found' }); return true; }
+    if (testSuffix !== undefined) {
+      if (req.method === 'POST') {
+        if (requireOrigin()) run((discordId) => handleTest(req, res, guildId, discordId));
+        return true;
+      }
+      res.writeHead(405, { Allow: 'POST' }).end();
+      return true;
+    }
     if (req.method === 'PUT') {
       if (requireOrigin()) run((discordId) => handleUpdate(req, res, guildId, event, discordId));
       return true;

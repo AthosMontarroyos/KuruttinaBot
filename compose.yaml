@@ -36,6 +36,8 @@ services:
       SITE_URL: https://kuruttina.athosmontarroyos.com
       ASSETS_BASE_URL: ${ASSETS_BASE_URL:-}
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
       DATABASE_URL: ${SITE_DATABASE_URL:-}
       DATABASE_CA: ${DATABASE_CA:-}
     ports:

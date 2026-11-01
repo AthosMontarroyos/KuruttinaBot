@@ -8,7 +8,7 @@ Alternativa avaliada e descartada: o bot gravar os canais no banco e o site só 
 
 ## Decisão
 
-Aprovada pelo responsável em 29 de outubro de 2026: o serviço `site` recebe `DISCORD_BOT_TOKEN` em desenvolvimento e em produção. Substitui a regra anterior de que o site de produção não recebe o token. O site continua sem `DISCORD_BOT_ID` (o client id do OAuth segue sendo tratado à parte) e sem `OWNER_ID`.
+Aprovada pelo responsável em 29 de outubro de 2026: o serviço `site` recebe `DISCORD_BOT_TOKEN` em desenvolvimento e em produção. Substitui a regra anterior de que o site de produção não recebe o token. Emenda aprovada em 1º de novembro de 2026: o serviço `site` também recebe `DISCORD_BOT_ID` (client id do OAuth) e `DISCORD_CLIENT_SECRET` nos dois Composes, porque sem o par o login real fica `indisponivel` (o Compose só repassa as chaves listadas em `environment`). O `DISCORD_CLIENT_SECRET` é um segredo a mais no processo do site, usado só na troca do código OAuth em `apps/site/server/auth.ts`; o serviço `bot` não o recebe. O site continua sem `OWNER_ID`.
 
 ## Impacto
 
@@ -30,6 +30,6 @@ Implementado: leitura de canais, categorias e cargos (`GET /api/guilds/:guildId/
 
 ## Verificação
 
-- `tests/deploy-migration.test.ts`: o `compose.yaml` de produção entrega `DISCORD_BOT_TOKEN` ao site, sem `DISCORD_BOT_ID`.
+- `tests/deploy-migration.test.ts`: o `compose.yaml` de produção entrega `DISCORD_BOT_TOKEN`, `DISCORD_BOT_ID` e `DISCORD_CLIENT_SECRET` ao site; o `bot` não recebe o client secret.
 - `tests/site.test.ts`: o token é lido nos dois ambientes e não aparece em serialização, spread nem inspeção da configuração.
 - `tests/guild-api.test.ts`: autorização, validação de IDs, mapeamento de erros sem vazar o token, cache, filtro e ordem de canais, categorias e cargos.

@@ -51,4 +51,8 @@ Pedido do responsável: uma lista única de variáveis pré-definidas das açõe
 
 ## Condição de revisão
 
-Reavaliar quando houver emoji em botões, variável em link clicável, a primeira ação com usuário real (como a entrada de um membro), ou o roteamento de interações de botões e menus (módulo futuro).
+Reavaliar quando houver emoji em botões, variável em link clicável, ou o roteamento de interações de botões e menus (módulo futuro).
+
+## Entrada e saída de membros (1º de novembro de 2026)
+
+Primeira ação com usuário real: ao entrar ou sair, o bot renderiza a mensagem do servidor com `actionValuesFor(guild, member.user)`, sem variável nova. A mensagem fica em `bot_private.member_event_messages` (não em `message_templates`), para não consumir a cota de modelos nem a lista do painel. Fica sem botões e menus porque `message_components` depende de um modelo dono; incluir Components aqui exige decidir esse vínculo antes. Detalhes em [editor de mensagens](../project/message-editor.md).

@@ -22,6 +22,15 @@ A lista única está em `packages/message-templates/variables.js` (`ACTION_VARIA
 
 `deliveryPoller.ts` renderiza o template com `ACTION_VARIABLES` antes do `toCommandReply`. `actionValuesFor(guild, user?)` (`actionValues.ts`) converte objetos do discord.js em valores. A entrega pedida pelo painel não tem usuário disparando, então o bot (`client.user`) faz esse papel, igual ao preview. Uma ação com usuário real (entrada de membro, por exemplo) passa o membro como segundo argumento.
 
+## Entrada e saída de membros (1º de novembro de 2026)
+
+Seção **Entrada e saída** do painel (`dashboard/[serverId]/member-events/view.tsx`): duas abas (Entrada e Saída), cada uma com interruptor, canal (`ChannelSelect`), "Ignorar bots" e o mesmo `MessageEditor` dos modelos, com `allowComponents={false}` (sem Action Rows: o mapa de Components é amarrado a um modelo salvo, então botões e menus ficam fora desta mensagem).
+
+- **Persistência:** `bot_private.member_event_messages`, uma linha por servidor e evento (`join` ou `leave`), com o JSON da mensagem, o canal e a versão (concorrência otimista). O site grava (`/api/guilds/:guildId/member-events[/:event]`, `server/member-events.ts`); o bot só lê.
+- **Variáveis:** as mesmas de `ACTION_VARIABLES`, sem nenhuma nova. `{user.*}` é quem entrou ou saiu, `{guild.membercount}` é a contagem já depois da entrada ou saída (o discord.js atualiza `memberCount` antes de emitir o evento), `{nowtimestamp}` é o momento e `{guild.*}` é o servidor.
+- **Bot:** `events/members/memberEvents.ts` trata `GuildMemberAdd` e `GuildMemberRemove`, renderiza com `actionValuesFor(guild, member.user)` e envia com `allowedMentions: { parse: [] }`. Falha (canal apagado, sem permissão) só gera log `member_event_failed`.
+- **Intent:** exige o **Server Members Intent** (privilegiado) ligado no Developer Portal de cada bot, além de `GatewayIntentBits.GuildMembers` no `bootstrap.ts`. Sem ele o Discord não envia os eventos.
+
 ## Limites conhecidos
 
 - A revisão por modelo do diff desta funcionalidade não foi aprovada (o revisor recusou arquivo novo fora do formato de diff). As correções apontadas foram feitas e os testes passam, mas o diff final não foi revisado de novo.

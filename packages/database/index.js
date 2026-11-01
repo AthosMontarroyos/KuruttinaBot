@@ -4,6 +4,7 @@ import * as templates from './templates.js';
 import * as deliveries from './deliveries.js';
 import * as folders from './folders.js';
 import * as roleGroups from './role-groups.js';
+import * as memberEvents from './member-events.js';
 import * as customActions from './custom-actions.js';
 import * as customActionsConfig from './custom-actions-config.js';
 export { readDatabaseConfig } from './config.js';
@@ -129,6 +130,15 @@ export function createDatabase(config, environment, onError = () => {}) {
       update: (input) => connection((client) => roleGroups.update(client, input), 'update_role_group'),
       /** @param {string} guildId @param {number} id */
       remove: (guildId, id) => connection((client) => roleGroups.remove(client, guildId, id), 'remove_role_group'),
+    },
+    // Mensagens de entrada e saída de membros, uma por evento e servidor; o site grava e o bot só lê (RLS por servidor).
+    memberEvents: {
+      /** @param {string} guildId @param {'join'|'leave'} event */
+      get: (guildId, event) => connection((client) => memberEvents.get(client, guildId, event), 'get_member_event'),
+      /** @param {string} guildId */
+      list: (guildId) => connection((client) => memberEvents.list(client, guildId), 'list_member_events'),
+      /** @param {{guildId: string, event: 'join'|'leave', expectedVersion: number|null, enabled: boolean, channelId: string|null, ignoreBots: boolean, content: unknown, actorId: string}} input */
+      save: (input) => connection((client) => memberEvents.save(client, input), 'save_member_event'),
     },
     // Ações personalizadas (botões e menus de seleção); o site administra e o bot só lê (RLS por servidor).
     customActions: {

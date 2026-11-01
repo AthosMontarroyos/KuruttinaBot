@@ -5,6 +5,7 @@ import { createAuth } from './auth.js';
 import { createDiscordBot } from './discord.js';
 import { createRoleGroupsApi } from './role-groups.js';
 import { createCustomActionsApi } from './custom-actions.js';
+import { createMemberEventsApi } from './member-events.js';
 import { createGuildApi } from './guild.js';
 import { createTemplatesApi } from './templates.js';
 import type { readSiteConfig } from './config.js';
@@ -100,6 +101,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   const guildApi = createGuildApi(auth, discord);
   const roleGroupsApi = createRoleGroupsApi(config, auth, database, discord);
   const customActionsApi = createCustomActionsApi(config, auth, database, discord);
+  const memberEventsApi = createMemberEventsApi(config, auth, database, discord);
   const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
     const [path = '', search = ''] = (req.url ?? '').split('?');
     // Só o painel carrega imagens de qualquer https: a prévia das mensagens mostra os links que o administrador cola.
@@ -113,6 +115,7 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     if (guildApi.handle(req, res, path)) return;
     if (roleGroupsApi.handle(req, res, path)) return;
     if (customActionsApi.handle(req, res, path)) return;
+    if (memberEventsApi.handle(req, res, path)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
     const asset = assets.get(path) ?? (isDashboardServerPath(path) ? assets.get('/dashboard') : undefined);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }

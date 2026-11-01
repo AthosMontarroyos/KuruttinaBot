@@ -232,7 +232,8 @@ describe('PostgreSQL runtime isolation', () => {
     `);
     // Inventário fechado das tabelas de bot_private. role_groups e role_group_roles
     // (20261030120000_role_groups.sql) seguem o mesmo isolamento: RLS habilitada e forçada,
-    // sem grant para PUBLIC nem para as roles de API. Uma tabela nova entra aqui pelo nome.
+    // sem grant para PUBLIC nem para as roles de API. member_event_messages
+    // (20261101120000_member_event_messages.sql) também. Uma tabela nova entra aqui pelo nome.
     const appTables = [
       'bot_settings',
       'bot_staff',
@@ -241,6 +242,7 @@ describe('PostgreSQL runtime isolation', () => {
       'custom_select_option_functions',
       'custom_select_options',
       'custom_selects',
+      'member_event_messages',
       'message_components',
       'message_deliveries',
       'message_template_folders',
@@ -269,6 +271,7 @@ describe('PostgreSQL runtime isolation', () => {
       custom_select_option_functions: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
       custom_select_options: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
       custom_selects: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
+      member_event_messages: { kuruttina_bot: ['SELECT'], kuruttina_site: ['INSERT', 'SELECT', 'UPDATE'] },
       message_components: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
       message_deliveries: { kuruttina_bot: ['SELECT', 'UPDATE'], kuruttina_site: ['INSERT', 'SELECT'] },
       message_template_folders: { kuruttina_site: siteWrite },

@@ -5,6 +5,7 @@ import { ACTION_VARIABLES, buildActionValues } from '@kuruttina/message-template
 import { renderText } from '@kuruttina/message-templates/render';
 import { usePathname } from '../../lib/navigation';
 import type { Session } from '../../lib/session';
+import { GuildResourcesProvider } from './guild-resources';
 
 type Preview = { values: Record<string, string>; botName: string | null };
 
@@ -34,8 +35,8 @@ function buildPreview(session: Session | null, guildId: string | undefined): Pre
   return { values, botName: bot?.name ?? null };
 }
 
-/** Lê `/api/session` uma vez e monta o preview do servidor da página atual. */
-function usePreview(): Preview {
+/** Lê `/api/session` uma vez e monta o preview do servidor da página atual; devolve também o ID desse servidor. */
+function usePreview(): { preview: Preview; guildId: string | undefined } {
   const guildId = serverPath.exec(usePathname())?.[1];
   const [session, setSession] = useState<Session | null>(null);
 
@@ -48,11 +49,17 @@ function usePreview(): Preview {
     return () => { active = false; };
   }, []);
 
-  return useMemo(() => buildPreview(session, guildId), [session, guildId]);
+  const preview = useMemo(() => buildPreview(session, guildId), [session, guildId]);
+  return { preview, guildId };
 }
 
 function PreviewProvider({ children }: { children: ReactNode }) {
-  return <PreviewContext.Provider value={usePreview()}>{children}</PreviewContext.Provider>;
+  const { preview, guildId } = usePreview();
+  return (
+    <PreviewContext.Provider value={preview}>
+      <GuildResourcesProvider guildId={guildId}>{children}</GuildResourcesProvider>
+    </PreviewContext.Provider>
+  );
 }
 
 /** Troca as variáveis do texto pelos valores de exemplo; sem preview, devolve o texto como está. */

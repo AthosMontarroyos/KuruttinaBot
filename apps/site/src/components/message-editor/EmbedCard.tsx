@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { applySuggestion, detectTrigger, filterSuggestions, type SuggestionItem } from './autocomplete';
 import { activeFormats, applyFormat, parseInline, type Format, type InlineNode } from './markdown-format';
 import { LIMITS, hasText, takeKey, type EditorEmbed, type EditorField } from './message-model';
+import { useGuildResources, type GuildResources } from './guild-resources';
 import { usePreviewImage, usePreviewText } from './preview-values';
+import { SuggestionPanel } from './SuggestionPanel';
 
 function Link({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -13,7 +16,12 @@ function Link({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
-function renderNodes(nodes: InlineNode[]): ReactNode[] {
+/** Recursos do servidor (emojis, canais e cargos) para trocar as menções pelo nome, como no Discord. */
+type Lookup = GuildResources;
+
+const mentionClass = 'rounded bg-[#5865f2]/30 px-1 text-[#c9cdfb]';
+
+function renderNodes(nodes: InlineNode[], lookup: Lookup): ReactNode[] {
   return nodes.map((node, index) => {
     switch (node.type) {
       case 'text':
@@ -23,20 +31,35 @@ function renderNodes(nodes: InlineNode[]): ReactNode[] {
       case 'link':
         return <Link key={index} href={node.href}>{node.label}</Link>;
       case 'format': {
-        const children = renderNodes(node.children);
+        const children = renderNodes(node.children, lookup);
         if (node.kind === 'bold') return <strong key={index}>{children}</strong>;
         if (node.kind === 'italic') return <em key={index}>{children}</em>;
         if (node.kind === 'underline') return <u key={index}>{children}</u>;
         if (node.kind === 'strike') return <s key={index}>{children}</s>;
         return <span key={index} className="rounded bg-[#1e1f22] text-transparent hover:bg-white/10 hover:text-inherit" title="Spoiler">{children}</span>;
       }
+      case 'emoji':
+        return <img key={index} className="inline-block size-[1.375em] align-text-bottom" src={`https://cdn.discordapp.com/emojis/${node.id}.${node.animated ? 'gif' : 'png'}?size=48`} alt={`:${node.name}:`} title={`:${node.name}:`} />;
+      case 'mention': {
+        // Sem a lista carregada (ou sem o ID nela), a menção mostra um nome genérico.
+        if (node.kind === 'channel') {
+          const channel = lookup.channel.items.find((item) => item.id === node.id);
+          return <span key={index} className={mentionClass}>#{channel?.name ?? 'canal'}</span>;
+        }
+        if (node.kind === 'role') {
+          const role = lookup.role.items.find((item) => item.id === node.id);
+          const color = role?.color ?? null;
+          return <span key={index} className={mentionClass} style={color ? { color, backgroundColor: `${color}33` } : undefined}>@{role?.name ?? 'cargo'}</span>;
+        }
+        return <span key={index} className={mentionClass}>@membro</span>;
+      }
     }
   });
 }
 
-/** Markdown em linha do Discord (código, negrito, itálico, sublinhado, riscado, spoiler e links), sempre como elementos React. */
-function renderInline(value: string): ReactNode[] {
-  return renderNodes(parseInline(value));
+/** Markdown em linha do Discord (código, negrito, itálico, sublinhado, riscado, spoiler, links, emojis e menções), sempre como elementos React. */
+function renderInline(value: string, lookup: Lookup): ReactNode[] {
+  return renderNodes(parseInline(value), lookup);
 }
 
 const BULLET = /^\s*[-*] (.*)$/u;
@@ -46,7 +69,7 @@ const SUBTEXT = /^-# (.+)$/u;
 const headingSizes = ['text-2xl font-bold', 'text-xl font-bold', 'text-lg font-semibold'];
 
 /** Markdown de bloco do Discord: títulos, listas, citações, texto pequeno e blocos de código. */
-function renderBlocks(value: string): ReactNode[] {
+function renderBlocks(value: string, lookup: Lookup): ReactNode[] {
   const lines = value.split('\n');
   const nodes: ReactNode[] = [];
   let i = 0;
@@ -64,13 +87,13 @@ function renderBlocks(value: string): ReactNode[] {
     }
     const subtext = SUBTEXT.exec(line);
     if (subtext) {
-      nodes.push(<div key={key++} className="text-xs text-[#949ba4]">{renderInline(subtext[1] ?? '')}</div>);
+      nodes.push(<div key={key++} className="text-xs text-[#949ba4]">{renderInline(subtext[1] ?? '', lookup)}</div>);
       i++;
       continue;
     }
     const heading = HEADING.exec(line);
     if (heading) {
-      nodes.push(<div key={key++} className={headingSizes[(heading[1] ?? '#').length - 1]}>{renderInline(heading[2] ?? '')}</div>);
+      nodes.push(<div key={key++} className={headingSizes[(heading[1] ?? '#').length - 1]}>{renderInline(heading[2] ?? '', lookup)}</div>);
       i++;
       continue;
     }
@@ -79,7 +102,7 @@ function renderBlocks(value: string): ReactNode[] {
       const pattern = ordered ? NUMBERED : BULLET;
       const items: ReactNode[] = [];
       while (i < lines.length && pattern.test(lines[i] ?? '')) {
-        items.push(<li key={items.length}>{renderInline(pattern.exec(lines[i] ?? '')?.[1] ?? '')}</li>);
+        items.push(<li key={items.length}>{renderInline(pattern.exec(lines[i] ?? '')?.[1] ?? '', lookup)}</li>);
         i++;
       }
       nodes.push(ordered ? <ol key={key++} className="list-decimal pl-6">{items}</ol> : <ul key={key++} className="list-disc pl-6">{items}</ul>);
@@ -91,10 +114,10 @@ function renderBlocks(value: string): ReactNode[] {
         quoted.push((lines[i] ?? '').slice(2));
         i++;
       }
-      nodes.push(<div key={key++} className="border-l-4 border-[#4e5058] pl-3">{quoted.map((quote, quoteIndex) => <div key={quoteIndex} className="whitespace-pre-wrap">{renderInline(quote)}</div>)}</div>);
+      nodes.push(<div key={key++} className="border-l-4 border-[#4e5058] pl-3">{quoted.map((quote, quoteIndex) => <div key={quoteIndex} className="whitespace-pre-wrap">{renderInline(quote, lookup)}</div>)}</div>);
       continue;
     }
-    nodes.push(line === '' ? <div key={key++} className="h-[1.4em]" /> : <div key={key++} className="whitespace-pre-wrap">{renderInline(line)}</div>);
+    nodes.push(line === '' ? <div key={key++} className="h-[1.4em]" /> : <div key={key++} className="whitespace-pre-wrap">{renderInline(line, lookup)}</div>);
     i++;
   }
   return nodes;
@@ -138,15 +161,47 @@ type InlineTextProps = {
   readOnly?: boolean;
   /** Markdown completo (listas, títulos, citação, código) e barra de formatação ao selecionar. */
   rich?: boolean;
+  /** Sugestões de emoji, canal e cargo ao digitar `:`, `#` ou `@` na edição. Desligue onde o Discord não renderiza menções. */
+  suggest?: boolean;
 };
 
 /** Texto que aparece formatado como no Discord e vira campo de edição ao receber foco. */
-export function InlineText({ value, onChange, placeholder, label, maxLength, className = '', multiline = true, readOnly = false, rich = false }: InlineTextProps) {
+export function InlineText({ value, onChange, placeholder, label, maxLength, className = '', multiline = true, readOnly = false, rich = false, suggest = true }: InlineTextProps) {
   const fill = usePreviewText();
+  const resources = useGuildResources();
+  const { load } = resources;
+  const listboxId = useId();
   const [editing, setEditing] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
+  // Início do gatilho que o usuário fechou com Esc; o painel só volta quando o gatilho muda.
+  const [dismissed, setDismissed] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const pendingSelection = useRef<{ start: number; end: number } | null>(null);
+
+  // Nomes de canais e cargos só aparecem nas menções se a lista estiver carregada.
+  useEffect(() => {
+    if (value.includes('<#')) load('channel');
+    if (value.includes('<@&')) load('role');
+  }, [value, load]);
+
+  // Gatilho de autocompletar: só com o cursor parado no modo de edição e fora do que foi fechado com Esc.
+  const found = editing && suggest && selection.start === selection.end ? detectTrigger(value, selection.start) : null;
+  const trigger = found !== null && found.start !== dismissed ? found : null;
+  const triggerKind = trigger?.kind;
+  const query = trigger?.query;
+  const items = trigger ? filterSuggestions<SuggestionItem>(resources[trigger.kind].items, trigger.query) : [];
+  const panelOpen = trigger !== null;
+  // Só há lista (e opção ativa) para o teclado quando o painel tem itens.
+  const pickable = panelOpen && items.length > 0;
+
+  useEffect(() => {
+    if (triggerKind) load(triggerKind);
+  }, [triggerKind, load]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [triggerKind, query]);
 
   useLayoutEffect(() => {
     const field = fieldRef.current;
@@ -177,9 +232,18 @@ export function InlineText({ value, onChange, placeholder, label, maxLength, cla
     onChange(result.text);
   };
 
+  // Troca o texto digitado pela sugestão escolhida e leva o cursor para depois dela.
+  const pick = (item: SuggestionItem) => {
+    if (!trigger) return;
+    const result = applySuggestion(value, trigger, item, maxLength);
+    if (!result) return;
+    pendingSelection.current = { start: result.caret, end: result.caret };
+    onChange(result.text);
+  };
+
   // Variáveis aparecem com os valores de exemplo; se o texto ficar vazio (ex.: servidor sem banner), mostra a chave.
   const shown = fill(value) || value;
-  const content = shown !== '' ? (rich ? renderBlocks(shown) : renderInline(shown)) : null;
+  const content = shown !== '' ? (rich ? renderBlocks(shown, resources) : renderInline(shown, resources)) : null;
 
   if (readOnly) {
     if (value === '') return null;
@@ -197,11 +261,41 @@ export function InlineText({ value, onChange, placeholder, label, maxLength, cla
           maxLength={maxLength}
           value={value}
           placeholder={placeholder}
+          aria-autocomplete={suggest ? 'list' : undefined}
+          aria-expanded={suggest ? panelOpen : undefined}
+          aria-controls={pickable ? listboxId : undefined}
+          aria-activedescendant={pickable ? `${listboxId}-opcao-${activeIndex}` : undefined}
           className={`block w-full resize-none overflow-hidden whitespace-pre-wrap break-words rounded bg-[#1e1f22] px-1.5 py-0.5 text-inherit outline outline-1 outline-[#5865f2] placeholder:text-[#80848e] ${className}`}
-          onChange={(event) => onChange(multiline ? event.target.value : event.target.value.replace(/\n/gu, ' '))}
+          onChange={(event) => {
+            // O cursor acompanha o texto digitado no mesmo passo: o gatilho do autocompletar não pode esperar o `select`.
+            setSelection({ start: event.target.selectionStart, end: event.target.selectionEnd });
+            onChange(multiline ? event.target.value : event.target.value.replace(/\n/gu, ' '));
+          }}
           onSelect={(event) => setSelection({ start: event.currentTarget.selectionStart, end: event.currentTarget.selectionEnd })}
           onBlur={() => { setEditing(false); setSelection({ start: 0, end: 0 }); }}
           onKeyDown={(event) => {
+            // Com o painel aberto e com itens, setas, Enter, Tab e Esc são do painel.
+            if (trigger && items.length > 0) {
+              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const step = event.key === 'ArrowDown' ? 1 : -1;
+                setActiveIndex((current) => (current + step + items.length) % items.length);
+                return;
+              }
+              if (event.key === 'Enter' || event.key === 'Tab') {
+                const item = items[activeIndex];
+                if (item) {
+                  event.preventDefault();
+                  pick(item);
+                  return;
+                }
+              }
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                setDismissed(trigger.start);
+                return;
+              }
+            }
             if (event.key === 'Escape' || (!multiline && event.key === 'Enter')) {
               event.preventDefault();
               setEditing(false);
@@ -214,6 +308,7 @@ export function InlineText({ value, onChange, placeholder, label, maxLength, cla
             }
           }}
         />
+        {trigger ? <SuggestionPanel id={listboxId} kind={trigger.kind} status={resources[trigger.kind].status} items={items} activeIndex={activeIndex} onPick={pick} onActive={setActiveIndex} /> : null}
       </div>
     );
   }
@@ -363,7 +458,7 @@ export function EmbedCard({ embed, index, onChange = () => undefined, onRemove =
             {readOnly && !hasHeader ? null : (
               <div className="flex items-center gap-1">
                 <ImageSlot readOnly={readOnly} label="Ícone do autor" url={embed.authorIconUrl} onChange={(authorIconUrl) => patch({ authorIconUrl })} imageClassName="size-6 rounded-full object-cover" iconClassName="size-4" className="shrink-0" />
-                <InlineText readOnly={readOnly} className="text-xs font-semibold text-white" label={`Autor do embed ${index + 1}`} placeholder="Nome do autor" maxLength={LIMITS.authorName} multiline={false} value={embed.authorName} onChange={(authorName) => patch({ authorName })} />
+                <InlineText readOnly={readOnly} className="text-xs font-semibold text-white" label={`Autor do embed ${index + 1}`} placeholder="Nome do autor" maxLength={LIMITS.authorName} multiline={false} suggest={false} value={embed.authorName} onChange={(authorName) => patch({ authorName })} />
               </div>
             )}
             <InlineText readOnly={readOnly} className="mt-1 text-base font-semibold text-white" label={`Título do embed ${index + 1}`} placeholder="Título" maxLength={LIMITS.embedTitle} multiline={false} value={embed.title} onChange={(title) => patch({ title })} />
@@ -394,7 +489,7 @@ export function EmbedCard({ embed, index, onChange = () => undefined, onRemove =
         {readOnly && !hasFooter ? null : (
           <div className="flex items-center gap-1">
             <ImageSlot readOnly={readOnly} label="Ícone do rodapé" url={embed.footerIconUrl} onChange={(footerIconUrl) => patch({ footerIconUrl })} imageClassName="size-5 rounded-full object-cover" iconClassName="size-4" className="shrink-0" />
-            <InlineText readOnly={readOnly} className="text-xs text-[#b5bac1]" label={`Rodapé do embed ${index + 1}`} placeholder="Texto do rodapé" maxLength={LIMITS.footerText} multiline={false} value={embed.footer} onChange={(footer) => patch({ footer })} />
+            <InlineText readOnly={readOnly} className="text-xs text-[#b5bac1]" label={`Rodapé do embed ${index + 1}`} placeholder="Texto do rodapé" maxLength={LIMITS.footerText} multiline={false} suggest={false} value={embed.footer} onChange={(footer) => patch({ footer })} />
           </div>
         )}
         </div>

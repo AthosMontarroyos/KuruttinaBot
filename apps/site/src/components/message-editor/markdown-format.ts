@@ -250,12 +250,35 @@ export type InlineNode =
   | { type: 'text'; text: string }
   | { type: 'code'; text: string }
   | { type: 'link'; href: string; label: string }
-  | { type: 'format'; kind: FormatKind; children: InlineNode[] };
+  | { type: 'format'; kind: FormatKind; children: InlineNode[] }
+  | { type: 'mention'; kind: 'channel' | 'role' | 'user'; id: string }
+  | { type: 'emoji'; id: string; name: string; animated: boolean };
 
 const URL_AT = /https?:\/\/[^\s<]+/uy;
 const MASKED_AT = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/uy;
+const CHANNEL_AT = /<#(\d{17,20})>/uy;
+const ROLE_AT = /<@&(\d{17,20})>/uy;
+const USER_AT = /<@!?(\d{17,20})>/uy;
+const EMOJI_AT = /<(a?):([A-Za-z0-9_]{2,32}):(\d{17,20})>/uy;
 const TRAILING_PUNCTUATION = /[.,;:!?)]+$/u;
 const WHITESPACE = /\s/u;
+
+/** Menção ou emoji do Discord que começa em `at` (`<#id>`, `<@&id>`, `<@id>`, `<:nome:id>`); null se não for um deles. */
+function tokenAt(value: string, at: number): { node: InlineNode; length: number } | null {
+  CHANNEL_AT.lastIndex = at;
+  const channel = CHANNEL_AT.exec(value);
+  if (channel) return { node: { type: 'mention', kind: 'channel', id: channel[1] ?? '' }, length: channel[0].length };
+  ROLE_AT.lastIndex = at;
+  const role = ROLE_AT.exec(value);
+  if (role) return { node: { type: 'mention', kind: 'role', id: role[1] ?? '' }, length: role[0].length };
+  USER_AT.lastIndex = at;
+  const user = USER_AT.exec(value);
+  if (user) return { node: { type: 'mention', kind: 'user', id: user[1] ?? '' }, length: user[0].length };
+  EMOJI_AT.lastIndex = at;
+  const emoji = EMOJI_AT.exec(value);
+  if (emoji) return { node: { type: 'emoji', id: emoji[3] ?? '', name: emoji[2] ?? '', animated: emoji[1] === 'a' }, length: emoji[0].length };
+  return null;
+}
 
 type Frame = { kind: FormatKind | null; marker: string; children: InlineNode[] };
 
@@ -331,6 +354,14 @@ export function parseInline(value: string): InlineNode[] {
         const href = url[0].replace(TRAILING_PUNCTUATION, '');
         append([{ type: 'link', href, label: href }]);
         i += href.length;
+        continue;
+      }
+    }
+    if (char === '<') {
+      const token = tokenAt(value, i);
+      if (token) {
+        append([token.node]);
+        i += token.length;
         continue;
       }
     }

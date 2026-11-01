@@ -8,6 +8,7 @@ import { createCentralDeployment } from '#bot/deployments/central.js';
 import { createGuildDeployment } from '#bot/deployments/guild.js';
 import { handleClientReady } from '#bot/events/client/clientReady.js';
 import { handleInteractionCreate } from '#bot/events/interactions/interactionCreate.js';
+import { handleMemberEvent } from '#bot/events/members/memberEvents.js';
 import { handleMessageCreate } from '#bot/events/messages/messageCreate.js';
 import { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
 import { DeploymentsHandler } from '#bot/handlers/DeploymentsHandler.js';
@@ -31,7 +32,7 @@ export async function startBot(correlationId: string): Promise<void> {
     await database.getSettings();
     const commands = await loadCommands(undefined, correlationId);
     client = new Client({
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
       partials: [Partials.Channel],
       makeCache: Options.cacheWithLimits({ ...Options.DefaultMakeCacheSettings, MessageManager: 0 }),
       allowedMentions: { parse: [], repliedUser: false },
@@ -76,7 +77,13 @@ export async function startBot(correlationId: string): Promise<void> {
     client.once(Events.ClientReady, (readyClient) => handleClientReady(readyClient, config.target, correlationId));
     client.on(Events.InteractionCreate, (interaction) => { void handleInteractionCreate(interaction, commandsHandler, componentPort); });
     client.on(Events.MessageCreate, (message) => { void handleMessageCreate(message, commandsHandler); });
-    log('info', 'events_loaded', { count: 3, events: [Events.ClientReady, Events.InteractionCreate, Events.MessageCreate].join(', '), correlationId });
+    client.on(Events.GuildMemberAdd, (member) => { void handleMemberEvent('join', member, database); });
+    client.on(Events.GuildMemberRemove, (member) => { void handleMemberEvent('leave', member, database); });
+    log('info', 'events_loaded', {
+      count: 5,
+      events: [Events.ClientReady, Events.InteractionCreate, Events.MessageCreate, Events.GuildMemberAdd, Events.GuildMemberRemove].join(', '),
+      correlationId,
+    });
     // Poller da fila de entrega (etapa 1D): publica nos canais pedidos pelo site.
     const deliveryPoller = createDeliveryPoller(client, deliveryDatabasePort);
 

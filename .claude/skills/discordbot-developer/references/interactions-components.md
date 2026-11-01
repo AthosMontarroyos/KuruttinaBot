@@ -31,7 +31,7 @@ Tipos recentes incluem Text Display, Section, Media Gallery, File, Separator, Co
 
 ## Mensagens
 
-Defina `defaultAllowedMentions` no Client ou `allowedMentions` no payload, sobretudo ao ecoar conteúdo externo ou de usuário. Em edits v10, `attachments` lista todos os arquivos que permanecerão. Uploads usam `multipart/form-data`, `payload_json` e `files[n]`; referências internas usam `attachment://filename`.
+Defina `defaultAllowedMentions` no Client ou `allowedMentions` no payload, sobretudo ao ecoar conteúdo externo ou de usuário. Mensagem que deve avisar uma pessoa (entrada de membro, teste do painel) usa `{ parse: [], users: [id] }`, só com o ID dela, nunca `parse: ['users']`; menção dentro de embed nunca notifica, então a menção que avisa vai no `content`. Em edits v10, `attachments` lista todos os arquivos que permanecerão. Uploads usam `multipart/form-data`, `payload_json` e `files[n]`; referências internas usam `attachment://filename`.
 
 ## Fontes
 

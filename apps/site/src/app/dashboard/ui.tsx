@@ -15,8 +15,14 @@ function initials(name: string): string {
   return name.split(/\s+/u).filter(Boolean).slice(0, 2).map((part) => [...part][0] ?? '').join('').toUpperCase();
 }
 
-function GuildIcon({ guild, size }: { guild: Guild; size: 'sm' | 'lg' }) {
-  const box = size === 'lg' ? 'size-11 rounded-xl text-base' : 'size-9 rounded-[10px] text-sm';
+const guildIconBox = {
+  sm: 'size-9 rounded-[10px] text-sm',
+  lg: 'size-11 rounded-xl text-base',
+  xl: 'size-14 rounded-[12px] text-lg',
+} as const;
+
+function GuildIcon({ guild, size }: { guild: Guild; size: keyof typeof guildIconBox }) {
+  const box = guildIconBox[size];
   return guild.iconUrl ? (
     <img className={`${box} shrink-0 object-cover`} src={guild.iconUrl} alt="" width={64} height={64} />
   ) : (
@@ -55,6 +61,8 @@ type SaveButtonProps = {
   savingLabel?: string;
   /** `md` (padrão) é o botão dos formulários; `sm` cabe em avisos e linhas compactas. */
   size?: 'md' | 'sm';
+  /** `solid` (padrão) é o botão principal, preenchido; `outline` é a versão de borda, para ações secundárias como "Testar" ao lado de outro campo. */
+  variant?: 'solid' | 'outline';
   /** Pulsa para chamar atenção quando há alterações por salvar. */
   attention?: boolean;
   disabled?: boolean;
@@ -63,18 +71,22 @@ type SaveButtonProps = {
 };
 
 const saveButtonSize = { md: 'min-h-11 px-5', sm: 'min-h-8 px-3' } as const;
+const saveButtonVariant = {
+  solid: 'border-0 bg-button text-button-text hover:bg-secondary',
+  outline: 'border border-control bg-transparent text-text hover:border-accent-fg hover:text-accent-fg',
+} as const;
 
 /**
  * Botão padrão de gravar do painel: sempre o mesmo visual e o mesmo comportamento (spinner e texto de "Salvando…"
- * enquanto grava). Use em todo botão que salva, cria ou envia; só o texto, o tamanho e o que ele grava mudam.
+ * enquanto grava). Use em todo botão que salva, cria ou envia; só o texto, o tamanho, o estilo e o que ele grava mudam.
  *
  *     <SaveButton saving={saving} onClick={() => void save()}>Salvar grupo</SaveButton>
  */
-function SaveButton({ children, saving, savingLabel = 'Salvando…', size = 'md', attention = false, disabled = false, type = 'button', onClick }: SaveButtonProps) {
+function SaveButton({ children, saving, savingLabel = 'Salvando…', size = 'md', variant = 'solid', attention = false, disabled = false, type = 'button', onClick }: SaveButtonProps) {
   const pulse = attention && !saving && !disabled ? 'animate-save-attention motion-reduce:animate-none' : '';
   return (
     <button
-      className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] border-0 bg-button text-sm font-semibold text-button-text hover:bg-secondary ${saveButtonSize[size]} ${saving ? 'cursor-wait opacity-80' : ''} ${pulse}`}
+      className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] text-sm font-semibold ${saveButtonVariant[variant]} ${saveButtonSize[size]} ${saving ? 'cursor-wait opacity-80' : ''} ${pulse}`}
       type={type}
       disabled={saving || disabled}
       aria-busy={saving}

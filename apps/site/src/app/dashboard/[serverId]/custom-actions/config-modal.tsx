@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { isFunctionConfigComplete, MAX_FUNCTIONS, MAX_OPTIONS, MAX_OPTION_LABEL, MAX_ROLES_PER_FUNCTION } from '@kuruttina/message-templates/custom-functions';
 import { RoleMultiPicker } from '../../../../components/selectors/RoleMultiPicker';
+import { Switch } from '../../../../components/Switch';
 import { errorText } from '../../../../lib/error-messages';
 import { card, dangerHover, outlineButton, primaryButton, SaveButton, StatusSkeleton } from '../../ui';
 import {
@@ -707,23 +708,15 @@ export function SelectConfigModal({ guildId, action, onClose, onSaved }: ModalPr
                 ?
               </span>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={keepSelection}
-              aria-labelledby={keepLabelId}
+            <Switch
+              checked={keepSelection}
+              labelledBy={keepLabelId}
               disabled={saving}
-              onClick={() => {
-                setKeepSelection(!keepSelection);
+              onChange={(next) => {
+                setKeepSelection(next);
                 setSaveError(null);
               }}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border border-control transition-colors disabled:opacity-50 ${keepSelection ? 'bg-button' : 'bg-transparent'}`}
-            >
-              <span
-                aria-hidden="true"
-                className={`inline-block size-4 rounded-full transition-transform ${keepSelection ? 'translate-x-[23px] bg-button-text' : 'translate-x-0.5 bg-text'}`}
-              />
-            </button>
+            />
           </div>
 
           <div className="flex flex-col gap-3">

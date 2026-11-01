@@ -4,6 +4,7 @@ import * as templates from './templates.js';
 import * as deliveries from './deliveries.js';
 import * as folders from './folders.js';
 import * as roleGroups from './role-groups.js';
+import * as memberEvents from './member-events.js';
 import * as customActions from './custom-actions.js';
 import * as customActionsConfig from './custom-actions-config.js';
 export { readDatabaseConfig } from './config.js';
@@ -130,6 +131,15 @@ export function createDatabase(config, environment, onError = () => {}) {
       /** @param {string} guildId @param {number} id */
       remove: (guildId, id) => connection((client) => roleGroups.remove(client, guildId, id), 'remove_role_group'),
     },
+    // Mensagens de entrada e saída de membros, uma por evento e servidor; o site grava e o bot só lê (RLS por servidor).
+    memberEvents: {
+      /** @param {string} guildId @param {'join'|'leave'} event */
+      get: (guildId, event) => connection((client) => memberEvents.get(client, guildId, event), 'get_member_event'),
+      /** @param {string} guildId */
+      list: (guildId) => connection((client) => memberEvents.list(client, guildId), 'list_member_events'),
+      /** @param {{guildId: string, event: 'join'|'leave', expectedVersion: number|null, enabled: boolean, channelId: string|null, ignoreBots: boolean, content: unknown, actorId: string}} input */
+      save: (input) => connection((client) => memberEvents.save(client, input), 'save_member_event'),
+    },
     // Ações personalizadas (botões e menus de seleção); o site administra e o bot só lê (RLS por servidor).
     customActions: {
       /** @param {import('./custom-actions.js').CustomActionKind} kind @param {string} guildId */
@@ -153,7 +163,8 @@ export function createDatabase(config, environment, onError = () => {}) {
     },
     // Fila de entrega de mensagens (etapa 1D); o bot consome sem filtro de servidor.
     deliveries: {
-      /** @param {{guildId: string, channelId: string, templateName: string, requestedBy: string}} input */
+      /** Informe `templateName` (template salvo) ou `content` (mensagem avulsa de teste do painel), nunca os dois.
+       * @param {{guildId: string, channelId: string, templateName?: string, content?: unknown, requestedBy: string}} input */
       create: (input) => connection((client) => deliveries.create(client, input), 'create_delivery'),
       /** @param {number} [limit] */
       claimPending: (limit) => connection((client) => deliveries.claimPending(client, limit), 'claim_deliveries'),

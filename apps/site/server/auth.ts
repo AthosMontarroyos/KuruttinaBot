@@ -25,8 +25,14 @@ const renewStepMs = 60 * 60 * 1000;
 const oauthTtlSeconds = 10 * 60;
 const maxSessions = 20;
 const maxPending = 50;
-const maxGuilds = 100;
+// O Discord devolve até 200 servidores por chamada em `/users/@me/guilds`.
+const maxGuilds = 200;
+const botGuildsTtlMs = 15_000;
+const maxBotGuildPages = 10;
 const iconHash = /^(?:a_)?[a-f0-9]{1,64}$/u;
+// Permissões pedidas no convite: ver e escrever em canais, embeds, anexos, histórico, emojis e reações,
+// mais banir, expulsar e castigar membros (os comandos de moderação).
+const invitePermissions = [10n, 11n, 14n, 15n, 16n, 18n, 6n, 38n, 2n, 1n, 40n].reduce((bits, bit) => bits | (1n << bit), 0n);
 // ADMINISTRATOR (0x8) ou MANAGE_GUILD (0x20): quem pode configurar um servidor.
 const manageBits = 0x28n;
 
@@ -149,13 +155,50 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     botCache = { value, expires: Date.now() + (value ? 600_000 : 30_000) };
     return value;
   }
+  // IDs dos servidores em que o bot está, lidos pelo token do bot e guardados por pouco tempo (o usuário volta
+  // do convite e a lista se atualiza). `null` quando não dá para saber: a tela então não mostra o convite.
+  let botGuildsCache: { value: Set<string> | null; expires: number } | undefined;
+  async function botGuildIds(): Promise<Set<string> | null> {
+    if (!config.botToken) return null;
+    if (botGuildsCache && botGuildsCache.expires > Date.now()) return botGuildsCache.value;
+    let value: Set<string> | null = new Set<string>();
+    try {
+      const headers = { Authorization: `Bot ${config.botToken}` };
+      let after = '';
+      for (let page = 0; page < maxBotGuildPages; page += 1) {
+        const batch = (await discordRequest(`/users/@me/guilds?limit=200${after}`, { headers })) as Array<{ id?: unknown }>;
+        const ids = batch.flatMap((guild) => (typeof guild.id === 'string' && isDiscordSnowflake(guild.id) ? [guild.id] : []));
+        for (const id of ids) value.add(id);
+        if (batch.length < 200 || ids.length === 0) break;
+        after = `&after=${ids[ids.length - 1]}`;
+      }
+    } catch {
+      value = null;
+    }
+    botGuildsCache = { value, expires: Date.now() + (value ? botGuildsTtlMs : 5_000) };
+    return value;
+  }
+  // Convite que já abre com o servidor escolhido; o Discord pede a confirmação de quem tem permissão.
+  const inviteUrl = (botId: string, guildId: string): string => `https://discord.com/oauth2/authorize?${new URLSearchParams({
+    client_id: botId,
+    scope: 'bot applications.commands',
+    permissions: invitePermissions.toString(),
+    guild_id: guildId,
+    disable_guild_select: 'true',
+  })}`;
   const sessionBody = async (session: Session | undefined) => {
-    const bot = session ? await botProfile() : null;
+    const [bot, present] = session ? await Promise.all([botProfile(), botGuildIds()]) : [null, null];
+    const botId = bot?.id ?? config.oauth?.clientId;
+    // Servidores com o bot primeiro; dentro de cada grupo, por nome.
+    const guilds = session?.guilds.map((guild) => {
+      const botIn = present ? present.has(guild.id) : null;
+      return { ...guild, botIn, inviteUrl: botIn === false && botId ? inviteUrl(botId, guild.id) : null };
+    }).sort((a, b) => Number(b.botIn !== false) - Number(a.botIn !== false) || a.name.localeCompare(b.name, 'pt-BR'));
     return {
       mock: config.devMock,
       discord: config.oauth !== undefined,
       authenticated: session !== undefined,
-      ...(session ? { user: toPublicUser(session.user), guilds: session.guilds, ...(bot ? { bot } : {}) } : {}),
+      ...(session ? { user: toPublicUser(session.user), guilds, ...(bot ? { bot } : {}) } : {}),
     };
   };
 

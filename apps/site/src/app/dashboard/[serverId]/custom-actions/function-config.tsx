@@ -1,6 +1,7 @@
 ﻿import { useEffect, useId, useState } from 'react';
 import { CUSTOM_FUNCTION_TYPES } from '@kuruttina/message-templates/custom-functions';
 import { ChannelSelect } from '../../../../components/selectors/ChannelSelect';
+import { SwitchField } from '../../../../components/Switch';
 import { VoiceChannelSelect } from '../../../../components/selectors/VoiceChannelSelect';
 import { errorText } from '../../../../lib/error-messages';
 import { listTemplates, type TemplateErrorCode } from '../embeds/templates/templates-api';
@@ -101,30 +102,6 @@ function TemplateField({ guildId, label, value, disabled, onChange }: { guildId:
           ))}
         </select>
       ) : null}
-    </div>
-  );
-}
-
-/** Interruptor no mesmo visual do "Manter seleção" do modal de menu. */
-function SwitchField({ label, checked, disabled, onChange }: { label: string; checked: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
-  const labelId = useId();
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span id={labelId} className="text-sm font-medium">{label}</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-labelledby={labelId}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border border-control transition-colors disabled:opacity-50 ${checked ? 'bg-button' : 'bg-transparent'}`}
-      >
-        <span
-          aria-hidden="true"
-          className={`inline-block size-4 rounded-full transition-transform ${checked ? 'translate-x-[23px] bg-button-text' : 'translate-x-0.5 bg-text'}`}
-        />
-      </button>
     </div>
   );
 }

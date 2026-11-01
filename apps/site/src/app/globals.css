@@ -64,6 +64,13 @@
     margin: 0;
     min-width: 280px;
   }
+  /* Coluna que ocupa a altura da tela: o rodapé (`mt-auto`) fica embaixo mesmo em página curta. */
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
   button,
   a {
     -webkit-tap-highlight-color: transparent;

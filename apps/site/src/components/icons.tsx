@@ -25,6 +25,22 @@ function TrashIcon({ className = 'size-4' }: IconProps) {
   );
 }
 
+function ArrowRightIcon({ className = 'size-4' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className = 'size-4' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
 /** Arco que gira enquanto uma ação está em andamento; parado quando o usuário prefere menos movimento. */
 function SpinnerIcon({ className = 'size-4' }: IconProps) {
   return (
@@ -35,4 +51,4 @@ function SpinnerIcon({ className = 'size-4' }: IconProps) {
   );
 }
 
-export { ConstructionIcon, PencilIcon, SpinnerIcon, TrashIcon };
+export { ArrowRightIcon, ConstructionIcon, PencilIcon, PlusIcon, SpinnerIcon, TrashIcon };

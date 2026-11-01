@@ -129,7 +129,8 @@ describe('combined formats', () => {
   type Node = ReturnType<typeof parseInline>[number];
   const plain = (nodes: Node[]): string => nodes.map((node) => {
     if (node.type === 'format') return plain(node.children);
-    return node.type === 'link' ? node.label : node.text;
+    if (node.type === 'link') return node.label;
+    return 'text' in node ? node.text : '';
   }).join('');
   const text = (value: string) => ({ type: 'text', text: value });
   const format = (kind: string, ...children: unknown[]) => ({ type: 'format', kind, children });
@@ -302,10 +303,10 @@ describe('stale selections', () => {
 describe('inline code combined with other formats', () => {
   type Kind = Parameters<typeof applyFormat>[3];
   const others = ['bold', 'italic', 'underline', 'strike', 'spoiler'] as const;
-  const plain = (nodes: ReturnType<typeof parseInline>): string => nodes.map((node) => (node.type === 'format' ? plain(node.children) : node.type === 'link' ? node.label : node.text)).join('');
+  const plain = (nodes: ReturnType<typeof parseInline>): string => nodes.map((node) => (node.type === 'format' ? plain(node.children) : node.type === 'link' ? node.label : 'text' in node ? node.text : '')).join('');
   const literalMarkers = (nodes: ReturnType<typeof parseInline>): boolean => nodes.some((node) => {
     if (node.type === 'format') return literalMarkers(node.children);
-    return node.type !== 'link' && /\*\*|__|~~|\|\|/u.test(node.text);
+    return 'text' in node && /\*\*|__|~~|\|\|/u.test(node.text);
   });
   const run = (start: string, kinds: Kind[]) => {
     let current = { text: start, start: 0, end: start.length };
@@ -359,5 +360,39 @@ describe('inline code combined with other formats', () => {
       { type: 'text', text: ' e ' },
       { type: 'code', text: 'x`y' },
     ]);
+  });
+});
+
+describe('menções e emojis do Discord', () => {
+  it('reads channel, role and user mentions', () => {
+    expect(parseInline('<#123456789012345678> <@&123456789012345679> <@123456789012345680> <@!123456789012345681>')).toEqual([
+      { type: 'mention', kind: 'channel', id: '123456789012345678' },
+      { type: 'text', text: ' ' },
+      { type: 'mention', kind: 'role', id: '123456789012345679' },
+      { type: 'text', text: ' ' },
+      { type: 'mention', kind: 'user', id: '123456789012345680' },
+      { type: 'text', text: ' ' },
+      { type: 'mention', kind: 'user', id: '123456789012345681' },
+    ]);
+  });
+
+  it('reads static and animated emoji', () => {
+    expect(parseInline('<:smile:123456789012345678> <a:danca_2:123456789012345679>')).toEqual([
+      { type: 'emoji', id: '123456789012345678', name: 'smile', animated: false },
+      { type: 'text', text: ' ' },
+      { type: 'emoji', id: '123456789012345679', name: 'danca_2', animated: true },
+    ]);
+  });
+
+  it('keeps mentions inside code as plain code text', () => {
+    expect(parseInline('`<#123456789012345678>` e `<:smile:123456789012345678>`')).toEqual([
+      { type: 'code', text: '<#123456789012345678>' },
+      { type: 'text', text: ' e ' },
+      { type: 'code', text: '<:smile:123456789012345678>' },
+    ]);
+  });
+
+  it('keeps a malformed token (id too short) as plain text', () => {
+    expect(parseInline('<#12> e <:a:1>')).toEqual([{ type: 'text', text: '<#12> e <:a:1>' }]);
   });
 });

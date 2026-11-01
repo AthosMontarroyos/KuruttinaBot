@@ -113,6 +113,7 @@ function describeTemplateIssue(issue: TemplateIssue): string {
     if (text) return text;
   }
   if (issue.code === 'empty_message') return 'A mensagem está vazia. Escreva um texto, um embed ou um botão.';
+  if (issue.code === 'components_not_allowed') return 'Botões e menus não estão disponíveis nesta mensagem.';
   if (issue.code === 'too_many_embeds') return `A mensagem passou de ${limits.embeds} embeds.`;
   if (issue.path === 'content' && issue.code === 'limit_exceeded') return `O texto da mensagem passou de ${limits.content} caracteres.`;
   return describeEmbedPart(issue) ?? describeComponent(issue) ?? issue.message;

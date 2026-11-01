@@ -1,4 +1,4 @@
-import type { Channel, Client, GuildTextBasedChannel } from 'discord.js';
+import type { Channel, Client, GuildTextBasedChannel, User } from 'discord.js';
 import { ACTION_VARIABLES, renderTemplate, type MessageTemplate } from '@kuruttina/message-templates';
 import { log } from '#bot/infrastructure/logging/logger.js';
 import { actionValuesFor } from './actionValues.js';
@@ -9,7 +9,10 @@ interface PendingDelivery {
   readonly id: number;
   readonly guildId: string;
   readonly channelId: string;
-  readonly templateName: string;
+  readonly templateName: string | null;
+  // Conteúdo avulso (teste do painel). Quando preenchido, substitui o template salvo.
+  readonly content: unknown;
+  readonly requestedBy: string;
 }
 
 /** Porta mínima consumida pelo poller: a fila de entregas e a leitura de templates. */
@@ -32,6 +35,7 @@ const TEMPLATE_NOT_FOUND = 'template_not_found';
 const MISSING_PERMISSION = 'missing_permission';
 const SEND_FAILED = 'send_failed';
 const RENDER_FAILED = 'render_failed';
+const REQUESTER_NOT_FOUND = 'requester_not_found';
 
 /** Discord reporta permissão insuficiente com esses códigos de erro de API. */
 const MISSING_PERMISSION_API_CODES = new Set([50001, 50013]);
@@ -92,17 +96,35 @@ export function createDeliveryPoller(
       return;
     }
 
-    const record = await database.templates.getTemplate(delivery.guildId, delivery.templateName);
-    if (!record) {
-      await fail(delivery, TEMPLATE_NOT_FOUND);
-      return;
+    let template: MessageTemplate;
+    let requester: User | undefined;
+    if (delivery.content !== null) {
+      // Entrega avulsa do painel: o conteúdo pedido é o template e as variáveis são do membro que pediu.
+      try {
+        requester = (await channel.guild.members.fetch(delivery.requestedBy)).user;
+      } catch {
+        await fail(delivery, REQUESTER_NOT_FOUND);
+        return;
+      }
+      template = delivery.content as MessageTemplate;
+    } else {
+      if (delivery.templateName === null) {
+        await fail(delivery, TEMPLATE_NOT_FOUND);
+        return;
+      }
+      const record = await database.templates.getTemplate(delivery.guildId, delivery.templateName);
+      if (!record) {
+        await fail(delivery, TEMPLATE_NOT_FOUND);
+        return;
+      }
+      template = record.content;
     }
 
     let reply;
     try {
-      // Entrega de teste do painel: não há usuário disparando, então o bot faz esse papel, como no preview do site.
-      const values = 'guild' in channel ? actionValuesFor(channel.guild, client.user ?? undefined) : {};
-      reply = toCommandReply(renderTemplate(record.content, ACTION_VARIABLES, values));
+      // Sem usuário disparando, o bot faz esse papel, como no preview do site.
+      const values = 'guild' in channel ? actionValuesFor(channel.guild, requester ?? client.user ?? undefined) : {};
+      reply = toCommandReply(renderTemplate(template, ACTION_VARIABLES, values));
     } catch (error) {
       log('error', 'delivery_render_failed', {
         id: delivery.id,
@@ -112,9 +134,13 @@ export function createDeliveryPoller(
       await fail(delivery, RENDER_FAILED);
       return;
     }
+    // Teste avulso do painel notifica só quem pediu; template salvo não notifica ninguém.
+    const allowedMentions = delivery.content !== null
+      ? { parse: [] as const, users: [delivery.requestedBy] }
+      : { parse: [] as const };
     const content = typeof reply === 'string'
-      ? { content: reply, allowedMentions: { parse: [] as const } }
-      : { ...reply, allowedMentions: { parse: [] as const } };
+      ? { content: reply, allowedMentions }
+      : { ...reply, allowedMentions };
 
     try {
       await channel.send(content);

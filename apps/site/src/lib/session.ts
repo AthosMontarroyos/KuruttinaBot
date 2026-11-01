@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 
 /** `bannerUrl` pode faltar (servidor sem banner ou sessão gravada antes do campo existir). */
-type Guild = { id: string; name: string; iconUrl: string | null; bannerUrl?: string | null; members: number | null };
+type Guild = {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+  bannerUrl?: string | null;
+  members: number | null;
+  /** `false`: o bot não está no servidor; `null` ou ausente: não deu para saber. */
+  botIn?: boolean | null;
+  /** Convite do bot já apontado para este servidor; só vem quando `botIn` é `false`. */
+  inviteUrl?: string | null;
+};
 type Bot = { id: string; name: string; avatarUrl: string | null };
 type Session = { mock: boolean; discord: boolean; authenticated: boolean; user?: { label: string; avatarUrl: string | null }; guilds?: Guild[]; bot?: Bot };
 
@@ -23,6 +33,16 @@ function useSession() {
       if (current) setSession(current);
       else setFailed(true);
     });
+  }, []);
+
+  // Ao voltar para a aba (por exemplo depois de adicionar o bot a um servidor), relê a sessão em silêncio.
+  useEffect(() => {
+    const refresh = (): void => {
+      if (document.visibilityState !== 'visible') return;
+      void callSession('/api/session', 'GET').then((current) => { if (current) setSession(current); });
+    };
+    document.addEventListener('visibilitychange', refresh);
+    return () => document.removeEventListener('visibilitychange', refresh);
   }, []);
 
   const mockLogin = useCallback(async (): Promise<boolean> => {

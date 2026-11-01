@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 
+// Rotas respondidas pelo servidor (login OAuth, API): precisam de uma navegação real, não de uma troca de tela.
+const serverPaths = /^\/(?:auth|api)\//u;
+
 function plainLeftClick(event: MouseEvent): boolean {
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
@@ -26,7 +29,7 @@ function usePathname(): string {
       } catch {
         return;
       }
-      if (url.origin !== location.origin) return;
+      if (url.origin !== location.origin || serverPaths.test(url.pathname)) return;
       if (url.pathname === location.pathname && url.search === location.search) return;
       event.preventDefault();
       history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);

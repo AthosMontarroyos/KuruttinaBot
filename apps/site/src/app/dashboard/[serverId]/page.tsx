@@ -7,9 +7,10 @@ import { OverviewView } from './overview/view';
 import { EmbedsView } from './embeds/view';
 import { ModulesView } from './modules/view';
 import { RoleGroupsView } from './role-groups/view';
+import { MemberEventsView } from './member-events/view';
 import { primaryButton, outlineButton, GuildIcon, StatusSkeleton, Message } from '../ui';
 
-type Section = 'overview' | 'embeds' | 'roles' | 'modules';
+type Section = 'overview' | 'embeds' | 'member-events' | 'roles' | 'modules';
 
 type ServerDashboardPageProps = {
   session: Session | null;
@@ -66,6 +67,7 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
           {([
             ['overview', 'Visão geral'],
             ['embeds', 'Mensagens'],
+            ['member-events', 'Entrada e saída'],
             ['roles', 'Cargos'],
             ['modules', 'Módulos'],
           ] as const).map(([target, label]) => (
@@ -92,6 +94,8 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
             <OverviewView guild={guild} />
           ) : section === 'embeds' ? (
             <EmbedsView guildId={guild.id} />
+          ) : section === 'member-events' ? (
+            <MemberEventsView guildId={guild.id} />
           ) : section === 'roles' ? (
             <RoleGroupsView guildId={guild.id} />
           ) : (

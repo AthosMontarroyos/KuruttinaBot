@@ -19,6 +19,11 @@ type MessageEditorProps = {
   allowJson?: boolean;
   /** Conteúdo da aba Enviar, à direita de Variáveis; sem ele a aba não aparece. */
   sendPanel?: ReactNode;
+  /**
+   * Permite botões e menus (Action Rows) no modo visual; padrão `true`. Com `false`, o botão "+ Action Row"
+   * e a lista de linhas somem do modo visual. Componentes que já vieram no JSON seguem no modelo, só não aparecem aqui.
+   */
+  allowComponents?: boolean;
 };
 
 /**
@@ -29,7 +34,7 @@ type MessageEditorProps = {
  *
  *     <MessageEditor key={name} initialJson={json} onChange={setJson} label="Mensagem de boas-vindas" />
  */
-function MessageEditor({ initialJson, onChange, label = 'Mensagem', allowJson = true, sendPanel }: MessageEditorProps) {
+function MessageEditor({ initialJson, onChange, label = 'Mensagem', allowJson = true, sendPanel, allowComponents = true }: MessageEditorProps) {
   const [initial] = useState(() => parseState(initialJson));
   const [mode, setMode] = useState<'visual' | 'json'>(initial ? 'visual' : 'json');
   const [state, setState] = useState<EditorState>(initial ?? { content: '', embeds: [], components: [] });
@@ -111,24 +116,26 @@ function MessageEditor({ initialJson, onChange, label = 'Mensagem', allowJson = 
                 onRemove={() => update({ ...state, embeds: state.embeds.filter((item) => item.key !== embed.key) })}
               />
             ))}
-            <ActionRows rows={state.components} onChange={(components) => update({ ...state, components })} />
+            {allowComponents ? <ActionRows rows={state.components} onChange={(components) => update({ ...state, components })} /> : null}
             <div className="flex flex-wrap gap-2 self-start">
               {state.embeds.length < LIMITS.embeds ? (
                 <button type="button" className="self-start rounded border border-dashed border-[#4e5058] px-3 py-1 text-sm text-[#b5bac1] hover:bg-white/5 hover:text-white" onClick={() => update({ ...state, embeds: [...state.embeds, emptyEmbed()] })}>+ Adicionar embed</button>
               ) : null}
-              <button
-                type="button"
-                disabled={rowsFull}
-                title={rowsFull ? 'Máximo de 5 linhas' : undefined}
-                className="rounded border border-dashed border-[#4e5058] px-3 py-1 text-sm text-[#b5bac1] hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#b5bac1]"
-                onClick={() => update({ ...state, components: [...state.components, { kind: 'pending' }] })}
-              >
-                + Action Row
-              </button>
+              {allowComponents ? (
+                <button
+                  type="button"
+                  disabled={rowsFull}
+                  title={rowsFull ? 'Máximo de 5 linhas' : undefined}
+                  className="rounded border border-dashed border-[#4e5058] px-3 py-1 text-sm text-[#b5bac1] hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#5865f2] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#b5bac1]"
+                  onClick={() => update({ ...state, components: [...state.components, { kind: 'pending' }] })}
+                >
+                  + Action Row
+                </button>
+              ) : null}
             </div>
           </ChatMessage>
         )}
-        {panel === null && mode === 'visual' && state.components.some((row) => isSavedRow(row) && record(row).kind !== 'buttons' && record(row).kind !== 'select') ? <p className="text-[13px] text-muted">Linhas de formato desconhecido só podem ser editadas no modo JSON.</p> : null}
+        {allowComponents && panel === null && mode === 'visual' && state.components.some((row) => isSavedRow(row) && record(row).kind !== 'buttons' && record(row).kind !== 'select') ? <p className="text-[13px] text-muted">Linhas de formato desconhecido só podem ser editadas no modo JSON.</p> : null}
       </div>
     </PreviewProvider>
   );

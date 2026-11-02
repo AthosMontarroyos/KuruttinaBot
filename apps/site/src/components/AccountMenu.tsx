@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { Session } from '../lib/session';
+import { headerIconButton, headerIconImage } from './header-icon';
 
 type AccountMenuProps = {
   session: Session | null;
   onLogout: () => void;
 };
 
-const trigger = 'inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-control bg-surface p-0 text-muted hover:border-text min-[701px]:size-9';
+const trigger = headerIconButton;
 const item = 'flex min-h-11 w-full items-center rounded-lg bg-transparent px-3 text-left text-sm font-medium text-text hover:bg-border';
 
 function AccountMenu({ session, onLogout }: AccountMenuProps) {
@@ -35,7 +36,7 @@ function AccountMenu({ session, onLogout }: AccountMenuProps) {
   if (!session?.authenticated || !session.user) {
     return (
       <a className={`icon-link ${trigger}`} href="/login" aria-label="Entrar">
-        <img src="/icons/account/user.svg" alt="" />
+        <img className={headerIconImage} src="/icons/account/user.svg" alt="" />
       </a>
     );
   }
@@ -47,7 +48,7 @@ function AccountMenu({ session, onLogout }: AccountMenuProps) {
         {avatarUrl && !avatarFailed ? (
           <img className="size-full object-cover" src={avatarUrl} alt="" width={64} height={64} onError={() => setAvatarFailed(true)} />
         ) : (
-          <span aria-hidden="true" className="text-sm font-semibold text-text">{[...label][0]?.toUpperCase() ?? '?'}</span>
+          <span aria-hidden="true" className="text-sm font-semibold text-text min-[1101px]:text-base">{[...label][0]?.toUpperCase() ?? '?'}</span>
         )}
       </button>
       {open ? (

@@ -8,7 +8,7 @@ import { EmbedsView } from './embeds/view';
 import { ModulesView } from './modules/view';
 import { RoleGroupsView } from './role-groups/view';
 import { MemberEventsView } from './member-events/view';
-import { primaryButton, outlineButton, GuildIcon, StatusSkeleton, Message } from '../ui';
+import { primaryButton, outlineButton, StatusSkeleton, Message } from '../ui';
 
 type Section = 'overview' | 'embeds' | 'member-events' | 'roles' | 'modules';
 
@@ -16,10 +16,9 @@ type ServerDashboardPageProps = {
   session: Session | null;
   failed: boolean;
   serverId: string;
-  onLogout: () => void;
 };
 
-function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDashboardPageProps) {
+function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageProps) {
   const [section, setSection] = useState<Section>('overview');
 
   useEffect(() => {
@@ -57,13 +56,9 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
   }
 
   return (
-    <div className="flex flex-1 flex-wrap">
-      <aside className="flex min-w-0 flex-[0_0_240px] flex-col gap-5 border-r border-border p-5 max-[700px]:flex-[1_1_100%] max-[700px]:border-r-0 max-[700px]:border-b">
-        <div className="flex items-center gap-3">
-          <GuildIcon guild={guild} size="sm" />
-          <span className="text-[15px] font-semibold [overflow-wrap:anywhere]">{guild.name}</span>
-        </div>
-        <nav className="flex flex-col gap-1" aria-label="Seções do servidor">
+    <div className="flex flex-1 flex-wrap max-[700px]:content-start">
+      <aside className="flex min-w-0 flex-[0_0_240px] flex-col border-r border-border p-5 max-[700px]:flex-[1_1_100%] max-[700px]:border-r-0 max-[700px]:border-b max-[700px]:px-3 max-[700px]:py-2">
+        <nav className="flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden min-[701px]:flex-col min-[701px]:gap-1 min-[701px]:overflow-visible" aria-label="Seções do servidor">
           {([
             ['overview', 'Visão geral'],
             ['embeds', 'Mensagens'],
@@ -73,7 +68,7 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
           ] as const).map(([target, label]) => (
             <button
               key={target}
-              className={`flex min-h-11 items-center rounded-[10px] border-0 px-3 text-left text-sm font-medium ${section === target ? 'bg-border text-text' : 'bg-transparent text-muted hover:text-text'}`}
+              className={`flex min-h-11 items-center shrink-0 whitespace-nowrap rounded-full px-4 min-[701px]:rounded-[10px] min-[701px]:px-3 border-0 text-left text-sm font-medium ${section === target ? 'bg-border text-text' : 'bg-transparent text-muted hover:text-text'}`}
               type="button"
               aria-current={section === target ? 'page' : undefined}
               onClick={() => setSection(target)}
@@ -82,10 +77,6 @@ function ServerDashboardPage({ session, failed, serverId, onLogout }: ServerDash
             </button>
           ))}
         </nav>
-        <div className="mt-auto flex flex-col gap-2">
-          <a className={outlineButton} href="/dashboard">Trocar de servidor</a>
-          <button className={outlineButton} type="button" onClick={onLogout}>Sair</button>
-        </div>
       </aside>
 
       <main id="conteudo" className="flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-5 py-8 min-[701px]:px-[5%]">

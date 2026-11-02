@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 const socials = [
   { label: 'Instagram do criador', notice: 'O Instagram do criador estará disponível em breve.', icon: '/icons/social/instagram.svg' },
@@ -10,51 +10,96 @@ const socials = [
 ] as const;
 
 type HomePageProps = {
-  avatarUrl: string;
+  coverUrl: string;
   onNotice: (message: string) => void;
 };
 
-function IconImage({ src, mobileSrc }: { src: string; mobileSrc?: string }) {
+function IconImage({ src, mobileSrc, className }: { src: string; mobileSrc?: string; className?: string }) {
   return (
     <picture>
       {mobileSrc ? <source media="(max-width: 700px)" srcSet={mobileSrc} /> : null}
-      <img src={src} alt="" />
+      <img className={className} src={src} alt="" />
     </picture>
   );
 }
 
-function HomePage({ avatarUrl, onNotice }: HomePageProps) {
-  const [portraitFailed, setPortraitFailed] = useState(false);
+// A partir de 1100px a capa é a composição de 1440×900 do design, ampliada por igual (zoom) até caber na tela. Abaixo disso o layout é fluido.
+const stageWidth = 1440;
+const stageHeight = 900;
+const stageMinWidth = 1100;
+
+function readStageScale(): number {
+  if (window.innerWidth < stageMinWidth) return 1;
+  return Math.min(window.innerWidth / stageWidth, window.innerHeight / stageHeight);
+}
+
+function useStageScale(): number {
+  const [scale, setScale] = useState(readStageScale);
+  useEffect(() => {
+    const update = (): void => setScale(readStageScale());
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return scale;
+}
+
+function HomePage({ coverUrl, onNotice }: HomePageProps) {
+  const [coverFailed, setCoverFailed] = useState(false);
+  const scale = useStageScale();
 
   return (
-    <main id="conteudo" className="flex min-h-0 flex-col items-stretch gap-7 px-5 pt-3 pb-8 min-[701px]:grid min-[701px]:min-h-[656px] min-[701px]:grid-cols-[minmax(0,1fr)_minmax(280px,38%)] min-[701px]:items-center min-[701px]:gap-8 min-[701px]:px-[5%] min-[701px]:pt-12 min-[701px]:pb-[88px] min-[1101px]:grid-cols-[minmax(0,1fr)_420px] min-[1101px]:gap-x-[72px]">
-      <div className="flex flex-col items-start gap-4 min-[701px]:gap-5">
-        <h1 className="text-[40px] leading-[50px] font-semibold min-[701px]:text-[52px] min-[701px]:leading-[1.265625] min-[1101px]:text-[64px]">Kuruttina</h1>
-        <p className="max-w-[60ch] text-base leading-6 text-muted min-[701px]:text-lg min-[701px]:leading-7">
-          O Kuruttina entra no seu servidor pelo Discord. Adicione o bot quando quiser e acompanhe seus servidores pelo painel.
-        </p>
-        <div className="flex flex-wrap items-center gap-2 min-[701px]:gap-3">
-          <button
-            className="action-icon inline-flex size-11 shrink-0 items-center justify-center rounded-full border-0 bg-button p-0 text-muted hover:bg-secondary"
-            type="button"
-            aria-label="Servidor de suporte"
-            onClick={() => onNotice('O servidor de suporte estará disponível em breve.')}
-          >
-            <IconImage src="/icons/community/discord.svg" mobileSrc="/icons/community/discord-mobile.svg" />
-          </button>
-          <Pill onClick={() => onNotice('O convite do bot estará disponível em breve.')}>Adicionar ao Discord</Pill>
-          <a
-            className="inline-flex min-h-11 items-center rounded-full border-2 border-text bg-transparent px-4 py-2.5 text-[13px] leading-4 font-semibold whitespace-nowrap text-text hover:bg-surface min-[701px]:px-[22px] min-[701px]:text-[15px] min-[701px]:leading-[19px]"
-            href="/dashboard"
-          >
-            Painel de controle
-          </a>
+    <main id="conteudo" className="flex min-h-0 flex-1 flex-col">
+      <section style={{ zoom: scale }} className="home-cover relative flex flex-1 flex-col gap-5 overflow-hidden bg-background px-5 pt-[300px] pb-2 text-text min-[701px]:min-h-[640px] min-[701px]:justify-end min-[701px]:gap-0 min-[701px]:px-[5%] min-[701px]:pt-0 min-[701px]:pb-0">
+        <div className="absolute top-0 left-0 h-[460px] w-full min-[701px]:left-auto min-[701px]:right-0 min-[701px]:top-auto min-[701px]:bottom-0 min-[701px]:h-[88%] min-[701px]:w-auto min-[701px]:max-w-[50%] min-[701px]:aspect-[3/4] min-[701px]:max-h-[860px] min-[1100px]:h-[900px] min-[1100px]:w-[662px] min-[1100px]:max-h-none min-[1100px]:max-w-none min-[1100px]:aspect-auto">
+          <div
+            aria-hidden="true"
+            className="absolute -top-24 -right-28 size-[430px] rounded-full bg-stage-disc min-[701px]:top-[-26.5%] min-[701px]:right-[-28.5%] min-[701px]:size-auto min-[701px]:h-[105%] min-[701px]:aspect-square min-[1100px]:top-[-140px] min-[1100px]:right-[-90px] min-[1100px]:size-[760px]"
+          />
+          {coverUrl && !coverFailed ? (
+            <img
+              className="home-cover-art relative size-full object-cover object-top"
+              src={coverUrl}
+              alt="Ilustração da Kuruttina deitada lendo um livro, com uma máscara de dormir rosa na cabeça."
+              fetchPriority="high"
+              onError={() => setCoverFailed(true)}
+            />
+          ) : null}
         </div>
-        <nav className="flex gap-2.5" aria-label="Redes do criador">
+
+        <div className="relative z-[2] flex flex-col items-start gap-5 min-[701px]:max-w-[480px] min-[701px]:gap-6">
+          <p className="text-base leading-[1.45] text-muted min-[701px]:text-2xl min-[701px]:leading-[1.4]">
+            Oi, eu sou a Kuruttina. Vim para deixar a sua comunidade mais viva, e ficar por perto.
+          </p>
+          <div className="flex w-full flex-col gap-2.5 min-[701px]:w-auto min-[701px]:flex-row min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-3">
+            <Pill onClick={() => onNotice('O convite do bot estará disponível em breve.')}>Adicionar ao Discord</Pill>
+            <div className="flex gap-2.5 min-[701px]:contents">
+              <a
+                className="inline-flex h-[52px] flex-1 items-center justify-center rounded-full border-2 border-text px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-text hover:bg-surface min-[701px]:h-14 min-[701px]:flex-none min-[701px]:text-[17px]"
+                href="/dashboard"
+              >
+                Painel de controle
+              </a>
+              <button
+                className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-full border border-border bg-surface p-0 text-muted hover:border-accent-fg hover:text-accent-fg min-[701px]:size-14"
+                type="button"
+                aria-label="Servidor de suporte"
+                onClick={() => onNotice('O servidor de suporte estará disponível em breve.')}
+              >
+                <IconImage src="/icons/community/discord.svg" mobileSrc="/icons/community/discord-mobile.svg" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <h1 className="home-title relative z-[3] order-first font-display text-[clamp(56px,19vw,80px)] leading-[0.95] font-medium tracking-[-0.04em] whitespace-nowrap min-[701px]:order-none min-[701px]:mt-3 min-[701px]:-ml-2 min-[701px]:text-[clamp(120px,15vw,240px)] min-[1100px]:text-[216px]">
+          Kuruttina<span aria-hidden="true" className="text-accent">.</span>
+        </h1>
+
+        <nav className="relative z-[3] flex items-center justify-center gap-2.5 py-4 min-[701px]:justify-start min-[701px]:py-6 min-[1100px]:py-4" aria-label="Redes do criador">
           {socials.map((item) => (
             <button
               key={item.label}
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-control bg-surface p-0 text-muted hover:border-text min-[701px]:size-9"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-transparent p-0 text-muted hover:border-accent-fg hover:text-accent-fg"
               type="button"
               aria-label={item.label}
               onClick={() => onNotice(item.notice)}
@@ -63,22 +108,7 @@ function HomePage({ avatarUrl, onNotice }: HomePageProps) {
             </button>
           ))}
         </nav>
-      </div>
-      <figure className="h-[420px] w-full overflow-hidden rounded-[28px] bg-surface min-[701px]:h-[520px] min-[701px]:rounded-[32px] min-[1101px]:w-[420px]">
-        {avatarUrl && !portraitFailed ? (
-          <img
-            className="size-full object-cover"
-            src={avatarUrl}
-            alt="Foto de perfil da Kuruttina."
-            width={420}
-            height={520}
-            fetchPriority="high"
-            onError={() => setPortraitFailed(true)}
-          />
-        ) : (
-          <figcaption className="p-6 text-muted">Imagem indisponível no momento.</figcaption>
-        )}
-      </figure>
+      </section>
     </main>
   );
 }
@@ -86,7 +116,7 @@ function HomePage({ avatarUrl, onNotice }: HomePageProps) {
 function Pill({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
     <button
-      className="min-h-11 rounded-full border-2 border-button bg-button px-4 py-2.5 text-[13px] leading-4 font-semibold whitespace-nowrap text-button-text hover:bg-secondary hover:border-secondary min-[701px]:px-[22px] min-[701px]:text-[15px] min-[701px]:leading-[19px]"
+      className="h-[52px] w-full rounded-full border-2 border-button bg-button px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-button-text hover:border-secondary hover:bg-secondary min-[701px]:h-14 min-[701px]:w-auto min-[701px]:text-[17px]"
       type="button"
       onClick={onClick}
     >

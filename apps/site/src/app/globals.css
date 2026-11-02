@@ -2,32 +2,8 @@
 
 @theme {
   --font-sans: "Outfit", ui-sans-serif, sans-serif;
-  --color-background: #140b12;
-  --color-surface: #1f1220;
-  --color-border: #3b2336;
-  --color-text: #fdf6fc;
-  --color-muted: #c9b0bf;
-  --color-subtle: #a88e9d;
-  --color-control: #8a6c7c;
-  --color-button: #f08db4;
-  --color-button-text: #2a0f1d;
-  --color-secondary: #f6a9c6;
-  --color-accent: #f08db4;
-  --color-accent-text: #2a0f1d;
-  --color-accent-fg: #f08db4;
-  --color-accent-soft: rgb(240 141 180 / 0.14);
-  --color-danger: #ff6b61;
-  --color-success: #5fcf9a;
-  --color-warning: #f0a050;
-}
-
-:root {
-  color-scheme: dark;
-  scrollbar-color: var(--color-muted) var(--color-background);
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
+  --font-display: "Fraunces", Georgia, serif;
+  --color-stage-disc: #f8d7e6;
   --color-background: #fdf6fc;
   --color-surface: #f7e6ef;
   --color-border: #e6c2d3;
@@ -47,9 +23,14 @@
   --color-warning: #b45f06;
 }
 
-/* Os SVGs trazem cor fixa pensada para o tema escuro; no claro, escurecem ou invertem. */
-:root[data-theme="light"] button img[src^="/icons/"],
-:root[data-theme="light"] a.icon-link img[src^="/icons/"] {
+:root {
+  color-scheme: light;
+  scrollbar-color: var(--color-muted) var(--color-background);
+}
+
+/* Os SVGs trazem cor fixa clara e são escurecidos para o fundo claro. */
+button img[src^="/icons/"],
+a.icon-link img[src^="/icons/"] {
   filter: brightness(0.4);
 }
 
@@ -108,6 +89,37 @@
 @media (prefers-reduced-motion: reduce) {
   button:active {
     transform: none;
+  }
+}
+
+/* Na Home a barra superior fica transparente sobre a capa. */
+.topbar-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 10;
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Home: capa de pôster. A ilustração tem fundo branco e usa `multiply` para o branco virar a cor da página; a máscara só suaviza as bordas cortadas. */
+.home-title {
+  font-variation-settings: 'SOFT' 100, 'opsz' 144;
+}
+
+.home-cover-art {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(to bottom, black 62%, transparent);
+  mask-image: linear-gradient(to bottom, black 62%, transparent);
+}
+
+@media (min-width: 701px) {
+  .home-cover-art {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 16%), linear-gradient(to bottom, transparent, black 8%);
+    mask-image: linear-gradient(to right, transparent, black 16%), linear-gradient(to bottom, transparent, black 8%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
   }
 }
 

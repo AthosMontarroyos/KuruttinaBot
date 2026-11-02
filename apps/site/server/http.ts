@@ -74,7 +74,8 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   const fallbackImages = { avatarUrl: config.avatarUrl, appIconUrl: config.avatarUrl };
   const renderPage = (images: { avatarUrl: string; appIconUrl: string }): string => template
     .replaceAll('{{AVATAR_URL}}', escapeAttribute(images.avatarUrl))
-    .replaceAll('{{APP_ICON_URL}}', escapeAttribute(images.appIconUrl));
+    .replaceAll('{{APP_ICON_URL}}', escapeAttribute(images.appIconUrl))
+    .replaceAll('{{HOME_COVER_URL}}', escapeAttribute(config.homeCoverUrl));
   const html = renderPage(fallbackImages);
   const pageRoutes = new Set(['/', '/comandos', '/modulos', '/login', '/dashboard']);
   const assets = new Map<string, { type: string; body: Buffer | string }>([

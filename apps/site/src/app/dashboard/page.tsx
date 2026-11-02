@@ -15,12 +15,12 @@ const grid = 'm-0 grid list-none grid-cols-1 gap-4 p-0 min-[701px]:grid-cols-2 m
 const cardShell = `${card} group flex h-full flex-col overflow-hidden transition-colors`;
 const cardButton = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-semibold transition-colors';
 
-/** Faixa do topo do cartão: o banner do servidor ou, sem ele, um degradê no tom do site. */
+/** Faixa do topo do cartão: o banner do servidor ou, sem ele, uma faixa lisa no tom do site. */
 function GuildCover({ guild }: { guild: Guild }) {
   return guild.bannerUrl ? (
     <img className="h-20 w-full object-cover" src={guild.bannerUrl} alt="" loading="lazy" />
   ) : (
-    <div aria-hidden="true" className="h-20 w-full bg-gradient-to-br from-accent-soft via-surface to-border" />
+    <div aria-hidden="true" className="h-20 w-full bg-accent-soft" />
   );
 }
 

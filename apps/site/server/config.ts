@@ -57,6 +57,7 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash || (base.port && base.port !== '443')) throw new Error('ASSETS_BASE_URL deve ser uma URL HTTPS pública sem credenciais ou parâmetros.');
   // Only relative object keys are persisted; the browser loads media directly from R2.
   const avatarPath = 'icons/Icons/1.jpg';
+  const homeCoverPath = 'dashboard/LaddingPage/CardRetrato.jpg';
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   const siteUrl = readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production');
   const oauth = readDiscordOAuth(env, siteUrl);
@@ -71,6 +72,7 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
     siteUrl,
     assetsOrigin: base.origin,
     avatarUrl: new URL(avatarPath, base).href,
+    homeCoverUrl: new URL(homeCoverPath, base).href,
     devMock,
     oauth,
     sessionFile: readSessionFile(env),

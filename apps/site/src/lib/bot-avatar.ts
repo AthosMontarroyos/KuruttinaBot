@@ -20,4 +20,9 @@ function readAppIconUrl(): string {
   return readHttpsMeta('kuruttina-app-icon');
 }
 
-export { readAppIconUrl, readBotAvatarUrl };
+/** Capa da Home que o servidor injeta no HTML; vazia quando a URL não é https válida. */
+function readHomeCoverUrl(): string {
+  return readHttpsMeta('kuruttina-home-cover');
+}
+
+export { readAppIconUrl, readBotAvatarUrl, readHomeCoverUrl };

@@ -13,19 +13,17 @@ const navigation = [
 
 type TopBarProps = {
   appIconUrl: string;
-  light: boolean;
-  onToggleTheme: () => void;
   onNotice: (message: string) => void;
   session: Session | null;
   onLogout: () => void;
+  overlay?: boolean;
 };
 
-const iconButton = 'inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-control bg-surface p-0 text-muted hover:border-text min-[701px]:size-9';
+const desktopBrand = 'mr-auto flex items-center gap-3 text-lg font-semibold min-[1101px]:gap-4 min-[1101px]:text-[clamp(18px,1.3vw,24px)]';
 
-function TopBar({ appIconUrl, light, onToggleTheme, onNotice, session, onLogout }: TopBarProps) {
+function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: TopBarProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const themeLabel = light ? 'Ativar tema escuro' : 'Ativar tema claro';
 
   const renderItem = (item: (typeof navigation)[number], className: string) =>
     'href' in item ? (
@@ -48,16 +46,13 @@ function TopBar({ appIconUrl, light, onToggleTheme, onNotice, session, onLogout 
 
   return (
     <>
-      <header className="relative flex items-center gap-3 px-5 py-3 min-[701px]:hidden">
+      <header className={`${overlay ? 'topbar-overlay ' : ''}relative flex items-center gap-3 px-5 py-3 min-[701px]:hidden`}>
         <a className="mr-auto flex items-center gap-3 text-base font-semibold" href="/" aria-label="Kuruttina — início">
           {appIconUrl && !avatarFailed ? (
             <img className="size-9 rounded-full bg-surface object-cover" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
           ) : null}
           <span>Kuruttina</span>
         </a>
-        <button className={iconButton} type="button" aria-label={themeLabel} aria-pressed={light} onClick={onToggleTheme}>
-          <img src="/icons/theme/theme-mobile.svg" alt="" />
-        </button>
         <AccountMenu session={session} onLogout={onLogout} />
         <button
           className="inline-flex min-h-11 items-center rounded-full border border-control bg-surface px-4 text-sm font-medium text-text"
@@ -75,22 +70,19 @@ function TopBar({ appIconUrl, light, onToggleTheme, onNotice, session, onLogout 
         ) : null}
       </header>
 
-      <header className="hidden min-[701px]:flex min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-5 min-[701px]:border-b min-[701px]:border-border min-[701px]:px-[5%] min-[701px]:py-7 min-[1101px]:flex-nowrap min-[1101px]:gap-7">
-        <a className="mr-auto flex items-center gap-3 text-base font-semibold" href="/" aria-label="Kuruttina — início">
+      <header className={`${overlay ? 'topbar-overlay ' : ''}hidden min-[701px]:flex min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-5 min-[701px]:border-b min-[701px]:border-border min-[701px]:px-[5%] min-[701px]:py-7 min-[1101px]:flex-nowrap min-[1101px]:gap-7`}>
+        <a className={desktopBrand} href="/" aria-label="Kuruttina — início">
           {appIconUrl && !avatarFailed ? (
-            <img className="size-9 rounded-full bg-surface object-cover" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
+            <img className="size-10 rounded-full bg-surface object-cover min-[1101px]:size-[clamp(40px,2.6vw,52px)]" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
           ) : null}
           <span>Kuruttina</span>
         </a>
-        <nav className="flex items-center gap-7 min-[701px]:order-3 min-[701px]:w-full min-[1101px]:order-none min-[1101px]:w-auto" aria-label="Navegação principal">
-          {navigation.map((item) => renderItem(item, 'text-sm font-medium whitespace-nowrap text-muted hover:text-text'))}
+        <nav className="flex items-center gap-7 min-[701px]:order-3 min-[701px]:w-full min-[1101px]:order-none min-[1101px]:w-auto min-[1101px]:gap-[clamp(28px,2vw,44px)]" aria-label="Navegação principal">
+          {navigation.map((item) => renderItem(item, 'text-[15px] font-medium whitespace-nowrap text-muted hover:text-text min-[1101px]:text-[clamp(16px,1.05vw,20px)]'))}
         </nav>
-        <div className="flex items-center gap-7">
-          <button className={iconButton} type="button" aria-label={themeLabel} aria-pressed={light} onClick={onToggleTheme}>
-            <img src="/icons/theme/theme.svg" alt="" />
-          </button>
-          <span className="flex items-center gap-2 text-[13px] font-medium whitespace-nowrap" aria-label="Idioma: português do Brasil">
-            <img src="/icons/language/brasil.svg" alt="" />
+        <div className="flex items-center gap-7 min-[1101px]:gap-[clamp(28px,2vw,44px)]">
+          <span className="flex items-center gap-2 text-[15px] font-medium whitespace-nowrap min-[1101px]:gap-3 min-[1101px]:text-[clamp(15px,1vw,19px)]" aria-label="Idioma: português do Brasil">
+            <img className="w-[22px] min-[1101px]:w-[clamp(22px,1.4vw,28px)]" src="/icons/language/brasil.svg" alt="" />
             pt-BR (Brasil)
           </span>
           <AccountMenu session={session} onLogout={onLogout} />

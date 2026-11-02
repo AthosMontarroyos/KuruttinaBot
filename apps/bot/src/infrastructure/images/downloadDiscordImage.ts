@@ -72,6 +72,11 @@ async function responsePreview(response: Response): Promise<string> {
   }
 }
 
+/** Mesma allowlist do download, sem buscar a imagem. Usada antes de disparar o workflow. */
+export function normalizeDiscordCdnImageUrl(rawUrl: string): string {
+  return parseAllowedUrl(rawUrl);
+}
+
 function parseAllowedUrl(rawUrl: string): string {
   let url: URL;
   try {

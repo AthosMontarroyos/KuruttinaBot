@@ -10,6 +10,12 @@ export type BotConfig = Readonly<{
   target: BotTarget;
   activeCredential: BotCredential;
   database: ReturnType<typeof readDatabaseConfig>;
+  /**
+   * PAT fine-grained opcional, só para disparar `emoji-prod.yml`.
+   * Ausente ou inutilizável: a propriedade não existe e o comando só orienta.
+   * Quando presente, não é enumerável, para não sair em `JSON.stringify`.
+   */
+  githubWorkflowToken?: string;
 }>;
 
 const configurationError = (message: string): Error => Object.assign(new Error(message), { name: 'BotConfigurationError' });
@@ -20,6 +26,7 @@ const botEnvironmentNames = [
   'DISCORD_BOT_TOKEN',
   'DATABASE_URL',
   'DATABASE_CA',
+  'GITHUB_WORKFLOW_TOKEN',
 ] as const;
 
 /** Mantém só as variáveis do bot. O sufixo de ambiente não escolhe o nome. */
@@ -56,13 +63,31 @@ const required = (env: NodeJS.ProcessEnv, name: string): string => {
   return value;
 };
 
+/**
+ * Segredo opcional. Vazio, só com espaços ou com espaço interno conta como
+ * ausente: o processo segue sem ele e não o registra.
+ */
+function readOptionalSecret(env: NodeJS.ProcessEnv, name: string): string | undefined {
+  const raw = env[name];
+  if (raw === undefined) return undefined;
+  const value = raw.trim();
+  if (value.length === 0 || /[\s\0]/u.test(value)) return undefined;
+  return value;
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = loadBotEnvironment()): BotConfig {
   const { appEnv: target } = loadAppConfig(env);
-  return Object.freeze({
+  const config: BotConfig = {
     target,
     activeCredential: readCredential(env),
     database: readDatabaseConfig(env, target),
-  });
+  };
+  const githubWorkflowToken = readOptionalSecret(env, 'GITHUB_WORKFLOW_TOKEN');
+  if (githubWorkflowToken !== undefined) {
+    // Fora de enumeração: stringify e espalhamento não levam o PAT.
+    Object.defineProperty(config, 'githubWorkflowToken', { value: githubWorkflowToken, enumerable: false });
+  }
+  return Object.freeze(config);
 }
 
 function readCredential(env: NodeJS.ProcessEnv): BotCredential {

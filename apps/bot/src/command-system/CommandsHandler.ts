@@ -11,6 +11,7 @@ import type {
   CommandRoute,
   CommandScope,
   EmojiInfoPort,
+  ProductionEmojiDispatchPort,
   StaffAccessPort,
 } from './types.js';
 
@@ -57,6 +58,7 @@ export class CommandsHandler {
     private readonly staff?: StaffAccessPort,
     private readonly emojiImport?: EmojiImportService,
     private readonly emojiInfo?: EmojiInfoPort,
+    private readonly productionEmojiDispatch?: ProductionEmojiDispatchPort,
   ) {
     for (const command of registeredCommands) {
       // The payload split depends on it, so hand-registered commands must agree too.
@@ -142,6 +144,7 @@ export class CommandsHandler {
       ...context,
       ...(this.emojiImport ? { emojiImport: this.emojiImport } : {}),
       ...(this.emojiInfo ? { emojiInfo: this.emojiInfo } : {}),
+      ...(this.productionEmojiDispatch ? { productionEmojiDispatch: this.productionEmojiDispatch } : {}),
       commandCatalog: this.catalog(),
     };
     const accessError = await validateCommandAccess(

@@ -43,6 +43,20 @@ describe('loadConfig', () => {
     expect(config.activeCredential.token).toBe(base.DISCORD_BOT_TOKEN);
     expect(JSON.stringify(config)).not.toContain('fake-prod-token');
   });
+  it('keeps GITHUB_WORKFLOW_TOKEN optional and out of enumerable config', () => {
+    expect(loadConfig(base).githubWorkflowToken).toBeUndefined();
+    const token = 'fake-github-workflow-token';
+    const config = loadConfig({ ...base, GITHUB_WORKFLOW_TOKEN: `  ${token}\n` });
+    expect(config.githubWorkflowToken).toBe(token);
+    expect(JSON.stringify(config)).not.toContain(token);
+    expect(Object.keys(config)).not.toContain('githubWorkflowToken');
+    expect(selectBotEnvironment({ ...base, GITHUB_WORKFLOW_TOKEN: token })).toEqual({
+      ...base,
+      GITHUB_WORKFLOW_TOKEN: token,
+    });
+    expect(loadConfig({ ...base, GITHUB_WORKFLOW_TOKEN: '   ' }).githubWorkflowToken).toBeUndefined();
+    expect(loadConfig({ ...base, GITHUB_WORKFLOW_TOKEN: 'bad token' }).githubWorkflowToken).toBeUndefined();
+  });
   it('requires the unsuffixed token and ignores suffixed names', () => {
     const production = {
       ...base,

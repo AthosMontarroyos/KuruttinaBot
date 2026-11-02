@@ -114,10 +114,20 @@ export interface CommandContext {
   readonly attachments?: readonly EmojiAttachment[] | undefined;
   /** Shared import pipeline (queue, limits, Discord adapter) injected by the dispatcher. */
   readonly emojiImport?: EmojiImportService | undefined;
+  /**
+   * Dispara o workflow de Application Emoji de produção.
+   * Ausente quando `GITHUB_WORKFLOW_TOKEN` não está configurado.
+   */
+  readonly productionEmojiDispatch?: ProductionEmojiDispatchPort | undefined;
   /** Guild emoji lookup injected by the dispatcher. */
   readonly emojiInfo?: EmojiInfoPort | undefined;
   /** Public command list built from the registered modules and injected by the dispatcher, for `/help`. */
   readonly commandCatalog?: readonly CatalogCommand[] | undefined;
+}
+
+/** Narrow GitHub capability: `workflow_dispatch` of `emoji-prod.yml` on `main`. */
+export interface ProductionEmojiDispatchPort {
+  request(input: { readonly name: string; readonly source: string }): Promise<{ readonly runsUrl: string }>;
 }
 
 /** Port for message fetch and delete operations. */

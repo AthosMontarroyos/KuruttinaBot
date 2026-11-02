@@ -5,6 +5,8 @@
 # DevMock is enabled by APP_ENV=development and reads the active dev user id from the database.
 # DISCORD_BOT_TOKEN reaches the site (server side only, see docs/decisions/site-holds-bot-token.md): it lists the bot
 # guilds where that user is a member and the channels of a guild. The site does not receive the bot id.
+# GITHUB_WORKFLOW_TOKEN is optional and only for the dev bot. It dispatches emoji-prod.yml. Leave it unset until
+# the fine-grained PAT exists in the Doppler dev config. Production compose does not receive it.
 name: kuruttina-dev
 
 services:
@@ -24,6 +26,7 @@ services:
       DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}
       DATABASE_URL: ${DATABASE_URL:-}
       DATABASE_CA: ${DATABASE_CA:-}
+      GITHUB_WORKFLOW_TOKEN: ${GITHUB_WORKFLOW_TOKEN:-}
 
   site:
     build:

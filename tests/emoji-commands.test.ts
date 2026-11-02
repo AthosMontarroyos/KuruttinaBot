@@ -782,6 +782,8 @@ describe('emoji command deployment scopes', () => {
     expect(dev.options?.map((option) => option.name)).toEqual(['emoji']);
     const group = dev.options?.[0];
     expect(group && 'options' in group ? group.options?.map((option) => option.name) : []).toEqual(['add']);
+    const add = group && 'options' in group ? group.options?.find((option) => option.name === 'add') : undefined;
+    expect(add && 'options' in add ? add.options?.map((option) => option.name) : []).toEqual(['nome', 'origem', 'arquivo']);
     expect(devCommand.access).toEqual({
       kind: 'staff',
       minimumRole: 'dev',

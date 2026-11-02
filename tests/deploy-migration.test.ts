@@ -274,6 +274,14 @@ describe('compose database env', () => {
     expect(serviceBlock(production, 'bot')).not.toContain('DISCORD_CLIENT_SECRET');
     expect(serviceBlock(production, 'site')).not.toContain('DISCORD_BOT_TOKEN_PRODUCTION');
   });
+
+  it('entrega GITHUB_WORKFLOW_TOKEN só ao bot de development', () => {
+    const production = readFileSync(new URL('../compose.yaml', import.meta.url), 'utf8');
+    const development = readFileSync(new URL('../compose.dev.yaml', import.meta.url), 'utf8');
+    expect(serviceBlock(development, 'bot')).toContain('GITHUB_WORKFLOW_TOKEN: ${GITHUB_WORKFLOW_TOKEN:-}');
+    expect(serviceBlock(development, 'site')).not.toContain('GITHUB_WORKFLOW_TOKEN');
+    expect(production).not.toContain('GITHUB_WORKFLOW_TOKEN');
+  });
 });
 
 describe('consulta de segredo ausente', () => {

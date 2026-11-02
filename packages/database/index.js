@@ -9,11 +9,24 @@ import * as customActions from './custom-actions.js';
 import * as customActionsConfig from './custom-actions-config.js';
 export { readDatabaseConfig } from './config.js';
 /** @typedef {'creator'|'dev'} StaffRole */
-/** @typedef {{devGuildId: string, environment: 'development'|'production'}} BotSettings */
+/** @typedef {{devGuildIds: readonly string[], environment: 'development'|'production'}} BotSettings */
 const snowflake = /^[1-9]\d{16,19}$/u;
-/** @param {unknown} value */
+/** @param {unknown} value @returns {value is string} */
 export function isDiscordId(value) {
   return typeof value === 'string' && snowflake.test(value) && BigInt(value) <= 18446744073709551615n;
+}
+/** Empty is valid. Duplicates and any non-snowflake are not.
+ * @param {unknown} value @returns {readonly string[]|null} */
+function readDevGuildIds(value) {
+  if (!Array.isArray(value)) return null;
+  /** @type {string[]} */
+  const ids = [];
+  for (const id of value) {
+    if (!isDiscordId(id) || ids.includes(id)) return null;
+    ids.push(id);
+  }
+  ids.sort();
+  return ids;
 }
 /** @param {import('pg').PoolConfig} config @param {'development'|'production'} environment @param {(diagnostic: import('./diagnostics.js').DatabaseDiagnostic) => void} [onError] */
 export function createDatabase(config, environment, onError = () => {}) {
@@ -42,12 +55,21 @@ export function createDatabase(config, environment, onError = () => {}) {
   }
   /** @param {import('pg').PoolClient} client @returns {Promise<BotSettings>} */
   async function settings(client) {
-    const result = await client.query('SELECT dev_guild_id, environment FROM bot_private.bot_settings WHERE singleton = true');
+    const result = await client.query(
+      `SELECT settings.environment,
+              COALESCE(array_agg(dev_guilds.guild_id ORDER BY dev_guilds.guild_id)
+                FILTER (WHERE dev_guilds.guild_id IS NOT NULL), ARRAY[]::text[]) AS dev_guild_ids
+       FROM bot_private.bot_settings AS settings
+       LEFT JOIN bot_private.bot_dev_guilds AS dev_guilds ON true
+       WHERE settings.singleton = true
+       GROUP BY settings.singleton, settings.environment`,
+    );
     const row = result.rows[0];
+    const devGuildIds = readDevGuildIds(row?.dev_guild_ids);
     if (result.rows.length === 0) throw new DatabaseSettingsError('SETTINGS_MISSING');
-    if (result.rows.length !== 1 || !isDiscordId(row?.dev_guild_id)) throw new DatabaseSettingsError('SETTINGS_INVALID');
+    if (result.rows.length !== 1 || devGuildIds === null) throw new DatabaseSettingsError('SETTINGS_INVALID');
     if (row.environment !== environment) throw new DatabaseSettingsError('ENVIRONMENT_MISMATCH');
-    return { devGuildId: row.dev_guild_id, environment };
+    return { devGuildIds, environment };
   }
   return {
     getSettings: () => connection(settings, 'get_settings'),
@@ -62,7 +84,11 @@ export function createDatabase(config, environment, onError = () => {}) {
             `SELECT staff.role FROM bot_private.bot_staff AS staff
              JOIN bot_private.bot_settings AS settings ON settings.singleton = true
              WHERE staff.user_id = $1 AND staff.active = true
-               AND settings.dev_guild_id = $2 AND settings.environment = $3`,
+               AND settings.environment = $3
+               AND EXISTS (
+                 SELECT 1 FROM bot_private.bot_dev_guilds AS dev_guilds
+                 WHERE dev_guilds.guild_id = $2
+               )`,
             [userId, guildId, environment],
           );
           const role = result.rows[0]?.role;

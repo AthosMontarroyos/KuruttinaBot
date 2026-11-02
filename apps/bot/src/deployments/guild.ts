@@ -8,10 +8,13 @@ export function createGuildDeployment(handler: CommandsHandler, getSettings: () 
     name: 'staff-guild',
     run: async ({ config, applicationId, correlationId, force }) => {
       const settings = await getSettings();
-      await deployGuildCommands(config.activeCredential.token, applicationId, settings.devGuildId, handler.payload('dev-guild'), {
-        correlationId,
-        ...(force ? { force } : {}),
-      });
+      const commands = handler.payload('dev-guild');
+      for (const guildId of settings.devGuildIds) {
+        await deployGuildCommands(config.activeCredential.token, applicationId, guildId, commands, {
+          correlationId,
+          ...(force ? { force } : {}),
+        });
+      }
     },
   };
 }

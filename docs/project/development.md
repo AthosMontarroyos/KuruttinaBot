@@ -58,7 +58,7 @@ Depois de alterar o código, rode de novo o `up --build`. O ambiente foi constru
 | `npm run typecheck` | Regenera o catálogo de commands e verifica tipos do bot e do site. |
 | `npm test` | Testes herméticos de todas as apps, na mesma cobertura de `vitest` sem `tests/database.integration.test.ts`. |
 | `npm run test:database` | Integração com PostgreSQL descartável; exige `initdb` e `pg_ctl` de uma instalação nativa do PostgreSQL. |
-| `npm run deploy:commands` | Publica sempre o catálogo nos escopos global e da equipe; exige `APP_ENV` explícito no processo, ou execução pelo Compose. O startup do bot já sincroniza por diferença, então este comando só é necessário para forçar. |
+| `npm run deploy:commands` | Publica sempre o catálogo no escopo global e em cada guilda de desenvolvimento cadastrada; exige `APP_ENV` explícito no processo, ou execução pelo Compose. O startup do bot já sincroniza por diferença, então este comando só é necessário para forçar. Sem guildas cadastradas, não há publicação de guilda. |
 | `doppler run --only-secrets DATABASE_MIGRATION_URL,DATABASE_CA -- npm run database:migrate -- development` | Migration única. O config Doppler precisa ser o do argumento; `production` é a alternativa explícita. Valor vazio não substitui a URL de runtime. |
 | `doppler run --only-secrets DATABASE_MIGRATION_URL,DATABASE_CA -- npm run database:seed -- development` | Cadastro inicial do ambiente escolhido, no mesmo config Doppler. |
 | `npm run security:secrets` | Gitleaks local, se instalado. |

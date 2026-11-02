@@ -16,7 +16,7 @@ Implementado:
 - `apps/bot/src/infrastructure/images/sharpEmojiProcessor.ts`: escada de compressão com `sharp` e redução de quadros com `gifenc`.
 - `apps/bot/src/infrastructure/discord/emojis/emojiAdapter.ts`: criação de emojis de servidor via `discord.js`. O destino `application` é recusado; a criação no bot de produção é o workflow manual.
 - `apps/bot/src/infrastructure/discord/emojis/emojiAdd.ts`: executor e leitura de entradas da importação no servidor, fora da descoberta de comandos.
-- `apps/bot/src/commands/dev/emoji.ts` e `apps/bot/src/commands/mod/emoji.ts`: definições slash (subcomando e grupo), rotas por prefixo e políticas `staff`/`guild`. O módulo em `dev/` declara `scope: 'dev-guild'`, só é publicado na guilda da equipe e responde com a orientação do workflow. O módulo em `mod/` importa para o servidor.
+- `apps/bot/src/commands/dev/emoji.ts` e `apps/bot/src/commands/mod/emoji.ts`: definições slash (subcomando e grupo), rotas por prefixo e políticas `staff`/`guild`. O módulo em `dev/` declara `scope: 'dev-guild'`, só é publicado nas guildas de desenvolvimento cadastradas e responde com a orientação do workflow. O módulo em `mod/` importa para o servidor.
 - `apps/bot/src/bootstrap.ts`: uma única composição do serviço, injetada no dispatcher pelos dois transports.
 
 Permissões e identidade ficam na política de acesso (ver [Acesso do bot](bot-access.md)). Não existe configuração por guild de limites ou fila; os limites são os de `DEFAULT_EMOJI_IMAGE_LIMITS`.

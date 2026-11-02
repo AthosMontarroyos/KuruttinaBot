@@ -12,7 +12,7 @@ vi.mock('pg', () => ({ default: { Pool: class {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.connect.mockResolvedValue({ query: mocks.query, release: mocks.release });
-  mocks.query.mockResolvedValue({ rows: [{ dev_guild_id: '1422623678205657160', environment: 'production' }] });
+  mocks.query.mockResolvedValue({ rows: [{ dev_guild_ids: ['1422623678205657160'], environment: 'production' }] });
 });
 
 describe('safe database diagnostics', () => {
@@ -86,8 +86,11 @@ describe('safe database diagnostics', () => {
 
   it.each([
     [[], 'SETTINGS_MISSING', 'settings_missing'],
-    [[{ dev_guild_id: 'invalid', environment: 'production' }], 'SETTINGS_INVALID', 'settings_invalid'],
-    [[{ dev_guild_id: '1422623678205657160', environment: 'development' }], 'ENVIRONMENT_MISMATCH', 'environment_mismatch'],
+    [[{ dev_guild_ids: ['invalid'], environment: 'production' }], 'SETTINGS_INVALID', 'settings_invalid'],
+    [[{ dev_guild_ids: ['1422623678205657160', '1422623678205657160'], environment: 'production' }], 'SETTINGS_INVALID', 'settings_invalid'],
+    [[{ dev_guild_ids: null, environment: 'production' }], 'SETTINGS_INVALID', 'settings_invalid'],
+    [[{ dev_guild_ids: '1422623678205657160', environment: 'production' }], 'SETTINGS_INVALID', 'settings_invalid'],
+    [[{ dev_guild_ids: ['1422623678205657160'], environment: 'development' }], 'ENVIRONMENT_MISMATCH', 'environment_mismatch'],
   ])('distinguishes invalid settings (%j)', async (rows, errorCode, reason) => {
     mocks.query.mockResolvedValue({ rows });
     const report = vi.fn();
@@ -123,11 +126,21 @@ describe('safe database diagnostics', () => {
     } finally { await database.close(); }
   });
 
+  it('accepts production with no dev guild', async () => {
+    mocks.query.mockResolvedValue({ rows: [{ dev_guild_ids: [], environment: 'production' }] });
+    const report = vi.fn();
+    const database = createDatabase({}, 'production', report);
+    try {
+      await expect(database.getSettings()).resolves.toEqual({ devGuildIds: [], environment: 'production' });
+      expect(report).not.toHaveBeenCalled();
+    } finally { await database.close(); }
+  });
+
   it('keeps successful settings reads silent and releases the connection', async () => {
     const report = vi.fn();
     const database = createDatabase({}, 'production', report);
     try {
-      await expect(database.getSettings()).resolves.toEqual({ devGuildId: '1422623678205657160', environment: 'production' });
+      await expect(database.getSettings()).resolves.toEqual({ devGuildIds: ['1422623678205657160'], environment: 'production' });
       expect(report).not.toHaveBeenCalled();
       expect(mocks.release).toHaveBeenCalledExactlyOnceWith();
     } finally { await database.close(); }

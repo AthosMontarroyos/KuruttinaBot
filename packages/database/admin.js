@@ -35,16 +35,20 @@ export async function initializeAccess(client, environment, ids) {
   await client.query('BEGIN');
   try {
     await client.query('SELECT pg_advisory_xact_lock(146455, 2)');
-    await client.query(
-      'INSERT INTO bot_private.bot_settings (singleton, dev_guild_id, environment) VALUES (true, $1, $2) ON CONFLICT DO NOTHING',
-      [ids.guildId, environment],
-    );
+    const existingSettings = await client.query('SELECT singleton FROM bot_private.bot_settings WHERE singleton');
+    if (existingSettings.rows.length === 0) {
+      await client.query('INSERT INTO bot_private.bot_settings (singleton, environment) VALUES (true, $1)', [environment]);
+      await client.query('INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ($1)', [ids.guildId]);
+    }
     for (const [role, id] of [['creator', ids.creatorId], ['dev', ids.devId]]) {
       await client.query('INSERT INTO bot_private.bot_staff (user_id, role, active) VALUES ($1, $2, true) ON CONFLICT DO NOTHING', [id, role]);
     }
-    const settings = await client.query('SELECT dev_guild_id, environment FROM bot_private.bot_settings WHERE singleton');
+    const settings = await client.query('SELECT environment FROM bot_private.bot_settings WHERE singleton');
+    const guilds = await client.query('SELECT guild_id FROM bot_private.bot_dev_guilds ORDER BY guild_id');
     const staff = await client.query('SELECT user_id, role, active FROM bot_private.bot_staff ORDER BY role');
-    if (settings.rows[0]?.dev_guild_id !== ids.guildId || settings.rows[0]?.environment !== environment ||
+    const guildIds = guilds.rows.map((row) => row.guild_id);
+    if (settings.rows.length !== 1 || settings.rows[0]?.environment !== environment ||
+        guildIds.length !== 1 || guildIds[0] !== ids.guildId ||
         staff.rows.length !== 2 || staff.rows[0]?.user_id !== ids.creatorId || staff.rows[1]?.user_id !== ids.devId ||
         staff.rows.some((row) => row.active !== true)) throw new Error('Existing registration differs; use an explicit administrative update');
     await client.query('COMMIT');

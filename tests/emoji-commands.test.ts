@@ -229,7 +229,7 @@ describe('emoji add command routing', () => {
 
     expect(importEmoji).not.toHaveBeenCalled();
     expect(texts(ports.reply)).toEqual([
-      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a origem: um ID de emoji ou a URL HTTPS da imagem. A criação espera aprovação.',
+      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com a origem: um ID de emoji, uma marcação ou a URL HTTPS da imagem. O nome é opcional. Se ele já existir, uso o próximo número livre. A criação espera aprovação.',
     ]);
     expect(ports.port.client.application.emojis.fetch).toHaveBeenCalledOnce();
   });
@@ -242,7 +242,7 @@ describe('emoji add command routing', () => {
 
     expect(importEmoji).not.toHaveBeenCalled();
     expect(texts(message.reply as unknown as ReturnType<typeof vi.fn>)).toEqual([
-      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a origem: um ID de emoji ou a URL HTTPS da imagem. A criação espera aprovação.',
+      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com a origem: um ID de emoji, uma marcação ou a URL HTTPS da imagem. O nome é opcional. Se ele já existir, uso o próximo número livre. A criação espera aprovação.',
     ]);
   });
 
@@ -305,7 +305,7 @@ describe('dev emoji authorization in both transports', () => {
 
       expect(importEmoji).not.toHaveBeenCalled();
       if (expected) expect(replies).toEqual([
-        '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a origem: um ID de emoji ou a URL HTTPS da imagem. A criação espera aprovação.',
+        '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com a origem: um ID de emoji, uma marcação ou a URL HTTPS da imagem. O nome é opcional. Se ele já existir, uso o próximo número livre. A criação espera aprovação.',
       ]);
       else expect(replies.join('\n')).not.toContain('Adicionar emoji de produção');
       if (location) expect(staff.getStaffRole).toHaveBeenCalledWith(user, location);
@@ -783,7 +783,11 @@ describe('emoji command deployment scopes', () => {
     const group = dev.options?.[0];
     expect(group && 'options' in group ? group.options?.map((option) => option.name) : []).toEqual(['add']);
     const add = group && 'options' in group ? group.options?.find((option) => option.name === 'add') : undefined;
-    expect(add && 'options' in add ? add.options?.map((option) => option.name) : []).toEqual(['nome', 'origem', 'arquivo']);
+    expect(add && 'options' in add ? add.options : []).toEqual([
+      expect.objectContaining({ name: 'nome', required: false }),
+      expect.objectContaining({ name: 'origem', required: false }),
+      expect.objectContaining({ name: 'arquivo', required: false }),
+    ]);
     expect(devCommand.access).toEqual({
       kind: 'staff',
       minimumRole: 'dev',

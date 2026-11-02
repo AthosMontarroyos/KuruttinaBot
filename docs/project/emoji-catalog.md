@@ -40,7 +40,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `ID` | Usuário inválido na limpeza e campo Membro ou Usuário na confirmação de moderação | disponível | disponível |
 | `info` | Campo Duração na confirmação de castigo; omitido quando indisponível | disponível | disponível |
 | `kick` | Complemento da confirmação de expulsão; omitido quando indisponível | disponível | disponível |
-| `label` | Nome de emoji inválido | disponível | disponível |
+| `label` | Nome de emoji inválido, ou origem que não forma um nome de 2 a 32 caracteres | disponível | disponível |
 | `left_arrow` | Voltar ou página anterior | disponível | disponível |
 | `link` | Link ou convite | disponível | disponível |
 | `lock` | Acesso restrito à equipe | disponível | disponível |
@@ -68,7 +68,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `Angry` | Bot sem as permissões necessárias no canal | disponível | disponível |
 | `Note` | Campo Motivo na confirmação de moderação | disponível | disponível |
 | `ping` | Latência, conexão ou comando de ping | disponível | disponível |
-| `question` | Quantidade inválida na limpeza, expulsão, castigo ou banimento sem o alvo ou sem duração | disponível | disponível |
+| `question` | Quantidade inválida na limpeza, expulsão, castigo ou banimento sem o alvo ou sem duração, e origem de emoji de produção sem nome aproveitável | disponível | disponível |
 | `scared` | Susto, medo ou alerta assustador | disponível | disponível |
 | `SpinningDancing` | Comemoração ou animação de dança | disponível | disponível |
 | `staff` | Campo Responsável na confirmação de moderação | disponível | disponível |

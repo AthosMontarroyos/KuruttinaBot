@@ -155,6 +155,32 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     botCache = { value, expires: Date.now() + (value ? 600_000 : 30_000) };
     return value;
   }
+  // Ícone do app e foto do bot lidos pelo token do bot; cada imagem cai no R2 sozinha quando falta ou falha.
+  let botImagesCache: { value: { avatarUrl: string; appIconUrl: string }; expires: number } | undefined;
+  async function botImages(): Promise<{ avatarUrl: string; appIconUrl: string }> {
+    const fallback = config.avatarUrl;
+    if (!config.botToken) return { avatarUrl: fallback, appIconUrl: fallback };
+    if (botImagesCache && botImagesCache.expires > Date.now()) return botImagesCache.value;
+    const headers = { Authorization: `Bot ${config.botToken}` };
+    const lookup = async (path: string, folder: string, field: string, size: number): Promise<{ url: string | null; failed: boolean }> => {
+      try {
+        const raw = (await discordRequest(path, { headers })) as Record<string, unknown> | null;
+        const id = raw?.id;
+        const hash = raw?.[field];
+        if (!isDiscordSnowflake(id) || typeof hash !== 'string' || !iconHash.test(hash)) return { url: null, failed: false };
+        return { url: `https://cdn.discordapp.com/${folder}/${id}/${hash}.png?size=${size}`, failed: false };
+      } catch {
+        return { url: null, failed: true };
+      }
+    };
+    const [appIcon, avatar] = await Promise.all([
+      lookup('/applications/@me', 'app-icons', 'icon', 128),
+      lookup('/users/@me', 'avatars', 'avatar', 512),
+    ]);
+    const value = { avatarUrl: avatar.url ?? fallback, appIconUrl: appIcon.url ?? fallback };
+    botImagesCache = { value, expires: Date.now() + (appIcon.failed || avatar.failed ? 30_000 : 600_000) };
+    return value;
+  }
   // IDs dos servidores em que o bot está, lidos pelo token do bot e guardados por pouco tempo (o usuário volta
   // do convite e a lista se atualiza). `null` quando não dá para saber: a tela então não mostra o convite.
   let botGuildsCache: { value: Set<string> | null; expires: number } | undefined;
@@ -354,5 +380,5 @@ export function createAuth(config: SiteConfig, loadActiveDevId: () => Promise<st
     return true;
   };
 
-  return { handle, getAuthorizedGuild, isSameOrigin };
+  return { handle, getAuthorizedGuild, isSameOrigin, botImages };
 }

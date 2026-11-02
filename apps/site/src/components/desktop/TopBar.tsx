@@ -12,7 +12,7 @@ const navigation = [
 ] as const;
 
 type TopBarProps = {
-  avatarUrl: string;
+  appIconUrl: string;
   light: boolean;
   onToggleTheme: () => void;
   onNotice: (message: string) => void;
@@ -22,7 +22,7 @@ type TopBarProps = {
 
 const iconButton = 'inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-control bg-surface p-0 text-muted hover:border-text min-[701px]:size-9';
 
-function TopBar({ avatarUrl, light, onToggleTheme, onNotice, session, onLogout }: TopBarProps) {
+function TopBar({ appIconUrl, light, onToggleTheme, onNotice, session, onLogout }: TopBarProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const themeLabel = light ? 'Ativar tema escuro' : 'Ativar tema claro';
@@ -50,8 +50,8 @@ function TopBar({ avatarUrl, light, onToggleTheme, onNotice, session, onLogout }
     <>
       <header className="relative flex items-center gap-3 px-5 py-3 min-[701px]:hidden">
         <a className="mr-auto flex items-center gap-3 text-base font-semibold" href="/" aria-label="Kuruttina — início">
-          {avatarUrl && !avatarFailed ? (
-            <img className="size-9 rounded-full bg-surface object-cover" src={avatarUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
+          {appIconUrl && !avatarFailed ? (
+            <img className="size-9 rounded-full bg-surface object-cover" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
           ) : null}
           <span>Kuruttina</span>
         </a>
@@ -77,8 +77,8 @@ function TopBar({ avatarUrl, light, onToggleTheme, onNotice, session, onLogout }
 
       <header className="hidden min-[701px]:flex min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-5 min-[701px]:border-b min-[701px]:border-border min-[701px]:px-[5%] min-[701px]:py-7 min-[1101px]:flex-nowrap min-[1101px]:gap-7">
         <a className="mr-auto flex items-center gap-3 text-base font-semibold" href="/" aria-label="Kuruttina — início">
-          {avatarUrl && !avatarFailed ? (
-            <img className="size-9 rounded-full bg-surface object-cover" src={avatarUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
+          {appIconUrl && !avatarFailed ? (
+            <img className="size-9 rounded-full bg-surface object-cover" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
           ) : null}
           <span>Kuruttina</span>
         </a>

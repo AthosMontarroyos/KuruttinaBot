@@ -27,7 +27,7 @@ describe('toCommandReply', () => {
     });
     expect(reply).toEqual({
       embeds: [{
-        title: 'T', color: 0x2b2d31,
+        title: 'T', color: 0xf08db4,
         thumbnail: { url: 'https://exemplo.com/t.png' },
         image: { url: 'https://exemplo.com/i.png' },
         footer: { text: 'F', icon_url: 'https://exemplo.com/f.png' },
@@ -49,7 +49,7 @@ describe('toCommandReply', () => {
     expect(reply).toEqual({
       content: 'oi',
       embeds: [{
-        title: 'T', description: 'D', url: 'https://exemplo.com', color: 0x2b2d31,
+        title: 'T', description: 'D', url: 'https://exemplo.com', color: 0xf08db4,
         fields: [{ name: 'a', value: 'b', inline: true }, { name: 'c', value: 'd' }],
         footer: { text: 'F' }, author: { name: 'A', url: 'https://exemplo.com/a' },
       }],

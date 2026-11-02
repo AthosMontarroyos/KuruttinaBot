@@ -8,7 +8,7 @@ Contexto consolidado em 12 de outubro de 2026. Público prioritário e estado do
 
 web
 
-Este valor descreve a futura interface web no contexto do Impeccable. O produto implementado é um bot para Discord; há uma primeira Home local em `apps/site`, baseada no Figma; o painel administrativo ainda não está implementado.
+Este valor descreve a futura interface web no contexto do Impeccable. O produto implementado é um bot para Discord; há uma primeira Home local em `apps/site`; o painel administrativo ainda não está implementado.
 
 ## Users
 
@@ -35,7 +35,7 @@ O projeto também é apresentado no portfólio de desenvolvimento de software de
 ## Capabilities and Constraints
 
 - O bot e a persistência estão implementados. O [estado atual](docs/project/current-state.md) e o [README](README.md) descrevem as capacidades existentes; não tratar esse catálogo como roadmap aprovado.
-- A Home local está implementada conforme o [brief do Figma](.claude/skills/website-developer/references/home-figma.md). Publicação, Dashboard e integrações continuam futuras.
+- A Home local está implementada conforme a [referência da Home](.claude/skills/website-developer/references/home.md). Publicação, Dashboard e integrações continuam futuras.
 - A stack existente está em revisão. Nenhum framework ou fornecedor substituto foi escolhido; revisão não autoriza migração nem revoga os controles atuais.
 - Isolamento de ambientes, autorização, proteção de secrets, backup e recuperação continuam requisitos, conforme o [replanejamento](docs/project/replanning.md) e os documentos de domínio aplicáveis.
 - Não inventar funcionalidades, estatísticas, disponibilidade, atividade ao vivo, depoimentos ou promessas operacionais para preencher interfaces.

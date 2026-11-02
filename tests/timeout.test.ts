@@ -161,7 +161,7 @@ describe('timeout command', () => {
     expect(message).toMatchObject({
       content: '<:police:police-id> <:sucess:sucess-id> Pronto. `Alvo` foi castigado por **10 minutos**. <:jail:jail-id>',
       embeds: [{
-        color: 0x2b2d31,
+        color: 0xf08db4,
         fields: [
           { name: '<:ID:ID-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
           { name: '<:police:police-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
@@ -394,7 +394,7 @@ describe('untimeout command', () => {
     expect(message).toMatchObject({
       content: '<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de `Alvo` foi removido. <:unmute:unmute-id>',
       embeds: [{
-        color: 0x2b2d31,
+        color: 0xf08db4,
         fields: [
           { name: '<:ID:ID-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
           { name: '<:police:police-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },

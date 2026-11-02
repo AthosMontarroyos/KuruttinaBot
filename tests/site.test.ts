@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Server } from 'node:http';
 import { createHash } from 'node:crypto';
 import { inspect } from 'node:util';
@@ -318,6 +318,11 @@ describe('public Home HTTP boundary', () => {
     expect(html).toContain('https://assets.example.com/icons/Icons/1.jpg');
     expect(html).not.toContain('{{AVATAR_URL}}');
   });
+  it('falls back to the R2 image in both metas when there is no bot token', async () => {
+    const html = await (await fetch(origin)).text();
+    expect(html).toContain('<meta name="kuruttina-avatar" content="https://assets.example.com/icons/Icons/1.jpg">');
+    expect(html).toContain('<meta name="kuruttina-app-icon" content="https://assets.example.com/icons/Icons/1.jpg">');
+  });
   it('allows any https image only on the dashboard, for the message preview', async () => {
     const dashboard = (await fetch(`${origin}/dashboard`)).headers.get('content-security-policy');
     const server = (await fetch(`${origin}/dashboard/1422623678205657160`)).headers.get('content-security-policy');
@@ -359,6 +364,45 @@ describe('public Home HTTP boundary', () => {
     expect((await fetch(origin, { method: 'POST' })).status).toBe(405);
     expect(await (await fetch(origin, { method: 'HEAD' })).text()).toBe('');
     expect(await (await fetch(origin + '/healthz')).json()).toEqual({ status: 'ok' });
+  });
+});
+
+describe('bot images from the Discord token', () => {
+  const realFetch = globalThis.fetch;
+  const appId = '223456789012345678';
+  const botId = '323456789012345678';
+  const botEnvironment = { ...environment, DISCORD_BOT_TOKEN: 'bot-token' };
+  const servers: Server[] = [];
+  // Cada servidor tem o seu cache de imagens; `applicationStatus` simula a falha só do ícone do app.
+  const serve = async (applicationStatus: number): Promise<string> => {
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (!url.startsWith('https://discord.com/')) return realFetch(input, init);
+      if (url.endsWith('/applications/@me')) return applicationStatus === 200 ? Response.json({ id: appId, icon: 'abc123' }) : new Response('{}', { status: applicationStatus });
+      if (url.endsWith('/users/@me')) return Response.json({ id: botId, username: 'Kuruttina', avatar: 'def456' });
+      return new Response('{}', { status: 404 });
+    }));
+    const server = await createSiteServer(readSiteConfig(botEnvironment), new URL('../apps/site/index.html', import.meta.url), new URL('../apps/site/public/', import.meta.url));
+    servers.push(server);
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected local HTTP server.');
+    return `http://127.0.0.1:${address.port}`;
+  };
+  afterAll(async () => {
+    vi.unstubAllGlobals();
+    await Promise.all(servers.map((server) => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))));
+  });
+  it('puts the app icon and the bot photo from Discord in their metas', async () => {
+    const html = await (await fetch(await serve(200))).text();
+    expect(html).toContain(`<meta name="kuruttina-app-icon" content="https://cdn.discordapp.com/app-icons/${appId}/abc123.png?size=128">`);
+    expect(html).toContain(`<meta name="kuruttina-avatar" content="https://cdn.discordapp.com/avatars/${botId}/def456.png?size=512">`);
+    expect(html).not.toContain('{{APP_ICON_URL}}');
+  });
+  it('falls back to the R2 image for the app icon alone when its lookup fails', async () => {
+    const html = await (await fetch(await serve(500))).text();
+    expect(html).toContain('<meta name="kuruttina-app-icon" content="https://assets.example.com/icons/Icons/1.jpg">');
+    expect(html).toContain(`<meta name="kuruttina-avatar" content="https://cdn.discordapp.com/avatars/${botId}/def456.png?size=512">`);
   });
 });
 

@@ -282,7 +282,7 @@ const entries = {
   // a miniatura e o botão com URL dinâmica ficam no comando, pois o motor não os suporta.
   'emojiinfo.info': {
     template: {
-      embeds: [{ color: 0x2b2d31, fields: [{ name: 'Identidade', value: '`{id}`', inline: true }] }],
+      embeds: [{ color: 0xf08db4, fields: [{ name: 'Identidade', value: '`{id}`', inline: true }] }],
       components: [],
     },
     variables: [idVariable('id')],

@@ -8,7 +8,7 @@ exports[`snapshot do catálogo de falas: ban > confirma com motivo claro 1`] = `
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -43,7 +43,7 @@ exports[`snapshot do catálogo de falas: ban > confirma com motivo que fica vazi
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -78,7 +78,7 @@ exports[`snapshot do catálogo de falas: ban > confirma sem motivo com emojis em
       "content": "Pronto. \`Alvo\` foi banido deste servidor.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -113,7 +113,7 @@ exports[`snapshot do catálogo de falas: ban > confirma sem motivo com emojis re
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -148,7 +148,7 @@ exports[`snapshot do catálogo de falas: ban > confirma sem motivo com emojis un
       "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -183,7 +183,7 @@ exports[`snapshot do catálogo de falas: ban > limpa o motivo com caracteres esp
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -218,7 +218,7 @@ exports[`snapshot do catálogo de falas: ban > limpa o nome com asterisco e subl
       "content": "<:ban:ban-id> Pronto. \`a*b_c\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -253,7 +253,7 @@ exports[`snapshot do catálogo de falas: ban > limpa o nome com crase 1`] = `
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -288,7 +288,7 @@ exports[`snapshot do catálogo de falas: ban > limpa o nome com everyone 1`] = `
       "content": "<:ban:ban-id> Pronto. \`@everyone\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -323,7 +323,7 @@ exports[`snapshot do catálogo de falas: ban > limpa o nome com menção 1`] = `
       "content": "<:ban:ban-id> Pronto. \`<@1>\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -358,7 +358,7 @@ exports[`snapshot do catálogo de falas: ban > limpa o nome com só espaços 1`]
       "content": "<:ban:ban-id> Pronto. \`Usuário\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -445,7 +445,7 @@ exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha com emojis 
     ],
     "embeds": [
       {
-        "color": 2829617,
+        "color": 15764916,
         "fields": [
           {
             "inline": true,
@@ -487,7 +487,7 @@ exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha com emojis 
     ],
     "embeds": [
       {
-        "color": 2829617,
+        "color": 15764916,
         "fields": [
           {
             "inline": true,
@@ -529,7 +529,7 @@ exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha com emojis 
     ],
     "embeds": [
       {
-        "color": 2829617,
+        "color": 15764916,
         "fields": [
           {
             "inline": true,
@@ -571,7 +571,7 @@ exports[`snapshot do catálogo de falas: emojiInfo > publica a ficha de um emoji
     ],
     "embeds": [
       {
-        "color": 2829617,
+        "color": 15764916,
         "fields": [
           {
             "inline": true,
@@ -603,7 +603,7 @@ exports[`snapshot do catálogo de falas: kick > confirma com motivo claro 1`] = 
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -638,7 +638,7 @@ exports[`snapshot do catálogo de falas: kick > confirma com motivo que fica vaz
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -673,7 +673,7 @@ exports[`snapshot do catálogo de falas: kick > confirma sem motivo com emojis e
       "content": "Pronto. \`Alvo\` foi expulso deste servidor.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -708,7 +708,7 @@ exports[`snapshot do catálogo de falas: kick > confirma sem motivo com emojis r
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -743,7 +743,7 @@ exports[`snapshot do catálogo de falas: kick > confirma sem motivo com emojis u
       "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -778,7 +778,7 @@ exports[`snapshot do catálogo de falas: kick > limpa o motivo com caracteres es
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -813,7 +813,7 @@ exports[`snapshot do catálogo de falas: kick > limpa o nome com asterisco e sub
       "content": "<:sucess:sucess-id> Pronto. \`a*b_c\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -848,7 +848,7 @@ exports[`snapshot do catálogo de falas: kick > limpa o nome com crase 1`] = `
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -883,7 +883,7 @@ exports[`snapshot do catálogo de falas: kick > limpa o nome com everyone 1`] = 
       "content": "<:sucess:sucess-id> Pronto. \`@everyone\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -918,7 +918,7 @@ exports[`snapshot do catálogo de falas: kick > limpa o nome com menção 1`] = 
       "content": "<:sucess:sucess-id> Pronto. \`<@1>\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -953,7 +953,7 @@ exports[`snapshot do catálogo de falas: kick > limpa o nome com só espaços 1`
       "content": "<:sucess:sucess-id> Pronto. \`Membro\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -987,7 +987,7 @@ exports[`snapshot do catálogo de falas: ping > publica o ping com emojis empty 
       "content": "Pong. Ainda estou aqui.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1015,7 +1015,7 @@ exports[`snapshot do catálogo de falas: ping > publica o ping com emojis resolv
       "content": "<:dancing:dancing-id> Pong. Ainda estou aqui.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1043,7 +1043,7 @@ exports[`snapshot do catálogo de falas: ping > publica o ping com emojis unicod
       "content": "💃 Pong. Ainda estou aqui.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1072,7 +1072,7 @@ exports[`snapshot do catálogo de falas: timeout > confirma com motivo claro 1`]
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1112,7 +1112,7 @@ exports[`snapshot do catálogo de falas: timeout > confirma com motivo que fica 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1152,7 +1152,7 @@ exports[`snapshot do catálogo de falas: timeout > confirma sem motivo com emoji
       "content": "Pronto. \`Alvo\` foi castigado por **10 minutos**.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1192,7 +1192,7 @@ exports[`snapshot do catálogo de falas: timeout > confirma sem motivo com emoji
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1232,7 +1232,7 @@ exports[`snapshot do catálogo de falas: timeout > confirma sem motivo com emoji
       "content": "✅ Pronto. \`Alvo\` foi castigado por **10 minutos**.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1272,7 +1272,7 @@ exports[`snapshot do catálogo de falas: timeout > limpa o motivo com caracteres
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1312,7 +1312,7 @@ exports[`snapshot do catálogo de falas: timeout > limpa o nome com asterisco e 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`a*b_c\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1352,7 +1352,7 @@ exports[`snapshot do catálogo de falas: timeout > limpa o nome com crase 1`] = 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1392,7 +1392,7 @@ exports[`snapshot do catálogo de falas: timeout > limpa o nome com everyone 1`]
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`@everyone\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1432,7 +1432,7 @@ exports[`snapshot do catálogo de falas: timeout > limpa o nome com menção 1`]
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`<@1>\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1472,7 +1472,7 @@ exports[`snapshot do catálogo de falas: timeout > limpa o nome com só espaços
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Membro\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1512,7 +1512,7 @@ exports[`snapshot do catálogo de falas: timeout com várias unidades > formata 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1552,7 +1552,7 @@ exports[`snapshot do catálogo de falas: timeout com várias unidades > formata 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 semana e 2 dias**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1592,7 +1592,7 @@ exports[`snapshot do catálogo de falas: timeout com várias unidades > formata 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 dia, 2 horas, 3 minutos e 4 segundos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1632,7 +1632,7 @@ exports[`snapshot do catálogo de falas: timeout com várias unidades > formata 
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **4 semanas**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1672,7 +1672,7 @@ exports[`snapshot do catálogo de falas: unban > confirma com motivo claro 1`] =
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1707,7 +1707,7 @@ exports[`snapshot do catálogo de falas: unban > confirma com motivo que fica va
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1742,7 +1742,7 @@ exports[`snapshot do catálogo de falas: unban > confirma sem motivo com emojis 
       "content": "Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1777,7 +1777,7 @@ exports[`snapshot do catálogo de falas: unban > confirma sem motivo com emojis 
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1812,7 +1812,7 @@ exports[`snapshot do catálogo de falas: unban > confirma sem motivo com emojis 
       "content": "✅ Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1847,7 +1847,7 @@ exports[`snapshot do catálogo de falas: unban > limpa o motivo com caracteres e
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1882,7 +1882,7 @@ exports[`snapshot do catálogo de falas: unban > limpa o nome com asterisco e su
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`a*b_c\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1917,7 +1917,7 @@ exports[`snapshot do catálogo de falas: unban > limpa o nome com crase 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Alvo\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1952,7 +1952,7 @@ exports[`snapshot do catálogo de falas: unban > limpa o nome com everyone 1`] =
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`@everyone\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -1987,7 +1987,7 @@ exports[`snapshot do catálogo de falas: unban > limpa o nome com menção 1`] =
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`<@1>\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2022,7 +2022,7 @@ exports[`snapshot do catálogo de falas: unban > limpa o nome com só espaços 1
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Usuário\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2057,7 +2057,7 @@ exports[`snapshot do catálogo de falas: untimeout > confirma com motivo claro 1
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2092,7 +2092,7 @@ exports[`snapshot do catálogo de falas: untimeout > confirma com motivo que fic
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2127,7 +2127,7 @@ exports[`snapshot do catálogo de falas: untimeout > confirma sem motivo com emo
       "content": "Pronto. O castigo de \`Alvo\` foi removido.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2162,7 +2162,7 @@ exports[`snapshot do catálogo de falas: untimeout > confirma sem motivo com emo
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2197,7 +2197,7 @@ exports[`snapshot do catálogo de falas: untimeout > confirma sem motivo com emo
       "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2232,7 +2232,7 @@ exports[`snapshot do catálogo de falas: untimeout > limpa o motivo com caracter
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2267,7 +2267,7 @@ exports[`snapshot do catálogo de falas: untimeout > limpa o nome com asterisco 
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`a*b_c\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2302,7 +2302,7 @@ exports[`snapshot do catálogo de falas: untimeout > limpa o nome com crase 1`] 
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2337,7 +2337,7 @@ exports[`snapshot do catálogo de falas: untimeout > limpa o nome com everyone 1
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`@everyone\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2372,7 +2372,7 @@ exports[`snapshot do catálogo de falas: untimeout > limpa o nome com menção 1
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`<@1>\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2407,7 +2407,7 @@ exports[`snapshot do catálogo de falas: untimeout > limpa o nome com só espaç
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Membro\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2449,7 +2449,7 @@ exports[`snapshot estendido: ban > entrada por slash com emojis resolved 1`] = `
         "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -2481,7 +2481,7 @@ exports[`snapshot estendido: ban > entrada por slash com emojis resolved 1`] = `
         "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -2524,7 +2524,7 @@ exports[`snapshot estendido: ban > entrada por slash com emojis unicode 1`] = `
         "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -2556,7 +2556,7 @@ exports[`snapshot estendido: ban > entrada por slash com emojis unicode 1`] = `
         "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -2592,7 +2592,7 @@ exports[`snapshot estendido: ban > recusa/erro: administrador 1`] = `
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2699,7 +2699,7 @@ exports[`snapshot estendido: ban > recusa/erro: fora de servidor 1`] = `
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2797,7 +2797,7 @@ exports[`snapshot estendido: ban > recusa/erro: sem banimento 1`] = `
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2832,7 +2832,7 @@ exports[`snapshot estendido: ban > recusa/erro: sem castigo ativo 1`] = `
       "content": "<:ban:ban-id> Pronto. \`Alvo\` foi banido deste servidor. <:coffee:coffee-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -2874,7 +2874,7 @@ exports[`snapshot estendido: ban > todos os emojis falhando (empty): recusa, err
         "content": "Pronto. \`Alvo\` foi banido deste servidor.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -2935,7 +2935,7 @@ exports[`snapshot estendido: ban > todos os emojis falhando (unicode): recusa, e
         "content": "Pronto. \`Alvo\` foi banido deste servidor. ☕",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3069,7 +3069,7 @@ exports[`snapshot estendido: emojiInfo > variante animada com emojis resolved 1`
       ],
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3108,7 +3108,7 @@ exports[`snapshot estendido: emojiInfo > variante animada com emojis resolved 1`
       ],
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3147,7 +3147,7 @@ exports[`snapshot estendido: emojiInfo > variante animada com emojis resolved 1`
       ],
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3191,7 +3191,7 @@ exports[`snapshot estendido: emojiInfo > variante animada com emojis unicode 1`]
       ],
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3230,7 +3230,7 @@ exports[`snapshot estendido: emojiInfo > variante animada com emojis unicode 1`]
       ],
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3269,7 +3269,7 @@ exports[`snapshot estendido: emojiInfo > variante animada com emojis unicode 1`]
       ],
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3309,7 +3309,7 @@ exports[`snapshot estendido: kick > entrada por slash com emojis resolved 1`] = 
         "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3341,7 +3341,7 @@ exports[`snapshot estendido: kick > entrada por slash com emojis resolved 1`] = 
         "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3384,7 +3384,7 @@ exports[`snapshot estendido: kick > entrada por slash com emojis unicode 1`] = `
         "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3416,7 +3416,7 @@ exports[`snapshot estendido: kick > entrada por slash com emojis unicode 1`] = `
         "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3452,7 +3452,7 @@ exports[`snapshot estendido: kick > recusa/erro: administrador 1`] = `
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3559,7 +3559,7 @@ exports[`snapshot estendido: kick > recusa/erro: fora de servidor 1`] = `
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3639,7 +3639,7 @@ exports[`snapshot estendido: kick > recusa/erro: resultado desconhecido 1`] = `
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3683,7 +3683,7 @@ exports[`snapshot estendido: kick > recusa/erro: sem banimento 1`] = `
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3718,7 +3718,7 @@ exports[`snapshot estendido: kick > recusa/erro: sem castigo ativo 1`] = `
       "content": "<:sucess:sucess-id> Pronto. \`Alvo\` foi expulso deste servidor. <:kick:kick-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -3760,7 +3760,7 @@ exports[`snapshot estendido: kick > todos os emojis falhando (empty): recusa, er
         "content": "Pronto. \`Alvo\` foi expulso deste servidor.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3821,7 +3821,7 @@ exports[`snapshot estendido: kick > todos os emojis falhando (unicode): recusa, 
         "content": "✅ Pronto. \`Alvo\` foi expulso deste servidor.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3875,7 +3875,7 @@ exports[`snapshot estendido: ping completo > publica latências altas e zeradas 
         "content": "<:dancing:dancing-id> Pong. Ainda estou aqui.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3900,7 +3900,7 @@ exports[`snapshot estendido: ping completo > publica latências altas e zeradas 
         "content": "💃 Pong. Ainda estou aqui.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3937,7 +3937,7 @@ exports[`snapshot estendido: timeout > entrada por slash com emojis resolved 1`]
         "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**. <:jail:jail-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -3974,7 +3974,7 @@ exports[`snapshot estendido: timeout > entrada por slash com emojis resolved 1`]
         "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**. <:jail:jail-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4022,7 +4022,7 @@ exports[`snapshot estendido: timeout > entrada por slash com emojis unicode 1`] 
         "content": "✅ Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4059,7 +4059,7 @@ exports[`snapshot estendido: timeout > entrada por slash com emojis unicode 1`] 
         "content": "✅ Pronto. \`Alvo\` foi castigado por **1 hora e 30 minutos**.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4181,7 +4181,7 @@ exports[`snapshot estendido: timeout > recusa/erro: fora de servidor 1`] = `
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4284,7 +4284,7 @@ exports[`snapshot estendido: timeout > recusa/erro: sem banimento 1`] = `
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4324,7 +4324,7 @@ exports[`snapshot estendido: timeout > recusa/erro: sem castigo ativo 1`] = `
       "content": "<:police:police-id> <:sucess:sucess-id> Pronto. \`Alvo\` foi castigado por **10 minutos**. <:jail:jail-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4371,7 +4371,7 @@ exports[`snapshot estendido: timeout > todos os emojis falhando (empty): recusa,
         "content": "Pronto. \`Alvo\` foi castigado por **10 minutos**.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4437,7 +4437,7 @@ exports[`snapshot estendido: timeout > todos os emojis falhando (unicode): recus
         "content": "✅ Pronto. \`Alvo\` foi castigado por **10 minutos**.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4627,7 +4627,7 @@ exports[`snapshot estendido: unban > entrada por slash com emojis resolved 1`] =
         "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4659,7 +4659,7 @@ exports[`snapshot estendido: unban > entrada por slash com emojis resolved 1`] =
         "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4702,7 +4702,7 @@ exports[`snapshot estendido: unban > entrada por slash com emojis unicode 1`] = 
         "content": "✅ Pronto. O banimento de \`Fora\` foi revogado.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4734,7 +4734,7 @@ exports[`snapshot estendido: unban > entrada por slash com emojis unicode 1`] = 
         "content": "✅ Pronto. O banimento de \`Fora\` foi revogado.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -4770,7 +4770,7 @@ exports[`snapshot estendido: unban > recusa/erro: administrador 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4832,7 +4832,7 @@ exports[`snapshot estendido: unban > recusa/erro: cargo do autor igual 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4867,7 +4867,7 @@ exports[`snapshot estendido: unban > recusa/erro: cargo do bot igual 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4902,7 +4902,7 @@ exports[`snapshot estendido: unban > recusa/erro: dono do servidor 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4937,7 +4937,7 @@ exports[`snapshot estendido: unban > recusa/erro: falha ao buscar o membro 1`] =
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -4981,7 +4981,7 @@ exports[`snapshot estendido: unban > recusa/erro: fora de servidor 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -5016,7 +5016,7 @@ exports[`snapshot estendido: unban > recusa/erro: já banido 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -5051,7 +5051,7 @@ exports[`snapshot estendido: unban > recusa/erro: membro ausente 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -5140,7 +5140,7 @@ exports[`snapshot estendido: unban > recusa/erro: sem castigo ativo 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de \`Fora\` foi revogado.",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -5182,7 +5182,7 @@ exports[`snapshot estendido: unban > todos os emojis falhando (empty): recusa, e
         "content": "Pronto. O banimento de \`Fora\` foi revogado.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5243,7 +5243,7 @@ exports[`snapshot estendido: unban > todos os emojis falhando (unicode): recusa,
         "content": "✅ Pronto. O banimento de \`Fora\` foi revogado.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5304,7 +5304,7 @@ exports[`snapshot estendido: untimeout > entrada por slash com emojis resolved 1
         "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5336,7 +5336,7 @@ exports[`snapshot estendido: untimeout > entrada por slash com emojis resolved 1
         "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5379,7 +5379,7 @@ exports[`snapshot estendido: untimeout > entrada por slash com emojis unicode 1`
         "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5411,7 +5411,7 @@ exports[`snapshot estendido: untimeout > entrada por slash com emojis unicode 1`
         "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5528,7 +5528,7 @@ exports[`snapshot estendido: untimeout > recusa/erro: fora de servidor 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -5626,7 +5626,7 @@ exports[`snapshot estendido: untimeout > recusa/erro: sem banimento 1`] = `
       "content": "<:happy:happy-id> <:sucess:sucess-id> Pronto. O castigo de \`Alvo\` foi removido. <:unmute:unmute-id>",
       "embeds": [
         {
-          "color": 2829617,
+          "color": 15764916,
           "fields": [
             {
               "inline": true,
@@ -5677,7 +5677,7 @@ exports[`snapshot estendido: untimeout > todos os emojis falhando (empty): recus
         "content": "Pronto. O castigo de \`Alvo\` foi removido.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,
@@ -5738,7 +5738,7 @@ exports[`snapshot estendido: untimeout > todos os emojis falhando (unicode): rec
         "content": "✅ Pronto. O castigo de \`Alvo\` foi removido.",
         "embeds": [
           {
-            "color": 2829617,
+            "color": 15764916,
             "fields": [
               {
                 "inline": true,

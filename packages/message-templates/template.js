@@ -28,7 +28,7 @@ import {
  * @property {{name: string, url?: string, iconUrl?: string}} [author]
  * @property {{url: string}} [thumbnail]
  * @property {{url: string}} [image]
- * @property {number} [color] Cor da barra lateral, como `0x2b2d31`: inteiro entre 0 e 0xFFFFFF.
+ * @property {number} [color] Cor da barra lateral, como `0xf08db4`: inteiro entre 0 e 0xFFFFFF.
  */
 
 /**

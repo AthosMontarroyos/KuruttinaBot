@@ -70,13 +70,14 @@ async function publishBuildAssets(directory: URL, assets: Map<string, { type: st
 
 export async function createSiteServer(config: SiteConfig, pageFile: URL, staticDirectory: URL, loadActiveDevId?: () => Promise<string | null>) {
   const template = await readFile(pageFile, 'utf8');
-  const html = template.replaceAll('{{AVATAR_URL}}', escapeAttribute(config.avatarUrl));
+  // Foto do bot e ícone do app saem do Discord a cada página; sem eles, vale o R2 (`config.avatarUrl`).
+  const fallbackImages = { avatarUrl: config.avatarUrl, appIconUrl: config.avatarUrl };
+  const renderPage = (images: { avatarUrl: string; appIconUrl: string }): string => template
+    .replaceAll('{{AVATAR_URL}}', escapeAttribute(images.avatarUrl))
+    .replaceAll('{{APP_ICON_URL}}', escapeAttribute(images.appIconUrl));
+  const html = renderPage(fallbackImages);
+  const pageRoutes = new Set(['/', '/comandos', '/modulos', '/login', '/dashboard']);
   const assets = new Map<string, { type: string; body: Buffer | string }>([
-    ['/', { type: 'text/html; charset=utf-8', body: html }],
-    ['/comandos', { type: 'text/html; charset=utf-8', body: html }],
-    ['/modulos', { type: 'text/html; charset=utf-8', body: html }],
-    ['/login', { type: 'text/html; charset=utf-8', body: html }],
-    ['/dashboard', { type: 'text/html; charset=utf-8', body: html }],
     ['/healthz', { type: 'application/json', body: '{"status":"ok"}' }],
   ]);
   const missingBundledAssets: string[] = [];
@@ -102,7 +103,15 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
   const roleGroupsApi = createRoleGroupsApi(config, auth, database, discord);
   const customActionsApi = createCustomActionsApi(config, auth, database, discord);
   const memberEventsApi = createMemberEventsApi(config, auth, database, discord);
-  const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, (req, res) => {
+  // Erro inesperado em botImages não derruba a página: vale o R2.
+  const pageImages = async (): Promise<{ avatarUrl: string; appIconUrl: string }> => {
+    try {
+      return await auth.botImages();
+    } catch {
+      return fallbackImages;
+    }
+  };
+  const server = createServer({ requestTimeout: 10_000, maxHeaderSize: 8192 }, async (req, res) => {
     const [path = '', search = ''] = (req.url ?? '').split('?');
     // Só o painel carrega imagens de qualquer https: a prévia das mensagens mostra os links que o administrador cola.
     const imageSources = path === '/dashboard' || isDashboardServerPath(path) ? 'https:' : `${config.assetsOrigin} https://cdn.discordapp.com`;
@@ -117,7 +126,13 @@ export async function createSiteServer(config: SiteConfig, pageFile: URL, static
     if (customActionsApi.handle(req, res, path)) return;
     if (memberEventsApi.handle(req, res, path)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
-    const asset = assets.get(path) ?? (isDashboardServerPath(path) ? assets.get('/dashboard') : undefined);
+    if (pageRoutes.has(path) || isDashboardServerPath(path)) {
+      const body = renderPage(await pageImages());
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(req.method === 'HEAD' ? undefined : body);
+      return;
+    }
+    const asset = assets.get(path);
     if (!asset) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end(req.method === 'HEAD' ? undefined : 'Página não encontrada.'); return; }
     res.writeHead(200, { 'Content-Type': asset.type });
     res.end(req.method === 'HEAD' ? undefined : asset.body);

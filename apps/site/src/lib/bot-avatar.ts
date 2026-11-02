@@ -1,6 +1,6 @@
-/** Avatar do bot que o servidor injeta no HTML; vazio quando a URL não é https válida. */
-function readBotAvatarUrl(): string {
-  const content = document.querySelector('meta[name="kuruttina-avatar"]')?.getAttribute('content') ?? '';
+/** Lê uma meta com URL https injetada pelo servidor; vazia quando ausente ou inválida. */
+function readHttpsMeta(name: string): string {
+  const content = document.querySelector(`meta[name="${name}"]`)?.getAttribute('content') ?? '';
   try {
     const url = new URL(content);
     if (url.protocol !== 'https:' || url.username || url.password) return '';
@@ -10,4 +10,14 @@ function readBotAvatarUrl(): string {
   }
 }
 
-export { readBotAvatarUrl };
+/** Foto do bot que o servidor injeta no HTML; vazia quando a URL não é https válida. */
+function readBotAvatarUrl(): string {
+  return readHttpsMeta('kuruttina-avatar');
+}
+
+/** Ícone do aplicativo Discord que o servidor injeta no HTML; vazio quando a URL não é https válida. */
+function readAppIconUrl(): string {
+  return readHttpsMeta('kuruttina-app-icon');
+}
+
+export { readAppIconUrl, readBotAvatarUrl };

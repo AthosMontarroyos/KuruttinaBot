@@ -131,7 +131,7 @@ describe('ban command', () => {
     expect(message).toMatchObject({
       content: '<:ban:ban-id> Pronto. `Alvo` foi banido deste servidor. <:coffee:coffee-id>',
       embeds: [{
-        color: 0x2b2d31,
+        color: 0xf08db4,
         fields: [
           { name: '<:ID:ID-id> Usuário', value: '`Alvo`\n`222222222222222222`', inline: true },
           { name: '<:staff:staff-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },
@@ -349,7 +349,7 @@ describe('unban command', () => {
     expect(message).toMatchObject({
       content: '<:happy:happy-id> <:sucess:sucess-id> Pronto. O banimento de `Fora` foi revogado.',
       embeds: [{
-        color: 0x2b2d31,
+        color: 0xf08db4,
         fields: [
           { name: '<:ID:ID-id> Usuário', value: '`Fora`\n`222222222222222222`', inline: true },
           { name: '<:staff:staff-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },

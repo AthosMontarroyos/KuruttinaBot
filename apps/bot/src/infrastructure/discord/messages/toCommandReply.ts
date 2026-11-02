@@ -4,7 +4,7 @@ import type { MessageTemplate, TemplateButton, TemplateEmbed, TemplateSelectMenu
 import type { CommandReply } from '#bot/command-system/types.js';
 
 /** Cor padrão dos embeds quando o template não define uma. */
-const DEFAULT_EMBED_COLOR = 0x2b2d31;
+const DEFAULT_EMBED_COLOR = 0xf08db4;
 
 const BUTTON_STYLES = {
   primary: ButtonStyle.Primary,

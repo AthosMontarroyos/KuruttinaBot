@@ -115,7 +115,7 @@ describe('kick command', () => {
     expect(message).toMatchObject({
       content: '<:sucess:sucess-id> Pronto. `Alvo` foi expulso deste servidor. <:kick:kick-id>',
       embeds: [{
-        color: 0x2b2d31,
+        color: 0xf08db4,
         fields: [
           { name: '<:ID:ID-id> Membro', value: '`Alvo`\n`222222222222222222`', inline: true },
           { name: '<:staff:staff-id> Responsável', value: '`Mod`\n`111111111111111111`', inline: true },

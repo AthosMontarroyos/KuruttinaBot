@@ -10,7 +10,7 @@ import { DashboardPage } from './dashboard/page';
 import { ServerDashboardPage } from './dashboard/[serverId]/page';
 import { ComandosPage } from './comandos/page';
 import { ModulosPage } from './modulos/page';
-import { readBotAvatarUrl } from '../lib/bot-avatar';
+import { readAppIconUrl, readBotAvatarUrl } from '../lib/bot-avatar';
 import { usePathname } from '../lib/navigation';
 import { useSession } from '../lib/session';
 import './globals.css';
@@ -30,6 +30,7 @@ function RootLayout() {
   const [light, setLight] = useState(readStoredLightTheme);
   const [notice, setNotice] = useState<string | null>(null);
   const avatarUrl = readBotAvatarUrl();
+  const appIconUrl = readAppIconUrl();
   const { session, failed, mockLogin, logout } = useSession();
   const pathname = usePathname();
   const serverId = serverDashboardPath.exec(pathname)?.[1];
@@ -65,7 +66,7 @@ function RootLayout() {
       <a className="fixed top-[-100px] left-5 z-30 bg-surface p-3 focus:top-3" href="#conteudo">
         Pular para o conteúdo
       </a>
-      <TopBar avatarUrl={avatarUrl} light={light} onToggleTheme={toggleTheme} onNotice={showNotice} session={session} onLogout={() => void logout()} />
+      <TopBar appIconUrl={appIconUrl} light={light} onToggleTheme={toggleTheme} onNotice={showNotice} session={session} onLogout={() => void logout()} />
       {pathname === '/dashboard' ? (
         <DashboardPage session={session} failed={failed} onLogout={() => void logout()} />
       ) : serverId ? (

@@ -870,7 +870,7 @@ describe('emoji info', () => {
     const embed = embedOf(payload);
     expect(embed.description).toBeUndefined();
     expect(embed).toMatchObject({
-      color: 0x2b2d31,
+      color: 0xf08db4,
       thumbnail: { url: `https://cdn.discordapp.com/emojis/${STATIC_ID}.png` },
     });
     expect(embed.image).toBeUndefined();

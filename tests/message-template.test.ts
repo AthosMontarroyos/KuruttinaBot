@@ -567,9 +567,9 @@ describe('whenAbsent e format', () => {
 describe('color', () => {
   const withColor = (color: number): MessageTemplate => ({ embeds: [{ description: 'x', color }], components: [] });
 
-  it('aceita 0x2b2d31 e preserva na renderização', () => {
-    expect(codes(withColor(0x2b2d31))).toEqual([]);
-    expect(renderTemplate(withColor(0x2b2d31), [], {}).embeds[0]?.color).toBe(0x2b2d31);
+  it('aceita 0xf08db4 e preserva na renderização', () => {
+    expect(codes(withColor(0xf08db4))).toEqual([]);
+    expect(renderTemplate(withColor(0xf08db4), [], {}).embeds[0]?.color).toBe(0xf08db4);
   });
 
   it('rejeita fora da faixa e não inteiro', () => {

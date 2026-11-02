@@ -69,7 +69,7 @@ function HomePage({ avatarUrl, onNotice }: HomePageProps) {
           <img
             className="size-full object-cover"
             src={avatarUrl}
-            alt="Ilustração de uma garota de cabelo escuro e olhos dourados, avatar provisório da Kuruttina."
+            alt="Foto de perfil da Kuruttina."
             width={420}
             height={520}
             fetchPriority="high"

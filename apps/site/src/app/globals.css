@@ -2,21 +2,21 @@
 
 @theme {
   --font-sans: "Outfit", ui-sans-serif, sans-serif;
-  --color-background: #0b0d16;
-  --color-surface: #141726;
-  --color-border: #2a2f47;
-  --color-text: #f4f1ea;
-  --color-muted: #a9adc2;
-  --color-subtle: #8b90a8;
-  --color-control: #6b7190;
-  --color-button: #e9b949;
-  --color-button-text: #1a1405;
-  --color-secondary: #f2c75f;
-  --color-accent: #e9b949;
-  --color-accent-text: #1a1405;
-  --color-accent-fg: #e9b949;
-  --color-accent-soft: rgb(233 185 73 / 0.14);
-  --color-danger: #f2707e;
+  --color-background: #140b12;
+  --color-surface: #1f1220;
+  --color-border: #3b2336;
+  --color-text: #fdf6fc;
+  --color-muted: #c9b0bf;
+  --color-subtle: #a88e9d;
+  --color-control: #8a6c7c;
+  --color-button: #f08db4;
+  --color-button-text: #2a0f1d;
+  --color-secondary: #f6a9c6;
+  --color-accent: #f08db4;
+  --color-accent-text: #2a0f1d;
+  --color-accent-fg: #f08db4;
+  --color-accent-soft: rgb(240 141 180 / 0.14);
+  --color-danger: #ff6b61;
   --color-success: #5fcf9a;
   --color-warning: #f0a050;
 }
@@ -28,20 +28,20 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-background: #faf8f3;
-  --color-surface: #f0ece2;
-  --color-border: #d9d3c3;
-  --color-text: #14162a;
-  --color-muted: #55597a;
-  --color-subtle: #666b88;
-  --color-control: #8a8fa8;
-  --color-button: #e9b949;
-  --color-button-text: #1a1405;
-  --color-secondary: #d4a02e;
-  --color-accent: #e9b949;
-  --color-accent-text: #1a1405;
-  --color-accent-fg: #8f5f00;
-  --color-accent-soft: rgb(233 185 73 / 0.18);
+  --color-background: #fdf6fc;
+  --color-surface: #f7e6ef;
+  --color-border: #e6c2d3;
+  --color-text: #2a1322;
+  --color-muted: #6e4b5e;
+  --color-subtle: #7a5668;
+  --color-control: #a3869a;
+  --color-button: #ee7fa9;
+  --color-button-text: #2a0f1d;
+  --color-secondary: #e0668f;
+  --color-accent: #ee7fa9;
+  --color-accent-text: #2a0f1d;
+  --color-accent-fg: #862954;
+  --color-accent-soft: rgb(238 127 169 / 0.18);
   --color-danger: #c4283c;
   --color-success: #1f7a4f;
   --color-warning: #b45f06;

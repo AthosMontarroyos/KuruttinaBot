@@ -131,9 +131,21 @@ export function isEmojiSourceRef(ref: string): boolean {
   return parseEmojiRef(ref) !== undefined;
 }
 
+export interface EmojiSourceRef {
+  readonly id: string;
+  readonly name: string | undefined;
+}
+
+/** ID e, quando a origem é marcação ou `nome:id`, o nome embutido. ID puro não traz nome. */
+export function emojiSourceRef(ref: string): EmojiSourceRef | undefined {
+  const parsed = parseEmojiRef(ref.trim());
+  if (parsed === undefined) return undefined;
+  return { id: parsed.id, name: parsed.name };
+}
+
 /** ID de um emoji informado como ID puro, marcação `<:nome:id>` / `<a:nome:id>` ou `nome:id`. */
 export function emojiSourceId(ref: string): string | undefined {
-  return parseEmojiRef(ref.trim())?.id;
+  return emojiSourceRef(ref)?.id;
 }
 
 function resolveName(request: EmojiImportRequest, ref: ParsedEmojiRef | undefined): string {

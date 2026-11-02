@@ -164,7 +164,7 @@ function requested(calls: readonly FetchCall[]): { name: string; source: string 
 }
 
 function successText(name: string): string {
-  return `🧑‍💻 Pedi a criação do emoji **${name}**. ⏳ Ela espera aprovação: ${PRODUCTION_EMOJI_RUNS_URL}`;
+  return `🧑‍💻 Pedi a criação do emoji **${name}**. ⏳ Ela espera aprovação: ${PRODUCTION_EMOJI_RUNS_URL}. Se esse nome já existir, uso o próximo número livre.`;
 }
 
 describe('GitHub workflow_dispatch', () => {
@@ -227,6 +227,38 @@ describe('dev emoji add dispatches the production workflow', () => {
   });
 
   it.each([
+    ['mention', [{ name: 'origem', value: MENTION }], 'nome', ID],
+    ['animated mention', [{ name: 'origem', value: ANIMATED }], 'festinha', ID],
+    ['compact ref', [{ name: 'origem', value: `festinha:${ID}` }], 'festinha', ID],
+    [
+      'hyphenated url',
+      [{ name: 'origem', value: 'https://cdn.discordapp.com/attachments/1/2/party-cat.png' }],
+      'party_cat',
+      normalizeDiscordCdnImageUrl('https://cdn.discordapp.com/attachments/1/2/party-cat.png'),
+    ],
+  ])('slash derives the name from %s', async (_label, options, name, source) => {
+    const { calls, fetchImpl } = githubFetch();
+    const replies = await runSlash(options, [], fetchImpl);
+    expect(requested(calls)).toEqual({ name, source });
+    expect(replies).toEqual([successText(name)]);
+  });
+
+  it('slash derives the attachment file name when nome is omitted', async () => {
+    const { calls, fetchImpl } = githubFetch();
+    const file = { ...ATTACHMENT, name: 'coração.png', url: 'https://cdn.discordapp.com/attachments/1/2/cora%C3%A7%C3%A3o.png' };
+    const replies = await runSlash([], [file], fetchImpl);
+    expect(requested(calls)).toEqual({ name: 'coracao', source: normalizeDiscordCdnImageUrl(file.url) });
+    expect(replies).toEqual([successText('coracao')]);
+  });
+
+  it('slash asks for a name when the origin is only an id', async () => {
+    const { calls, fetchImpl } = githubFetch();
+    const replies = await runSlash([{ name: 'origem', value: ID }], [], fetchImpl);
+    expect(calls).toEqual([]);
+    expect(replies).toEqual(['❓ Essa origem não traz um nome. Informe um nome de 2 a 32 caracteres.']);
+  });
+
+  it.each([
     [`k!dev-emoji-add ${NAME} ${MENTION}`, ID],
     [`K!dev-emoji-add ${NAME} ${ID}`, ID],
     [`k!dev-emoji-add ${CDN_URL} ${NAME}`, normalizeDiscordCdnImageUrl(CDN_URL)],
@@ -244,6 +276,30 @@ describe('dev emoji add dispatches the production workflow', () => {
     const replies = await runPrefix(`k!dev-emoji-add ${NAME}`, [ATTACHMENT], fetchImpl);
     expect(requested(calls)).toEqual({ name: NAME, source: normalizeDiscordCdnImageUrl(ATTACHMENT.url) });
     expect(replies).toEqual([successText(NAME)]);
+  });
+
+  it.each([
+    [`k!dev-emoji-add ${MENTION}`, 'nome', ID],
+    [`k!dev-emoji-add ${ANIMATED}`, 'festinha', ID],
+    [`k!dev-emoji-add festinha:${ID}`, 'festinha', ID],
+    [
+      'k!dev-emoji-add https://cdn.discordapp.com/attachments/1/2/my%20emoji.png',
+      'my_emoji',
+      normalizeDiscordCdnImageUrl('https://cdn.discordapp.com/attachments/1/2/my%20emoji.png'),
+    ],
+  ])('prefix %s derives %s', async (content, name, source) => {
+    const { calls, fetchImpl } = githubFetch();
+    const replies = await runPrefix(content, [], fetchImpl);
+    expect(requested(calls)).toEqual({ name, source });
+    expect(replies).toEqual([successText(name)]);
+  });
+
+  it('prefix derives the attachment file name when no name is given', async () => {
+    const { calls, fetchImpl } = githubFetch();
+    const file = { ...ATTACHMENT, name: 'party-cat.png' };
+    const replies = await runPrefix('k!dev-emoji-add', [file], fetchImpl);
+    expect(requested(calls)).toEqual({ name: 'party_cat', source: normalizeDiscordCdnImageUrl(file.url) });
+    expect(replies).toEqual([successText('party_cat')]);
   });
 
   it('keeps the manual reply and does not call GitHub when the token is absent', async () => {
@@ -266,7 +322,7 @@ describe('dev emoji add dispatches the production workflow', () => {
     expect(calls).toEqual([]);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(texts(reply)).toEqual([
-      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a origem: um ID de emoji ou a URL HTTPS da imagem. A criação espera aprovação.',
+      '📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com a origem: um ID de emoji, uma marcação ou a URL HTTPS da imagem. O nome é opcional. Se ele já existir, uso o próximo número livre. A criação espera aprovação.',
     ]);
   });
 
@@ -279,14 +335,21 @@ describe('dev emoji add dispatches the production workflow', () => {
 
   it('rejects invalid input before calling GitHub', async () => {
     const cases: Array<{ content: string; attachments?: readonly EmojiAttachment[]; text: string }> = [
-      { content: 'k!dev-emoji-add', text: '❓ Informe o nome do emoji e uma origem: um ID, uma marcação, uma URL HTTPS do CDN ou um anexo.' },
+      { content: 'k!dev-emoji-add', text: '❓ Informe uma origem: um ID, uma marcação, uma URL HTTPS do CDN ou um anexo. O nome é opcional.' },
       { content: `k!dev-emoji-add ${NAME}`, text: '❓ Envie um anexo ou informe um ID, uma marcação ou uma URL HTTPS do CDN.' },
-      { content: `k!dev-emoji-add ${ID}`, text: '❓ Informe o nome do emoji, de 2 a 32 caracteres.' },
+      { content: `k!dev-emoji-add ${ID}`, text: '❓ Essa origem não traz um nome. Informe um nome de 2 a 32 caracteres.' },
       { content: `k!dev-emoji-add a ${ID}`, text: '🏷️ O nome precisa ter de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _.' },
+      { content: `k!dev-emoji-add ação ${ID}`, text: '🏷️ O nome precisa ter de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _.' },
+      { content: `k!dev-emoji-add https://cdn.discordapp.com/attachments/1/2/a.png`, text: '🏷️ Não consegui formar um nome válido com essa origem. Informe um nome de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _.' },
       { content: `k!dev-emoji-add ${NAME} http://cdn.discordapp.com/emojis/${ID}.png`, text: '⚠️ A origem precisa ser um ID, uma marcação <:nome:id> ou uma URL HTTPS do CDN.' },
       { content: `k!dev-emoji-add ${NAME} https://example.com/emojis/${ID}.png`, text: '🛡️ A URL de origem não pertence ao CDN do Discord.' },
       { content: `k!dev-emoji-add ${NAME} https://user:pass@cdn.discordapp.com/emojis/${ID}.png`, text: '🛡️ A URL de origem não pertence ao CDN do Discord.' },
-      { content: `k!dev-emoji-add ${NAME} ${MENTION}`, attachments: [ATTACHMENT], text: '⚠️ Informe um nome e uma só origem.' },
+      { content: `k!dev-emoji-add ${NAME} ${MENTION}`, attachments: [ATTACHMENT], text: '⚠️ Informe uma só origem.' },
+      {
+        content: 'k!dev-emoji-add',
+        attachments: [{ ...ATTACHMENT, name: 'a.png', url: 'https://cdn.discordapp.com/attachments/1/2/a.png' }],
+        text: '🏷️ Não consegui formar um nome válido com essa origem. Informe um nome de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _.',
+      },
       {
         content: `k!dev-emoji-add ${NAME}`,
         attachments: [{ ...ATTACHMENT, contentType: 'text/plain' }],

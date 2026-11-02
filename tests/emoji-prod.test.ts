@@ -12,6 +12,11 @@ import {
 import { createDiscordImageDownloader } from '../apps/bot/src/infrastructure/images/downloadDiscordImage.js';
 import { createSharpEmojiProcessor } from '../apps/bot/src/infrastructure/images/sharpEmojiProcessor.js';
 import {
+  deriveProductionEmojiName,
+  firstFreeApplicationEmojiName,
+  sanitizeApplicationEmojiName,
+} from '../apps/bot/src/application/emojis/productionEmojiName.js';
+import {
   EmojiProdError,
   addProductionEmoji,
   createDiscordClient,
@@ -116,8 +121,23 @@ describe('validateEmojiName', () => {
 });
 
 describe('resolveProductionSource', () => {
-  it('aceita ID e URL HTTPS', () => {
+  it('aceita ID, marcação e URL HTTPS', () => {
     expect(resolveProductionSource(`  ${SOURCE_ID} `)).toEqual({ kind: 'id', id: SOURCE_ID });
+    expect(resolveProductionSource(`<:festa:${SOURCE_ID}>`)).toEqual({
+      kind: 'id',
+      id: SOURCE_ID,
+      hintedName: 'festa',
+    });
+    expect(resolveProductionSource(`<a:festinha:${SOURCE_ID}>`)).toEqual({
+      kind: 'id',
+      id: SOURCE_ID,
+      hintedName: 'festinha',
+    });
+    expect(resolveProductionSource(`festa:${SOURCE_ID}`)).toEqual({
+      kind: 'id',
+      id: SOURCE_ID,
+      hintedName: 'festa',
+    });
     expect(resolveProductionSource('https://cdn.discordapp.com/emojis/1.png')).toEqual({
       kind: 'url',
       url: 'https://cdn.discordapp.com/emojis/1.png',
@@ -131,20 +151,80 @@ describe('resolveProductionSource', () => {
   });
 });
 
+describe('nome derivado e nome livre', () => {
+  it('sanitiza arquivo e marcação e preserva nome que já é válido', () => {
+    expect(sanitizeApplicationEmojiName('  festa_01 ')).toBe('festa_01');
+    expect(sanitizeApplicationEmojiName('ab_')).toBe('ab_');
+    expect(sanitizeApplicationEmojiName('party-cat')).toBe('party_cat');
+    expect(sanitizeApplicationEmojiName('coração')).toBe('coracao');
+    expect(sanitizeApplicationEmojiName('my   emoji')).toBe('my_emoji');
+    expect(sanitizeApplicationEmojiName('a'.repeat(40))).toBe('a'.repeat(32));
+    expect(sanitizeApplicationEmojiName('a')).toBeUndefined();
+    expect(sanitizeApplicationEmojiName('---')).toBeUndefined();
+  });
+
+  it('deriva da marcação, do arquivo e da URL, e recusa ID puro ou nome curto', () => {
+    expect(deriveProductionEmojiName({ kind: 'mention', name: 'festinha' })).toEqual({
+      status: 'ready',
+      name: 'festinha',
+    });
+    expect(deriveProductionEmojiName({ kind: 'filename', filename: 'party-cat.png' })).toEqual({
+      status: 'ready',
+      name: 'party_cat',
+    });
+    expect(deriveProductionEmojiName({
+      kind: 'url',
+      url: 'https://cdn.discordapp.com/attachments/1/2/cora%C3%A7%C3%A3o.png',
+    })).toEqual({ status: 'ready', name: 'coracao' });
+    expect(deriveProductionEmojiName({ kind: 'filename', filename: 'a.png' })).toEqual({ status: 'invalid' });
+    expect(deriveProductionEmojiName({ kind: 'id' })).toEqual({ status: 'missing' });
+  });
+
+  it('escolhe a base livre ou o primeiro número que cabe em 32 caracteres', () => {
+    expect(firstFreeApplicationEmojiName('festa', ['festa2'])).toBe('festa');
+    expect(firstFreeApplicationEmojiName('Festa', ['festa'])).toBe('Festa2');
+    expect(firstFreeApplicationEmojiName('festa', ['festa', 'festa2', 'Festa3'])).toBe('festa4');
+    const full = 'a'.repeat(32);
+    expect(firstFreeApplicationEmojiName(full, [full])).toBe(`${'a'.repeat(31)}2`);
+    expect(firstFreeApplicationEmojiName(full, [full, `${'a'.repeat(31)}2`])).toBe(`${'a'.repeat(31)}3`);
+    expect(firstFreeApplicationEmojiName('a', [])).toBeUndefined();
+    const exhausted = ['ab', ...Array.from({ length: 9999 }, (_, index) => `ab${index + 2}`)];
+    expect(firstFreeApplicationEmojiName('ab', exhausted)).toBeUndefined();
+  });
+});
+
 describe('addProductionEmoji', () => {
-  it('consulta a aplicação, recusa nome existente e não envia POST', async () => {
+  it('consulta a aplicação e cria o próximo nome livre, sem apagar', async () => {
     const calls: string[] = [];
-    const discord = client(async (method, apiPath) => {
+    let posted: unknown;
+    const discord = client(async (method, apiPath, body) => {
       calls.push(`${method} ${apiPath}`);
       if (apiPath === '/applications/@me') return { id: APPLICATION_ID };
-      return { items: [{ name: 'Festa_01', id: EMOJI_ID }] };
+      if (method === 'GET') return { items: [{ name: 'Festa', id: EMOJI_ID }, { name: 'festa2', id: EMOJI_ID }] };
+      posted = body;
+      return { id: EMOJI_ID, name: 'festa3' };
     });
 
-    await expect(addProductionEmoji(discord, 'festa_01', prepared)).rejects.toThrow(/só cria/u);
+    await expect(addProductionEmoji(discord, 'festa', prepared)).resolves.toEqual({
+      id: EMOJI_ID,
+      name: 'festa3',
+    });
+    expect(posted).toMatchObject({ name: 'festa3' });
     expect(calls).toEqual([
       'GET /applications/@me',
       `GET /applications/${APPLICATION_ID}/emojis`,
+      `POST /applications/${APPLICATION_ID}/emojis`,
     ]);
+  });
+
+  it('não envia POST quando a lista de emojis é ilegível', async () => {
+    const discord = client(async (method, apiPath) => {
+      if (apiPath === '/applications/@me') return { id: APPLICATION_ID };
+      if (method === 'GET') return { items: 'não' };
+      throw new Error('post');
+    });
+
+    await expect(addProductionEmoji(discord, 'festa', prepared)).rejects.toThrow(/Application Emojis/u);
   });
 
   it('envia data URI e devolve o emoji criado', async () => {
@@ -248,25 +328,93 @@ describe('runEmojiProd', () => {
     expect(requested).toBe(true);
     expect(current.stdout[0]).toBe(`::add-mask::${TOKEN}\n`);
     expect(current.stdout.slice(1).join('')).toContain(`Emoji criado: festa (${EMOJI_ID})`);
+    expect(current.stdout.slice(1).join('')).not.toContain('nome pedido');
+    expect(readFileSync(summary, 'utf8')).toContain('- Nome: `festa`');
+    expect(readFileSync(summary, 'utf8')).not.toContain('Nome pedido');
     expect(current.stdout.slice(1).join('')).not.toContain(TOKEN);
     expect(current.stdout.join('')).not.toContain('Authorization');
     expect(readFileSync(summary, 'utf8')).toContain(`- ID: \`${EMOJI_ID}\``);
   });
 
-  it('recusa nome existente sem POST', async () => {
-    const calls: string[] = [];
-    const discord = client(async (method, apiPath) => {
-      calls.push(`${method} ${apiPath}`);
+  it('usa o próximo número livre e registra o nome final', async () => {
+    const summary = path.join(mkdtempSync(path.join(tmpdir(), 'emoji-prod-')), 'summary.md');
+    let posted: unknown;
+    const discord = client(async (method, apiPath, body) => {
       if (apiPath === '/applications/@me') return { id: APPLICATION_ID };
-      return { items: [{ name: 'festa', id: EMOJI_ID }] };
+      if (method === 'GET') return { items: [{ name: 'festa', id: EMOJI_ID }, { name: 'Festa2', id: EMOJI_ID }] };
+      posted = body;
+      return { id: EMOJI_ID, name: 'festa3' };
     });
-    const current = io({ download: async () => PNG, processor: fakeProcessor(), discord });
+    const current = io({
+      env: { GITHUB_STEP_SUMMARY: summary },
+      download: async () => PNG,
+      processor: fakeProcessor(),
+      discord,
+    });
 
     const code = await runEmojiProd(current.options);
 
-    expect(code).toBe(1);
-    expect(current.stderr.join('')).toMatch(/só cria/u);
-    expect(calls.some((call) => call.startsWith('POST '))).toBe(false);
+    expect(code).toBe(0);
+    expect(posted).toMatchObject({ name: 'festa3' });
+    expect(current.stdout.join('')).toContain(`Emoji criado: festa3 (${EMOJI_ID}); nome pedido: festa`);
+    const text = readFileSync(summary, 'utf8');
+    expect(text).toContain('- Nome: `festa3`');
+    expect(text).toContain('- Nome pedido: `festa`');
+    expect(text).toContain(`- ID: \`${EMOJI_ID}\``);
+  });
+
+  it('deriva o nome da marcação, da URL e recusa origem sem nome antes de baixar', async () => {
+    const mention = io({
+      env: { EMOJI_NAME: '   ', EMOJI_SOURCE: `<:festa:${SOURCE_ID}>` },
+      download: async () => PNG,
+      processor: fakeProcessor(),
+      discord: client(async (method, apiPath, body) => {
+        if (apiPath === '/applications/@me') return { id: APPLICATION_ID };
+        if (method === 'GET') return { items: [] };
+        expect(body).toMatchObject({ name: 'festa' });
+        return { id: EMOJI_ID, name: 'festa' };
+      }),
+    });
+    expect(await runEmojiProd(mention.options)).toBe(0);
+
+    let posted: unknown;
+    const fromUrl = io({
+      env: { EMOJI_NAME: '', EMOJI_SOURCE: 'https://cdn.discordapp.com/attachments/1/2/party-cat.png' },
+      download: async () => PNG,
+      processor: fakeProcessor(),
+      discord: client(async (method, apiPath, body) => {
+        if (apiPath === '/applications/@me') return { id: APPLICATION_ID };
+        if (method === 'GET') return { items: [] };
+        posted = body;
+        return { id: EMOJI_ID, name: 'party_cat' };
+      }),
+    });
+    expect(await runEmojiProd(fromUrl.options)).toBe(0);
+    expect(posted).toMatchObject({ name: 'party_cat' });
+
+    const bareDownload = vi.fn<EmojiDownloadPort>();
+    const bare = io({ env: { EMOJI_NAME: '', EMOJI_SOURCE: SOURCE_ID }, download: bareDownload });
+    expect(await runEmojiProd(bare.options)).toBe(1);
+    expect(bareDownload).not.toHaveBeenCalled();
+    expect(bare.stderr.join('')).toMatch(/não traz um nome/u);
+
+    const shortDownload = vi.fn<EmojiDownloadPort>();
+    const short = io({
+      env: { EMOJI_NAME: '', EMOJI_SOURCE: 'https://cdn.discordapp.com/attachments/1/2/a.png' },
+      download: shortDownload,
+    });
+    expect(await runEmojiProd(short.options)).toBe(1);
+    expect(shortDownload).not.toHaveBeenCalled();
+    expect(short.stderr.join('')).toMatch(/não consegui formar um nome válido/iu);
+
+    const outsideDownload = vi.fn<EmojiDownloadPort>();
+    const outside = io({
+      env: { EMOJI_NAME: '', EMOJI_SOURCE: 'https://example.com/a.png' },
+      download: outsideDownload,
+    });
+    expect(await runEmojiProd(outside.options)).toBe(1);
+    expect(outsideDownload).not.toHaveBeenCalled();
+    expect(outside.stderr.join('')).toMatch(/CDN do Discord/u);
   });
 
   it('falha sem chamar o Discord quando o segredo está vazio', async () => {
@@ -357,6 +505,9 @@ describe('emoji-prod.yml', () => {
     expect(workflow).not.toContain('assets/emojis');
     expect(workflow).not.toContain('curl');
     expect(workflow).not.toContain('RUNNER_TEMP');
+    expect(workflow).toContain('environment: production');
+    expect(workflow).toMatch(/name:\n\s+description:.*\n\s+required: false/u);
+    expect(workflow).toMatch(/source:\n\s+description:.*\n\s+required: true/u);
     expect(workflow).toContain('npm ci --engine-strict');
     expect(workflow).toContain('npm run bot build');
     expect(workflow).toContain('doppler run --only-secrets DISCORD_BOT_TOKEN -- node scripts/add-production-emoji.ts');

@@ -11,6 +11,8 @@ import {
  * política `staff`, então o comando é publicado somente nas guildas de
  * desenvolvimento cadastradas. Ele não recebe token e não cria o emoji.
  * Sem `GITHUB_WORKFLOW_TOKEN`, só orienta o workflow manual.
+ * O nome é opcional: sem ele, a marcação ou o arquivo dão o nome, e um
+ * resultado inválido é recusado antes do disparo.
  */
 export const command = {
   data: new SlashCommandBuilder()
@@ -47,16 +49,16 @@ export const command = {
       aliases: ['dev-emoji-add'],
       examples: [
         {
-          slash: '/dev emoji add nome:meu_emoji origem:<:nome:123456789012345678>',
-          prefix: 'k!dev-emoji-add meu_emoji <:nome:123456789012345678>',
+          slash: '/dev emoji add origem:<:nome:123456789012345678>',
+          prefix: 'k!dev-emoji-add <:nome:123456789012345678>',
         },
         {
           slash: '/dev emoji add nome:meu_emoji origem:123456789012345678',
           prefix: 'k!dev-emoji-add meu_emoji 123456789012345678',
         },
         {
-          slash: '/dev emoji add nome:meu_emoji arquivo:imagem.png',
-          prefix: 'k!dev-emoji-add meu_emoji https://cdn.discordapp.com/emojis/123456789012345678.png',
+          slash: '/dev emoji add arquivo:party-cat.png',
+          prefix: 'k!dev-emoji-add https://cdn.discordapp.com/attachments/1/2/party-cat.png',
         },
       ],
       execute: createProductionEmojiExecutor(),

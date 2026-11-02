@@ -2,19 +2,20 @@ name: Adicionar emoji de produção
 
 # Manual. O ambiente production precisa de revisores obrigatórios: cada execução
 # espera a aprovação deles antes de usar o segredo. O workflow só cria o emoji.
-# A origem é um ID de emoji do Discord ou uma URL HTTPS. A imagem fica só em
-# memória e não entra no repositório.
+# A origem é um ID, uma marcação <:nome:id> ou uma URL HTTPS. O nome é
+# opcional: vazio, o script deriva da marcação ou do arquivo. A imagem fica
+# só em memória e não entra no repositório.
 # DOPPLER_TOKEN do ambiente GitHub production é usado só aqui.
 
 on:
   workflow_dispatch:
     inputs:
       name:
-        description: Nome do emoji (2 a 32 caracteres, A-Z, a-z, 0-9 ou _)
-        required: true
+        description: Nome opcional (2 a 32, A-Z, a-z, 0-9 ou _). Vazio deriva da marcação ou do arquivo
+        required: false
         type: string
       source:
-        description: ID de um emoji do Discord ou URL HTTPS do CDN
+        description: ID, marcação <:nome:id> ou URL HTTPS do CDN
         required: true
         type: string
 
@@ -60,7 +61,7 @@ jobs:
             exit 1
           fi
           if [ -z "${EMOJI_SOURCE}" ]; then
-            echo "Informe o ID de um emoji do Discord ou uma URL HTTPS."
+            echo "Informe o ID de um emoji, uma marcação ou uma URL HTTPS."
             exit 1
           fi
           doppler run --only-secrets DISCORD_BOT_TOKEN -- node scripts/add-production-emoji.ts

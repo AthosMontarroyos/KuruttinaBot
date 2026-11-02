@@ -1,5 +1,11 @@
 import { SlashCommandSubcommandBuilder } from 'discord.js';
-import { emojiSourceId } from '#bot/application/emojis/importEmoji.js';
+import { emojiSourceRef } from '#bot/application/emojis/importEmoji.js';
+import {
+  deriveProductionEmojiName,
+  PRODUCTION_EMOJI_NAME_INVALID,
+  PRODUCTION_EMOJI_NAME_MISSING,
+  type ProductionEmojiNameSource,
+} from '#bot/application/emojis/productionEmojiName.js';
 import { EMOJI_NAME_PATTERN, EmojiImportError, type EmojiAttachment } from '#bot/application/emojis/types.js';
 import { withEmojis } from '#bot/command-system/responses.js';
 import type { CommandContext } from '#bot/command-system/types.js';
@@ -7,18 +13,15 @@ import { normalizeDiscordCdnImageUrl } from '#bot/infrastructure/images/download
 import { log } from '#bot/infrastructure/logging/logger.js';
 import { ProductionEmojiDispatchError } from '#bot/infrastructure/github/dispatchProductionEmoji.js';
 
-const BARE_ID = /^\d{17,20}$/u;
-
 const manualRedirect =
-  'Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a origem: um ID de emoji ou a URL HTTPS da imagem. A criação espera aprovação.';
+  'Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com a origem: um ID de emoji, uma marcação ou a URL HTTPS da imagem. O nome é opcional. Se ele já existir, uso o próximo número livre. A criação espera aprovação.';
 
-const missingBoth =
-  'Informe o nome do emoji e uma origem: um ID, uma marcação, uma URL HTTPS do CDN ou um anexo.';
-const missingName = 'Informe o nome do emoji, de 2 a 32 caracteres.';
+const missingOrigin =
+  'Informe uma origem: um ID, uma marcação, uma URL HTTPS do CDN ou um anexo. O nome é opcional.';
 const missingSource = 'Envie um anexo ou informe um ID, uma marcação ou uma URL HTTPS do CDN.';
 const invalidName = 'O nome precisa ter de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _.';
 const invalidOrigin = 'A origem precisa ser um ID, uma marcação <:nome:id> ou uma URL HTTPS do CDN.';
-const invalidCombo = 'Informe um nome e uma só origem.';
+const invalidCombo = 'Informe uma só origem.';
 const tooManyFiles = 'Envie apenas uma imagem por comando.';
 const notAnImage = 'Envie uma imagem anexada.';
 const dispatchFailed = 'Não consegui pedir a criação agora. Tente de novo daqui a pouco.';
@@ -36,13 +39,16 @@ export interface ProductionEmojiRequest {
   readonly source: string;
 }
 
-/** Declara nome, origem (ID, marcação ou URL) e anexo. O nome é obrigatório no slash. */
+/** Declara nome, origem (ID, marcação ou URL) e anexo. O nome é opcional no slash. */
 export function addProductionEmojiOptions(
   subcommand: SlashCommandSubcommandBuilder,
 ): SlashCommandSubcommandBuilder {
   return subcommand
     .addStringOption((option) =>
-      option.setName('nome').setDescription('Nome do emoji, de 2 a 32 caracteres').setRequired(true),
+      option
+        .setName('nome')
+        .setDescription('Nome opcional. Sem ele, vale a marcação ou o arquivo')
+        .setRequired(false),
     )
     .addStringOption((option) =>
       option
@@ -58,6 +64,8 @@ export function addProductionEmojiOptions(
 /**
  * Pede a criação no workflow e não cria o emoji aqui.
  * Sem a porta (token ausente), mantém a orientação manual.
+ * O nome, quando falta, é derivado e recusado aqui, antes do disparo.
+ * Nome já usado na aplicação de produção só é resolvido no workflow.
  */
 export function createProductionEmojiExecutor(): (context: CommandContext) => Promise<void> {
   return async (context) => {
@@ -87,7 +95,7 @@ export function createProductionEmojiExecutor(): (context: CommandContext) => Pr
         opening,
         `Pedi a criação do emoji **${request.name}**.`,
         waiting,
-        `Ela espera aprovação: ${runsUrl}`,
+        `Ela espera aprovação: ${runsUrl}. Se esse nome já existir, uso o próximo número livre.`,
       ));
     } catch (error: unknown) {
       const status = error instanceof ProductionEmojiDispatchError ? error.status : undefined;
@@ -110,12 +118,13 @@ function parseSlashInputs(context: CommandContext): ProductionEmojiRequest {
   const hasAttachment = attachment !== undefined;
   if (hasOrigin && hasAttachment) throw new ProductionEmojiInputError('warning', invalidCombo);
   if (!hasOrigin && !hasAttachment) {
-    throw new ProductionEmojiInputError('question', blank(nameRaw) ? missingBoth : missingSource);
+    throw new ProductionEmojiInputError('question', blank(nameRaw) ? missingOrigin : missingSource);
   }
-  if (blank(nameRaw)) throw new ProductionEmojiInputError('question', missingName);
-  const name = workflowName(nameRaw);
-  if (attachment !== undefined) return { name, source: attachmentSource(attachment) };
-  return { name, source: workflowSource(originRaw ?? '') };
+  if (attachment !== undefined) return requestFromAttachment(nameRaw, attachment);
+  const raw = originRaw ?? '';
+  if (!blank(nameRaw)) return { name: workflowName(nameRaw), source: workflowSource(raw) };
+  const source = workflowSource(raw);
+  return { name: explicitOrDerived(undefined, hintForOrigin(raw, source)), source };
 }
 
 function parsePrefixInputs(context: CommandContext): ProductionEmojiRequest {
@@ -123,24 +132,27 @@ function parsePrefixInputs(context: CommandContext): ProductionEmojiRequest {
   if (tokens.length > 2) throw new ProductionEmojiInputError('warning', invalidCombo);
   const attachment = singleAttachment(context);
   if (attachment !== undefined) {
+    if (tokens.length > 1) throw new ProductionEmojiInputError('warning', invalidCombo);
     const token = tokens[0];
-    if (token === undefined) throw new ProductionEmojiInputError('question', missingName);
-    if (tokens.length !== 1) throw new ProductionEmojiInputError('warning', invalidCombo);
+    if (token === undefined) return requestFromAttachment(undefined, attachment);
     const kind = kindOf(token);
     if (kind === 'url' || kind === 'mention') throw new ProductionEmojiInputError('warning', invalidCombo);
     return { name: workflowName(token), source: attachmentSource(attachment) };
   }
   const [left, right] = tokens;
-  if (left === undefined) throw new ProductionEmojiInputError('question', missingBoth);
-  if (right === undefined) {
-    const kind = kindOf(left);
-    if (kind === 'name') throw new ProductionEmojiInputError('question', missingSource);
-    if (kind === 'id' || kind === 'url' || kind === 'mention') {
-      throw new ProductionEmojiInputError('question', missingName);
-    }
-    throw new ProductionEmojiInputError('warning', invalidOrigin);
-  }
+  if (left === undefined) throw new ProductionEmojiInputError('question', missingOrigin);
+  if (right === undefined) return resolveSingle(left);
   return resolvePair(left, right);
+}
+
+function requestFromAttachment(nameRaw: string | undefined, attachment: EmojiAttachment): ProductionEmojiRequest {
+  if (!blank(nameRaw)) return { name: workflowName(nameRaw), source: attachmentSource(attachment) };
+  const source = attachmentSource(attachment);
+  const filename = attachment.name?.trim();
+  const hint: ProductionEmojiNameSource = filename !== undefined && filename !== ''
+    ? { kind: 'filename', filename }
+    : { kind: 'url', url: source };
+  return { name: explicitOrDerived(undefined, hint), source };
 }
 
 type TokenKind = 'url' | 'mention' | 'id' | 'name' | 'other';
@@ -152,10 +164,20 @@ function attemptedName(token: string, kind: TokenKind): boolean {
 
 function kindOf(token: string): TokenKind {
   if (/^https:\/\//iu.test(token)) return 'url';
-  if (BARE_ID.test(token)) return 'id';
-  if (emojiSourceId(token) !== undefined) return 'mention';
+  const ref = emojiSourceRef(token);
+  if (ref !== undefined) return ref.name === undefined ? 'id' : 'mention';
   if (EMOJI_NAME_PATTERN.test(token)) return 'name';
   return 'other';
+}
+
+function resolveSingle(token: string): ProductionEmojiRequest {
+  const kind = kindOf(token);
+  if (kind === 'name') throw new ProductionEmojiInputError('question', missingSource);
+  if (kind === 'url' || kind === 'mention' || kind === 'id') {
+    const source = workflowSource(token);
+    return { name: explicitOrDerived(undefined, hintForOrigin(token, source)), source };
+  }
+  throw new ProductionEmojiInputError('warning', invalidOrigin);
 }
 
 function resolvePair(left: string, right: string): ProductionEmojiRequest {
@@ -189,6 +211,24 @@ function resolvePair(left: string, right: string): ProductionEmojiRequest {
   throw new ProductionEmojiInputError('warning', invalidCombo);
 }
 
+function explicitOrDerived(explicit: string | undefined, source: ProductionEmojiNameSource): string {
+  if (!blank(explicit)) return workflowName(explicit);
+  const derived = deriveProductionEmojiName(source);
+  if (derived.status === 'ready') return derived.name;
+  if (derived.status === 'missing') {
+    throw new ProductionEmojiInputError('question', PRODUCTION_EMOJI_NAME_MISSING);
+  }
+  throw new ProductionEmojiInputError('label', PRODUCTION_EMOJI_NAME_INVALID);
+}
+
+/** URL já aceita entra na derivação; marcação usa o nome embutido, não o arquivo do CDN. */
+function hintForOrigin(raw: string, acceptedUrl?: string): ProductionEmojiNameSource {
+  const ref = emojiSourceRef(raw);
+  if (ref?.name !== undefined) return { kind: 'mention', name: ref.name };
+  if (ref !== undefined) return { kind: 'id' };
+  return { kind: 'url', url: acceptedUrl ?? raw.trim() };
+}
+
 function workflowName(raw: string | undefined): string {
   const trimmed = raw?.trim() ?? '';
   if (!EMOJI_NAME_PATTERN.test(trimmed)) throw new ProductionEmojiInputError('label', invalidName);
@@ -198,8 +238,8 @@ function workflowName(raw: string | undefined): string {
 function workflowSource(raw: string): string {
   const trimmed = raw.trim();
   if (/^https:\/\//iu.test(trimmed)) return cdnOrThrow(trimmed);
-  const id = emojiSourceId(trimmed);
-  if (id !== undefined) return id;
+  const ref = emojiSourceRef(trimmed);
+  if (ref !== undefined) return ref.id;
   throw new ProductionEmojiInputError('warning', invalidOrigin);
 }
 

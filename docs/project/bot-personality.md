@@ -58,14 +58,15 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Situação | Emoji | Texto |
 | --- | --- | --- |
 | Sucesso | `add` e `sucess` | ➕ Pronto. O emoji **nome** agora está neste servidor. ✅ |
-| Emoji de produção pedido | `developer` e `loading` | 🧑‍💻 Pedi a criação do emoji **nome**. ⏳ Ela espera aprovação: URL das execuções |
-| Emoji de produção sem token | `book` | 📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com o nome e a origem: um ID de emoji ou a URL HTTPS da imagem. A criação espera aprovação. |
-| Emoji de produção sem dados | `question` | ❓ Informe o nome do emoji e uma origem: um ID, uma marcação, uma URL HTTPS do CDN ou um anexo. |
-| Emoji de produção sem nome | `question` | ❓ Informe o nome do emoji, de 2 a 32 caracteres. |
+| Emoji de produção pedido | `developer` e `loading` | 🧑‍💻 Pedi a criação do emoji **nome**. ⏳ Ela espera aprovação: URL das execuções. Se esse nome já existir, uso o próximo número livre. |
+| Emoji de produção sem token | `book` | 📖 Eu não adiciono Application Emojis ao bot de produção por aqui. Use o workflow **Adicionar emoji de produção** no GitHub com a origem: um ID de emoji, uma marcação ou a URL HTTPS da imagem. O nome é opcional. Se ele já existir, uso o próximo número livre. A criação espera aprovação. |
+| Emoji de produção sem dados | `question` | ❓ Informe uma origem: um ID, uma marcação, uma URL HTTPS do CDN ou um anexo. O nome é opcional. |
+| Emoji de produção sem nome | `question` | ❓ Essa origem não traz um nome. Informe um nome de 2 a 32 caracteres. |
+| Nome derivado inválido no emoji de produção | `label` | 🏷️ Não consegui formar um nome válido com essa origem. Informe um nome de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _. |
 | Emoji de produção sem origem | `question` | ❓ Envie um anexo ou informe um ID, uma marcação ou uma URL HTTPS do CDN. |
 | Nome inválido no emoji de produção | `label` | 🏷️ O nome precisa ter de 2 a 32 caracteres, entre A–Z, a–z, 0–9 ou _. |
 | Origem inválida no emoji de produção | `warning` | ⚠️ A origem precisa ser um ID, uma marcação <:nome:id> ou uma URL HTTPS do CDN. |
-| Duas origens no emoji de produção | `warning` | ⚠️ Informe um nome e uma só origem. |
+| Duas origens no emoji de produção | `warning` | ⚠️ Informe uma só origem. |
 | Anexo que não é imagem | `photo` | 🖼️ Envie uma imagem anexada. |
 | Falha ao pedir o emoji de produção | `ops` | 😅 Não consegui pedir a criação agora. Tente de novo daqui a pouco. |
 | URL fora do CDN | `shield` | 🛡️ A URL de origem não pertence ao CDN do Discord. |

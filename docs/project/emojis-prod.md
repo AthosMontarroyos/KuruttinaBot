@@ -6,19 +6,20 @@ Application Emojis do bot de produção entram só pelo workflow `emoji-prod.yml
 
 Na guilda de desenvolvimento, com papel de equipe:
 
-1. Use `/dev emoji add` ou `k!dev-emoji-add` com o nome e uma origem. A origem é um ID de emoji (17 a 20 dígitos), uma marcação `<:nome:id>` ou `<a:nome:id>`, uma URL HTTPS do CDN (`cdn.discordapp.com` ou `media.discordapp.net`, caminho de emoji ou de anexo) ou um anexo. O nome tem de 2 a 32 caracteres e só aceita letras, dígitos e `_`.
-2. O bot dispara o workflow em `main` e responde com o link das execuções. Aprove a execução no ambiente `production`. Sem essa aprovação o job não usa o segredo.
+1. Use `/dev emoji add` ou `k!dev-emoji-add` com uma origem. A origem é um ID de emoji (17 a 20 dígitos), uma marcação `<:nome:id>` ou `<a:nome:id>` (também `nome:id`), uma URL HTTPS do CDN (`cdn.discordapp.com` ou `media.discordapp.net`, caminho de emoji ou de anexo) ou um anexo.
+2. O nome é opcional. Se for informado, tem de 2 a 32 caracteres e só aceita letras, dígitos e `_`. Se ficar vazio, o comando monta o nome antes de disparar e recusa, sem chamar o GitHub, quando o resultado não serve. A marcação e `nome:id` usam o nome do emoji. O anexo usa o nome do arquivo, sem a extensão. A URL HTTPS usa o arquivo no fim do caminho, sem a extensão. Acentos saem, o que não for letra, dígito ou `_` vira `_`, e o texto é cortado em 32 caracteres. Um nome que já cumpre a regra permanece igual. Um ID puro não traz nome: nesse caso o nome continua obrigatório.
+3. O bot dispara o workflow em `main` e responde com o nome que pediu e o link das execuções. Aprove a execução no ambiente `production`. Sem essa aprovação o job não usa o segredo. Se esse nome já existir na aplicação de produção, o script escolhe outro; a resposta avisa, e o resumo do job mostra o nome final.
 
 Isso exige `GITHUB_WORKFLOW_TOKEN` no config Doppler `dev`: um PAT fine-grained com Actions de leitura e escrita só neste repositório. O `compose.dev.yaml` entrega esse nome só ao serviço `bot`. Sem o token, ou com valor vazio, o comando não derruba o processo e volta a orientar o disparo manual. O token não é impresso.
 
 Disparo manual, quando o token não está no bot:
 
-1. Tenha a origem: o ID de um emoji do Discord ou uma URL HTTPS do CDN, sem usuário ou senha.
+1. Tenha a origem: o ID de um emoji do Discord, uma marcação ou uma URL HTTPS do CDN, sem usuário ou senha.
 2. No GitHub, abra **Actions** → **Adicionar emoji de produção** → **Run workflow**.
-3. Informe `name` e `source`.
+3. Informe `source`. `name` pode ficar vazio e segue a mesma derivação do comando. Um ID puro ainda exige `name`.
 4. Aprove a execução no ambiente `production`.
 
-O job instala as dependências, compila o bot e executa o script no runner. Para um ID, a origem segue a mesma ordem do importador de emojis de servidor: primeiro `.gif` no CDN, depois `.png`. Para uma URL, só HTTPS entra; o download continua na allowlist do CDN, sem redirect. Os bytes ficam em memória. O mesmo processador sharp dos emojis de servidor redimensiona e comprime até o limite de 256 KiB do Discord, com cache de arquivo desligado. O script consulta a aplicação, recusa o nome se ele já existir e só então envia a data URI. Ele não apaga nem substitui emoji. O resumo do job mostra o nome e o ID criados. O token não é impresso. Uma execução por vez: a concorrência é `emoji-prod`.
+O job instala as dependências, compila o bot e executa o script no runner. Para um ID, a origem segue a mesma ordem do importador de emojis de servidor: primeiro `.gif` no CDN, depois `.png`. Para uma URL, só HTTPS entra; o download continua na allowlist do CDN, sem redirect. Os bytes ficam em memória. O mesmo processador sharp dos emojis de servidor redimensiona e comprime até o limite de 256 KiB do Discord, com cache de arquivo desligado. O script consulta a aplicação. Se o nome pedido já existir, sem diferenciar maiúsculas, acrescenta um número (`nome2`, `nome3`, o primeiro livre) e encurta o começo se precisar para caber em 32 caracteres. Não apaga nem substitui o emoji antigo. O resumo e o log mostram o nome criado; se for diferente do pedido, também mostram o nome pedido. O token não é impresso. Uma execução por vez: a concorrência é `emoji-prod`.
 
 Kurutta configura os revisores obrigatórios do ambiente GitHub `production`. O arquivo do workflow só declara `environment: production`; a trava de aprovação fica nessa configuração do ambiente, não no repositório.
 

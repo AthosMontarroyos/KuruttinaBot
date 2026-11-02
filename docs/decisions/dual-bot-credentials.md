@@ -45,3 +45,7 @@ Os segredos passam para o Doppler. Os configs `dev` e `prd` usam os mesmos nomes
 O acesso conjunto ao `.env` previsto na seção Remoção fica encerrado para esta capability. Na VPS, o token de serviço somente leitura do config `prd` é configurado para o usuário `deploy`, com escopo `/home/deploy/Projects/KuruttinaBot`. Os workflows de deploy e de comandos rodam `doppler run -- docker compose ...` e não recebem `DOPPLER_TOKEN`. Esse segredo do ambiente GitHub `production` serve só ao workflow de emoji, que lê `DISCORD_BOT_TOKEN` do config `prd`.
 
 Um bot `production` continua rejeitando um banco de development: o startup confere `bot_settings.environment`. A checklist da troca está em [Publicação](../project/deploy.md).
+
+## Atualização — 2 de novembro de 2026
+
+`/dev emoji add` passa a disparar `emoji-prod.yml` em `main` pela API `workflow_dispatch`. O bot continua sem o token de production e sem criar o emoji. A aprovação dos revisores do ambiente GitHub `production` permanece no workflow. O disparo usa `GITHUB_WORKFLOW_TOKEN`, opcional, somente no config Doppler `dev`: um PAT fine-grained com Actions de leitura e escrita só neste repositório. Sem esse segredo o comando volta à orientação manual e o processo não falha. O token não é registrado em log. O `compose.yaml` de produção não o recebe.

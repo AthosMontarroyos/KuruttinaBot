@@ -17,6 +17,7 @@ import { createDiscordEmojiAdapter } from '#bot/infrastructure/discord/emojis/em
 import { createEmojiLookup } from '#bot/infrastructure/discord/emojis/emojiLookup.js';
 import type { ComponentActionPort } from '#bot/infrastructure/discord/messages/componentRouter.js';
 import { createDeliveryPoller, type DeliveryDatabasePort } from '#bot/infrastructure/discord/messages/deliveryPoller.js';
+import { createProductionEmojiDispatch } from '#bot/infrastructure/github/dispatchProductionEmoji.js';
 import { createDiscordImageDownloader } from '#bot/infrastructure/images/downloadDiscordImage.js';
 import { createSharpEmojiProcessor } from '#bot/infrastructure/images/sharpEmojiProcessor.js';
 import { configureLogger, log } from '#bot/infrastructure/logging/logger.js';
@@ -39,13 +40,23 @@ export async function startBot(correlationId: string): Promise<void> {
     });
     // Uma única fila. Emojis de servidor usam o client ativo e as mesmas
     // fábricas de download e processamento do workflow de produção. Application
-    // Emojis do bot de produção entram só por esse workflow, sem este token.
+    // Emojis do bot de produção continuam nesse workflow: o comando só dispara
+    // a execução quando o PAT opcional está presente, e não usa o token do bot.
     const emojiImport = createEmojiImportService({
       download: createDiscordImageDownloader(),
       processor: createSharpEmojiProcessor(),
       create: createDiscordEmojiAdapter(client),
     });
-    const commandsHandler = new CommandsHandler(commands, database, emojiImport, createEmojiLookup(client));
+    const productionEmojiDispatch = config.githubWorkflowToken === undefined
+      ? undefined
+      : createProductionEmojiDispatch({ token: config.githubWorkflowToken });
+    const commandsHandler = new CommandsHandler(
+      commands,
+      database,
+      emojiImport,
+      createEmojiLookup(client),
+      productionEmojiDispatch,
+    );
     // Adapta `database.templates` ao formato que o roteador de componentes e o
     // poller de entregas esperam: o conteúdo persistido já passou pela
     // validação do motor de templates (etapa 1C), então o cast é seguro aqui.

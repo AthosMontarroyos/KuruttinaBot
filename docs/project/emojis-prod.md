@@ -1,13 +1,22 @@
 # Emojis de produção
 
-Application Emojis do bot de produção entram só por um workflow manual. A imagem não fica no repositório nem em arquivo temporário. A máquina de desenvolvimento não precisa do token desse bot, e o comando `/dev emoji add` não cria o emoji.
+Application Emojis do bot de produção entram só pelo workflow `emoji-prod.yml`. A imagem não fica no repositório nem em arquivo temporário. A máquina de desenvolvimento não precisa do token desse bot. `/dev emoji add` (`k!dev-emoji-add`) não cria o emoji: pede a execução, e a criação continua esperando a aprovação do ambiente `production`.
 
 ## Como adicionar
 
-1. Tenha a origem: o ID de um emoji do Discord (17 a 20 dígitos) ou uma URL HTTPS do CDN do Discord (`cdn.discordapp.com` ou `media.discordapp.net`, caminho de emoji ou de anexo).
+Na guilda de desenvolvimento, com papel de equipe:
+
+1. Use `/dev emoji add` ou `k!dev-emoji-add` com o nome e uma origem. A origem é um ID de emoji (17 a 20 dígitos), uma marcação `<:nome:id>` ou `<a:nome:id>`, uma URL HTTPS do CDN (`cdn.discordapp.com` ou `media.discordapp.net`, caminho de emoji ou de anexo) ou um anexo. O nome tem de 2 a 32 caracteres e só aceita letras, dígitos e `_`.
+2. O bot dispara o workflow em `main` e responde com o link das execuções. Aprove a execução no ambiente `production`. Sem essa aprovação o job não usa o segredo.
+
+Isso exige `GITHUB_WORKFLOW_TOKEN` no config Doppler `dev`: um PAT fine-grained com Actions de leitura e escrita só neste repositório. O `compose.dev.yaml` entrega esse nome só ao serviço `bot`. Sem o token, ou com valor vazio, o comando não derruba o processo e volta a orientar o disparo manual. O token não é impresso.
+
+Disparo manual, quando o token não está no bot:
+
+1. Tenha a origem: o ID de um emoji do Discord ou uma URL HTTPS do CDN, sem usuário ou senha.
 2. No GitHub, abra **Actions** → **Adicionar emoji de produção** → **Run workflow**.
-3. Informe `name` e `source`. O nome tem de 2 a 32 caracteres e só aceita letras, dígitos e `_`. `source` é o ID ou a URL HTTPS, sem usuário ou senha.
-4. Aprove a execução no ambiente `production`. Sem essa aprovação o job não usa o segredo.
+3. Informe `name` e `source`.
+4. Aprove a execução no ambiente `production`.
 
 O job instala as dependências, compila o bot e executa o script no runner. Para um ID, a origem segue a mesma ordem do importador de emojis de servidor: primeiro `.gif` no CDN, depois `.png`. Para uma URL, só HTTPS entra; o download continua na allowlist do CDN, sem redirect. Os bytes ficam em memória. O mesmo processador sharp dos emojis de servidor redimensiona e comprime até o limite de 256 KiB do Discord, com cache de arquivo desligado. O script consulta a aplicação, recusa o nome se ele já existir e só então envia a data URI. Ele não apaga nem substitui emoji. O resumo do job mostra o nome e o ID criados. O token não é impresso. Uma execução por vez: a concorrência é `emoji-prod`.
 

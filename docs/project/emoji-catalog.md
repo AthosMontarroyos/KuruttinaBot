@@ -4,7 +4,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 ## Catálogo
 
-A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 36 desses nomes; os outros 34 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
+A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 36 desses nomes; os outros 35 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
 Última conferência pelo GrokBot: Development 2026-11-02; Production 2026-11-02.
 
@@ -80,7 +80,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `Read` | Leitura, documentação, regras ou "vai ler o manual" | disponível | disponível |
 | `santa` | Natal, eventos de fim de ano e presentes | disponível | disponível |
 | `think` | Dúvida, reflexão ou "hmm, deixa eu pensar" | disponível | disponível |
-| `love` | pendente | disponível | disponível |
+| `love` | Carinho, amor ou agradecimento afetuoso | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

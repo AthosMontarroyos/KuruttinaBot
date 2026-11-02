@@ -7,6 +7,7 @@ RUN npm ci --no-audit --no-fund
 COPY apps ./apps
 COPY packages ./packages
 COPY scripts/run.mjs ./scripts/run.mjs
+COPY scripts/commands-catalog.mjs ./scripts/commands-catalog.mjs
 COPY tsconfig.json ./
 RUN npm run build && npm prune --omit=dev
 

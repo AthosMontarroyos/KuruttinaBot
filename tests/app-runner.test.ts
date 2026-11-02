@@ -66,9 +66,13 @@ describe('app runner', () => {
     expect(runtime).toContain('CMD ["node", "dist/apps/site/index.js"]');
     expect(runtime).not.toContain('npm');
     expect(runtime).not.toContain('scripts/run.mjs');
+    expect(runtime).not.toContain('scripts/commands-catalog.mjs');
     expect(runtime).not.toContain('apps/bot/package.json');
     expect(runtime).not.toContain('apps/site/package.json');
-    expect(dockerfile).toContain('COPY scripts/run.mjs ./scripts/run.mjs');
+    const buildStage = dockerfile.split('FROM node:24-bookworm-slim AS runtime')[0] ?? '';
+    expect(buildStage).toContain('COPY scripts/run.mjs ./scripts/run.mjs');
+    expect(buildStage).toContain('COPY scripts/commands-catalog.mjs ./scripts/commands-catalog.mjs');
+    expect(buildStage).not.toMatch(/COPY\s+scripts(?:\/)?\s+\.\/scripts\/?\s*$/m);
   });
 
   it('preserves the bot and site commands', () => {

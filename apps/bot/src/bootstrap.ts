@@ -24,7 +24,7 @@ import { configureLogger, log } from '#bot/infrastructure/logging/logger.js';
 export async function startBot(correlationId: string): Promise<void> {
   const config = loadConfig();
   configureLogger(config.target);
-  log('success', 'config_loaded', { target: config.target, autoSyncCommands: config.autoSyncCommands });
+  log('success', 'config_loaded', { target: config.target });
   const database = createDatabase(config.database, config.target, (diagnostic) => log('error', 'database_connection_failed', { correlationId, ...diagnostic }));
   let client: Client | undefined;
   let shutdownListener: ((signal: string) => void) | undefined;
@@ -71,8 +71,8 @@ export async function startBot(correlationId: string): Promise<void> {
     log('info', 'identity_validation_started', { correlationId, target: config.target });
     const applicationId = await verifyBotIdentity(config.activeCredential.token, config.activeCredential.expectedBotId);
     log('success', 'identity_validated', { applicationId, correlationId });
-    if (config.autoSyncCommands) await deploymentsHandler.run({ config, applicationId, correlationId });
-    else log('info', 'command_sync_skipped', { correlationId });
+    // Obrigatório a cada startup: publica só o que foi adicionado, editado ou removido (docs/decisions/command-sync-on-startup.md).
+    await deploymentsHandler.run({ config, applicationId, correlationId });
 
     client.once(Events.ClientReady, (readyClient) => handleClientReady(readyClient, config.target, correlationId));
     client.on(Events.InteractionCreate, (interaction) => { void handleInteractionCreate(interaction, commandsHandler, componentPort); });

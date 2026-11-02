@@ -9,6 +9,7 @@ export const command = {
     userPermissions: [PermissionFlagsBits.ManageMessages],
     botPermissions: [],
   },
+  help: { topic: 'mod', examples: [{ slash: '/aninhado', prefix: 'k!aninhado' }] },
   scope: 'global',
   execute: async () => {},
 } satisfies ChatInputCommand;

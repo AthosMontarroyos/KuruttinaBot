@@ -9,7 +9,6 @@ const context: DeploymentContext = {
   config: {
     target: 'development',
     activeCredential: { token: 'fake-token', expectedBotId: '123456789012345678' },
-    autoSyncCommands: true,
     database: readDatabaseConfig({ DATABASE_URL: 'postgresql://kuruttina_bot:test@localhost/postgres' }, 'development'),
   },
 };

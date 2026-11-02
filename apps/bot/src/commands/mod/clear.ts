@@ -204,6 +204,13 @@ export const command = {
       option.setName('usuario').setDescription('Usuario especifico para apagar mensagens (opcional)').setRequired(false),
     ),
   access,
+  help: {
+    topic: 'mod',
+    examples: [
+      { slash: '/clear quantidade:50', prefix: 'k!clear 50' },
+      { slash: '/clear quantidade:20 usuario:@Fulano', prefix: 'k!clear 20 @Fulano' },
+    ],
+  },
   scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

@@ -67,6 +67,9 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Consulta indisponível | `ops` | 😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco. |
 | Bot ocupado | `coffee` | ☕ Já estou ocupada. Tente de novo em instantes. |
 | Ping | `dancing` | 💃 Pong. Ainda estou aqui. |
+| Lista de comandos | `book` | 📖 Estes são os comandos que posso fazer por você. Use **/help comando** para ver os detalhes. |
+| Detalhe de comando | `book` | 📖 Aqui está o que sei sobre **/ban**. |
+| Comando desconhecido na ajuda | `search` | 🔎 Não encontrei esse comando. Use **/help** para ver a lista. |
 | Expulsão concluída | `sucess` | ✅ Pronto. `Nome` foi expulso deste servidor. |
 | Expulsão fora de canal | `ChannelBrowser` | 🏘️ A expulsão só pode ser feita em um canal de texto de servidor. |
 | Sem permissão para expulsar | `Disappointed` | 😞 Você precisa da permissão **Expulsar membros** neste servidor. |

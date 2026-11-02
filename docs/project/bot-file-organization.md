@@ -15,12 +15,15 @@ apps/bot/src/
 │   ├── access.ts
 │   ├── loadCommands.ts
 │   ├── CommandsHandler.ts
+│   ├── commandCatalog.ts
+│   ├── helpReply.ts
 │   └── responses.ts
 ├── application/
 ├── infrastructure/
 │   ├── discord/
 │   │   ├── commands/
 │   │   │   ├── deployCommands.ts
+│   │   │   ├── syncCommands.ts
 │   │   │   └── commandContext.ts
 │   │   ├── moderation/
 │   │   │   ├── clearAdapter.ts
@@ -50,8 +53,8 @@ apps/bot/src/
 ## Responsabilidades
 
 - `commands/`: só módulos registráveis. Cada arquivo executável exporta um comando.
-- `command-system/`: contrato, autorização, descoberta, despacho e montagem de resposta (`withEmojis`).
-- `infrastructure/`: Discord, imagens e logs. `deployCommands.ts` só publica. `emojiAdd.ts` é o executor da importação de emoji no servidor. `emojiInfo.ts` e `emojiLookup.ts` consultam um emoji sem importá-lo. `messages/` converte o template renderizado (`toCommandReply.ts`), resolve o clique de botão (`componentRouter.ts`), preenche variáveis de ação (`actionValues.ts`) e entrega a fila pedida pelo painel (`deliveryPoller.ts`). Application Emojis de production ficam no workflow descrito em [Emojis de produção](emojis-prod.md).
+- `command-system/`: contrato, autorização, descoberta, despacho e montagem de resposta (`withEmojis`). `commandCatalog.ts` transforma os módulos carregados no catálogo público (`/help` e site) e `helpReply.ts` monta a resposta do `/help`.
+- `infrastructure/`: Discord, imagens e logs. `deployCommands.ts` publica e `syncCommands.ts` compara os commands locais com os registrados no Discord, para publicar só a diferença. `emojiAdd.ts` é o executor da importação de emoji no servidor. `emojiInfo.ts` e `emojiLookup.ts` consultam um emoji sem importá-lo. `messages/` converte o template renderizado (`toCommandReply.ts`), resolve o clique de botão (`componentRouter.ts`), preenche variáveis de ação (`actionValues.ts`) e entrega a fila pedida pelo painel (`deliveryPoller.ts`). Application Emojis de production ficam no workflow descrito em [Emojis de produção](emojis-prod.md).
 - `application/`: casos de uso, sem conhecer commands nem adapters.
 - `events/` e `deployments/`: composição dos transports e dos deploys. `bootstrap.ts` continua sendo o composition root.
 
@@ -70,13 +73,19 @@ command-system/  →  infrastructure/logging/   (log command_loaded)
 
 `command-system/` não importa módulos de `commands/` nem adapters Discord. `application/` não importa `commands/`, `command-system/` nem `infrastructure/`. A descoberta usa `import()` dinâmico a partir da raiz do catálogo. Não há reexport de compatibilidade nos caminhos antigos.
 
+## Criar um command
+
+1. Crie o módulo na pasta da categoria (`public/`, `mod/` ou `dev/`) exportando `command`, com `data` (nome e descrição, e a de cada subcomando), `access`, `scope` e o executor (ou `routes`).
+2. Declare `help`: `topic` coerente com a pasta e `examples` de uso com slash e prefixo (1 a 3 pares). Em command com `routes`, `help` leva só o `topic` e cada rota declara seus `examples`. O prefixo `k!` é automático para todo command; os exemplos precisam mostrá-lo.
+3. Não há mais nada a registrar: o loader valida a documentação, o `/help` e o startup do bot (que publica no Discord só o que mudou) leem o command carregado, e o site regenera `packages/command-catalog/catalog.js` no próximo `npm run site build` ou `npm run typecheck`. Commite o arquivo gerado com a mudança.
+
 ## Onde adicionar
 
 | O que | Onde |
 | --- | --- |
-| Comando público | `commands/public/`, política `public`, escopo `global` |
-| Comando de moderação | `commands/mod/`, política `guild`, escopo `global` |
-| Comando da equipe | `commands/dev/`, política `staff`, escopo `dev-guild` |
+| Comando público | `commands/public/`, política `public`, escopo `global`; `help.topic` `public`, `utility` ou `fun` |
+| Comando de moderação | `commands/mod/`, política `guild`, escopo `global`, `help.topic` `mod` |
+| Comando da equipe | `commands/dev/`, política `staff`, escopo `dev-guild`, `help.topic` `dev` |
 | Executor compartilhado por mais de um comando | `infrastructure/`, ao lado do adapter da operação |
 | Adapter Discord, imagem ou log | `infrastructure/discord/`, `infrastructure/images/` ou `infrastructure/logging/` |
 | Caso de uso | `application/` |

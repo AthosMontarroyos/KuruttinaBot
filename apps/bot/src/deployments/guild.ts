@@ -6,9 +6,12 @@ import type { Deployment } from './types.js';
 export function createGuildDeployment(handler: CommandsHandler, getSettings: () => Promise<BotSettings>): Deployment {
   return {
     name: 'staff-guild',
-    run: async ({ config, applicationId }) => {
+    run: async ({ config, applicationId, correlationId, force }) => {
       const settings = await getSettings();
-      await deployGuildCommands(config.activeCredential.token, applicationId, settings.devGuildId, handler.payload('dev-guild'));
+      await deployGuildCommands(config.activeCredential.token, applicationId, settings.devGuildId, handler.payload('dev-guild'), {
+        correlationId,
+        ...(force ? { force } : {}),
+      });
     },
   };
 }

@@ -20,7 +20,6 @@ services:
     stop_grace_period: 15s
     environment:
       APP_ENV: development
-      AUTO_SYNC_COMMANDS: "false"
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
       DISCORD_BOT_ID: ${DISCORD_BOT_ID:-}
       DATABASE_URL: ${DATABASE_URL:-}

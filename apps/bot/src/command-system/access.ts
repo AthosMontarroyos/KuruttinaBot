@@ -29,6 +29,11 @@ function permissionLabel(permission: bigint): string {
   return labelsByPermission.get(permission) ?? 'Permissão';
 }
 
+/** Portuguese permission names for catalog and help listings. */
+export function permissionNames(permissions: readonly bigint[]): string[] {
+  return [...new Set(permissions.map(permissionLabel))];
+}
+
 function permissionList(permissions: readonly bigint[]): string {
   return permissions.map(permissionLabel).join(', ');
 }

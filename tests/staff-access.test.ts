@@ -22,6 +22,7 @@ function command(minimumRole: StaffRole = 'dev'): ChatInputCommand {
   return {
     data: new SlashCommandBuilder().setName('restricted').setDescription('Test fixture'),
     access: { kind: 'staff', minimumRole, userPermissions: [PermissionFlagsBits.ManageGuild], botPermissions: [PermissionFlagsBits.SendMessages] },
+    help: { topic: 'dev', examples: [{ slash: '/restricted', prefix: 'k!restricted' }] },
     scope: 'dev-guild',
     execute: vi.fn(async () => {}),
   };
@@ -129,21 +130,21 @@ describe('staff authorization in both transports', () => {
     await expect(loadCommands(new URL('./fixtures/invalid-staff/', import.meta.url))).rejects.toMatchObject({ name: 'CommandLoadError' });
   });
   it('publishes staff commands only to the current configured guild', async () => {
-    const publicCommand: ChatInputCommand = { ...command(), data: new SlashCommandBuilder().setName('public').setDescription('Public'), access: { kind: 'public' }, scope: 'global' };
+    const publicCommand: ChatInputCommand = { ...command(), data: new SlashCommandBuilder().setName('public').setDescription('Public'), access: { kind: 'public' }, help: { topic: 'public', examples: [{ slash: '/public', prefix: 'k!public' }] }, scope: 'global' };
     const handler = new CommandsHandler([publicCommand, command()]);
     const cfg = {
       target: 'development' as const,
-      activeCredential: { token: 'fake', expectedBotId: creatorId }, autoSyncCommands: false,
+      activeCredential: { token: 'fake', expectedBotId: creatorId },
       database: readDatabaseConfig({ DATABASE_URL: 'postgres://kuruttina_bot:test@localhost/postgres' }, 'development'),
     };
     const ctx = { config: cfg, applicationId: creatorId, correlationId: 'test' };
     const settings = vi.fn(async () => ({ environment: 'development' as const, devGuildId: guildId }));
     await createCentralDeployment(handler).run(ctx);
     await createGuildDeployment(handler, settings).run(ctx);
-    expect(discord.deployGlobalCommands).toHaveBeenLastCalledWith('fake', creatorId, [publicCommand.data.toJSON()]);
-    expect(discord.deployGuildCommands).toHaveBeenLastCalledWith('fake', creatorId, guildId, [command().data.toJSON()]);
+    expect(discord.deployGlobalCommands).toHaveBeenLastCalledWith('fake', creatorId, [publicCommand.data.toJSON()], { correlationId: 'test' });
+    expect(discord.deployGuildCommands).toHaveBeenLastCalledWith('fake', creatorId, guildId, [command().data.toJSON()], { correlationId: 'test' });
     settings.mockResolvedValueOnce({ environment: 'development', devGuildId: '123456789012345678' });
     await createGuildDeployment(handler, settings).run(ctx);
-    expect(discord.deployGuildCommands).toHaveBeenLastCalledWith('fake', creatorId, '123456789012345678', [command().data.toJSON()]);
+    expect(discord.deployGuildCommands).toHaveBeenLastCalledWith('fake', creatorId, '123456789012345678', [command().data.toJSON()], { correlationId: 'test' });
   });
 });

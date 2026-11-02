@@ -195,6 +195,13 @@ export const command = {
         .setRequired(false),
     ),
   access,
+  help: {
+    topic: 'mod',
+    examples: [
+      { slash: '/ban membro:@Fulano motivo:Spam', prefix: 'k!ban @Fulano Spam' },
+      { slash: '/ban membro:123456789012345678', prefix: 'k!ban 123456789012345678' },
+    ],
+  },
   scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

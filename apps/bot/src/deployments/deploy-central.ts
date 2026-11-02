@@ -18,7 +18,7 @@ async function deployCentral(): Promise<void> {
     const handler = new CommandsHandler(await loadCommands(undefined, correlationId), database);
     const applicationId = await verifyBotIdentity(config.activeCredential.token, config.activeCredential.expectedBotId);
     await new DeploymentsHandler([createCentralDeployment(handler), createGuildDeployment(handler, database.getSettings)])
-      .run({ config, applicationId, correlationId });
+      .run({ config, applicationId, correlationId, force: true });
     log('success', 'central_commands_deployed', { applicationId, correlationId });
   } finally { await database.close(); }
 }

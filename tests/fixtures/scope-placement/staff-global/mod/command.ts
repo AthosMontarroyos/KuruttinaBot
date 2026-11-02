@@ -5,6 +5,7 @@ import type { ChatInputCommand } from '#bot/command-system/types.js';
 export const command = {
   data: new SlashCommandBuilder().setName('staffglobal').setDescription('Staff fora da pasta dev'),
   access: { kind: 'staff', minimumRole: 'dev', userPermissions: [], botPermissions: [] },
+  help: { topic: 'mod', examples: [{ slash: '/staffglobal', prefix: 'k!staffglobal' }] },
   scope: 'global',
   execute: async () => {},
 } satisfies ChatInputCommand;

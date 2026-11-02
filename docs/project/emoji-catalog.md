@@ -18,11 +18,11 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `cleaning` | Confirmação da limpeza de mensagens | disponível | disponível |
 | `slap` | Complemento da confirmação de limpeza; omitido quando indisponível | disponível | disponível |
 | `error` | Falha ao importar emoji ou erro inesperado no slash | disponível | disponível |
-| `search` | Nenhuma mensagem encontrada, membro inválido ou ausente, usuário desconhecido, banimento já registrado ou inexistente, ou emoji de origem ausente | disponível | disponível |
+| `search` | Nenhuma mensagem encontrada, membro inválido ou ausente, usuário desconhecido, banimento já registrado ou inexistente, emoji de origem ausente ou comando desconhecido no `/help` | disponível | disponível |
 | `add` | Confirmação de que o emoji agora está neste servidor | disponível | disponível |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
 | `ban` | Abre a confirmação de banimento; omitido quando indisponível | disponível | disponível |
-| `book` | Orientação quando o comando exige um subcomando, e quando `/dev emoji add` aponta o workflow de produção | disponível | disponível |
+| `book` | Orientação quando o comando exige um subcomando, abertura e detalhe do `/help`, e quando `/dev emoji add` aponta o workflow de produção | disponível | disponível |
 | `ChannelBrowser` | Comando usado fora de canal de texto de servidor | disponível | disponível |
 | `coffee` | Bot ocupado, fila de importação cheia ou fechamento da confirmação de banimento | disponível | disponível |
 | `crown` | Dono do servidor ou posição de destaque | disponível | disponível |

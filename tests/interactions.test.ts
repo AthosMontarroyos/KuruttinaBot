@@ -47,6 +47,7 @@ function command(execute: NonNullable<ChatInputCommand['execute']>): ChatInputCo
   return {
     data: new SlashCommandBuilder().setName('example').setDescription('Example'),
     access: { kind: 'public' },
+    help: { topic: 'public', examples: [{ slash: '/example', prefix: 'k!example' }] },
     scope: 'global',
     execute,
   };

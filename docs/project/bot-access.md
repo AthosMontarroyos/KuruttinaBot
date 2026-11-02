@@ -77,7 +77,7 @@ O dispatcher autoriza a política raiz e, em seguida, os requisitos adicionais d
 
 ## Publicação e mudança da guilda
 
-`npm run deploy:commands` e `AUTO_SYNC_COMMANDS=true` sincronizam, em sequência, o conjunto global e o conjunto de equipe da guilda configurada, somente para a aplicação ativa. O conjunto global exclui qualquer módulo de `apps/bot/src/commands/dev/` (`scope: 'dev-guild'`); a pasta `dev/` e seus subdiretórios entram somente no conjunto da guilda cadastrada. Um conjunto vazio limpa os comandos daquele escopo; PUT substitui o conjunto completo.
+`npm run deploy:commands` (sempre publica) e o startup do bot (publica só a diferença, obrigatório, ver [decisão](../decisions/command-sync-on-startup.md)) sincronizam, em sequência, o conjunto global e o conjunto de equipe da guilda configurada, somente para a aplicação ativa. O conjunto global exclui qualquer módulo de `apps/bot/src/commands/dev/` (`scope: 'dev-guild'`); a pasta `dev/` e seus subdiretórios entram somente no conjunto da guilda cadastrada. Um conjunto vazio limpa os comandos daquele escopo; PUT substitui o conjunto completo.
 
 Ao trocar a guilda:
 1. Registre o ID antigo antes de editar o cadastro.

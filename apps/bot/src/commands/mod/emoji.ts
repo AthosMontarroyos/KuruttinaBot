@@ -43,11 +43,16 @@ export const command = {
       guildOnly: 'Use um canal de texto de servidor para gerenciar emojis.',
     },
   },
+  help: { topic: 'mod' },
   scope: 'global' as const,
   routes: [
     {
       path: ['add'],
       aliases: ['emoji-add'],
+      examples: [
+        { slash: '/emoji add emoji:<:nome:123456789012345678>', prefix: 'k!emoji-add <:nome:123456789012345678>' },
+        { slash: '/emoji add nome:meu_emoji arquivo:imagem.png', prefix: 'k!emoji-add meu_emoji' },
+      ],
       access: {
         userPermissions: [ManageGuildExpressions],
         botPermissions: [CreateGuildExpressions],
@@ -62,6 +67,9 @@ export const command = {
     {
       path: ['info'],
       aliases: ['emoji-info'],
+      examples: [
+        { slash: '/emoji info emoji:<:nome:123456789012345678>', prefix: 'k!emoji-info <:nome:123456789012345678>' },
+      ],
       access: {
         userPermissions: [],
         botPermissions: [EmbedLinks],

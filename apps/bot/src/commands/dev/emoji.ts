@@ -41,8 +41,14 @@ export const command = {
       botMissing: 'Preciso destas permissões para executar este comando: **{permissions}**.',
     },
   },
+  help: { topic: 'dev' },
   scope: 'dev-guild' as const,
   routes: [
-    { path: ['emoji', 'add'], aliases: ['dev-emoji-add'], execute: explainProductionEmoji },
+    {
+      path: ['emoji', 'add'],
+      aliases: ['dev-emoji-add'],
+      examples: [{ slash: '/dev emoji add', prefix: 'k!dev-emoji-add' }],
+      execute: explainProductionEmoji,
+    },
   ],
 } satisfies ChatInputCommand;

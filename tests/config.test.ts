@@ -10,7 +10,6 @@ const base = {
   DISCORD_BOT_ID: developmentBotId,
 };
 describe('loadConfig', () => {
-  it('loads strict boolean with safe default', () => expect(loadConfig(base).autoSyncCommands).toBe(false));
   it('selects only variables consumed by the bot', () => {
     expect(selectBotEnvironment({
       ...base,
@@ -22,9 +21,8 @@ describe('loadConfig', () => {
       DATABASE_URL_DEVELOPMENT: 'do-not-inherit',
     })).toEqual(base);
   });
-  it('rejects invalid target and boolean', () => { expect(() => loadConfig({ ...base, APP_ENV: 'staging' })).toThrow(); expect(() => loadConfig({ ...base, AUTO_SYNC_COMMANDS: 'yes' })).toThrow(); });
-  it('rejects an empty boolean and non-canonical snowflakes', () => {
-    expect(() => loadConfig({ ...base, AUTO_SYNC_COMMANDS: '' })).toThrow('AUTO_SYNC_COMMANDS');
+  it('rejects an invalid target', () => { expect(() => loadConfig({ ...base, APP_ENV: 'staging' })).toThrow(); });
+  it('rejects non-canonical snowflakes', () => {
     expect(() => loadConfig({ ...base, DISCORD_BOT_ID: '01234567890123456' })).toThrow('snowflake');
   });
   it('reads the unsuffixed credential for the active environment', () => {

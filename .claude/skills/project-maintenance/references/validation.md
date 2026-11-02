@@ -2,7 +2,7 @@
 
 Leia este documento quando alterar código, CI, contratos ou automações. Execute os comandos npm essenciais da [referência de desenvolvimento](../../../../docs/project/development.md) e mantenha instalação pelo lockfile.
 
-**MUST:** Rode typecheck, testes relevantes e build limpo dos módulos alterados. Regra de negócio recebe teste unitário; schema, migration e RLS recebem integração com PostgreSQL real descartável; boundary HTTP/auth recebe integração; fluxo crítico recebe ponta a ponta quando viável. Relate falhas não relacionadas.
+**MUST:** `npm run typecheck` e `npm run site build` regeneram `packages/command-catalog/catalog.js` a partir dos módulos do bot; commite o arquivo gerado junto com a mudança de commands e nunca o edite à mão. Rode typecheck, testes relevantes e build limpo dos módulos alterados. Regra de negócio recebe teste unitário; schema, migration e RLS recebem integração com PostgreSQL real descartável; boundary HTTP/auth recebe integração; fluxo crítico recebe ponta a ponta quando viável. Relate falhas não relacionadas.
 
 **MUST:** Casos de autorização e RLS incluem usuário ausente/errado, guilda ou tenant diferente, payload adulterado, role sem privilégio, DDL negado, função não concedida, alteração maliciosa de `search_path`, grants/defaults e acesso após revogação. Sessões/OAuth, quando existirem, cobrem replay e expiração de `state`, redirect divergente, rotação, timeout e sessão privilegiada revogada. Testes não usam projeto Supabase de production, token Discord real ou `.env` operacional.
 

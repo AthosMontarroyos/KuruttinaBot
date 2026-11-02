@@ -10,10 +10,10 @@ metadata:
 ## Procedimento
 
 1. Localize o command, executor e adapters envolvidos. Para criar ou mover arquivos, leia [organização do bot](../../../docs/project/bot-file-organization.md). Confirme a versão instalada de discord.js no manifesto/lockfile.
-2. Para commands, leia as seções contrato/carregamento e categorias de [contratos locais](references/project-contracts.md). Defina categoria, `access`, `scope` e execução raiz ou rotas; mantenha slash e `k!`/`K!` no mesmo executor. Helpers ficam fora do catálogo. Alteração no contrato deve alcançar os dois adapters.
+2. Para commands, leia as seções contrato/carregamento e categorias de [contratos locais](references/project-contracts.md). Defina categoria, `access`, `scope`, execução raiz ou rotas e a documentação obrigatória (descrição, `help.topic` e `examples` com slash e prefixo; regra "documentação obrigatória do command"); mantenha slash e `k!`/`K!` no mesmo executor. Não edite lista de commands à mão: `/help`, a página `/comandos` do site e a publicação no Discord leem o command carregado. Helpers ficam fora do catálogo. Alteração no contrato deve alcançar os dois adapters.
 3. Para bootstrap, sync ou credenciais, leia as seções correspondentes de [contratos locais](references/project-contracts.md). Valide identidade antes de Gateway/publicação; nunca faça PUT a cada reconexão. Para memória/shutdown, leia memória, estado distribuído e ciclo de vida nessa referência.
 4. Para qualquer fala afetada, leia integralmente [personalidade](../../../docs/project/bot-personality.md) e [catálogo de emojis](../../../docs/project/emoji-catalog.md). Confira também recusas, erros e fallback de emoji; não altere autorização para acomodar a copy.
-5. Valide com `npm run typecheck`, testes relevantes de commands/adapters e `npm run bot build`. Integração Discord só no ambiente autorizado; publicar commands é operação externa. Na conclusão, informe validação e caminhos não exercitados.
+5. Valide com `npm run typecheck` (ele regenera o catálogo do site), testes relevantes de commands/adapters e `npm run bot build`. O startup do bot sincroniza os commands com o Discord por diferença, sem flag; `npm run deploy:commands` publica sempre. Integração Discord só no ambiente autorizado; publicar commands é operação externa. Na conclusão, informe validação e caminhos não exercitados.
 
 ## Referências condicionais
 

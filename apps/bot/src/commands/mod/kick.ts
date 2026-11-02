@@ -163,6 +163,13 @@ export const command = {
         .setRequired(false),
     ),
   access,
+  help: {
+    topic: 'mod',
+    examples: [
+      { slash: '/kick membro:@Fulano motivo:Provocação', prefix: 'k!kick @Fulano Provocação' },
+      { slash: '/kick membro:123456789012345678', prefix: 'k!kick 123456789012345678' },
+    ],
+  },
   scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

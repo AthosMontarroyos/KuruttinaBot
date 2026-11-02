@@ -5,8 +5,11 @@ import type { Deployment } from './types.js';
 export function createCentralDeployment(commandsHandler: CommandsHandler): Deployment {
   return {
     name: 'central',
-    run: async ({ config, applicationId }) => {
-      await deployGlobalCommands(config.activeCredential.token, applicationId, commandsHandler.payload('global'));
+    run: async ({ config, applicationId, correlationId, force }) => {
+      await deployGlobalCommands(config.activeCredential.token, applicationId, commandsHandler.payload('global'), {
+        correlationId,
+        ...(force ? { force } : {}),
+      });
     },
   };
 }

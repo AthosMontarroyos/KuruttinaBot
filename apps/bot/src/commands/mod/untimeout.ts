@@ -167,6 +167,12 @@ export const command = {
         .setRequired(false),
     ),
   access,
+  help: {
+    topic: 'mod',
+    examples: [
+      { slash: '/untimeout membro:@Fulano motivo:Acordo feito', prefix: 'k!untimeout @Fulano Acordo feito' },
+    ],
+  },
   scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

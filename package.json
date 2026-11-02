@@ -4,6 +4,7 @@
   "type": "module",
   "workspaces": [
     "packages/config",
+    "packages/command-catalog",
     "packages/database",
     "packages/message-templates"
   ],
@@ -20,7 +21,7 @@
     "test": "node scripts/run.mjs test",
     "bot": "node scripts/run.mjs bot",
     "site": "node scripts/run.mjs site",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/site/tsconfig.json",
+    "typecheck": "node --import tsx scripts/commands-catalog.mjs && tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/site/tsconfig.json",
     "deploy:commands": "node dist/apps/bot/src/deployments/deploy-central.js",
     "security:secrets": "gitleaks detect --source . --config .gitleaks.toml --redact --verbose",
     "database:migrate": "node packages/database/cli.js migrate",
@@ -28,6 +29,7 @@
     "test:database": "vitest run tests/database.integration.test.ts"
   },
   "dependencies": {
+    "@kuruttina/command-catalog": "*",
     "@kuruttina/config": "*",
     "@kuruttina/database": "*",
     "@kuruttina/message-templates": "*",

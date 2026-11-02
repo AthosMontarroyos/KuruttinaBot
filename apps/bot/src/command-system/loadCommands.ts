@@ -1,8 +1,9 @@
 import { readdir } from 'node:fs/promises';
 import { extname, join, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { isCommandTopic } from '@kuruttina/command-catalog';
 import { log } from '#bot/infrastructure/logging/logger.js';
-import type { ChatInputCommand, CommandAccess } from './types.js';
+import type { ChatInputCommand, CommandAccess, CommandHelp } from './types.js';
 
 /** First path segment under the catalog root. Deeper folders do not create a category. */
 const COMMAND_CATEGORIES = ['dev', 'mod', 'public'] as const;
@@ -85,19 +86,47 @@ function isStringList(value: unknown, pattern: RegExp): value is readonly string
   return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === 'string' && pattern.test(item));
 }
 
-function isCommandRoute(value: unknown): boolean {
+const MAX_EXAMPLES = 3;
+const MAX_EXAMPLE_LENGTH = 200;
+
+function isExampleText(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() === value && value.length > 0 && value.length <= MAX_EXAMPLE_LENGTH;
+}
+
+/** Whether `text` is exactly `head` or starts with `head` followed by a space. */
+function startsWithWord(text: string, head: string): boolean {
+  return text === head || text.startsWith(`${head} `);
+}
+
+/**
+ * Usage examples must show the real address of the command: the slash path
+ * (`/name route path`) and one of its prefix names (`k!name` or `k!alias`).
+ */
+function hasValidExamples(value: unknown, slashHead: string, prefixNames: readonly string[]): boolean {
+  if (!Array.isArray(value) || value.length === 0 || value.length > MAX_EXAMPLES) return false;
+  return value.every((example: unknown) => {
+    if (typeof example !== 'object' || example === null) return false;
+    const { slash, prefix, ...extra } = example as { slash?: unknown; prefix?: unknown };
+    if (Object.keys(extra).length > 0 || !isExampleText(slash) || !isExampleText(prefix)) return false;
+    return startsWithWord(slash, slashHead) && prefixNames.some((name) => /^[kK]!/u.test(prefix) && startsWithWord(prefix.slice(2), name));
+  });
+}
+
+function isCommandRoute(value: unknown, commandName: string): boolean {
   if (typeof value !== 'object' || value === null) return false;
   const route = value as {
     readonly path?: unknown;
     readonly aliases?: unknown;
     readonly execute?: unknown;
     readonly access?: unknown;
+    readonly examples?: unknown;
   };
   if (route.access !== undefined && !isRouteAccess(route.access)) return false;
   return (
     typeof route.execute === 'function' &&
     isStringList(route.path, routeSegmentPattern) &&
-    isStringList(route.aliases, routeAliasPattern)
+    isStringList(route.aliases, routeAliasPattern) &&
+    hasValidExamples(route.examples, `/${commandName} ${route.path.join(' ')}`, route.aliases)
   );
 }
 
@@ -107,6 +136,12 @@ function hasUniqueRoutes(routes: readonly unknown[]): boolean {
   return paths.size === routes.length && new Set(aliases).size === aliases.length;
 }
 
+function isCommandHelp(value: unknown): value is CommandHelp {
+  if (typeof value !== 'object' || value === null) return false;
+  const help = value as { readonly topic?: unknown; readonly examples?: unknown };
+  return isCommandTopic(help.topic);
+}
+
 function isChatInputCommand(value: unknown): value is ChatInputCommand {
   if (typeof value !== 'object' || value === null) return false;
 
@@ -114,13 +149,16 @@ function isChatInputCommand(value: unknown): value is ChatInputCommand {
   if (!isCommandAccess(candidate.access)) return false;
   if (candidate.scope !== 'global' && candidate.scope !== 'dev-guild') return false;
   if (typeof candidate.data !== 'object' || candidate.data === null) return false;
+  if (!isCommandHelp(candidate.help)) return false;
+  const commandName = (candidate.data as { name?: unknown }).name;
+  if (typeof commandName !== 'string') return false;
 
   // Exactly one execution strategy: a root executor or a non-empty route table.
   if (candidate.routes !== undefined) {
     if (!Array.isArray(candidate.routes) || candidate.routes.length === 0) return false;
-    if (!candidate.routes.every(isCommandRoute) || !hasUniqueRoutes(candidate.routes)) return false;
-    if (candidate.execute !== undefined) return false;
-  } else if (typeof candidate.execute !== 'function') {
+    if (!candidate.routes.every((route) => isCommandRoute(route, commandName)) || !hasUniqueRoutes(candidate.routes)) return false;
+    if (candidate.execute !== undefined || candidate.help.examples !== undefined) return false;
+  } else if (typeof candidate.execute !== 'function' || !hasValidExamples(candidate.help.examples, `/${commandName}`, [commandName])) {
     return false;
   }
 
@@ -139,14 +177,17 @@ function isCommandCategory(value: string): value is CommandCategory {
 }
 
 /**
- * Category, access policy and publishing scope are the same restriction.
- * `public/` is open and global, `mod/` is a guild gate and global, and `dev/`
- * is staff-only on the registered development guild.
+ * Category, access policy, publishing scope and help topic are the same
+ * restriction. `public/` is open and global (topic `public`, `fun` or
+ * `utility`), `mod/` is a guild gate and global (topic `mod`), and `dev/` is
+ * staff-only on the registered development guild (topic `dev`).
  */
 function hasConsistentCategoryPlacement(command: ChatInputCommand, category: CommandCategory): boolean {
-  if (category === 'public') return command.access.kind === 'public' && command.scope === 'global';
-  if (category === 'mod') return command.access.kind === 'guild' && command.scope === 'global';
-  return command.access.kind === 'staff' && command.scope === 'dev-guild';
+  if (category === 'public') {
+    return command.access.kind === 'public' && command.scope === 'global' && !['mod', 'dev'].includes(command.help.topic);
+  }
+  if (category === 'mod') return command.access.kind === 'guild' && command.scope === 'global' && command.help.topic === 'mod';
+  return command.access.kind === 'staff' && command.scope === 'dev-guild' && command.help.topic === 'dev';
 }
 
 function commandLoadError(message: string): Error {

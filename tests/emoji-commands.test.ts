@@ -728,7 +728,6 @@ describe('emoji command deployment scopes', () => {
     return {
       target: 'development' as const,
       activeCredential: { token: 'fake-token', expectedBotId: CREATOR },
-      autoSyncCommands: false,
       database: readDatabaseConfig(
         { DATABASE_URL: 'postgres://kuruttina_bot:test@localhost/postgres' },
         'development',
@@ -746,9 +745,9 @@ describe('emoji command deployment scopes', () => {
 
     const globalNames = discord.deployGlobalCommands.mock.calls[0]?.[2].map(({ name }: { name: string }) => name);
     const guildNames = discord.deployGuildCommands.mock.calls[0]?.[3].map(({ name }: { name: string }) => name);
-    expect(globalNames).toEqual(['ban', 'clear', 'emoji', 'kick', 'timeout', 'unban', 'untimeout', 'ping']);
+    expect(globalNames).toEqual(['ban', 'clear', 'emoji', 'kick', 'timeout', 'unban', 'untimeout', 'help', 'ping']);
     expect(guildNames).toEqual(['dev']);
-    expect(discord.deployGuildCommands).toHaveBeenCalledExactlyOnceWith('fake-token', CREATOR, DEV_GUILD, expect.any(Array));
+    expect(discord.deployGuildCommands).toHaveBeenCalledExactlyOnceWith('fake-token', CREATOR, DEV_GUILD, expect.any(Array), { correlationId: 'test' });
     expect(globalNames).not.toContain('dev');
     expect(guildNames).not.toContain('emoji');
   });

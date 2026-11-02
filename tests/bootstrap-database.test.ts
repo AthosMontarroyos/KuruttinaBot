@@ -8,7 +8,7 @@ vi.mock('@kuruttina/database', () => ({
 }));
 vi.mock('../apps/bot/src/config.js', () => ({
   loadConfig: () => ({
-    target: 'development', database: {}, autoSyncCommands: true,
+    target: 'development', database: {},
     activeCredential: { token: 'fake', expectedBotId: '123456789012345678' },
   }),
 }));

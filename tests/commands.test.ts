@@ -56,7 +56,7 @@ function message(content: string, reply = vi.fn().mockResolvedValue(undefined)) 
 describe('commands', () => {
   it('discovers and publishes the canonical commands automatically', async () => {
     const handler = new CommandsHandler(await loadCommands());
-    expect(handler.payload('global').map((command) => command.name)).toEqual(['ban', 'clear', 'emoji', 'kick', 'timeout', 'unban', 'untimeout', 'ping']);
+    expect(handler.payload('global').map((command) => command.name)).toEqual(['ban', 'clear', 'emoji', 'kick', 'timeout', 'unban', 'untimeout', 'help', 'ping']);
     expect(handler.payload('dev-guild').map((command) => command.name)).toEqual(['dev']);
   });
 
@@ -196,6 +196,7 @@ describe('commands', () => {
     const handler = new CommandsHandler([{
       data: new SlashCommandBuilder().setName('example').setDescription('Example'),
       access: { kind: 'public' },
+      help: { topic: 'public', examples: [{ slash: '/example', prefix: 'k!example' }] },
       scope: 'global',
       execute,
     }]);
@@ -224,8 +225,9 @@ describe('commands', () => {
     await new CommandsHandler([{
       data: new SlashCommandBuilder().setName('grupo').setDescription('Grupo'),
       access: { kind: 'public' },
+      help: { topic: 'public' },
       scope: 'global',
-      routes: [{ path: ['add'], aliases: [], execute: vi.fn() }],
+      routes: [{ path: ['add'], aliases: [], examples: [{ slash: '/grupo add', prefix: 'k!grupo-add' }], execute: vi.fn() }],
     }]).execute('grupo', commandContext(reply));
     expect(reply).toHaveBeenCalledExactlyOnceWith('<:book:book-id> Este comando exige um subcomando.');
   });
@@ -237,6 +239,7 @@ describe('commands', () => {
     const handler = new CommandsHandler([{
       data: new SlashCommandBuilder().setName('example').setDescription('Example'),
       access: { kind: 'public' },
+      help: { topic: 'public', examples: [{ slash: '/example', prefix: 'k!example' }] },
       scope: 'global',
       execute,
     }]);
@@ -256,6 +259,7 @@ describe('commands', () => {
     const handler = new CommandsHandler([{
       data: new SlashCommandBuilder().setName('example').setDescription('Example'),
       access: { kind: 'public' },
+      help: { topic: 'public', examples: [{ slash: '/example', prefix: 'k!example' }] },
       scope: 'global',
       execute: async () => { throw new Error('private detail'); },
     }]);
@@ -274,6 +278,7 @@ describe('command access policy', () => {
         botPermissions: [],
         requireChannelSend: true,
       },
+      help: { topic: 'mod', examples: [{ slash: '/guardado', prefix: 'k!guardado' }] },
       scope: 'global',
       execute,
     };
@@ -342,6 +347,10 @@ describe('command access policy', () => {
         } as RESTPostAPIChatInputApplicationCommandsJSONBody),
       },
       access,
+      help: {
+        topic: access.kind === 'staff' ? 'dev' : access.kind === 'guild' ? 'mod' : 'public',
+        examples: [{ slash: '/exemplo', prefix: 'k!exemplo' }],
+      },
       scope: access.kind === 'staff' ? 'dev-guild' : 'global',
       execute: async () => {},
     };
@@ -394,10 +403,12 @@ describe('command access policy', () => {
         botPermissions: [],
         requireChannelSend: true,
       },
+      help: { topic: 'mod' },
       scope: 'global',
       routes: [{
         path: ['info'],
         aliases: ['guardado-info'],
+        examples: [{ slash: '/guardado info', prefix: 'k!guardado-info' }],
         access: { userPermissions: [], botPermissions: [], requireChannelSend: false },
         execute,
       }],
@@ -423,10 +434,12 @@ describe('command access policy', () => {
         botPermissions: [PermissionFlagsBits.ViewChannel],
         requireChannelSend: true,
       },
+      help: { topic: 'mod' },
       scope: 'global',
       routes: [{
         path: ['info'],
         aliases: ['guardado-info'],
+        examples: [{ slash: '/guardado info', prefix: 'k!guardado-info' }],
         access: { userPermissions: [], botPermissions: [], requireChannelSend: false },
         execute,
       }],

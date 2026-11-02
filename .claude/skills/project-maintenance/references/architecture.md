@@ -4,7 +4,7 @@
 
 ## 2. Arquitetura de referência
 
-O projeto implementado é um monorepo modular com o bot Discord, a Home React/Vite em `apps/site`, `packages/config` e `packages/database`. Packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A hospedagem vigente é a VPS KingHost, com bot e Home empacotados por Docker Compose; a preparação está no repositório e a implantação na máquina ainda não foi confirmada. A base web segue a [decisão React sem Next.js](../../../../docs/decisions/react-base.md). O diagrama mostra a estrutura base, sem pastas opcionais antecipadas. Veja o [ADR](../../../../docs/decisions/vps-kinghost.md) e o [estado implementado](../../../../docs/project/current-state.md). As fronteiras de dependências e os contratos deste documento permanecem vigentes.
+O projeto implementado é um monorepo modular com o bot Discord, a Home React/Vite em `apps/site`, `packages/config`, `packages/database`, `packages/message-templates` e `packages/command-catalog`. Packages opcionais só passam a existir quando uma feature concreta exigir seu ciclo de vida ou contrato. A hospedagem vigente é a VPS KingHost, com bot e Home empacotados por Docker Compose; a preparação está no repositório e a implantação na máquina ainda não foi confirmada. A base web segue a [decisão React sem Next.js](../../../../docs/decisions/react-base.md). O diagrama mostra a estrutura base, sem pastas opcionais antecipadas. Veja o [ADR](../../../../docs/decisions/vps-kinghost.md) e o [estado implementado](../../../../docs/project/current-state.md). As fronteiras de dependências e os contratos deste documento permanecem vigentes.
 
 ```text
 Estrutura base (expandir somente por necessidade concreta):
@@ -13,8 +13,10 @@ Estrutura base (expandir somente por necessidade concreta):
 │   ├── bot/                 # runtime Discord
 │   └── site/                # interface React e servidor HTTP Node
 ├── packages/
+│   ├── command-catalog/     # tópicos e catálogo público de commands (catalog.js é gerado)
 │   ├── config/              # configuração validada
-│   └── database/            # persistência
+│   ├── database/            # persistência
+│   └── message-templates/   # motor de templates, compartilhado por bot e site
 ├── scripts/                 # entrypoints operacionais (ex.: add-production-emoji.ts)
 ├── Dockerfile               # build Linux e alvos bot, site e release
 ├── compose.yaml             # produção: bot, site e migrate
@@ -30,6 +32,7 @@ Diretórios opcionais (`auth`, `shared`) só devem existir quando possuírem con
 ### Gatilhos de evolução
 
 - Extraia um caso de uso quando um command/listener adquirir regra de negócio testável além de adaptação e resposta simples.
+- `packages/command-catalog` é a ponte de dados do bot para o site (e para o `/help`): o bot define a documentação de cada command ([decisão](../../../../docs/decisions/command-catalog-source.md)); o site nunca importa `apps/bot`.
 - Crie `packages/database` somente com a primeira persistência real; schema, migrations, role runtime e teste de integração entram juntos.
 - Crie `apps/site` somente com o primeiro fluxo web executável e seu ciclo de vida próprio.
 - Introduza capability cross-bot somente com o primeiro command autorizado que a consuma; não exponha o objeto global de credenciais ao command.

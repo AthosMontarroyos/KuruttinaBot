@@ -1,5 +1,7 @@
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
+import type { CatalogCommand } from '@kuruttina/command-catalog';
 import { validateAdditionalAccess, validateCommandAccess } from './access.js';
+import { buildCatalog } from './commandCatalog.js';
 import { withEmojis } from './responses.js';
 import type {
   ChatInputCommand,
@@ -47,6 +49,7 @@ export class CommandsHandler {
   private readonly commandsByName = new Map<string, ChatInputCommand>();
   private readonly routesByAlias = new Map<string, { command: ChatInputCommand; route: CommandRoute }>();
   private readonly pending = new Set<Promise<void>>();
+  private catalog: readonly CatalogCommand[] | undefined;
   private accepting = true;
 
   constructor(
@@ -80,6 +83,12 @@ export class CommandsHandler {
     return [...this.commandsByName.values()]
       .filter((command) => command.scope === scope)
       .map((command) => command.data.toJSON());
+  }
+
+  /** Public command list for `/help`, built once from the registered modules. */
+  private commandCatalog(): readonly CatalogCommand[] {
+    this.catalog ??= buildCatalog([...this.commandsByName.values()]);
+    return this.catalog;
   }
 
   /** A root command or any prefix alias can start an execution. */
@@ -133,6 +142,7 @@ export class CommandsHandler {
       ...context,
       ...(this.emojiImport ? { emojiImport: this.emojiImport } : {}),
       ...(this.emojiInfo ? { emojiInfo: this.emojiInfo } : {}),
+      commandCatalog: this.commandCatalog(),
     };
     const accessError = await validateCommandAccess(
       accessForDenial(resolution.command.access, resolution.route),

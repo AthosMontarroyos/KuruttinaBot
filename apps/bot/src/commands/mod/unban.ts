@@ -153,6 +153,12 @@ export const command = {
         .setRequired(false),
     ),
   access,
+  help: {
+    topic: 'mod',
+    examples: [
+      { slash: '/unban membro:123456789012345678 motivo:Apelo aceito', prefix: 'k!unban 123456789012345678 Apelo aceito' },
+    ],
+  },
   scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

@@ -338,6 +338,13 @@ export const command = {
         .setRequired(false),
     ),
   access,
+  help: {
+    topic: 'mod',
+    examples: [
+      { slash: '/timeout membro:@Fulano duracao:10m motivo:Flood', prefix: 'k!timeout @Fulano 10m Flood' },
+      { slash: '/timeout membro:@Fulano duracao:2h', prefix: 'k!timeout @Fulano 2h' },
+    ],
+  },
   scope: 'global' as const,
   execute,
 } satisfies ChatInputCommand;

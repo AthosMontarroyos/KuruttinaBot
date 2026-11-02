@@ -51,21 +51,21 @@ Depois de alterar o código, rode de novo o `up --build`. O ambiente foi constru
 | `npm run dev` | Sobe todas as apps ao mesmo tempo. O processo precisa das variáveis de cada uma; se uma termina com erro, as outras são encerradas. |
 | `npm run build` | Compila todas as apps, em sequência, e para na primeira falha. |
 | `npm run bot build` | Limpa `dist/apps/bot` e compila o bot. |
-| `npm run site build` | Limpa somente o destino do site, gera o bundle e compila o servidor. |
+| `npm run site build` | Regenera o catálogo de commands do site (`packages/command-catalog/catalog.js`), limpa somente o destino do site, gera o bundle e compila o servidor. |
 | `npm run bot start` | Fora do Docker, executa `node dist/apps/bot/src/index.js`; exige `APP_ENV` explícito. O contêiner chama esse Node diretamente. |
 | `npm run site start` | Fora do Docker, executa `node dist/apps/site/index.js`; exige `APP_ENV` explícito. Em production, exige também `SITE_URL`. O contêiner chama esse Node diretamente. |
 | `npm run start` | Sobe o build de todas as apps ao mesmo tempo; exige `APP_ENV` explícito. Os contêineres não usam este comando. |
-| `npm run typecheck` | Verifica tipos. |
+| `npm run typecheck` | Regenera o catálogo de commands e verifica tipos do bot e do site. |
 | `npm test` | Testes herméticos de todas as apps, na mesma cobertura de `vitest` sem `tests/database.integration.test.ts`. |
 | `npm run test:database` | Integração com PostgreSQL descartável; exige `initdb` e `pg_ctl` de uma instalação nativa do PostgreSQL. |
-| `npm run deploy:commands` | Publica o catálogo nos escopos global e da equipe; exige `APP_ENV` explícito no processo, ou execução pelo Compose. |
+| `npm run deploy:commands` | Publica sempre o catálogo nos escopos global e da equipe; exige `APP_ENV` explícito no processo, ou execução pelo Compose. O startup do bot já sincroniza por diferença, então este comando só é necessário para forçar. |
 | `doppler run --only-secrets DATABASE_MIGRATION_URL,DATABASE_CA -- npm run database:migrate -- development` | Migration única. O config Doppler precisa ser o do argumento; `production` é a alternativa explícita. Valor vazio não substitui a URL de runtime. |
 | `doppler run --only-secrets DATABASE_MIGRATION_URL,DATABASE_CA -- npm run database:seed -- development` | Cadastro inicial do ambiente escolhido, no mesmo config Doppler. |
 | `npm run security:secrets` | Gitleaks local, se instalado. |
 
 Os testes de banco criam um cluster isolado no diretório temporário do sistema, acessível somente por TCP em `127.0.0.1`, e o removem ao terminar. Instale PostgreSQL localmente e disponibilize sua pasta de binários no `PATH`; quando `pg_config` estiver disponível, ele localiza os demais binários. Não é necessário um serviço PostgreSQL já iniciado, WSL ou um shell Unix. `npm test` executa o `test` de cada app, em sequência, e para na primeira falha. A união desses filtros é a suíte hermética anterior: tudo o que o Vitest encontra, exceto `tests/database.integration.test.ts`. O script do bot fica com o restante, inclusive packages e workflows, para um arquivo novo não sumir da suíte. O script do site lista os testes da Home. A integração não lê `.env` nem usa os projetos Supabase.
 
-O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`, e **Server Members Intent** para as mensagens de entrada e saída de membros (eventos `GuildMemberAdd` e `GuildMemberRemove`). `AUTO_SYNC_COMMANDS=false` é o padrão; `true` publica os conjuntos uma vez por startup, antes do Gateway. Migrations usam credenciais de release próprias e não fazem parte do startup. Pelo Compose, essa operação existe somente em `compose.yaml`; o comando está na referência de deployment.
+O bot exige **Message Content Intent** no Developer Portal para os comandos de prefixo `k!`/`K!`, e **Server Members Intent** para as mensagens de entrada e saída de membros (eventos `GuildMemberAdd` e `GuildMemberRemove`). Todo startup do bot compara os conjuntos de commands com o Discord, antes do Gateway, e publica só se algum foi adicionado, editado ou removido; não há variável para desligar. Migrations usam credenciais de release próprias e não fazem parte do startup. O comando manual `deploy:commands` está na referência de deployment.
 
 Produção no repositório é o `compose.yaml`. Os segredos do config Doppler `prd` entram pelo `doppler run` do usuário `deploy`, e cada serviço declara só as suas variáveis. As unidades em `ops/systemd/` são o runtime anterior e ainda citam a conta `kuruttina` e `/etc/kuruttina/`; essa citação não é pré-requisito do Docker. PostgreSQL continua no Supabase. A publicação depois que a qualidade passa em `main` está em [Publicação](deploy.md). A máquina não foi verificada nesta atualização. O [replanejamento](replanning.md) registra o histórico dessa escolha.
 

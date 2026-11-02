@@ -4,6 +4,8 @@ export type DeploymentContext = Readonly<{
   config: BotConfig;
   applicationId: string;
   correlationId: string;
+  /** Publish even without differences; set by the manual `deploy:commands` run. */
+  force?: boolean;
 }>;
 
 export type Deployment = Readonly<{

@@ -40,6 +40,7 @@ describe('app runner', () => {
     };
     expect(rootPkg.workspaces).toEqual([
       'packages/config',
+      'packages/command-catalog',
       'packages/database',
       'packages/message-templates',
     ]);

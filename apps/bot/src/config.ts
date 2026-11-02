@@ -9,7 +9,6 @@ export type BotCredential = Readonly<{ token: string; expectedBotId: string }>;
 export type BotConfig = Readonly<{
   target: BotTarget;
   activeCredential: BotCredential;
-  autoSyncCommands: boolean;
   database: ReturnType<typeof readDatabaseConfig>;
 }>;
 
@@ -17,7 +16,6 @@ const configurationError = (message: string): Error => Object.assign(new Error(m
 
 const botEnvironmentNames = [
   'APP_ENV',
-  'AUTO_SYNC_COMMANDS',
   'DISCORD_BOT_ID',
   'DISCORD_BOT_TOKEN',
   'DATABASE_URL',
@@ -58,19 +56,11 @@ const required = (env: NodeJS.ProcessEnv, name: string): string => {
   return value;
 };
 
-const parseBoolean = (value: string | undefined): boolean => {
-  if (value === undefined) return false;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  throw configurationError('AUTO_SYNC_COMMANDS must be true or false');
-};
-
 export function loadConfig(env: NodeJS.ProcessEnv = loadBotEnvironment()): BotConfig {
   const { appEnv: target } = loadAppConfig(env);
   return Object.freeze({
     target,
     activeCredential: readCredential(env),
-    autoSyncCommands: parseBoolean(env.AUTO_SYNC_COMMANDS),
     database: readDatabaseConfig(env, target),
   });
 }

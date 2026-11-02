@@ -3,6 +3,9 @@ import type { APIActionRowComponent, APIButtonComponent, APIEmbed, APIStringSele
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
 import type { MessageKey } from '#bot/application/messages/catalog.js';
 import type { EmojiImportService } from '#bot/application/emojis/importEmoji.js';
+import type { CatalogCommand, CommandExample, CommandTopic } from '@kuruttina/command-catalog';
+
+export type { CommandExample, CommandTopic };
 
 export type CommandReply = string | {
   content?: string;
@@ -113,6 +116,8 @@ export interface CommandContext {
   readonly emojiImport?: EmojiImportService | undefined;
   /** Guild emoji lookup injected by the dispatcher. */
   readonly emojiInfo?: EmojiInfoPort | undefined;
+  /** Public command list built from the registered modules and injected by the dispatcher, for `/help`. */
+  readonly commandCatalog?: readonly CatalogCommand[] | undefined;
 }
 
 /** Port for message fetch and delete operations. */
@@ -135,6 +140,11 @@ export interface CommandRoute {
   readonly path: readonly string[];
   /** Exact prefix aliases, e.g. `['emoji-add']`. Never empty. */
   readonly aliases: readonly string[];
+  /**
+   * Usage examples, required and never empty. Each one shows the slash form
+   * (`/emoji add ...`) and the prefix form (`k!emoji-add ...`).
+   */
+  readonly examples: readonly CommandExample[];
   /**
    * Extra guild requirements for this route. They are added to the root
    * policy and cannot replace or weaken it.
@@ -166,10 +176,31 @@ export interface EmojiInfoPort {
  */
 export type CommandScope = 'global' | 'dev-guild';
 
+/**
+ * Mandatory documentation of a command, read by `/help`, the site and the
+ * generated catalog. The description comes from the slash builder, and the
+ * prefix form (`k!<name>`, or `k!<alias>` for a route) exists for every
+ * command, so it is shown rather than configured.
+ */
+export interface CommandHelp {
+  /**
+   * Display topic. `mod/` requires `mod`, `dev/` requires `dev`, and `public/`
+   * takes `public`, `fun` or `utility`.
+   */
+  readonly topic: CommandTopic;
+  /**
+   * Usage examples of the root executor: required and never empty without
+   * `routes`, and forbidden with `routes` (each route has its own).
+   */
+  readonly examples?: readonly CommandExample[];
+}
+
 export interface ChatInputCommand {
   readonly data: Pick<SlashCommandBuilder, 'name' | 'toJSON'>;
   /** Required even for open commands, so intent is always explicit. */
   readonly access: CommandAccess;
+  /** Required topic and usage examples; the loader rejects a module without them. */
+  readonly help: CommandHelp;
   /**
    * Publishing scope. It must agree with the policy and with the category,
    * the first path segment under the catalog root: `public/` is `public` and

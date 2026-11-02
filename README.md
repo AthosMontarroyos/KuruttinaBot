@@ -6,7 +6,9 @@ Projeto proprietário de Athos Montarroyos, apresentado como parte de seu portf�
 
 ## Funcionalidades implementadas
 
-- Comandos de aplicação e por prefixo, com as mesmas políticas de autorização.
+- Comandos de aplicação e por prefixo, com as mesmas políticas de autorização. Todo comando declara descrição, tópico e exemplos de uso.
+- Comando `/help` (`k!help`) e página de comandos no site, ambos gerados a partir dos próprios comandos, sem lista manual.
+- Sincronização dos comandos com o Discord a cada inicialização, publicando só o que foi adicionado, editado ou removido.
 - Limpeza de mensagens com verificação de permissões.
 - Consulta de emojis personalizados, com origem, marcação copiável e imagem.
 - Importação de emojis para servidores e para a aplicação de produção, com processamento de imagens estáticas e animadas.

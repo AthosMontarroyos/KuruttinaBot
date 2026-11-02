@@ -4,6 +4,7 @@ import type { ChatInputCommand, CommandContext } from '#bot/command-system/types
 export const command = {
   data: new SlashCommandBuilder().setName('ping').setDescription('Mostra a latencia da API e do Gateway'),
   access: { kind: 'public' },
+  help: { topic: 'utility', examples: [{ slash: '/ping', prefix: 'k!ping' }] },
   scope: 'global',
   async execute(context: CommandContext): Promise<void> {
     await context.reply(await context.render('ping.reply', {

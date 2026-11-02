@@ -112,3 +112,5 @@ Toda mensagem dirigida ao usuário precisa de pelo menos um nome desta tabela de
 | `ChannelBrowser`, `guild`, `ID` | 🏘️, 🏘️, 🪪 |
 | `developer`, `lock`, `book`, `coffee` | 🧑‍💻, 🔒, 📖, ☕ |
 | `photo`, `label`, `shield` | 🖼️, 🏷️, 🛡️ |
+| `left_arrow`, `right_arrow`, `home`, `settings` | ⬅️, ➡️, 🏠, ⚙️ |
+| `moderation`, `SpinningDancing`, `Documentation` | 🛡️, 💃, 📚 |

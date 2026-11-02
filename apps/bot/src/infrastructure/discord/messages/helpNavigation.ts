@@ -1,6 +1,6 @@
 import { MessageFlags, type ButtonInteraction, type InteractionReplyOptions } from 'discord.js';
 import type { CatalogCommand } from '@kuruttina/command-catalog';
-import { buildHelpPage } from '#bot/command-system/helpReply.js';
+import { buildHelpPage, resolveHelpEmojis } from '#bot/command-system/helpReply.js';
 import { withEmojis } from '#bot/command-system/responses.js';
 import { createEmojiResolver } from '#bot/infrastructure/discord/commands/commandContext.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
@@ -25,8 +25,7 @@ export async function handleHelpButton(
       });
       return;
     }
-    const book = await emoji('book');
-    const reply = buildHelpPage(catalog, target.page, target.ownerId, { book });
+    const reply = buildHelpPage(catalog, target.page, target.ownerId, await resolveHelpEmojis(emoji));
     await interaction.update({
       ...(typeof reply === 'string' ? { content: reply } : reply),
       allowedMentions: { parse: [] },

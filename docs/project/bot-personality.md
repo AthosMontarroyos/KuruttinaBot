@@ -80,8 +80,8 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Consulta indisponível | `ops` | 😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco. |
 | Bot ocupado | `coffee` | ☕ Já estou ocupada. Tente de novo em instantes. |
 | Ping | `dancing` | 💃 Pong. Ainda estou aqui. |
-| Ajuda, visão geral | `book` | 📖 Estes são os comandos que posso fazer por você. Use as setas para navegar ou **/help comando** para ver os detalhes. |
-| Ajuda, página de tópico | `book` | 📖 Tópico **Moderação**. |
+| Ajuda, visão geral | `book` | 📖 Estes são os comandos que posso fazer por você. |
+| Ajuda, página de tópico | `book` | 📖 Tópico **Moderação**. O embed traz o emoji do tópico (`moderation`, `settings`, `home`, `SpinningDancing`), `Documentation`, `lock` e `Note` nas linhas de cada comando e `left_arrow`/`right_arrow` nos botões. |
 | Ajuda de outra pessoa | `Disappointed` | 😞 Só quem abriu esta ajuda pode navegar por ela. Use **/help** para abrir a sua. |
 | Falha ao trocar a página | `error` | ❌ Não consegui trocar a página da ajuda. Use **/help** de novo. |
 | Detalhe de comando | `book` | 📖 Aqui está o que sei sobre **/ban**. |

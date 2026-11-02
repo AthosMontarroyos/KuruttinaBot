@@ -40,6 +40,13 @@ const emojiFallbacks: Readonly<Record<string, string>> = {
   photo: '🖼️',
   label: '🏷️',
   shield: '🛡️',
+  left_arrow: '⬅️',
+  right_arrow: '➡️',
+  home: '🏠',
+  settings: '⚙️',
+  moderation: '🛡️',
+  SpinningDancing: '💃',
+  Documentation: '📚',
 };
 
 export function createEmojiResolver(application: CommandClientPort['application']): CommandContext['emoji'] {

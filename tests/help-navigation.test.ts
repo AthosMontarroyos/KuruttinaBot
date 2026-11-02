@@ -24,7 +24,7 @@ function helpHandler(): CommandsHandler {
   return new CommandsHandler(Array.from({ length: 8 }, (_, index) => utilityCommand(`util${index}`)));
 }
 
-/** Botão falso: sem emoji resolvido, o `book` e o `Disappointed` caem no fallback Unicode. */
+/** Botão falso: sem emoji resolvido, cada nome cai no fallback Unicode do resolver real. */
 function buttonInteraction(customId: string, userId: string) {
   return {
     isChatInputCommand: () => false,
@@ -54,8 +54,9 @@ describe('help navigation button', () => {
 
     await handleInteractionCreate(interaction as unknown as Interaction, handler);
 
-    const expected = buildHelpPage(handler.catalog(), 1, OWNER, { book: '📖' }) as Exclude<CommandReply, string>;
-    expect(expected).toMatchObject({ embeds: [{ footer: { text: 'Página 2/3' } }] });
+    const emojis = { book: '📖', search: '🔎', usage: '📚', permission: '🔒', previous: '⬅️', next: '➡️', public: '🏠', utility: '⚙️', fun: '💃', mod: '🛡️', dev: '🧑‍💻' };
+    const expected = buildHelpPage(handler.catalog(), 1, OWNER, emojis) as Exclude<CommandReply, string>;
+    expect(expected).toMatchObject({ embeds: [{ title: '⚙️ Utilidades (parte 1/2)', footer: { text: 'Página 2/3 · Utilidades' } }] });
     expect(interaction.update).toHaveBeenCalledExactlyOnceWith({ ...expected, allowedMentions: { parse: [] } });
     expect(interaction.reply).not.toHaveBeenCalled();
   });

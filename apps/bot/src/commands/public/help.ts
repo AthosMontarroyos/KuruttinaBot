@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { buildHelpReply } from '#bot/command-system/helpReply.js';
+import { buildHelpReply, resolveHelpEmojis } from '#bot/command-system/helpReply.js';
 import type { ChatInputCommand, CommandContext } from '#bot/command-system/types.js';
 
 /** Query do `/help`: a opção `comando` do slash ou o texto após o prefixo. Valores não string são ignorados. */
@@ -31,9 +31,6 @@ export const command = {
   scope: 'global',
   async execute(context: CommandContext): Promise<void> {
     await context.acknowledge();
-    await context.reply(buildHelpReply(context.commandCatalog ?? [], queryFrom(context), {
-      book: await context.emoji('book'),
-      search: await context.emoji('search'),
-    }, context.userId));
+    await context.reply(buildHelpReply(context.commandCatalog ?? [], queryFrom(context), await resolveHelpEmojis(context.emoji), context.userId));
   },
 } satisfies ChatInputCommand;

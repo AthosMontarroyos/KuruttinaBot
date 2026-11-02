@@ -21,6 +21,7 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   central_commands_deployed: { emoji: '✅', category: 'Sync', message: 'Comandos globais sincronizados' },
   commands_sync_unchanged: { emoji: '✅', category: 'Sync', message: 'Comandos já estavam em dia, nada publicado' },
   commands_sync_applied: { emoji: '🔄', category: 'Sync', message: 'Comandos publicados no Discord' },
+  staff_guild_sync_skipped: { emoji: '⚠️', category: 'Sync', message: 'Guilda de equipe ignorada na sincronização' },
   gateway_connecting: { emoji: '🌐', category: 'Gateway', message: 'Conectando ao Discord' },
   ready: { emoji: '🚀', category: 'Bot', message: 'Bot pronto' },
   shutdown_started: { emoji: '🛑', category: 'Shutdown', message: 'Encerrando bot' },

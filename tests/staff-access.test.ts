@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type GuildTextBasedChannel } from 'discord.js';
+import { DiscordAPIError, PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, type GuildTextBasedChannel } from 'discord.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { StaffRole } from '@kuruttina/database';
 import type { EmojiAttachment } from '../apps/bot/src/application/emojis/types.js';
@@ -15,6 +15,17 @@ import { createRenderer } from '../apps/bot/src/infrastructure/discord/commands/
 const discord = vi.hoisted(() => ({ deployGuildCommands: vi.fn(), deployGlobalCommands: vi.fn() }));
 vi.mock('../apps/bot/src/infrastructure/discord/commands/deployCommands.js', () => discord);
 const guildId = '1422623678205657160';
+
+function discordApiError(code: number, message: string): DiscordAPIError {
+  return new DiscordAPIError(
+    { code, message },
+    code,
+    code === 10004 ? 404 : 403,
+    'GET',
+    `https://discord.com/api/v10/applications/${creatorId}/guilds/guild/commands`,
+    {},
+  );
+}
 const creatorId = '666948364507545600';
 const devId = '1509331533348212808';
 const allowed = new PermissionsBitField(PermissionFlagsBits.Administrator);
@@ -149,5 +160,81 @@ describe('staff authorization in both transports', () => {
     settings.mockResolvedValueOnce({ environment: 'development', devGuildIds: [] });
     await createGuildDeployment(handler, settings).run(ctx);
     expect(discord.deployGuildCommands).not.toHaveBeenCalled();
+  });
+
+  it('skips a dev guild Discord cannot access and syncs the remaining guilds', async () => {
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const unreachable = '111111111111111111';
+    const unknown = '222222222222222222';
+    const reachable = '333333333333333333';
+    const missingAccess = discordApiError(50001, 'Missing Access');
+    const unknownGuild = discordApiError(10004, 'Unknown Guild');
+    expect(missingAccess.name).toBe('DiscordAPIError[50001]');
+    expect(unknownGuild.name).toBe('DiscordAPIError[10004]');
+    try {
+      discord.deployGuildCommands.mockImplementation(async (...args: readonly unknown[]) => {
+        const id = args[2];
+        if (id === unreachable) throw missingAccess;
+        if (id === unknown) throw unknownGuild;
+      });
+      const handler = new CommandsHandler([command()]);
+      const settings = vi.fn(async () => ({ environment: 'development' as const, devGuildIds: [unreachable, reachable, unknown] }));
+      await createGuildDeployment(handler, settings).run({
+        config: {
+          target: 'development',
+          activeCredential: { token: 'fake-token', expectedBotId: creatorId },
+          database: readDatabaseConfig({ DATABASE_URL: 'postgres://kuruttina_bot:test@localhost/postgres' }, 'development'),
+        },
+        applicationId: creatorId,
+        correlationId: 'sync-skip',
+      });
+      expect(discord.deployGuildCommands).toHaveBeenCalledTimes(3);
+      expect(discord.deployGuildCommands).toHaveBeenNthCalledWith(1, 'fake-token', creatorId, unreachable, [command().data.toJSON()], { correlationId: 'sync-skip' });
+      expect(discord.deployGuildCommands).toHaveBeenNthCalledWith(2, 'fake-token', creatorId, reachable, [command().data.toJSON()], { correlationId: 'sync-skip' });
+      expect(discord.deployGuildCommands).toHaveBeenNthCalledWith(3, 'fake-token', creatorId, unknown, [command().data.toJSON()], { correlationId: 'sync-skip' });
+      const warning = stderr.mock.calls.map((call) => String(call[0])).join('');
+      expect(warning).toContain('Guilda de equipe ignorada na sincronização');
+      expect(warning).toContain(`guildId=${unreachable}`);
+      expect(warning).toContain('errorCode=50001');
+      expect(warning).toContain(`guildId=${unknown}`);
+      expect(warning).toContain('errorCode=10004');
+      expect(warning).not.toContain('fake-token');
+    } finally {
+      stderr.mockRestore();
+      discord.deployGuildCommands.mockReset();
+    }
+  });
+
+  it.each([
+    { label: '50013', error: discordApiError(50013, 'Missing Permissions') },
+    { label: 'a generic failure', error: new Error('discord down') },
+    { label: 'a string error code', error: Object.assign(new Error('Missing Access'), { code: '50001' }) },
+  ])('still fails staff-guild sync on $label', async ({ error }) => {
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const first = '111111111111111111';
+    const failing = '222222222222222222';
+    const later = '333333333333333333';
+    try {
+      discord.deployGuildCommands.mockImplementation(async (...args: readonly unknown[]) => {
+        if (args[2] === failing) throw error;
+      });
+      const handler = new CommandsHandler([command()]);
+      const run = createGuildDeployment(handler, async () => ({ environment: 'development', devGuildIds: [first, failing, later] })).run({
+        config: {
+          target: 'development',
+          activeCredential: { token: 'fake-token', expectedBotId: creatorId },
+          database: readDatabaseConfig({ DATABASE_URL: 'postgres://kuruttina_bot:test@localhost/postgres' }, 'development'),
+        },
+        applicationId: creatorId,
+        correlationId: 'sync-fail',
+      });
+      await expect(run).rejects.toBe(error);
+      expect(discord.deployGuildCommands).toHaveBeenCalledTimes(2);
+      expect(discord.deployGuildCommands).toHaveBeenNthCalledWith(2, 'fake-token', creatorId, failing, [command().data.toJSON()], { correlationId: 'sync-fail' });
+      expect(stderr.mock.calls.map((call) => String(call[0])).join('')).not.toContain('Guilda de equipe ignorada');
+    } finally {
+      stderr.mockRestore();
+      discord.deployGuildCommands.mockReset();
+    }
   });
 });

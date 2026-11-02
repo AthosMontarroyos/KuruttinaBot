@@ -18,17 +18,21 @@ Em 1º de novembro de 2026, o usuário pediu que o start do Docker (produção e
 ## Impacto
 
 - Reinícios sem mudança de commands não geram escrita no Discord.
-- Se o Discord não responder na leitura ou na escrita, o startup falha antes do readiness (log sem token), como falha de qualquer outra validação de startup.
+- Se o Discord não responder na leitura ou na escrita, o startup falha antes do readiness (log sem token), como falha de qualquer outra validação de startup. A exceção para `50001` e `10004` numa guilda de equipe está na seção seguinte.
 - O cadastro das guildas de desenvolvimento é lido no startup. Sem guildas cadastradas, esse escopo não é publicado e o startup não falha.
 
 ## Controles
 
 - Comparação normalizada e testada com respostas realistas do Discord (`tests/sync-commands.test.ts`). Um falso "mudou" só causa um `PUT` idempotente.
-- Os logs `commands_sync_unchanged` e `commands_sync_applied` listam os nomes adicionados, editados e removidos.
+- Os logs `commands_sync_unchanged` e `commands_sync_applied` listam os nomes adicionados, editados e removidos. O aviso `staff_guild_sync_skipped` nomeia o `guildId` e o código Discord quando a guilda de equipe é inacessível (`50001`, `10004`).
 
 ## Várias guildas
 
 Em 2 de novembro de 2026 o cadastro deixou de ser uma coluna única. O startup e `npm run deploy:commands` sincronizam o conjunto `dev-guild` em cada linha de `bot_private.bot_dev_guilds`, em ordem de `guild_id`. A comparação por escopo não muda. Tirar uma guilda do cadastro não apaga os commands que já estavam nela.
+
+## Guilda inacessível
+
+Em 2 de novembro de 2026 uma guilda cadastrada em `bot_private.bot_dev_guilds` da qual o bot não era membro fez o Discord responder `DiscordAPIError[50001]` (Missing Access) e o startup inteiro falhou antes do Gateway. `10004` (Unknown Guild) tem o mesmo efeito. Esses dois códigos, somente na sincronização de uma guilda de equipe, passam a ser o aviso `staff_guild_sync_skipped` com o `guildId`. Essa guilda é pulada e as demais seguem; o readiness não depende delas. Qualquer outro erro de sync, inclusive no escopo global e inclusive `50013`, continua impedindo o readiness. `npm run deploy:commands` usa o mesmo laço. O aviso não inclui token nem corpo da requisição.
 
 ## Condição de revisão
 

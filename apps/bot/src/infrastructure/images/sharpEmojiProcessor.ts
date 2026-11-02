@@ -115,6 +115,7 @@ async function compress(bytes: Uint8Array, options: EmojiCompressionOptions): Pr
 
   const steps = animated ? createAnimatedSteps(bytes, options) : createStaticSteps(bytes, options);
   const attemptLimit = Math.min(steps.length, options.maxEncodeAttempts);
+  let animationLost = false;
   for (let index = 0; index < attemptLimit; index += 1) {
     const step = steps[index];
     if (!step) break;
@@ -140,11 +141,17 @@ async function compress(bytes: Uint8Array, options: EmojiCompressionOptions): Pr
     if (animated) {
       const produced = await inspect(encoded.bytes);
       if (produced.frames < 2) {
-        throw emojiError('animation_lost', 'Não consegui preservar a animação dentro do limite do Discord.');
+        // O libvips funde quadros iguais ou quase iguais: tenta o próximo degrau
+        // (o gifenc não funde) antes de desistir.
+        animationLost = true;
+        continue;
       }
       return finish(encoded, 'image/gif', true, transformations);
     }
     return finish(encoded, 'image/png', false, transformations);
+  }
+  if (animationLost) {
+    throw emojiError('animation_lost', 'Não consegui preservar a animação dentro do limite do Discord.');
   }
   throw emojiError(
     'size_unreachable',
@@ -243,6 +250,8 @@ function createAnimatedSteps(bytes: Uint8Array, options: EmojiCompressionOptions
       transformations: ['palette_reduced', 'dithering_reduced'],
       run: encode({ effort: 10, colors: 32, dither: 0, interFrameMaxError: 32 }),
     },
+    // Sem remover quadros: o gifenc não funde quadros iguais, ao contrário do libvips.
+    { transformations: ['palette_reduced'], run: reduce(1, 128) },
     { transformations: ['frames_reduced'], run: reduce(2, 64) },
     { transformations: ['frames_reduced'], run: reduce(3, 32) },
   ];

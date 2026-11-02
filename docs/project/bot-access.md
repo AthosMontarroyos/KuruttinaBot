@@ -11,11 +11,11 @@ O bot usa PostgreSQL no Supabase por `@kuruttina/database`. Tokens Discord e cre
 
 Os dois projetos receberam a migration e o cadastro inicial em 23/09/2026:
 
-- Guilda: `1422623678205657160`.
+- Guilda inicial: `1422623678205657160`.
 - Creator: `666948364507545600`.
 - Dev: `1509331533348212808`.
 
-`bot_private.bot_settings` contém um único registro, com guilda e ambiente. `bot_private.bot_staff` contém usuário, papel e status ativo, com um usuário por papel e sem repetição de usuário. IDs são strings de snowflake; não use números JavaScript. `kuruttina_site` não tem `SELECT` nessa tabela. O DevMock do site, só em development, chama `bot_private.active_dev_user_id()` e recebe apenas o `user_id` do papel `dev` quando `active` é verdadeiro.
+`bot_private.bot_settings` contém um único registro, só com o ambiente. `bot_private.bot_dev_guilds` contém as guildas de desenvolvimento daquele ambiente, zero ou mais, uma linha por snowflake. A migration `20261102120000_dev_guilds.sql` copia a antiga `dev_guild_id` para essa tabela e remove a coluna. Outras guildas entram por SQL administrativo, não pelo código. `bot_private.bot_staff` contém usuário, papel e status ativo, com um usuário por papel e sem repetição de usuário. IDs são strings de snowflake; não use números JavaScript. `kuruttina_site` não tem `SELECT` em `bot_settings`, `bot_dev_guilds` nem `bot_staff`. O DevMock do site, só em development, chama `bot_private.active_dev_user_id()` e recebe apenas o `user_id` do papel `dev` quando `active` é verdadeiro.
 
 Os cadastros são independentes. Alterar uma conta ou guilda em development não altera production.
 
@@ -32,7 +32,7 @@ Para recriar o provisionamento, siga os passos abaixo. A migration cria `kurutti
 5. Grave `SITE_DATABASE_URL` no mesmo config, com a role `kuruttina_site`. Os configs `dev` e `prd` precisam desse nome. O Compose entrega o valor como `DATABASE_URL` só no serviço `site`, junto com `DATABASE_CA`. O bot não recebe `SITE_DATABASE_URL`.
 6. Remova query parameters como `sslmode` ou `options`: o código define TLS com verificação de certificado e timeouts. Se a CA do projeto não estiver na cadeia confiável do sistema, forneça o PEM em `DATABASE_CA`. O site e o bot recebem esse PEM.
 7. Grave `DATABASE_MIGRATION_URL` no mesmo config, somente para scripts de administração/release. Nome ausente ou valor vazio faz o deploy pular a migration. Nunca injete essa variável no bot nem no site.
-8. O startup valida conexão, presença da guilda e identificação do ambiente antes do Gateway. `APP_ENV` continua distinguindo development de production. Um banco de development é rejeitado por um bot production porque `bot_settings.environment` não confere.
+8. O startup valida conexão, o registro de ambiente e cada guilda cadastrada antes do Gateway. Um cadastro sem guildas é válido. `APP_ENV` continua distinguindo development de production. Um banco de development é rejeitado por um bot production porque `bot_settings.environment` não confere.
 
 Conexões remotas exigem TLS; sockets/hosts locais previstos só são aceitos na configuração development. A URL não pode carregar opções que sobrescrevam o TLS. O pool tem três conexões, timeout de conexão/statement/transação ociosa de cinco segundos e no máximo doze operações admitidas. O shutdown para novas execuções, aguarda as aceitas, desconecta Discord e fecha o pool, com prazo total de cinco segundos.
 
@@ -49,13 +49,13 @@ npm run database:seed -- production
 
 O runner usa transação, advisory lock e ledger com checksum em `kuruttina_migrations`. Migrations aplicadas são imutáveis. Na aplicação inicial via MCP, o mesmo checksum foi registrado nesse ledger, além do histórico nativo Supabase.
 
-O seed usa parâmetros, transação e lock; repetições com dados iguais são inofensivas. Dados divergentes ou acesso previamente revogado não são sobrescritos: o seed falha e exige uma alteração administrativa explícita. Credenciais não fazem parte das migrations.
+O seed usa parâmetros, transação e lock; repetições com dados iguais são inofensivas. Ele só grava a guilda inicial quando `bot_settings` ainda não existe. Uma guilda a mais, a menos ou diferente faz o seed falhar e desfazer a transação, sem alterar o cadastro. Incluir ou tirar guilda é um SQL administrativo, não um seed. Dados divergentes de equipe ou ambiente também não são sobrescritos. Credenciais não fazem parte das migrations.
 
-No Table Editor do Supabase, selecione o schema `bot_private` para editar guilda, usuário ou `active`. O schema não deve ser adicionado aos schemas expostos pela Data API. A alteração de status vale na próxima execução de comando, sem cache ou reinício. A revogação não cancela uma operação já autorizada e iniciada.
+No Table Editor do Supabase, selecione o schema `bot_private` para editar guildas (`bot_dev_guilds`), usuário ou `active`. O schema não deve ser adicionado aos schemas expostos pela Data API. A alteração de status vale na próxima execução de comando, sem cache ou reinício. A revogação não cancela uma operação já autorizada e iniciada.
 
 ## Políticas de comandos
 
-As políticas atuais `public`, `guild` e `staff` estão em uso. O primeiro comando especial real é `dev`, em `apps/bot/src/commands/dev/emoji.ts` — a pasta `dev/` inteira tem escopo `dev-guild` e deploy exclusivo na guilda cadastrada, validado pelo loader:
+As políticas atuais `public`, `guild` e `staff` estão em uso. O primeiro comando especial real é `dev`, em `apps/bot/src/commands/dev/emoji.ts` — a pasta `dev/` inteira tem escopo `dev-guild` e deploy exclusivo nas guildas cadastradas em `bot_dev_guilds`, validado pelo loader:
 
 ```ts
 access: {
@@ -67,7 +67,7 @@ access: {
 }
 ```
 
-O mesmo gate protege slash, `k!` e `K!`: guilda cadastrada + usuário ativo + papel suficiente + permissões Discord do membro e bot. Creator inclui Dev, mas não dispensa permissões Discord. Ser administrador do servidor não atribui papel interno.
+O mesmo gate protege slash, `k!` e `K!`: uma guilda cadastrada em `bot_dev_guilds` + usuário ativo + papel suficiente + permissões Discord do membro e bot. Creator inclui Dev, mas não dispensa permissões Discord. Ser administrador do servidor não atribui papel interno.
 
 A identidade vem de `interaction.user.id` ou `message.author.id`, nunca de argumentos do comando. A consulta aplica contexto RLS por transação, sem deixar a identidade em conexões reutilizadas. Falha de consulta nega o comando, com resposta sanitizada. Slash é reconhecido antes da consulta.
 
@@ -75,17 +75,19 @@ O dispatcher autoriza a política raiz e, em seguida, os requisitos adicionais d
 
 `ping` e `clear` mantêm suas políticas. `/emoji` continua `guild` e global, sem permissão administrativa na raiz e sem `default_member_permissions`: a raiz exige do bot visualização e envio no canal. A rota `add` soma `ManageGuildExpressions` para o membro e `CreateGuildExpressions` para o bot. A rota `info` soma `EmbedLinks` para o bot e fica aberta aos membros do servidor. Nenhuma das duas consulta a equipe. `/dev emoji add` permanece `staff` com escopo `dev-guild` e só orienta o workflow de Application Emojis de production. IDs de guilda e equipe não aparecem nos comandos: cada ambiente lê o seu cadastro.
 
-## Publicação e mudança da guilda
+## Publicação e mudança das guildas
 
-`npm run deploy:commands` (sempre publica) e o startup do bot (publica só a diferença, obrigatório, ver [decisão](../decisions/command-sync-on-startup.md)) sincronizam, em sequência, o conjunto global e o conjunto de equipe da guilda configurada, somente para a aplicação ativa. O conjunto global exclui qualquer módulo de `apps/bot/src/commands/dev/` (`scope: 'dev-guild'`); a pasta `dev/` e seus subdiretórios entram somente no conjunto da guilda cadastrada. Um conjunto vazio limpa os comandos daquele escopo; PUT substitui o conjunto completo.
+`npm run deploy:commands` (sempre publica) e o startup do bot (publica só a diferença, obrigatório, ver [decisão](../decisions/command-sync-on-startup.md)) sincronizam, em sequência, o conjunto global e o conjunto de equipe de cada linha de `bot_dev_guilds`, em ordem de `guild_id`, somente para a aplicação ativa. O conjunto global exclui qualquer módulo de `apps/bot/src/commands/dev/` (`scope: 'dev-guild'`); a pasta `dev/` e seus subdiretórios entram somente nessas guildas. Sem guildas cadastradas, o startup não chama o Discord para esse escopo e segue. Um conjunto vazio de commands limpa os comandos daquele escopo; PUT substitui o conjunto completo. Falha em uma guilda impede o readiness, como nas demais falhas de sync.
 
-Ao trocar a guilda:
-1. Registre o ID antigo antes de editar o cadastro.
-2. Sincronize os comandos da aplicação ativa com o novo cadastro.
-3. Remova os comandos antigos pelo endpoint oficial `PUT /applications/{applicationId}/guilds/{oldGuildId}/commands` com corpo `[]`, usando a credencial da aplicação correta.
+Ao incluir uma guilda, insira o snowflake em `bot_private.bot_dev_guilds` com a conexão de migration do ambiente e reinicie o bot, ou rode `npm run deploy:commands`, para publicar o conjunto de equipe nessa guilda.
+
+Ao remover uma guilda:
+1. Registre o ID antes de apagar a linha.
+2. Apague a linha. O gate recusa a guilda na próxima execução de comando.
+3. Remova os commands pelo endpoint oficial `PUT /applications/{applicationId}/guilds/{oldGuildId}/commands` com corpo `[]`, usando a credencial da aplicação correta.
 4. Repita para o outro bot quando aplicável.
 
-Mesmo antes da limpeza visual, a guilda antiga é recusada pelo gate. O bot não procura nem apaga registros de outras guildas automaticamente.
+O bot não procura nem apaga registros de guildas fora do cadastro.
 
 ## Desenvolvimento e testes
 
@@ -105,9 +107,9 @@ Exemplos para diagnóstico na Square:
 - `28P01`: conferir usuário runtime e senha do ambiente ativo na URL protegida.
 - `ENOTFOUND`, `ENETUNREACH`, `ECONNREFUSED` ou `CONNECTION_TIMEOUT`: conferir endpoint/pooler, conectividade e disponibilidade do projeto Supabase.
 - `42501` ou `42P01`: conferir permissões runtime e migrations aplicadas.
-- `SETTINGS_MISSING`, `SETTINGS_INVALID` ou `ENVIRONMENT_MISMATCH`: conferir cadastro inicial e correspondência entre banco e ambiente.
+- `SETTINGS_MISSING`, `SETTINGS_INVALID` ou `ENVIRONMENT_MISMATCH`: conferir o registro de ambiente, os snowflakes em `bot_dev_guilds` e a correspondência entre banco e ambiente. Cadastro sem guildas não é erro.
 
-Essa migration é aditiva. Em falha de rollout, mantenha as tabelas e volte ao código anterior; não remova os cadastros automaticamente. Revise alterações corretivas por nova migration. Os IDs iniciais podem ser reconstruídos pelo seed; alterações posteriores importantes exigem backup externo conforme a política de banco. Em pausa do Supabase, retome o projeto pelo painel antes do startup. Falhas durante a execução bloqueiam comandos restritos; comandos públicos/moderação não consultam o banco.
+As migrations anteriores a `20261102120000_dev_guilds.sql` são aditivas. Essa migration remove `dev_guild_id` depois de copiar o valor: o código anterior não lê o cadastro enquanto a coluna não existir, e o código novo não lê a coluna. Em falha de rollout, não apague as tabelas nem os cadastros; volte o código só junto com o schema compatível. Revise alterações corretivas por nova migration. Os IDs iniciais podem ser reconstruídos pelo seed; alterações posteriores importantes exigem backup externo conforme a política de banco. Em pausa do Supabase, retome o projeto pelo painel antes do startup. Falhas durante a execução bloqueiam comandos restritos; comandos públicos/moderação não consultam o banco.
 
 ## Validação realizada
 

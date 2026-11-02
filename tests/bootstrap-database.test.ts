@@ -33,7 +33,7 @@ describe('database lifecycle at startup and shutdown', () => {
     originalInt = process.listeners('SIGINT');
     vi.clearAllMocks();
     mocks.database.mockReturnValue({ getSettings: mocks.settings, close: mocks.close, getStaffRole: mocks.staffRole });
-    mocks.settings.mockResolvedValue({ environment: 'development', devGuildId: '1422623678205657160' });
+    mocks.settings.mockResolvedValue({ environment: 'development', devGuildIds: ['1422623678205657160'] });
     mocks.close.mockResolvedValue(undefined);
     mocks.destroy.mockResolvedValue(undefined);
     mocks.identity.mockResolvedValue('123456789012345678');

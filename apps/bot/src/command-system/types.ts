@@ -171,8 +171,9 @@ export interface EmojiInfoPort {
 
 /**
  * Publishing scope of a command. `global` goes only to the global deployment;
- * `dev-guild` goes only to the development guild registered in the database
- * (`bot_settings.devGuildId`), never to the global set.
+ * `dev-guild` goes only to each development guild registered in the database
+ * (`bot_dev_guilds`), never to the global set. An empty registration publishes
+ * nothing for that scope.
  */
 export type CommandScope = 'global' | 'dev-guild';
 

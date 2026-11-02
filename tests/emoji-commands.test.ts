@@ -741,7 +741,7 @@ describe('emoji command deployment scopes', () => {
     const context = { config: config(), applicationId: CREATOR, correlationId: 'test' };
 
     await createCentralDeployment(handler).run(context);
-    await createGuildDeployment(handler, async () => ({ environment: 'development', devGuildId: DEV_GUILD })).run(context);
+    await createGuildDeployment(handler, async () => ({ environment: 'development', devGuildIds: [DEV_GUILD] })).run(context);
 
     const globalNames = discord.deployGlobalCommands.mock.calls[0]?.[2].map(({ name }: { name: string }) => name);
     const guildNames = discord.deployGuildCommands.mock.calls[0]?.[3].map(({ name }: { name: string }) => name);
@@ -759,7 +759,7 @@ describe('emoji command deployment scopes', () => {
 
     await new DeploymentsHandler([
       createCentralDeployment(handler),
-      createGuildDeployment(handler, async () => ({ environment: 'development', devGuildId: DEV_GUILD })),
+      createGuildDeployment(handler, async () => ({ environment: 'development', devGuildIds: [DEV_GUILD] })),
     ]).run(context);
 
     expect(discord.deployGlobalCommands).toHaveBeenCalledOnce();

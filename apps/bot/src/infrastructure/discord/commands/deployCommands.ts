@@ -19,7 +19,7 @@ export async function deployGlobalCommands(
   await syncCommands(registryFor(rest, Routes.applicationCommands(applicationId)), commands, { scope: 'global', ...options });
 }
 
-/** Syncs the staff guild set, with the same differences-only rule. */
+/** Syncs one development guild's staff set, with the same differences-only rule. */
 export async function deployGuildCommands(
   token: string,
   applicationId: string,
@@ -28,5 +28,9 @@ export async function deployGuildCommands(
   options?: SyncOptions,
 ): Promise<void> {
   const rest = new REST({ version: '10' }).setToken(token);
-  await syncCommands(registryFor(rest, Routes.applicationGuildCommands(applicationId, guildId)), commands, { scope: 'staff-guild', ...options });
+  await syncCommands(
+    registryFor(rest, Routes.applicationGuildCommands(applicationId, guildId)),
+    commands,
+    { ...options, scope: `staff-guild:${guildId}` },
+  );
 }

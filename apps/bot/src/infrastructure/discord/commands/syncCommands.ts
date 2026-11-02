@@ -22,7 +22,7 @@ export interface CommandDiff {
 export interface SyncOptions {
   /** Publish even when nothing differs (manual `npm run deploy:commands`). */
   readonly force?: boolean;
-  /** Label in the log: `global` or `staff-guild`. */
+  /** Label in the log: `global` or `staff-guild:<guild id>`. */
   readonly scope?: string;
   readonly correlationId?: string;
 }

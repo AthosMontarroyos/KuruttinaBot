@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash, randomBytes } from 'node:crypto';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -99,6 +99,31 @@ async function startPostgres() {
   }
 }
 
+/** Applies migrations older than `cut`, recording the same ledger `migrate` uses, so a later `migrate` runs only the rest. */
+async function applyMigrationsBefore(client: pg.Client, cut: string): Promise<void> {
+  const directory = new URL('../packages/database/supabase/migrations/', import.meta.url);
+  const names = (await readdir(directory)).filter((entry) => entry.endsWith('.sql')).sort();
+  const end = names.indexOf(cut);
+  if (end < 0) throw new Error(`Migration ${cut} was not found`);
+  await client.query('BEGIN');
+  try {
+    await client.query('SELECT pg_advisory_xact_lock(146455, 1)');
+    await client.query('CREATE SCHEMA IF NOT EXISTS kuruttina_migrations');
+    await client.query('REVOKE ALL ON SCHEMA kuruttina_migrations FROM PUBLIC');
+    await client.query('CREATE TABLE IF NOT EXISTS kuruttina_migrations.applied (name text PRIMARY KEY, checksum text NOT NULL)');
+    for (const name of names.slice(0, end)) {
+      const sql = await readFile(new URL(name, directory), 'utf8');
+      const checksum = createHash('sha256').update(sql).digest('hex');
+      await client.query(sql);
+      await client.query('INSERT INTO kuruttina_migrations.applied (name, checksum) VALUES ($1, $2)', [name, checksum]);
+    }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  }
+}
+
 describe('PostgreSQL runtime isolation', () => {
   let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
   let admin: pg.Client;
@@ -128,7 +153,19 @@ describe('PostgreSQL runtime isolation', () => {
     database = createDatabase(runtimeConfig, 'development');
     try {
       await admin.connect();
+      await applyMigrationsBefore(admin, '20261102120000_dev_guilds.sql');
+      await admin.query(
+        'INSERT INTO bot_private.bot_settings (singleton, dev_guild_id, environment) VALUES (true, $1, $2)',
+        [ids.guildId, 'development'],
+      );
       await migrate(admin);
+      const copied = await admin.query('SELECT guild_id FROM bot_private.bot_dev_guilds ORDER BY guild_id');
+      if (copied.rows.length !== 1 || copied.rows[0]?.guild_id !== ids.guildId) throw new Error('Migration did not copy dev_guild_id');
+      const legacyColumn = await admin.query(
+        `SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'bot_private' AND table_name = 'bot_settings' AND column_name = 'dev_guild_id'`,
+      );
+      if (legacyColumn.rows.length !== 0) throw new Error('dev_guild_id column was not dropped');
       await migrate(admin);
       await admin.query(`ALTER ROLE kuruttina_bot PASSWORD ${pg.escapeLiteral(runtimeConfig.password)}`);
       await admin.query(`ALTER ROLE kuruttina_site PASSWORD ${pg.escapeLiteral(cluster.siteConfig.password)}`);
@@ -145,7 +182,7 @@ describe('PostgreSQL runtime isolation', () => {
   afterAll(dispose, 30_000);
 
   it('loads the singleton, validates environment and queries both roles', async () => {
-    expect(await database.getSettings()).toEqual({ devGuildId: ids.guildId, environment: 'development' });
+    expect(await database.getSettings()).toEqual({ devGuildIds: [ids.guildId], environment: 'development' });
     expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBe('creator');
     expect(await database.getStaffRole(ids.devId, ids.guildId)).toBe('dev');
     const report = vi.fn();
@@ -171,12 +208,52 @@ describe('PostgreSQL runtime isolation', () => {
     await admin.query('UPDATE bot_private.bot_staff SET active = false WHERE user_id = $1', [ids.devId]);
     try { expect(await database.getStaffRole(ids.devId, ids.guildId)).toBeNull(); }
     finally { await admin.query('UPDATE bot_private.bot_staff SET active = true WHERE user_id = $1', [ids.devId]); }
-    await admin.query("UPDATE bot_private.bot_settings SET dev_guild_id = '123456789012345678'");
+    await admin.query('DELETE FROM bot_private.bot_dev_guilds');
+    await admin.query("INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ('123456789012345678')");
     try {
       expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBeNull();
       expect(await database.getStaffRole(ids.creatorId, '123456789012345678')).toBe('creator');
+      expect(await database.getSettings()).toEqual({ devGuildIds: ['123456789012345678'], environment: 'development' });
       await expect(initializeAccess(admin, 'development', ids)).rejects.toThrow('differs');
-    } finally { await admin.query('UPDATE bot_private.bot_settings SET dev_guild_id = $1', [ids.guildId]); }
+      expect((await admin.query('SELECT guild_id FROM bot_private.bot_dev_guilds')).rows).toEqual([{ guild_id: '123456789012345678' }]);
+    } finally {
+      await admin.query('DELETE FROM bot_private.bot_dev_guilds');
+      await admin.query('INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ($1)', [ids.guildId]);
+    }
+  });
+  it('authorizes staff in every registered dev guild and in none when the set is empty', async () => {
+    const second = '123456789012345678';
+    await admin.query('INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ($1)', [second]);
+    try {
+      expect(await database.getSettings()).toEqual({ devGuildIds: [second, ids.guildId].sort(), environment: 'development' });
+      expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBe('creator');
+      expect(await database.getStaffRole(ids.devId, second)).toBe('dev');
+      expect(await database.getStaffRole(ids.creatorId, '223456789012345678')).toBeNull();
+      await runtime.query('BEGIN');
+      try {
+        await runtime.query("SELECT set_config('app.discord_user_id', $1, true), set_config('app.guild_id', $2, true)", [ids.creatorId, second]);
+        expect((await runtime.query('SELECT user_id FROM bot_private.bot_staff')).rows).toEqual([{ user_id: ids.creatorId }]);
+      } finally { await runtime.query('ROLLBACK'); }
+      await expect(initializeAccess(admin, 'development', ids)).rejects.toThrow('differs');
+    } finally {
+      await admin.query('DELETE FROM bot_private.bot_dev_guilds WHERE guild_id = $1', [second]);
+    }
+    await admin.query('DELETE FROM bot_private.bot_dev_guilds');
+    try {
+      expect(await database.getSettings()).toEqual({ devGuildIds: [], environment: 'development' });
+      expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBeNull();
+      await runtime.query('BEGIN');
+      try {
+        await runtime.query("SELECT set_config('app.discord_user_id', $1, true), set_config('app.guild_id', $2, true)", [ids.creatorId, ids.guildId]);
+        expect((await runtime.query('SELECT user_id FROM bot_private.bot_staff')).rows).toEqual([]);
+      } finally { await runtime.query('ROLLBACK'); }
+      await expect(initializeAccess(admin, 'development', ids)).rejects.toThrow('differs');
+      expect((await admin.query('SELECT guild_id FROM bot_private.bot_dev_guilds')).rows).toEqual([]);
+    } finally {
+      await admin.query('INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', [ids.guildId]);
+    }
+    expect((await runtime.query('SELECT guild_id FROM bot_private.bot_dev_guilds')).rows).toEqual([{ guild_id: ids.guildId }]);
+    await expect(siteRuntime.query('SELECT guild_id FROM bot_private.bot_dev_guilds')).rejects.toThrow();
   });
   it('uses a real unprivileged login and denies writes, DDL and escalation', async () => {
     expect((await runtime.query('SELECT session_user')).rows[0].session_user).toBe('kuruttina_bot');
@@ -184,6 +261,9 @@ describe('PostgreSQL runtime isolation', () => {
       "UPDATE bot_private.bot_staff SET active = false",
       "INSERT INTO bot_private.bot_staff VALUES ('123456789012345678', 'dev', true)",
       'DELETE FROM bot_private.bot_settings',
+      "INSERT INTO bot_private.bot_dev_guilds VALUES ('123456789012345678')",
+      'DELETE FROM bot_private.bot_dev_guilds',
+      "UPDATE bot_private.bot_dev_guilds SET guild_id = '123456789012345678'",
       'CREATE TABLE bot_private.attack (id int)',
       'CREATE TABLE public.attack (id int)',
       'CREATE TEMP TABLE attack (id int)',
@@ -197,8 +277,11 @@ describe('PostgreSQL runtime isolation', () => {
   });
   it('enforces singleton, valid IDs, unique users and unique roles', async () => {
     for (const sql of [
-      "INSERT INTO bot_private.bot_settings VALUES (false, '1422623678205657160', 'development')",
-      "UPDATE bot_private.bot_settings SET dev_guild_id = '18446744073709551616'",
+      "INSERT INTO bot_private.bot_settings VALUES (false, 'development')",
+      "INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ('18446744073709551616')",
+      "INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ('invalid')",
+      'INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES (NULL)',
+      `INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ('${ids.guildId}')`,
       "UPDATE bot_private.bot_settings SET environment = 'staging'",
       "INSERT INTO bot_private.bot_staff VALUES ('123456789012345678', 'creator', true)",
       "INSERT INTO bot_private.bot_staff VALUES ('666948364507545600', 'dev', true)",
@@ -233,8 +316,11 @@ describe('PostgreSQL runtime isolation', () => {
     // Inventário fechado das tabelas de bot_private. role_groups e role_group_roles
     // (20261030120000_role_groups.sql) seguem o mesmo isolamento: RLS habilitada e forçada,
     // sem grant para PUBLIC nem para as roles de API. member_event_messages
-    // (20261101120000_member_event_messages.sql) também. Uma tabela nova entra aqui pelo nome.
+    // (20261101120000_member_event_messages.sql) também. bot_dev_guilds
+    // (20261102120000_dev_guilds.sql) também: SELECT só para kuruttina_bot.
+    // Uma tabela nova entra aqui pelo nome.
     const appTables = [
+      'bot_dev_guilds',
       'bot_settings',
       'bot_staff',
       'custom_button_functions',
@@ -264,6 +350,7 @@ describe('PostgreSQL runtime isolation', () => {
     `);
     const siteWrite = ['DELETE', 'INSERT', 'SELECT', 'UPDATE'];
     const tableGrants: Record<string, Partial<Record<'kuruttina_bot' | 'kuruttina_site', string[]>>> = {
+      bot_dev_guilds: { kuruttina_bot: ['SELECT'] },
       bot_settings: { kuruttina_bot: ['SELECT'] },
       bot_staff: { kuruttina_bot: ['SELECT'] },
       custom_button_functions: { kuruttina_bot: ['SELECT'], kuruttina_site: siteWrite },
@@ -316,9 +403,11 @@ describe('PostgreSQL runtime isolation', () => {
       );
       expect(privilege.rows[0]?.ok).toBe(allowed);
     }
-    for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'DELETE']) {
-      const table = await admin.query('SELECT has_table_privilege($1, $2, $3) AS ok', ['kuruttina_site', 'bot_private.bot_staff', privilege]);
-      expect(table.rows[0]?.ok).toBe(false);
+    for (const tableName of ['bot_private.bot_staff', 'bot_private.bot_dev_guilds', 'bot_private.bot_settings']) {
+      for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'DELETE']) {
+        const table = await admin.query('SELECT has_table_privilege($1, $2, $3) AS ok', ['kuruttina_site', tableName, privilege]);
+        expect(table.rows[0]?.ok).toBe(false);
+      }
     }
     expect((await siteRuntime.query('SELECT session_user AS role')).rows[0]?.role).toBe('kuruttina_site');
     expect((await siteRuntime.query('SELECT bot_private.active_dev_user_id() AS user_id')).rows).toEqual([{ user_id: ids.devId }]);
@@ -360,8 +449,10 @@ describe('PostgreSQL runtime isolation', () => {
       for (const role of ['anon', 'authenticated', 'service_role']) {
         const fn = await admin.query("SELECT has_function_privilege($1, 'bot_private.active_dev_user_id()', 'EXECUTE') AS ok", [role]);
         const table = await admin.query("SELECT has_table_privilege($1, 'bot_private.bot_staff', 'SELECT') AS ok", [role]);
+        const guilds = await admin.query("SELECT has_table_privilege($1, 'bot_private.bot_dev_guilds', 'SELECT') AS ok", [role]);
         expect(fn.rows[0]?.ok).toBe(false);
         expect(table.rows[0]?.ok).toBe(false);
+        expect(guilds.rows[0]?.ok).toBe(false);
       }
     } finally {
       for (const role of ['service_role', 'authenticated', 'anon']) await admin.query(`DROP ROLE ${role}`);

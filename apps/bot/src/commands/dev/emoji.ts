@@ -8,8 +8,8 @@ const productionEmojiRedirect =
 /**
  * Orienta a equipe a criar Application Emojis do bot de produção pelo workflow
  * manual. O módulo fica em `commands/dev/`: o loader exige `scope: 'dev-guild'`
- * e a política `staff`, então o comando é publicado somente na guilda de
- * desenvolvimento cadastrada. Ele não recebe token nem cria o emoji.
+ * e a política `staff`, então o comando é publicado somente nas guildas de
+ * desenvolvimento cadastradas. Ele não recebe token nem cria o emoji.
  */
 async function explainProductionEmoji(context: CommandContext): Promise<void> {
   await context.acknowledge();

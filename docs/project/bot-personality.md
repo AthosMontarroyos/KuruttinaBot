@@ -67,7 +67,10 @@ Os exemplos abaixo são as respostas que o código envia. A coluna Emoji traz o 
 | Consulta indisponível | `ops` | 😅 Não consegui consultar este emoji agora. Tente de novo daqui a pouco. |
 | Bot ocupado | `coffee` | ☕ Já estou ocupada. Tente de novo em instantes. |
 | Ping | `dancing` | 💃 Pong. Ainda estou aqui. |
-| Lista de comandos | `book` | 📖 Estes são os comandos que posso fazer por você. Use **/help comando** para ver os detalhes. |
+| Ajuda, visão geral | `book` | 📖 Estes são os comandos que posso fazer por você. Use as setas para navegar ou **/help comando** para ver os detalhes. |
+| Ajuda, página de tópico | `book` | 📖 Tópico **Moderação**. |
+| Ajuda de outra pessoa | `Disappointed` | 😞 Só quem abriu esta ajuda pode navegar por ela. Use **/help** para abrir a sua. |
+| Falha ao trocar a página | `error` | ❌ Não consegui trocar a página da ajuda. Use **/help** de novo. |
 | Detalhe de comando | `book` | 📖 Aqui está o que sei sobre **/ban**. |
 | Comando desconhecido na ajuda | `search` | 🔎 Não encontrei esse comando. Use **/help** para ver a lista. |
 | Expulsão concluída | `sucess` | ✅ Pronto. `Nome` foi expulso deste servidor. |

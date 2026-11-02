@@ -22,7 +22,7 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `add` | Confirmação de que o emoji agora está neste servidor | disponível | disponível |
 | `API` | Reação tímida ou carinhosa | disponível | disponível |
 | `ban` | Abre a confirmação de banimento; omitido quando indisponível | disponível | disponível |
-| `book` | Orientação quando o comando exige um subcomando, abertura e detalhe do `/help`, e quando `/dev emoji add` aponta o workflow de produção | disponível | disponível |
+| `book` | Orientação quando o comando exige um subcomando, abertura, páginas de tópico e detalhe do `/help`, e quando `/dev emoji add` aponta o workflow de produção | disponível | disponível |
 | `ChannelBrowser` | Comando usado fora de canal de texto de servidor | disponível | disponível |
 | `coffee` | Bot ocupado, fila de importação cheia ou fechamento da confirmação de banimento | disponível | disponível |
 | `crown` | Dono do servidor ou posição de destaque | disponível | disponível |

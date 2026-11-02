@@ -34,6 +34,6 @@ export const command = {
     await context.reply(buildHelpReply(context.commandCatalog ?? [], queryFrom(context), {
       book: await context.emoji('book'),
       search: await context.emoji('search'),
-    }));
+    }, context.userId));
   },
 } satisfies ChatInputCommand;

@@ -28,6 +28,7 @@ const eventPresentations: Readonly<Record<string, EventPresentation>> = {
   startup_failed: { emoji: '❌', category: 'Startup', message: 'Falha ao iniciar o bot' },
   command_failed: { emoji: '❌', category: 'Discord', message: 'Falha ao executar interaction' },
   command_failure_response_failed: { emoji: '❌', category: 'Discord', message: 'Falha ao responder interaction com erro' },
+  help_navigation_failed: { emoji: '❌', category: 'Discord', message: 'Falha ao navegar pela ajuda' },
   prefix_command_failed: { emoji: '❌', category: 'Commands', message: 'Falha ao executar comando por prefixo' },
   clear_fetch_failed: { emoji: '❌', category: 'Clear', message: 'Falha ao buscar mensagens' },
   clear_delete_failed: { emoji: '❌', category: 'Clear', message: 'Falha ao apagar mensagens' },

@@ -8,11 +8,13 @@ import {
   type InteractionReplyOptions,
 } from 'discord.js';
 import type { EmojiAttachment } from '#bot/application/emojis/types.js';
+import { parseHelpCustomId } from '#bot/command-system/helpReply.js';
 import { withEmojis } from '#bot/command-system/responses.js';
 import type { CommandReply, CommandContext, HasPermission } from '#bot/command-system/types.js';
 import type { CommandsHandler } from '#bot/command-system/CommandsHandler.js';
 import { createChannelContext, createEmojiResolver, createRenderer, type CommandClientPort } from '#bot/infrastructure/discord/commands/commandContext.js';
 import { handleComponentInteraction, type ComponentActionPort } from '#bot/infrastructure/discord/messages/componentRouter.js';
+import { handleHelpButton } from '#bot/infrastructure/discord/messages/helpNavigation.js';
 import { log } from '#bot/infrastructure/logging/logger.js';
 
 const failureMessage = 'Não consegui executar este comando. Tente de novo daqui a pouco.';
@@ -126,6 +128,13 @@ export async function handleInteractionCreate(
   if (interaction.isChatInputCommand()) {
     await handleChatInputCommand(adaptInteraction(interaction), commandsHandler);
     return;
+  }
+  if (interaction.isButton()) {
+    const help = parseHelpCustomId(interaction.customId);
+    if (help) {
+      await handleHelpButton(interaction, help, commandsHandler.catalog());
+      return;
+    }
   }
   if (componentPort && (interaction.isButton() || interaction.isAnySelectMenu())) {
     const emoji = createEmojiResolver(interaction.client.application);

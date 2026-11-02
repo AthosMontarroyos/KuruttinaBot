@@ -49,7 +49,7 @@ export class CommandsHandler {
   private readonly commandsByName = new Map<string, ChatInputCommand>();
   private readonly routesByAlias = new Map<string, { command: ChatInputCommand; route: CommandRoute }>();
   private readonly pending = new Set<Promise<void>>();
-  private catalog: readonly CatalogCommand[] | undefined;
+  private cachedCatalog: readonly CatalogCommand[] | undefined;
   private accepting = true;
 
   constructor(
@@ -86,9 +86,9 @@ export class CommandsHandler {
   }
 
   /** Public command list for `/help`, built once from the registered modules. */
-  private commandCatalog(): readonly CatalogCommand[] {
-    this.catalog ??= buildCatalog([...this.commandsByName.values()]);
-    return this.catalog;
+  catalog(): readonly CatalogCommand[] {
+    this.cachedCatalog ??= buildCatalog([...this.commandsByName.values()]);
+    return this.cachedCatalog;
   }
 
   /** A root command or any prefix alias can start an execution. */
@@ -142,7 +142,7 @@ export class CommandsHandler {
       ...context,
       ...(this.emojiImport ? { emojiImport: this.emojiImport } : {}),
       ...(this.emojiInfo ? { emojiInfo: this.emojiInfo } : {}),
-      commandCatalog: this.commandCatalog(),
+      commandCatalog: this.catalog(),
     };
     const accessError = await validateCommandAccess(
       accessForDenial(resolution.command.access, resolution.route),

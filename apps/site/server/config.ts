@@ -58,6 +58,8 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   // Only relative object keys are persisted; the browser loads media directly from R2.
   const avatarPath = 'icons/Icons/1.jpg';
   const homeCoverPath = 'dashboard/LaddingPage/CardRetrato.jpg';
+  // Mesma arte sem fundo, para o tema escuro.
+  const homeCoverDarkPath = 'dashboard/LaddingPage/CardRetrato-recorte.png';
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   const siteUrl = readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production');
   const oauth = readDiscordOAuth(env, siteUrl);
@@ -73,6 +75,7 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
     assetsOrigin: base.origin,
     avatarUrl: new URL(avatarPath, base).href,
     homeCoverUrl: new URL(homeCoverPath, base).href,
+    homeCoverDarkUrl: new URL(homeCoverDarkPath, base).href,
     devMock,
     oauth,
     sessionFile: readSessionFile(env),

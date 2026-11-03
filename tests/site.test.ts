@@ -20,6 +20,7 @@ describe('site configuration', () => {
       target: 'development', devMock: true,
       port: 3666, host: '127.0.0.1', siteUrl: 'http://localhost:3666', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
       homeCoverUrl: 'https://assets.example.com/dashboard/LaddingPage/CardRetrato.jpg',
+      homeCoverDarkUrl: 'https://assets.example.com/dashboard/LaddingPage/CardRetrato-recorte.png',
       database: {
         host: 'db.internal', port: 5432, user: 'kuruttina_site', password: 'test-pw', database: 'kuruttina',
         ssl: { rejectUnauthorized: true },
@@ -324,7 +325,20 @@ describe('public Home HTTP boundary', () => {
     expect(html).toContain('<meta name="kuruttina-avatar" content="https://assets.example.com/icons/Icons/1.jpg">');
     expect(html).toContain('<meta name="kuruttina-app-icon" content="https://assets.example.com/icons/Icons/1.jpg">');
     expect(html).toContain('<meta name="kuruttina-home-cover" content="https://assets.example.com/dashboard/LaddingPage/CardRetrato.jpg">');
+    expect(html).toContain('<meta name="kuruttina-home-cover-dark" content="https://assets.example.com/dashboard/LaddingPage/CardRetrato-recorte.png">');
     expect(html).not.toContain('{{HOME_COVER_URL}}');
+    expect(html).not.toContain('{{HOME_COVER_DARK_URL}}');
+  });
+  it('loads the theme before the first paint from a same-origin file, because the CSP blocks inline scripts', async () => {
+    const response = await fetch(origin);
+    const html = await response.text();
+    expect(html).toContain('<script src="/theme-init.js"></script>');
+    expect(html).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/u);
+    expect(response.headers.get('content-security-policy')).toContain("script-src 'self'");
+    const script = await fetch(`${origin}/theme-init.js`);
+    expect(script.status).toBe(200);
+    expect(script.headers.get('content-type')).toBe('text/javascript; charset=utf-8');
+    expect(await script.text()).toContain('kuruttina-theme');
   });
   it('allows any https image only on the dashboard, for the message preview', async () => {
     const dashboard = (await fetch(`${origin}/dashboard`)).headers.get('content-security-policy');

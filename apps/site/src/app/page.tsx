@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { useTheme } from '../lib/theme';
 
 const socials = [
   { label: 'Instagram do criador', notice: 'O Instagram do criador estará disponível em breve.', icon: '/icons/social/instagram.svg' },
@@ -11,6 +12,8 @@ const socials = [
 
 type HomePageProps = {
   coverUrl: string;
+  /** Capa sem fundo do tema escuro: o multiply da arte original só funciona sobre claro. */
+  coverDarkUrl: string;
   onNotice: (message: string) => void;
 };
 
@@ -43,9 +46,11 @@ function useStageScale(): number {
   return scale;
 }
 
-function HomePage({ coverUrl, onNotice }: HomePageProps) {
-  const [coverFailed, setCoverFailed] = useState(false);
+function HomePage({ coverUrl, coverDarkUrl, onNotice }: HomePageProps) {
+  const [failedCover, setFailedCover] = useState('');
   const scale = useStageScale();
+  const dark = useTheme().resolved === 'dark';
+  const art = dark ? coverDarkUrl : coverUrl;
 
   return (
     <main id="conteudo" className="flex min-h-0 flex-1 flex-col">
@@ -55,13 +60,13 @@ function HomePage({ coverUrl, onNotice }: HomePageProps) {
             aria-hidden="true"
             className="absolute -top-24 -right-28 size-[430px] rounded-full bg-stage-disc min-[701px]:top-[-26.5%] min-[701px]:right-[-28.5%] min-[701px]:size-auto min-[701px]:h-[105%] min-[701px]:aspect-square min-[1100px]:top-[-140px] min-[1100px]:right-[-90px] min-[1100px]:size-[760px]"
           />
-          {coverUrl && !coverFailed ? (
+          {art && failedCover !== art ? (
             <img
-              className="home-cover-art relative size-full object-cover object-top"
-              src={coverUrl}
+              className={`home-cover-art${dark ? ' home-cover-art--dark' : ''} relative size-full object-cover object-top`}
+              src={art}
               alt="Ilustração da Kuruttina deitada lendo um livro, com uma máscara de dormir rosa na cabeça."
               fetchPriority="high"
-              onError={() => setCoverFailed(true)}
+              onError={() => setFailedCover(art)}
             />
           ) : null}
         </div>

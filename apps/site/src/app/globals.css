@@ -10,7 +10,7 @@
   --color-text: #2a1322;
   --color-muted: #6e4b5e;
   --color-subtle: #7a5668;
-  --color-control: #a3869a;
+  --color-control: #9a7b90;
   --color-button: #ee7fa9;
   --color-button-text: #2a0f1d;
   --color-secondary: #e0668f;
@@ -20,18 +20,68 @@
   --color-accent-soft: rgb(238 127 169 / 0.18);
   --color-danger: #c4283c;
   --color-success: #1f7a4f;
-  --color-warning: #b45f06;
+  --color-warning: #a35405;
 }
 
+/* Tema: o claro é o padrão (tokens do @theme). O escuro troca só os valores, nos mesmos nomes, em dois blocos idênticos: o do sistema (sem escolha manual) e o da escolha manual. Mantenha os dois iguais. */
 :root {
   color-scheme: light;
+  /* Os SVGs de /icons trazem cor fixa clara: no claro são escurecidos, no escuro ficam como estão. */
+  --icon-filter: brightness(0.4);
   scrollbar-color: var(--color-muted) var(--color-background);
 }
 
-/* Os SVGs trazem cor fixa clara e são escurecidos para o fundo claro. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --icon-filter: none;
+    --color-stage-disc: #331d29;
+    --color-background: #140b12;
+    --color-surface: #1f1220;
+    --color-border: #3b2336;
+    --color-text: #fdf6fc;
+    --color-muted: #c9b0bf;
+    --color-subtle: #a88e9d;
+    --color-control: #8a6c7c;
+    --color-button: #f08db4;
+    --color-button-text: #2a0f1d;
+    --color-secondary: #f6a9c6;
+    --color-accent: #f08db4;
+    --color-accent-text: #2a0f1d;
+    --color-accent-fg: #f08db4;
+    --color-accent-soft: rgb(240 141 180 / 0.14);
+    --color-danger: #ff6b61;
+    --color-success: #5fcf9a;
+    --color-warning: #f0a050;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --icon-filter: none;
+  --color-stage-disc: #331d29;
+  --color-background: #140b12;
+  --color-surface: #1f1220;
+  --color-border: #3b2336;
+  --color-text: #fdf6fc;
+  --color-muted: #c9b0bf;
+  --color-subtle: #a88e9d;
+  --color-control: #8a6c7c;
+  --color-button: #f08db4;
+  --color-button-text: #2a0f1d;
+  --color-secondary: #f6a9c6;
+  --color-accent: #f08db4;
+  --color-accent-text: #2a0f1d;
+  --color-accent-fg: #f08db4;
+  --color-accent-soft: rgb(240 141 180 / 0.14);
+  --color-danger: #ff6b61;
+  --color-success: #5fcf9a;
+  --color-warning: #f0a050;
+}
+
 button img[src^="/icons/"],
 a.icon-link img[src^="/icons/"] {
-  filter: brightness(0.4);
+  filter: var(--icon-filter);
 }
 
 @layer base {
@@ -112,6 +162,11 @@ a.icon-link img[src^="/icons/"] {
   mix-blend-mode: multiply;
   -webkit-mask-image: linear-gradient(to bottom, black 62%, transparent);
   mask-image: linear-gradient(to bottom, black 62%, transparent);
+}
+
+/* No escuro a arte é a versão sem fundo: o multiply deixaria a personagem escura. */
+.home-cover-art.home-cover-art--dark {
+  mix-blend-mode: normal;
 }
 
 @media (min-width: 701px) {

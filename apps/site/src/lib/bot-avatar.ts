@@ -25,4 +25,9 @@ function readHomeCoverUrl(): string {
   return readHttpsMeta('kuruttina-home-cover');
 }
 
-export { readAppIconUrl, readBotAvatarUrl, readHomeCoverUrl };
+/** Versão da capa sem fundo, usada no tema escuro; vazia quando a URL não é https válida. */
+function readHomeCoverDarkUrl(): string {
+  return readHttpsMeta('kuruttina-home-cover-dark');
+}
+
+export { readAppIconUrl, readBotAvatarUrl, readHomeCoverDarkUrl, readHomeCoverUrl };

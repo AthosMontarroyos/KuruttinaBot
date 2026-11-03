@@ -32,7 +32,7 @@
 
 **Nível:** MUST
 
-**Regra:** cada SVG de interface em `apps/site/public/icons/` fica numa subpasta cujo nome é a função do ícone. A raiz `icons/` não recebe arquivo. Variantes da mesma função, como desktop e celular, compartilham a pasta. Funções atuais: `theme/` (troca de tema; sem uso desde a remoção do tema escuro), `account/` (conta), `language/` (idioma), `community/` (Discord do bot) e `social/` (redes do criador). Ícone novo reutiliza a pasta da função ou cria outra com o nome da função; não misture marcas externas com controles da página. O caminho público e a allowlist do servidor mudam no mesmo cambio. Esta regra não cobre mídia do R2: avatar e demais objetos remotos continuam fora de `public/`.
+**Regra:** cada SVG de interface em `apps/site/public/icons/` fica numa subpasta cujo nome é a função do ícone. A raiz `icons/` não recebe arquivo. Variantes da mesma função, como desktop e celular, compartilham a pasta. Funções atuais: `theme/` (sem uso: o botão de tema usa ícones inline), `account/` (conta), `language/` (idioma), `community/` (Discord do bot) e `social/` (redes do criador). Ícone novo reutiliza a pasta da função ou cria outra com o nome da função; não misture marcas externas com controles da página. O caminho público e a allowlist do servidor mudam no mesmo cambio. Esta regra não cobre mídia do R2: avatar e demais objetos remotos continuam fora de `public/`.
 
 ### Regra: otimização e distribuição
 

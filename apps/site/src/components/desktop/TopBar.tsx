@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Session } from '../../lib/session';
 import { AccountMenu } from '../AccountMenu';
+import { ThemeToggle } from '../ThemeToggle';
 
 const navigation = [
   { label: 'Comandos', href: '/comandos' },
@@ -53,6 +54,7 @@ function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: To
           ) : null}
           <span>Kuruttina</span>
         </a>
+        <ThemeToggle />
         <AccountMenu session={session} onLogout={onLogout} />
         <button
           className="inline-flex min-h-11 items-center rounded-full border border-control bg-surface px-4 text-sm font-medium text-text"
@@ -85,6 +87,7 @@ function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: To
             <img className="w-[22px] min-[1101px]:w-[clamp(22px,1.4vw,28px)]" src="/icons/language/brasil.svg" alt="" />
             pt-BR (Brasil)
           </span>
+          <ThemeToggle />
           <AccountMenu session={session} onLogout={onLogout} />
         </div>
       </header>

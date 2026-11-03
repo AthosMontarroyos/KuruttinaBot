@@ -153,20 +153,14 @@ a.icon-link img[src^="/icons/"] {
   border-color: transparent;
 }
 
-/* Home: capa de pôster. A ilustração tem fundo branco e usa `multiply` para o branco virar a cor da página; a máscara só suaviza as bordas cortadas. */
+/* Home: capa de pôster. A ilustração é uma versão sem fundo (transparente), igual nos dois temas, e fica por cima do disco; a máscara só suaviza as bordas cortadas. */
 .home-title {
   font-variation-settings: 'SOFT' 100, 'opsz' 144;
 }
 
 .home-cover-art {
-  mix-blend-mode: multiply;
   -webkit-mask-image: linear-gradient(to bottom, black 62%, transparent);
   mask-image: linear-gradient(to bottom, black 62%, transparent);
-}
-
-/* No escuro a arte é a versão sem fundo: o multiply deixaria a personagem escura. */
-.home-cover-art.home-cover-art--dark {
-  mix-blend-mode: normal;
 }
 
 @media (min-width: 701px) {

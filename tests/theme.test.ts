@@ -53,5 +53,8 @@ describe('pre-paint theme script and stylesheet', () => {
     for (const token of light) expect(dark, token).toContain(`${token}:`);
     expect(css).toContain('filter: var(--icon-filter)');
     expect(css).not.toMatch(/\[data-theme="light"\][^{]*img/u);
+    // A capa é a mesma imagem nos dois temas: sem multiply (que só funciona sobre claro) e sem variante por tema.
+    expect(css).not.toContain('mix-blend-mode');
+    expect(css).not.toContain('home-cover-art--dark');
   });
 });

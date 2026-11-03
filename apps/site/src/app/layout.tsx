@@ -11,7 +11,7 @@ import { DashboardPage } from './dashboard/page';
 import { ServerDashboardPage } from './dashboard/[serverId]/page';
 import { ComandosPage } from './comandos/page';
 import { ModulosPage } from './modulos/page';
-import { readAppIconUrl, readHomeCoverDarkUrl, readHomeCoverUrl } from '../lib/bot-avatar';
+import { readAppIconUrl, readHomeCoverUrl } from '../lib/bot-avatar';
 import { usePathname } from '../lib/navigation';
 import { useSession } from '../lib/session';
 import './globals.css';
@@ -22,7 +22,6 @@ function RootLayout() {
   const [notice, setNotice] = useState<string | null>(null);
   const appIconUrl = readAppIconUrl();
   const coverUrl = readHomeCoverUrl();
-  const coverDarkUrl = readHomeCoverDarkUrl();
   const { session, failed, mockLogin, logout } = useSession();
   const pathname = usePathname();
   const serverId = serverDashboardPath.exec(pathname)?.[1];
@@ -60,7 +59,7 @@ function RootLayout() {
       ) : pathname === '/modulos' ? (
         <ModulosPage />
       ) : (
-        <HomePage coverUrl={coverUrl} coverDarkUrl={coverDarkUrl} onNotice={showNotice} />
+        <HomePage coverUrl={coverUrl} onNotice={showNotice} />
       )}
       {pathname === '/' || serverId ? null : <Footer />}
       {notice ? (

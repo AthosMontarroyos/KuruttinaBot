@@ -23,14 +23,14 @@ function IconImage({ src, mobileSrc, className }: { src: string; mobileSrc?: str
   );
 }
 
-// A partir de 1100px a capa é a composição de 1440×900 do design, ampliada por igual (zoom) até caber na tela. Abaixo disso o layout é fluido.
+// A partir de 1100px a capa é a composição do design, ampliada por igual (zoom). A largura do palco é sempre a do design (1440px): é ela que mantém texto, título e arte na mesma distância. A altura varia, de `stageMinHeight` até o teto de 900px da arte; só uma janela mais larga que 1440:`stageMinHeight` (ultrawide) deixa o palco mais largo que o design. Abaixo de 1100px o layout é fluido.
 const stageWidth = 1440;
-const stageHeight = 900;
+const stageMinHeight = 720;
 const stageMinWidth = 1100;
 
 function readStageScale(): number {
   if (window.innerWidth < stageMinWidth) return 1;
-  return Math.min(window.innerWidth / stageWidth, window.innerHeight / stageHeight);
+  return Math.min(window.innerWidth / stageWidth, window.innerHeight / stageMinHeight);
 }
 
 function useStageScale(): number {
@@ -50,7 +50,7 @@ function HomePage({ coverUrl, onNotice }: HomePageProps) {
   return (
     <main id="conteudo" className="flex min-h-0 flex-1 flex-col">
       <section style={{ zoom: scale }} className="home-cover relative flex flex-1 flex-col gap-5 overflow-hidden bg-background px-5 pt-[300px] pb-2 text-text min-[701px]:min-h-[640px] min-[701px]:justify-end min-[701px]:gap-0 min-[701px]:px-[5%] min-[701px]:pt-0 min-[701px]:pb-0">
-        <div className="absolute top-0 left-0 h-[460px] w-full min-[701px]:left-auto min-[701px]:right-0 min-[701px]:top-auto min-[701px]:bottom-0 min-[701px]:h-[88%] min-[701px]:w-auto min-[701px]:max-w-[50%] min-[701px]:aspect-[3/4] min-[701px]:max-h-[860px] min-[1100px]:h-[900px] min-[1100px]:w-[662px] min-[1100px]:max-h-none min-[1100px]:max-w-none min-[1100px]:aspect-auto">
+        <div className="absolute top-0 left-0 h-[460px] w-full min-[701px]:left-auto min-[701px]:right-0 min-[701px]:top-auto min-[701px]:bottom-0 min-[701px]:h-[88%] min-[701px]:w-auto min-[701px]:max-w-[50%] min-[701px]:aspect-[3/4] min-[701px]:max-h-[860px] min-[1100px]:h-full min-[1100px]:w-[662px] min-[1100px]:max-h-[900px] min-[1100px]:max-w-none min-[1100px]:aspect-auto">
           <div
             aria-hidden="true"
             className="absolute -top-24 -right-28 size-[430px] rounded-full bg-stage-disc min-[701px]:top-[-26.5%] min-[701px]:right-[-28.5%] min-[701px]:size-auto min-[701px]:h-[105%] min-[701px]:aspect-square min-[1100px]:top-[-140px] min-[1100px]:right-[-90px] min-[1100px]:size-[760px]"

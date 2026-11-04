@@ -58,7 +58,7 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   // Only relative object keys are persisted; the browser loads media directly from R2.
   const avatarPath = 'icons/Icons/1.jpg';
   // Arte sem fundo (transparente), usada nos dois temas; a CardRetrato.jpg original continua no R2.
-  const homeCoverPath = 'dashboard/LaddingPage/CardRetrato-recorte.webp';
+  const homeCoverPath = 'dashboard/LaddingPage/RetratoHomeRecorte.webp';
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   const siteUrl = readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production');
   const oauth = readDiscordOAuth(env, siteUrl);

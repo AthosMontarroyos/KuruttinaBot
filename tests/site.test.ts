@@ -19,7 +19,7 @@ describe('site configuration', () => {
     expect(readSiteConfig(environment)).toEqual({
       target: 'development', devMock: true,
       port: 3666, host: '127.0.0.1', siteUrl: 'http://localhost:3666', assetsOrigin: 'https://assets.example.com', avatarUrl: 'https://assets.example.com/icons/Icons/1.jpg',
-      homeCoverUrl: 'https://assets.example.com/dashboard/LaddingPage/RetratoHomeRecorte.webp',
+      homeCoverUrl: 'https://assets.example.com/dashboard/LaddingPage/RetratoKuruttina.webp',
       database: {
         host: 'db.internal', port: 5432, user: 'kuruttina_site', password: 'test-pw', database: 'kuruttina',
         ssl: { rejectUnauthorized: true },
@@ -323,7 +323,7 @@ describe('public Home HTTP boundary', () => {
     const html = await (await fetch(origin)).text();
     expect(html).toContain('<meta name="kuruttina-avatar" content="https://assets.example.com/icons/Icons/1.jpg">');
     expect(html).toContain('<meta name="kuruttina-app-icon" content="https://assets.example.com/icons/Icons/1.jpg">');
-    expect(html).toContain('<meta name="kuruttina-home-cover" content="https://assets.example.com/dashboard/LaddingPage/RetratoHomeRecorte.webp">');
+    expect(html).toContain('<meta name="kuruttina-home-cover" content="https://assets.example.com/dashboard/LaddingPage/RetratoKuruttina.webp">');
     expect(html).not.toContain('kuruttina-home-cover-dark');
     expect(html).not.toContain('{{HOME_COVER_URL}}');
   });

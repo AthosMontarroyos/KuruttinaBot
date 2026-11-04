@@ -22,7 +22,7 @@ Primeira pessoa no feminino, calma e simpática, conforme [personalidade](../../
 
 ## Tratamento da imagem
 
-- Arte do R2: `dashboard/LaddingPage/RetratoHomeRecorte.webp` (1472×2616, retrato transparente). Entra pela meta `kuruttina-home-cover`, como as outras imagens remotas.
+- Arte do R2: `dashboard/LaddingPage/RetratoKuruttina.webp` (1472×2616, retrato transparente). Entra pela meta `kuruttina-home-cover`, como as outras imagens remotas.
 - Uma máscara linear só suaviza a borda cortada (esquerda no desktop, embaixo no celular).
 - O arquivo tem 2x a resolução de exibição, para ficar nítido em tela de alta densidade.
 - Outras páginas devem usar arte do mesmo conjunto, com fundo transparente.
@@ -36,7 +36,7 @@ O mockup é uma composição fixa de 1440×900 (Main.dc.html no Artifact). Porce
 Aprovado em 03/11/2026 (decisão em [tema do site](../../../../docs/decisions/site-theme.md)). **A Home tem a mesma composição nos dois temas**: mesmo disco, mesma posição e tamanho da arte, mesmo título de 216px, mesma máscara; só as cores (tokens) mudam. Um arco, moldura ou título menor no escuro foram propostos e descartados: a página não pode virar outra ao trocar de tema. Os valores dos dois temas, o contraste medido e as regras estão no Design System [Kuruttina](https://claude.ai/artifact/Y2HRdEM97Ag26dG7pPZFGy) (`dark-theme.md`); os mesmos valores estão em `globals.css`.
 
 - Disco: `--color-stage-disc` é rosa-claro no claro e ameixa (`#331d29`) no escuro. O rosa-claro no escuro deixava os links da barra ilegíveis onde cruzam o disco.
-- Arte: uma só, sem fundo, nos dois temas (`dashboard/LaddingPage/RetratoHomeRecorte.webp` no R2). A original (`CardRetrato.jpg`, fundo branco) só funcionava com `multiply` sobre claro; por isso foi substituída, e o `multiply` saiu do CSS. O recorte foi feito com um gerador de imagens e é um redesenho da arte (cabeça e máscara iguais; mão, livro, almofada e mechas diferem um pouco), aprovado pelo responsável em 03/11/2026. Foi alinhado à original num canvas de 1472×2616 (a proporção 736×1308 em 2x): é drop-in, sem ajuste de CSS. Sem esse arquivo no R2 a Home mostra só o disco, o título e as ações.
+- Arte: uma só, sem fundo, nos dois temas (`dashboard/LaddingPage/RetratoKuruttina.webp` no R2). A original (`CardRetrato.jpg`, fundo branco) só funcionava com `multiply` sobre claro; por isso foi substituída, e o `multiply` saiu do CSS. O recorte foi feito com um gerador de imagens e é um redesenho da arte (cabeça e máscara iguais; mão, livro, almofada e mechas diferem um pouco), aprovado pelo responsável em 03/11/2026. Foi alinhado à original num canvas de 1472×2616 (a proporção 736×1308 em 2x): é drop-in, sem ajuste de CSS. Sem esse arquivo no R2 a Home mostra só o disco, o título e as ações.
 - Outra página com arte de fundo branco usa uma versão recortada, nunca `multiply`: ele não funciona sobre o escuro.
 
 ## Barras superiores

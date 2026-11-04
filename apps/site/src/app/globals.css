@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@theme {
+/* `static`: os tokens de gradiente dos tópicos só são lidos em estilo inline; sem isso o Tailwind os descarta do CSS. */
+@theme static {
   --font-sans: "Outfit", ui-sans-serif, sans-serif;
   --font-display: "Fraunces", Georgia, serif;
   --color-stage-disc: #f8d7e6;
@@ -21,6 +22,31 @@
   --color-danger: #c4283c;
   --color-success: #1f7a4f;
   --color-warning: #a35405;
+  /* Janela de terminal da página Comandos: escura nos dois temas. Só a borda externa muda, para separar do fundo escuro. */
+  --color-terminal: #2a1322;
+  --color-terminal-bar: #38202e;
+  --color-terminal-border: #4a2e41;
+  --color-terminal-line: #4a2e41;
+  --color-terminal-code: #1d0e18;
+  --color-terminal-text: #fdf6fc;
+  --color-terminal-muted: #c9b0bf;
+  --color-terminal-subtle: #a88e9d;
+  --color-terminal-accent: #f08db4;
+  --color-terminal-control: #8a6c7c;
+  --color-terminal-close: #ff5f57;
+  --color-terminal-minimize: #febc2e;
+  --color-terminal-zoom: #28c840;
+  /* Gradiente de cada tópico de comandos (mesmos valores nos dois temas). */
+  --color-topic-all-from: #ee7fa9;
+  --color-topic-all-to: #c9a0dc;
+  --color-topic-utility-from: #a8b9f2;
+  --color-topic-utility-to: #8fd0c0;
+  --color-topic-mod-from: #ee7fa9;
+  --color-topic-mod-to: #f6a07a;
+  --color-topic-fun-from: #f6b27a;
+  --color-topic-fun-to: #f2d27a;
+  --color-topic-public-from: #8fd0c0;
+  --color-topic-public-to: #c9a0dc;
 }
 
 /* Tema: o claro é o padrão (tokens do @theme). O escuro troca só os valores, nos mesmos nomes, em dois blocos idênticos: o do sistema (sem escolha manual) e o da escolha manual. Mantenha os dois iguais. */
@@ -53,6 +79,29 @@
     --color-danger: #ff6b61;
     --color-success: #5fcf9a;
     --color-warning: #f0a050;
+    --color-terminal: #2a1322;
+    --color-terminal-bar: #38202e;
+    --color-terminal-border: #5a3a50;
+    --color-terminal-line: #4a2e41;
+    --color-terminal-code: #1d0e18;
+    --color-terminal-text: #fdf6fc;
+    --color-terminal-muted: #c9b0bf;
+    --color-terminal-subtle: #a88e9d;
+    --color-terminal-accent: #f08db4;
+    --color-terminal-control: #8a6c7c;
+    --color-terminal-close: #ff5f57;
+    --color-terminal-minimize: #febc2e;
+    --color-terminal-zoom: #28c840;
+    --color-topic-all-from: #ee7fa9;
+    --color-topic-all-to: #c9a0dc;
+    --color-topic-utility-from: #a8b9f2;
+    --color-topic-utility-to: #8fd0c0;
+    --color-topic-mod-from: #ee7fa9;
+    --color-topic-mod-to: #f6a07a;
+    --color-topic-fun-from: #f6b27a;
+    --color-topic-fun-to: #f2d27a;
+    --color-topic-public-from: #8fd0c0;
+    --color-topic-public-to: #c9a0dc;
   }
 }
 
@@ -77,6 +126,29 @@
   --color-danger: #ff6b61;
   --color-success: #5fcf9a;
   --color-warning: #f0a050;
+  --color-terminal: #2a1322;
+  --color-terminal-bar: #38202e;
+  --color-terminal-border: #5a3a50;
+  --color-terminal-line: #4a2e41;
+  --color-terminal-code: #1d0e18;
+  --color-terminal-text: #fdf6fc;
+  --color-terminal-muted: #c9b0bf;
+  --color-terminal-subtle: #a88e9d;
+  --color-terminal-accent: #f08db4;
+  --color-terminal-control: #8a6c7c;
+  --color-terminal-close: #ff5f57;
+  --color-terminal-minimize: #febc2e;
+  --color-terminal-zoom: #28c840;
+  --color-topic-all-from: #ee7fa9;
+  --color-topic-all-to: #c9a0dc;
+  --color-topic-utility-from: #a8b9f2;
+  --color-topic-utility-to: #8fd0c0;
+  --color-topic-mod-from: #ee7fa9;
+  --color-topic-mod-to: #f6a07a;
+  --color-topic-fun-from: #f6b27a;
+  --color-topic-fun-to: #f2d27a;
+  --color-topic-public-from: #8fd0c0;
+  --color-topic-public-to: #c9a0dc;
 }
 
 button img[src^="/icons/"],
@@ -206,6 +278,69 @@ a.icon-link img[src^="/icons/"] {
     55% {
       box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-accent) 0%, transparent);
     }
+  }
+}
+
+/* Comandos: a janela de terminal rola por dentro (a página cabe na tela). O fim da lista some em degradê para indicar que há mais. */
+.terminal-window :focus-visible {
+  outline-color: var(--color-terminal-accent);
+}
+
+.terminal-scroll {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-terminal-accent) 55%, transparent) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 36px), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 36px), transparent);
+}
+
+.terminal-scroll:focus-visible {
+  outline-offset: -3px;
+}
+
+/* Comandos: chuva de caracteres ao fundo, só em CSS. Cada coluna cai sozinha, com uma cauda que some para cima. */
+.matrix-rain {
+  -webkit-mask-image: linear-gradient(to bottom, black 40%, rgb(0 0 0 / 0.5));
+  mask-image: linear-gradient(to bottom, black 40%, rgb(0 0 0 / 0.5));
+}
+
+.matrix-column {
+  width: 20px;
+  flex: none;
+  font: 500 16px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre;
+  text-align: center;
+  color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-accent) 0%, transparent),
+    color-mix(in srgb, var(--color-accent) 30%, transparent) 72%,
+    color-mix(in srgb, var(--color-accent) 45%, transparent)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: matrix-fall linear infinite;
+  will-change: transform;
+}
+
+@keyframes matrix-fall {
+  from {
+    transform: translateY(-520px);
+  }
+  to {
+    transform: translateY(calc(100dvh + 40px));
+  }
+}
+
+@media (max-width: 700px) {
+  .matrix-column:nth-child(n + 15) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matrix-column {
+    animation: none;
   }
 }
 

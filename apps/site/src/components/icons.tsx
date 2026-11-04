@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 type IconProps = { className?: string };
 
 /** Ferramenta usada nas telas que ainda não têm a função pronta. */
@@ -80,4 +82,143 @@ function MoonIcon({ className = 'size-5' }: IconProps) {
   );
 }
 
-export { ArrowRightIcon, ConstructionIcon, MonitorIcon, MoonIcon, PencilIcon, PlusIcon, SpinnerIcon, SunIcon, TrashIcon };
+/** Ícones de traço (24×24, traço 1,8) usados na página de comandos e na roleta do celular. */
+function StrokeIcon({ className, strokeWidth = 1.8, children }: IconProps & { strokeWidth?: number; children: ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+function GridIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={1.9}>
+      <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
+    </StrokeIcon>
+  );
+}
+
+function SlidersIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={1.9}>
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9M15 4v6M8 14v6" />
+    </StrokeIcon>
+  );
+}
+
+function ShieldIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={1.9}>
+      <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />
+    </StrokeIcon>
+  );
+}
+
+function SparkleIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={1.9}>
+      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z" />
+    </StrokeIcon>
+  );
+}
+
+function GlobeIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={1.9}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </StrokeIcon>
+  );
+}
+
+function CheckIcon({ className = 'size-[18px]' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={2.4}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </StrokeIcon>
+  );
+}
+
+function ChevronDownIcon({ className = 'size-[18px]' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={2.2}>
+      <path d="M6 9l6 6 6-6" />
+    </StrokeIcon>
+  );
+}
+
+function SearchIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={1.9}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16 16l4.5 4.5" />
+    </StrokeIcon>
+  );
+}
+
+function CloseIcon({ className = 'size-6' }: IconProps) {
+  return (
+    <StrokeIcon className={className} strokeWidth={2.2}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </StrokeIcon>
+  );
+}
+
+function TerminalIcon({ className = 'size-6' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <path d="M4 6h16v12H4zM8 10l2.5 2L8 14M12.5 14H16" />
+    </StrokeIcon>
+  );
+}
+
+function FileTextIcon({ className = 'size-6' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6" />
+    </StrokeIcon>
+  );
+}
+
+function UserIcon({ className = 'size-6' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+    </StrokeIcon>
+  );
+}
+
+function PanelIcon({ className = 'size-6' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <path d="M4 5h16v14H4zM10 5v14M13 9h4M13 13h4" />
+    </StrokeIcon>
+  );
+}
+
+export {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  ConstructionIcon,
+  FileTextIcon,
+  GlobeIcon,
+  GridIcon,
+  MonitorIcon,
+  MoonIcon,
+  PanelIcon,
+  PencilIcon,
+  PlusIcon,
+  SearchIcon,
+  ShieldIcon,
+  SlidersIcon,
+  SparkleIcon,
+  SpinnerIcon,
+  SunIcon,
+  TerminalIcon,
+  TrashIcon,
+  UserIcon,
+};

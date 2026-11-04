@@ -1,16 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { navigation, type NavigationItem } from '../../lib/site-navigation';
 import type { Session } from '../../lib/session';
 import { AccountMenu } from '../AccountMenu';
+import { WheelMenu } from '../mobile/WheelMenu';
 import { ThemeToggle } from '../ThemeToggle';
-
-const navigation = [
-  { label: 'Comandos', href: '/comandos' },
-  { label: 'Módulos', href: '/modulos' },
-  { label: 'Termos de serviço', notice: 'Os termos de serviço estarão disponíveis em breve.' },
-  { label: 'Painel de controle', href: '/dashboard' },
-] as const;
 
 type TopBarProps = {
   appIconUrl: string;
@@ -24,9 +19,8 @@ const desktopBrand = 'mr-auto flex items-center gap-3 text-lg font-semibold min-
 
 function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: TopBarProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
-  const renderItem = (item: (typeof navigation)[number], className: string) =>
+  const renderItem = (item: NavigationItem, className: string) =>
     'href' in item ? (
       <a key={item.label} className={className} href={item.href}>
         {item.label}
@@ -36,10 +30,7 @@ function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: To
         key={item.label}
         className={`bg-transparent p-0 text-left ${className}`}
         type="button"
-        onClick={() => {
-          setMenuOpen(false);
-          onNotice(item.notice);
-        }}
+        onClick={() => onNotice(item.notice)}
       >
         {item.label}
       </button>
@@ -47,30 +38,7 @@ function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: To
 
   return (
     <>
-      <header className={`${overlay ? 'topbar-overlay ' : ''}relative flex items-center gap-3 px-5 py-3 min-[701px]:hidden`}>
-        <a className="mr-auto flex items-center gap-3 text-base font-semibold" href="/" aria-label="Kuruttina — início">
-          {appIconUrl && !avatarFailed ? (
-            <img className="size-9 rounded-full bg-surface object-cover" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
-          ) : null}
-          <span>Kuruttina</span>
-        </a>
-        <ThemeToggle />
-        <AccountMenu session={session} onLogout={onLogout} />
-        <button
-          className="inline-flex min-h-11 items-center rounded-full border border-control bg-surface px-4 text-sm font-medium text-text"
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="menu-celular"
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? 'Fechar' : 'Menu'}
-        </button>
-        {menuOpen ? (
-          <nav id="menu-celular" className="absolute top-full right-5 left-5 z-10 flex flex-col rounded-xl border border-border bg-surface p-2" aria-label="Navegação principal">
-            {navigation.map((item) => renderItem(item, 'flex min-h-11 items-center rounded-lg px-3 text-base font-medium text-text'))}
-          </nav>
-        ) : null}
-      </header>
+      <WheelMenu session={session} onLogout={onLogout} onNotice={onNotice} />
 
       <header className={`${overlay ? 'topbar-overlay ' : ''}hidden min-[701px]:flex min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-5 min-[701px]:border-b min-[701px]:border-border min-[701px]:px-[5%] min-[701px]:py-7 min-[1101px]:flex-nowrap min-[1101px]:gap-7`}>
         <a className={desktopBrand} href="/" aria-label="Kuruttina — início">

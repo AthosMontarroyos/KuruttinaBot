@@ -37,31 +37,35 @@ function RootLayout() {
   }, [notice]);
 
   const showNotice = (message: string): void => setNotice(message);
+  // A lista de comandos rola dentro da janela de terminal: a página cabe na altura da tela (mínimo 640px) e não tem rodapé.
+  const fitScreen = pathname === '/comandos';
 
   return (
     <>
       <a className="fixed top-[-100px] left-5 z-30 bg-surface p-3 focus:top-3" href="#conteudo">
         Pular para o conteúdo
       </a>
-      {serverId ? (
-        <ServerTopBar appIconUrl={appIconUrl} guild={serverGuild} session={session} onLogout={() => void logout()} />
-      ) : (
-        <TopBar appIconUrl={appIconUrl} onNotice={showNotice} session={session} onLogout={() => void logout()} overlay={pathname === '/'} />
-      )}
-      {pathname === '/dashboard' ? (
-        <DashboardPage session={session} failed={failed} onLogout={() => void logout()} />
-      ) : serverId ? (
-        <ServerDashboardPage session={session} failed={failed} serverId={serverId} />
-      ) : pathname === '/login' ? (
-        <LoginPage session={session} failed={failed} onMockLogin={mockLogin} />
-      ) : pathname === '/comandos' ? (
-        <ComandosPage />
-      ) : pathname === '/modulos' ? (
-        <ModulosPage />
-      ) : (
-        <HomePage coverUrl={coverUrl} onNotice={showNotice} />
-      )}
-      {pathname === '/' || serverId ? null : <Footer />}
+      <div className={fitScreen ? 'flex h-dvh min-h-[640px] flex-col' : 'contents'}>
+        {serverId ? (
+          <ServerTopBar appIconUrl={appIconUrl} guild={serverGuild} session={session} onLogout={() => void logout()} />
+        ) : (
+          <TopBar appIconUrl={appIconUrl} onNotice={showNotice} session={session} onLogout={() => void logout()} overlay={pathname === '/'} />
+        )}
+        {pathname === '/dashboard' ? (
+          <DashboardPage session={session} failed={failed} onLogout={() => void logout()} />
+        ) : serverId ? (
+          <ServerDashboardPage session={session} failed={failed} serverId={serverId} />
+        ) : pathname === '/login' ? (
+          <LoginPage session={session} failed={failed} onMockLogin={mockLogin} />
+        ) : pathname === '/comandos' ? (
+          <ComandosPage />
+        ) : pathname === '/modulos' ? (
+          <ModulosPage />
+        ) : (
+          <HomePage coverUrl={coverUrl} onNotice={showNotice} />
+        )}
+        {pathname === '/' || fitScreen || serverId ? null : <Footer />}
+      </div>
       {notice ? (
         <aside className="fixed right-6 bottom-6 z-20 flex max-w-[min(440px,calc(100%-40px))] items-center gap-5 rounded-xl border border-border bg-surface p-5" aria-label="Aviso">
           <p role="status" aria-live="polite">{notice}</p>

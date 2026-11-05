@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { execFile } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
@@ -6,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import pg from 'pg';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, aroundEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDatabase } from '@kuruttina/database';
 import { initializeAccess, migrate } from '@kuruttina/database/admin';
 
@@ -124,13 +125,48 @@ async function applyMigrationsBefore(client: pg.Client, cut: string): Promise<vo
   }
 }
 
-describe('PostgreSQL runtime isolation', () => {
+describe('PostgreSQL runtime isolation', { timeout: 15_000 }, () => {
   let cluster: Awaited<ReturnType<typeof startPostgres>> | undefined;
   let admin: pg.Client;
   let runtime: pg.Client;
   let siteRuntime: pg.Client;
   let database: ReturnType<typeof createDatabase>;
   let runtimeConfig: Awaited<ReturnType<typeof startPostgres>>['runtimeConfig'];
+  // Timeout do Vitest não espera o corpo. A geração descarta SQL atrasado; o cadastro volta antes e depois de cada teste.
+  const accessTest = new AsyncLocalStorage<{ generation: number }>();
+  let accessGeneration = 0;
+  type Sql = (text: string, values?: unknown) => Promise<pg.QueryResult>;
+  let rawAdmin: Sql | undefined;
+  let rawRuntime: Sql | undefined;
+  let rawSite: Sql | undefined;
+  function guardClient(client: pg.Client): Sql {
+    const raw = client.query.bind(client) as Sql;
+    client.query = ((text: string, values?: unknown) => {
+      const scope = accessTest.getStore();
+      if (scope && scope.generation !== accessGeneration) return new Promise<pg.QueryResult>(() => {});
+      return raw(text, values);
+    }) as pg.Client['query'];
+    return raw;
+  }
+  async function rollbackOpen(client: pg.Client, raw: Sql) {
+    if (client.getTransactionStatus() === 'E') {
+      await raw('ROLLBACK');
+      return;
+    }
+    await raw('SELECT 1');
+    const status = client.getTransactionStatus();
+    if (status === 'T' || status === 'E') await raw('ROLLBACK');
+  }
+  async function cleanupAccessFixture() {
+    if (!rawAdmin || !rawRuntime || !rawSite) return;
+    await rollbackOpen(admin, rawAdmin);
+    await rollbackOpen(runtime, rawRuntime);
+    await rollbackOpen(siteRuntime, rawSite);
+    await rawAdmin('UPDATE bot_private.bot_staff SET active = true WHERE user_id = ANY($1::text[])', [[ids.creatorId, ids.devId]]);
+    await rawAdmin("UPDATE bot_private.bot_settings SET environment = 'development' WHERE singleton");
+    await rawAdmin('DELETE FROM bot_private.bot_dev_guilds');
+    await rawAdmin('INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ($1)', [ids.guildId]);
+  }
 
   const stopOnInterrupt = () => { void dispose().finally(() => process.exit(130)); };
   const stopOnTerminate = () => { void dispose().finally(() => process.exit(143)); };
@@ -174,12 +210,32 @@ describe('PostgreSQL runtime isolation', () => {
       await runtime.connect();
       siteRuntime = new pg.Client(cluster.siteConfig);
       await siteRuntime.connect();
+      rawAdmin = guardClient(admin);
+      rawRuntime = guardClient(runtime);
+      rawSite = guardClient(siteRuntime);
     } catch (error) {
       await dispose();
       throw error;
     }
   }, 120_000);
   afterAll(dispose, 30_000);
+  aroundEach(async (runTest) => {
+    accessGeneration += 1;
+    const generation = accessGeneration;
+    try {
+      await accessTest.run({ generation }, runTest);
+    } finally {
+      if (accessGeneration === generation) {
+        accessGeneration += 1;
+        await cleanupAccessFixture();
+      }
+    }
+  }, 20_000);
+  beforeEach(cleanupAccessFixture, 20_000);
+  afterEach(async () => {
+    accessGeneration += 1;
+    await cleanupAccessFixture();
+  }, 20_000);
 
   it('loads the singleton, validates environment and queries both roles', async () => {
     expect(await database.getSettings()).toEqual({ devGuildIds: [ids.guildId], environment: 'development' });
@@ -457,6 +513,34 @@ describe('PostgreSQL runtime isolation', () => {
     } finally {
       for (const role of ['service_role', 'authenticated', 'anon']) await admin.query(`DROP ROLE ${role}`);
     }
+  });
+  it('dirties shared access rows without cleaning them up', async () => {
+    await admin.query('DELETE FROM bot_private.bot_dev_guilds');
+    await admin.query("INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ('123456789012345678')");
+    await admin.query('UPDATE bot_private.bot_staff SET active = false WHERE user_id = $1', [ids.devId]);
+    await admin.query("UPDATE bot_private.bot_settings SET environment = 'production' WHERE singleton");
+    expect((await admin.query('SELECT guild_id FROM bot_private.bot_dev_guilds')).rows).toEqual([{ guild_id: '123456789012345678' }]);
+    expect(await database.getStaffRole(ids.devId, ids.guildId)).toBeNull();
+  });
+  it('starts from the canonical guild, active staff and development settings', async () => {
+    expect(accessTest.getStore()?.generation).toBe(accessGeneration);
+    expect((await admin.query('SELECT guild_id FROM bot_private.bot_dev_guilds ORDER BY guild_id')).rows).toEqual([{ guild_id: ids.guildId }]);
+    expect((await admin.query('SELECT user_id, active FROM bot_private.bot_staff ORDER BY role')).rows).toEqual([
+      { user_id: ids.creatorId, active: true },
+      { user_id: ids.devId, active: true },
+    ]);
+    expect((await admin.query('SELECT environment FROM bot_private.bot_settings')).rows).toEqual([{ environment: 'development' }]);
+    expect(await database.getSettings()).toEqual({ devGuildIds: [ids.guildId], environment: 'development' });
+    expect(await database.getStaffRole(ids.devId, ids.guildId)).toBe('dev');
+    expect(await database.getStaffRole(ids.creatorId, ids.guildId)).toBe('creator');
+  });
+  it('drops a guild insert issued after the session closes', async () => {
+    expect(accessTest.getStore()?.generation).toBe(accessGeneration);
+    accessGeneration += 1;
+    const pending = admin.query("INSERT INTO bot_private.bot_dev_guilds (guild_id) VALUES ('223456789012345678')");
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect((await rawAdmin!('SELECT guild_id FROM bot_private.bot_dev_guilds ORDER BY guild_id')).rows).toEqual([{ guild_id: ids.guildId }]);
+    void pending;
   });
 });
 

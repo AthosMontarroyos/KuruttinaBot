@@ -41,5 +41,10 @@ function filterCommandGroups(query: string, topicId: string): CommandGroup[] {
     .filter((group) => group.commands.length > 0);
 }
 
-export { ALL_TOPICS, filterCommandGroups, publicTopics };
+/** Quantos commands públicos há num tópico (`ALL_TOPICS` conta todos). */
+function commandCount(topicId: string): number {
+  return topicId === ALL_TOPICS ? publicCommands.length : publicCommands.filter((command) => command.topic === topicId).length;
+}
+
+export { ALL_TOPICS, commandCount, filterCommandGroups, publicTopics };
 export type { CatalogCommand, CommandGroup };

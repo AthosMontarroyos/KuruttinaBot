@@ -12,3 +12,9 @@ O site tem dois temas, claro e escuro, com os mesmos nomes de token. O tema escu
 - **Dois valores do claro foram corrigidos** por falharem em contraste: `--color-control` (`#a3869a` para `#9a7b90`, 3:1 dentro de cartão) e `--color-warning` (`#b45f06` para `#a35405`, 4,5:1 como texto).
 
 Valores, contraste medido e regras estão no [Design System](https://claude.ai/artifact/Y2HRdEM97Ag26dG7pPZFGy). Procedimento na [skill do website](../../.claude/skills/website-developer/SKILL.md) e implementação em `apps/site/src/app/globals.css`, `apps/site/src/lib/theme.ts` e `apps/site/public/theme-init.js`.
+
+## Paleta monocromática
+
+Status: proposta em 6 de novembro de 2026, a confirmar pelo responsável pelo projeto.
+
+A paleta rosa foi substituída por cinzas neutros (matiz e saturação zero) em `globals.css`, nos mesmos nomes de token. Botão e destaque têm a polaridade do tema: quase preto no claro (`#171717`), quase branco no escuro (`#fafafa`). Os gradientes dos tópicos de Comandos são cinzas escuros no claro e claros no escuro, porque o texto do chip selecionado usa `button-text`. Os semáforos do terminal são três cinzas. Única exceção de cor: `danger`, `success` e `warning`, para o usuário distinguir erro, sucesso e aviso sem depender só de forma. A ilustração da capa (R2) continua colorida; a prévia de mensagens do Discord mantém as cores do Discord.

@@ -226,23 +226,9 @@ a.icon-link img[src^="/icons/"] {
   border-color: transparent;
 }
 
-/* Home: capa de pôster. A ilustração é uma versão sem fundo (transparente), igual nos dois temas, e fica por cima do disco; a máscara só suaviza as bordas cortadas. */
+/* Títulos grandes da Home e da página de comandos: serifa com eixo SOFT. */
 .home-title {
   font-variation-settings: 'SOFT' 100, 'opsz' 144;
-}
-
-.home-cover-art {
-  -webkit-mask-image: linear-gradient(to bottom, black 62%, transparent);
-  mask-image: linear-gradient(to bottom, black 62%, transparent);
-}
-
-@media (min-width: 701px) {
-  .home-cover-art {
-    -webkit-mask-image: linear-gradient(to right, transparent, black 16%), linear-gradient(to bottom, transparent, black 8%);
-    mask-image: linear-gradient(to right, transparent, black 16%), linear-gradient(to bottom, transparent, black 8%);
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
-  }
 }
 
 @theme {

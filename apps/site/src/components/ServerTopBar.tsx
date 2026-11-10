@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { GuildIcon } from '../app/dashboard/ui';
 import type { Guild, Session } from '../lib/session';
 import { AccountMenu } from './AccountMenu';
+import { LanguageIndicator } from './LanguageIndicator';
 import { ThemeToggle } from './ThemeToggle';
 
 type ServerTopBarProps = {
@@ -44,6 +45,9 @@ function ServerTopBar({ appIconUrl, guild, session, onLogout }: ServerTopBarProp
         ) : (
           <span className="truncate text-base font-semibold">Servidor</span>
         )}
+      </div>
+      <div className="hidden min-[701px]:flex">
+        <LanguageIndicator />
       </div>
       <ThemeToggle />
       <AccountMenu session={session} onLogout={onLogout} />

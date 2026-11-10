@@ -57,8 +57,8 @@ export function readSiteConfig(env: NodeJS.ProcessEnv) {
   if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash || (base.port && base.port !== '443')) throw new Error('ASSETS_BASE_URL deve ser uma URL HTTPS pública sem credenciais ou parâmetros.');
   // Only relative object keys are persisted; the browser loads media directly from R2.
   const avatarPath = 'icons/Icons/1.jpg';
-  // Arte sem fundo (transparente), usada nos dois temas; a CardRetrato.jpg original continua no R2.
-  const homeCoverPath = 'dashboard/LaddingPage/RetratoKuruttina.webp';
+  // Capa da Home: recorte transparente de uma garota em preto e branco, usado nos dois temas.
+  const homeCoverPath = 'dashboard/LaddingPage/KuruttinaCard.webp';
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/`;
   const siteUrl = readSiteUrl(env.SITE_URL ?? (env.APP_ENV === 'development' ? `http://localhost:${Number(rawPort)}` : undefined), env.APP_ENV === 'production');
   const oauth = readDiscordOAuth(env, siteUrl);

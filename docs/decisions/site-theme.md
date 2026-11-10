@@ -18,9 +18,3 @@ Valores, contraste medido e regras estão no [Design System](https://claude.ai/a
 Status: proposta em 6 de novembro de 2026, a confirmar pelo responsável pelo projeto.
 
 A paleta rosa foi substituída por cinzas neutros (matiz e saturação zero) em `globals.css`, nos mesmos nomes de token. Botão e destaque têm a polaridade do tema: quase preto no claro (`#171717`), quase branco no escuro (`#fafafa`). Os gradientes dos tópicos de Comandos são cinzas escuros no claro e claros no escuro, porque o texto do chip selecionado usa `button-text`. Os semáforos do terminal são três cinzas. Única exceção de cor: `danger`, `success` e `warning`, para o usuário distinguir erro, sucesso e aviso sem depender só de forma. A ilustração da capa (R2) continua colorida; a prévia de mensagens do Discord mantém as cores do Discord.
-
-## Nova capa e arte (novembro de 2026)
-
-Status: aprovado pelo responsável pelo projeto.
-
-A capa da Home foi redesenhada em preto e branco, no estilo mangá/zine, e a arte passou a ser `dashboard/LaddingPage/KuruttinaCard.webp` (recorte transparente 1024×1536, enviado pelo responsável ao R2). Ela substitui a `RetratoKuruttina.webp`, que não é mais usada, e continua valendo a regra de uma só arte, sem fundo, nos dois temas, sem `multiply`. O disco da Home (`--color-stage-disc`) deixou de existir na composição. No tema escuro a arte, de roupa e cabelo pretos, ganha um contorno claro fino pelos tokens. A linguagem da capa está em [cover-design.md](../../.claude/skills/website-developer/references/cover-design.md).

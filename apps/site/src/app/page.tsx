@@ -43,11 +43,11 @@ function HomePage({ coverUrl, onNotice }: HomePageProps) {
   return (
     <main
       id="conteudo"
-      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-5 pt-10 text-text min-[701px]:min-h-[640px] min-[701px]:px-[5%] min-[701px]:pt-[120px] min-[1101px]:pt-[150px]"
+      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-5 pt-10 text-text min-[701px]:min-h-[560px] min-[701px]:px-[5%] min-[701px]:pt-[120px] min-[1101px]:pt-[150px]"
     >
       <div
         aria-hidden="true"
-        className="relative h-[316px] w-full min-[701px]:absolute min-[701px]:top-[120px] min-[701px]:right-[5%] min-[701px]:h-[clamp(440px,44.4vw,640px)] min-[701px]:w-[clamp(340px,34.7vw,500px)] min-[1101px]:top-[150px]"
+        className="relative h-[316px] w-full min-[701px]:absolute min-[701px]:top-[120px] min-[701px]:right-[5%] min-[701px]:aspect-[25/32] min-[701px]:h-auto min-[701px]:w-[clamp(297px,min(34.7vw,calc((100dvh_-_230px)*0.78125)),500px)] min-[1101px]:top-[150px]"
       >
         <div className="absolute inset-0 overflow-hidden border-2 border-text bg-surface">
           <div className="absolute inset-0" style={halftoneStyle} />
@@ -71,20 +71,20 @@ function HomePage({ coverUrl, onNotice }: HomePageProps) {
       </div>
 
       <div className="relative z-[2] order-2 flex flex-col items-start gap-4 min-[701px]:order-none min-[701px]:max-w-[min(600px,46%)] min-[701px]:gap-6">
-        <p className="text-base leading-[1.45] text-muted min-[701px]:max-w-[480px] min-[701px]:text-2xl min-[701px]:leading-[1.4]">
+        <p className="text-base leading-[1.45] text-muted min-[701px]:max-w-[480px] min-[701px]:text-[clamp(18px,1.5vw,22px)] min-[701px]:leading-[1.4]">
           Oi, eu sou a Kuruttina. Vim para deixar a sua comunidade mais viva, e ficar por perto.
         </p>
         <div className="flex w-full flex-col gap-2.5 min-[701px]:w-auto min-[701px]:flex-row min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-3">
           <Pill onClick={() => onNotice('O convite do bot estará disponível em breve.')}>Adicionar ao Discord</Pill>
           <div className="flex gap-2.5 min-[701px]:contents">
             <a
-              className="inline-flex h-[52px] flex-1 items-center justify-center rounded-[6px] border-2 border-text px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-text hover:bg-surface min-[701px]:h-14 min-[701px]:flex-none min-[701px]:text-[17px]"
+              className="inline-flex h-[52px] flex-1 items-center justify-center rounded-[6px] border-2 border-text px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-text hover:bg-surface min-[701px]:h-[clamp(46px,3.5vw,56px)] min-[701px]:flex-none min-[701px]:text-base"
               href="/dashboard"
             >
               Painel de controle
             </a>
             <button
-              className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-[6px] border border-border bg-surface p-0 text-muted hover:border-accent-fg hover:text-accent-fg min-[701px]:size-14"
+              className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-[6px] border border-border bg-surface p-0 text-muted hover:border-accent-fg hover:text-accent-fg min-[701px]:size-[clamp(46px,3.5vw,56px)]"
               type="button"
               aria-label="Servidor de suporte"
               onClick={() => onNotice('O servidor de suporte estará disponível em breve.')}
@@ -100,7 +100,7 @@ function HomePage({ coverUrl, onNotice }: HomePageProps) {
         className="my-auto hidden h-16 w-[calc(100%-54%)] bg-[repeating-linear-gradient(180deg,var(--color-text)_0,var(--color-text)_8px,transparent_8px,transparent_16px)] min-[701px]:block min-[1101px]:w-[calc(100%-520px)]"
       />
 
-      <h1 className="home-title relative z-[3] order-1 mt-5 font-display text-[66px] leading-[0.95] font-medium tracking-[-0.04em] whitespace-nowrap min-[701px]:order-none min-[701px]:mt-0 min-[701px]:-ml-1.5 min-[701px]:text-[clamp(96px,11vw,160px)]">
+      <h1 className="home-title relative z-[3] order-1 mt-5 font-display text-[66px] leading-[0.95] font-medium tracking-[-0.04em] whitespace-nowrap min-[701px]:order-none min-[701px]:mt-0 min-[701px]:-ml-1.5 min-[701px]:text-[clamp(72px,min(11vw,17dvh),160px)]">
         Kuruttina
         <svg aria-hidden="true" viewBox="0 0 24 24" className="ml-[0.07em] inline-block size-[0.26em] fill-current">
           <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
@@ -139,7 +139,7 @@ function HomePage({ coverUrl, onNotice }: HomePageProps) {
 function Pill({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
     <button
-      className="h-[52px] w-full rounded-[6px] border-2 border-button bg-button px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-button-text hover:border-secondary hover:bg-secondary min-[701px]:h-14 min-[701px]:w-auto min-[701px]:text-[17px]"
+      className="h-[52px] w-full rounded-[6px] border-2 border-button bg-button px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-button-text hover:border-secondary hover:bg-secondary min-[701px]:h-[clamp(46px,3.5vw,56px)] min-[701px]:w-auto min-[701px]:text-base"
       type="button"
       onClick={onClick}
     >

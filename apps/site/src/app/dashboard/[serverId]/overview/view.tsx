@@ -75,7 +75,7 @@ function OverviewView({ guild }: { guild: Guild }) {
 
   return (
     <div className="flex flex-col gap-7 min-[701px]:gap-9">
-      <h1 className={`${displayClass} text-[44px] leading-none min-[701px]:text-[64px]`}>Visão geral</h1>
+      <h1 className={`${displayClass} text-[44px] leading-none min-[701px]:text-[clamp(64px,4.4vw,88px)]`}>Visão geral</h1>
 
       <div className="flex items-center gap-4 min-[701px]:gap-6">
         {guild.iconUrl ? (
@@ -86,7 +86,7 @@ function OverviewView({ guild }: { guild: Guild }) {
           </span>
         )}
         <div className="flex min-w-0 flex-col items-start gap-1">
-          <h2 className={`${displayClass} text-[30px] leading-[1.05] text-text min-[701px]:text-[44px]`}>{guild.name}</h2>
+          <h2 className={`${displayClass} text-[30px] leading-[1.05] text-text min-[701px]:text-[clamp(44px,3vw,60px)]`}>{guild.name}</h2>
           <span className="font-mono text-xs text-subtle break-all">{guild.id}</span>
           <button
             className="-ml-3 inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted hover:bg-surface hover:text-text"
@@ -106,7 +106,7 @@ function OverviewView({ guild }: { guild: Guild }) {
         {numberCells.map((cell) => (
           <div key={cell.key} className={`min-w-0 border-border py-[18px] min-[701px]:py-7 ${cell.className}`}>
             <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-subtle">{cell.label}</dt>
-            <dd className={`mt-2 ${displayClass} text-[44px] leading-none min-[701px]:text-[56px]`}>{numberText(cell.key)}</dd>
+            <dd className={`mt-2 ${displayClass} text-[44px] leading-none min-[701px]:text-[clamp(56px,3.9vw,76px)]`}>{numberText(cell.key)}</dd>
           </div>
         ))}
       </dl>
@@ -114,7 +114,7 @@ function OverviewView({ guild }: { guild: Guild }) {
       <section aria-label="Entradas e saídas" className="flex flex-col gap-[18px]">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-2.5">
-            <h2 className="text-[22px] font-semibold">Entradas e saídas</h2>
+            <h2 className="text-[22px] min-[1101px]:text-[clamp(22px,1.5vw,28px)] font-semibold">Entradas e saídas</h2>
             <div className="flex items-center gap-5 text-sm text-muted">
               <span className="inline-flex items-center gap-2">
                 <svg width="28" height="8" viewBox="0 0 28 8" aria-hidden="true" className="text-text">

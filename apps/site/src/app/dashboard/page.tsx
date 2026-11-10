@@ -11,7 +11,7 @@ type DashboardPageProps = {
   onLogout: () => void;
 };
 
-const wrapper = 'mx-auto flex w-full max-w-[760px] flex-col gap-10 px-5 pt-7 pb-8 min-[701px]:w-[90%] min-[701px]:pt-14 min-[701px]:pb-16';
+const wrapper = 'mx-auto flex w-full max-w-[760px] min-[1101px]:max-w-[clamp(760px,52vw,980px)] flex-col gap-10 px-5 pt-7 pb-8 min-[701px]:w-[90%] min-[701px]:pt-14 min-[701px]:pb-16';
 const list = 'm-0 -mx-3 list-none border-b border-border p-0';
 const sectionLabel = 'm-0 text-xs font-semibold uppercase tracking-[0.14em] text-subtle';
 const row = 'flex min-h-[76px] items-center gap-4 px-3';
@@ -128,7 +128,7 @@ function DashboardPage({ session, failed, onLogout }: DashboardPageProps) {
     <main id="conteudo" className={wrapper}>
       <div className="flex items-end justify-between gap-6">
         <div className="flex flex-col gap-[14px]">
-          <h1 className="m-0 font-display text-[40px] font-medium leading-none tracking-[-0.04em] text-text [font-variation-settings:'SOFT'_100,'opsz'_144] min-[701px]:text-[64px]">
+          <h1 className="m-0 font-display text-[40px] font-medium leading-none tracking-[-0.04em] text-text [font-variation-settings:'SOFT'_100,'opsz'_144] min-[701px]:text-[clamp(64px,4.4vw,88px)]">
             Escolha um servidor
           </h1>
           <p className="m-0 max-w-[52ch] text-base leading-[1.45] text-muted min-[701px]:text-[18px]">

@@ -146,7 +146,7 @@ function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageP
         ) : null}
       </div>
 
-      <aside className="hidden w-[264px] shrink-0 border-r border-border px-4 py-6 min-[701px]:flex min-[701px]:flex-col">
+      <aside className="hidden w-[264px] min-[1101px]:w-[clamp(264px,18vw,340px)] shrink-0 border-r border-border px-4 py-6 min-[701px]:flex min-[701px]:flex-col">
         <nav aria-label="Seções do servidor" className="flex flex-col">
           {sectionGroups.map((group, index) => (
             <div key={group.label} role="group" aria-label={group.label} className={`flex flex-col gap-1 ${index > 0 ? 'mt-7' : ''}`}>
@@ -157,7 +157,7 @@ function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageP
                 return (
                   <button
                     key={item.id}
-                    className={`flex min-h-11 w-full items-center gap-3 rounded-[10px] border-0 px-3 text-left text-[15px] font-medium ${active ? 'bg-surface font-semibold text-text' : 'bg-transparent text-muted hover:text-text'}`}
+                    className={`flex min-h-11 min-[1101px]:min-h-[clamp(44px,3vw,54px)] w-full items-center gap-3 rounded-[10px] border-0 px-3 text-left text-[15px] min-[1101px]:text-[clamp(15px,1vw,19px)] font-medium ${active ? 'bg-surface font-semibold text-text' : 'bg-transparent text-muted hover:text-text'}`}
                     type="button"
                     aria-current={active ? 'page' : undefined}
                     onClick={() => setSection(item.id)}

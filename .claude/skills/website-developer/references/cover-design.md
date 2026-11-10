@@ -13,11 +13,11 @@ Leia só ao desenhar ou rever uma página pública do site. Layout e assets da H
 
 ## Composição (desktop ≥1101px)
 
-O nome é dividido em "Kuru" e "ttina", um de cada lado da personagem, como numa capa de revista, porque inteiro atrás dela os dedos e o cabelo escondiam o meio da palavra. Dois blocos no pé da página, cada um com linha fina em cima: à esquerda a frase "Eu deixo a sua comunidade em movimento."; à direita a linha de apoio e os botões "Adicionar ao Discord" (cheio) e "Painel de controle" (contorno). Abaixo de 1101px tudo vai em coluna: nome, arte, frase, botões.
+O nome é dividido em "Kuru" e "ttina", um de cada lado da personagem, como numa capa de revista, porque inteiro atrás dela os dedos e o cabelo escondiam o meio da palavra. Dois blocos no pé da página, cada um com linha fina em cima: à esquerda o selo 狂 (quadrado sólido de 44px sobre a linha) e a frase "Sua comunidade merece mais do que silêncio."; à direita "Eu sou a Kuruttina. Adicione-me ao seu servidor." e os botões "Adicionar ao Discord" (cheio) e "Painel de controle" (contorno). Abaixo de 1101px tudo vai em coluna: nome, arte, frase, botões.
 
 ## Voz do texto
 
-Primeira pessoa no feminino, firme e calma, conforme [personalidade](../../../../docs/project/bot-personality.md). Sem tom de moderação, sem agressividade e sem a frase "Bot para Discord", que o responsável rejeitou.
+Primeira pessoa no feminino, firme e calma, conforme [personalidade](../../../../docs/project/bot-personality.md). Sem tom de moderação, sem agressividade e sem a frase "Bot para Discord"; os textos "Eu deixo a sua comunidade em movimento." e "Convide a Kuruttina…" foram rejeitados pelo responsável.
 
 ## Tratamento da imagem
 

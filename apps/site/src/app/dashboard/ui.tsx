@@ -98,4 +98,4 @@ function SaveButton({ children, saving, savingLabel = 'Salvando…', size = 'md'
 }
 
 export { card, primaryButton, outlineButton, dangerHover, dangerIconButton, memberFormat, GuildIcon, Skeleton, StatusSkeleton, Message, SaveButton };
-export { ConstructionIcon, PencilIcon, SpinnerIcon, TrashIcon } from '../../components/icons';
+export { PencilIcon, SpinnerIcon, TrashIcon } from '../../components/icons';

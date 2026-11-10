@@ -5,12 +5,11 @@ import type { Session } from '../../../lib/session';
 import { GuildIdProvider } from '../../../lib/guild-context';
 import { OverviewView } from './overview/view';
 import { EmbedsView } from './embeds/view';
-import { ModulesView } from './modules/view';
 import { RoleGroupsView } from './role-groups/view';
 import { MemberEventsView } from './member-events/view';
 import { primaryButton, outlineButton, StatusSkeleton, Message } from '../ui';
 
-type Section = 'overview' | 'embeds' | 'member-events' | 'roles' | 'modules';
+type Section = 'overview' | 'embeds' | 'member-events' | 'roles';
 
 type ServerDashboardPageProps = {
   session: Session | null;
@@ -64,7 +63,6 @@ function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageP
             ['embeds', 'Mensagens'],
             ['member-events', 'Entrada e saída'],
             ['roles', 'Cargos'],
-            ['modules', 'Módulos'],
           ] as const).map(([target, label]) => (
             <button
               key={target}
@@ -87,10 +85,8 @@ function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageP
             <EmbedsView guildId={guild.id} />
           ) : section === 'member-events' ? (
             <MemberEventsView guildId={guild.id} />
-          ) : section === 'roles' ? (
-            <RoleGroupsView guildId={guild.id} />
           ) : (
-            <ModulesView guildName={guild.name} />
+            <RoleGroupsView guildId={guild.id} />
           )}
         </GuildIdProvider>
       </main>

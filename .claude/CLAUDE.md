@@ -25,6 +25,12 @@ Leia a skill aplicável antes de criar, alterar ou revisar o artefato. Escolha u
 
 Ao criar, alterar ou revisar mensagens ao usuário, inclusive em helpers, handlers e adapters, leia integralmente [personalidade](../docs/project/bot-personality.md) e [emojis](../docs/project/emoji-catalog.md). Confira sucesso, erro, recusa e indisponibilidade de emojis personalizados. Informe referências consultadas, validação e caminhos não verificados. Não busque o catálogo no R2.
 
+## Design antes do código (somente quando o Claude estiver trabalhando)
+
+O design do site já está pronto e vive em artefatos do Claude. Quando o **Claude** for criar ou alterar interface em `apps/site`, trabalhe a partir deles: leia a tela correspondente e, se a mudança alterar aparência, fluxo ou criar tela nova, desenhe ou atualize no artefato e espere a aprovação do usuário antes de codar. Links, procedimento e mecânica de publicação em [design em artefatos](skills/website-developer/references/design-artifacts.md); leia ao tocar em UI.
+
+Esta regra é só do Claude: os artefatos ficam na conta dele, e outro agente no mesmo repositório (Cursor, Codex, Copilot) não é obrigado a segui-la nem tem acesso a eles. Não imponha esse fluxo a outro agente nem reverta o código dele por divergir do artefato; avise o usuário.
+
 ## Guardar contexto sem inflar leituras
 
 Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio; detalhes condicionais pertencem a `references/`, ligados com um gatilho de leitura. Atualize isso durante a tarefa quando uma correção ou decisão mudar como executar o trabalho; não espere pedido adicional. Não salve transcrições, segredos, tentativas descartadas ou status efêmero.

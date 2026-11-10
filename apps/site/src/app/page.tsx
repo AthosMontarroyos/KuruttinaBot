@@ -1,150 +1,71 @@
 'use client';
 
-import { useState, type CSSProperties, type ReactNode } from 'react';
-
-const socials = [
-  { label: 'Instagram do criador', notice: 'O Instagram do criador estará disponível em breve.', icon: '/icons/social/instagram.svg' },
-  { label: 'TikTok do criador', notice: 'O TikTok do criador estará disponível em breve.', icon: '/icons/social/tiktok.svg' },
-  { label: 'GitHub do criador', notice: 'O GitHub do criador estará disponível em breve.', icon: '/icons/social/github.svg' },
-  { label: 'X do criador', notice: 'O perfil do criador no X estará disponível em breve.', icon: '/icons/social/x.svg' },
-] as const;
+import { useState, type CSSProperties } from 'react';
 
 type HomePageProps = {
   coverUrl: string;
   onNotice: (message: string) => void;
 };
 
-// Meia-tinta do quadro da arte: pontos de texto com máscara diagonal (só o token, troca sozinho no tema escuro).
-const halftoneStyle: CSSProperties = {
-  backgroundImage: 'radial-gradient(circle, var(--color-text) 1.2px, transparent 1.8px)',
-  backgroundSize: '9px 9px',
-  opacity: 0.16,
-  maskImage: 'linear-gradient(200deg, var(--color-text) 0, transparent 72%)',
-  WebkitMaskImage: 'linear-gradient(200deg, var(--color-text) 0, transparent 72%)',
-};
-
-// Contorno claro fino: a arte é preta, então no tema escuro ela precisa de borda para não sumir no fundo.
+// Contorno fino: a arte é preta, então precisa de uma borda para não sumir sobre o fundo escuro.
 const artStyle: CSSProperties = {
-  filter: 'drop-shadow(0 0 1px color-mix(in srgb, var(--color-text) 60%, transparent))',
+  filter: 'drop-shadow(0 0 1px var(--color-halo)) drop-shadow(0 0 1px var(--color-halo))',
 };
 
-function IconImage({ src, mobileSrc, className }: { src: string; mobileSrc?: string; className?: string }) {
-  return (
-    <picture>
-      {mobileSrc ? <source media="(max-width: 700px)" srcSet={mobileSrc} /> : null}
-      <img className={className} src={src} alt="" />
-    </picture>
-  );
-}
+const display = "font-display font-light leading-none tracking-[-0.045em] [font-variation-settings:'SOFT'_0,'opsz'_144]";
+const statement = "m-0 font-display font-normal tracking-[-0.02em] text-text [font-variation-settings:'SOFT'_0,'opsz'_72]";
+const cta = 'inline-flex h-[50px] w-full items-center justify-center rounded-[2px] border px-6 text-base leading-4 font-semibold whitespace-nowrap min-[1101px]:h-[52px]';
 
 function HomePage({ coverUrl, onNotice }: HomePageProps) {
   const [coverFailed, setCoverFailed] = useState(false);
+  const art = coverUrl && !coverFailed ? (
+    <img
+      className="block h-full w-auto max-w-none"
+      style={artStyle}
+      src={coverUrl}
+      alt="Ilustração em preto e branco da Kuruttina: uma garota de cabelo longo, camiseta listrada com rede por cima e colar de lua, estendendo as duas mãos para a frente."
+      fetchPriority="high"
+      onError={() => setCoverFailed(true)}
+    />
+  ) : null;
 
   return (
     <main
       id="conteudo"
-      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-5 pt-10 text-text min-[701px]:min-h-[560px] min-[701px]:px-[5%] min-[701px]:pt-[120px] min-[1101px]:pt-[150px]"
+      className="relative flex min-h-0 flex-1 flex-col items-center overflow-hidden bg-background px-5 pt-6 pb-24 text-text min-[701px]:pt-[132px] min-[1101px]:min-h-[640px] min-[1101px]:px-[5%] min-[1101px]:py-0"
     >
-      <div
-        aria-hidden="true"
-        className="relative h-[316px] w-full min-[701px]:absolute min-[701px]:top-[120px] min-[701px]:right-[5%] min-[701px]:aspect-[25/32] min-[701px]:h-auto min-[701px]:w-[clamp(297px,min(34.7vw,calc((100dvh_-_230px)*0.78125)),500px)] min-[1101px]:top-[150px]"
+      {/* Celular e tablet: nome, personagem e ações em coluna. */}
+      <h1 className={`${display} m-0 text-[clamp(64px,19vw,140px)] min-[1101px]:hidden`}>Kuruttina</h1>
+      <div aria-hidden={art ? undefined : true} className="mt-1 h-[clamp(300px,46dvh,560px)] shrink-0 min-[1101px]:hidden">{art}</div>
+
+      {/* Desktop: a personagem no centro, com o nome dividido em dois lados dela. */}
+      <h1
+        aria-label="Kuruttina"
+        className={`${display} absolute inset-x-0 top-[27.8%] m-0 hidden h-0 text-[clamp(80px,min(13.9vw,22.2dvh),260px)] min-[1101px]:block`}
       >
-        <div className="absolute inset-0 overflow-hidden border-2 border-text bg-surface">
-          <div className="absolute inset-0" style={halftoneStyle} />
-        </div>
-        {coverUrl && !coverFailed ? (
-          <img
-            className="absolute top-[-10.8%] left-1/2 h-[110.8%] w-auto max-w-none -translate-x-1/2 min-[701px]:top-[-9.4%] min-[701px]:right-[-8%] min-[701px]:left-auto min-[701px]:h-[109.4%] min-[701px]:translate-x-0"
-            style={artStyle}
-            src={coverUrl}
-            alt="Ilustração em preto e branco da Kuruttina: uma garota de cabelo longo, camiseta listrada com rede por cima e colar de lua, estendendo as duas mãos para a frente."
-            fetchPriority="high"
-            onError={() => setCoverFailed(true)}
-          />
-        ) : null}
-        <div
-          aria-hidden="true"
-          className="absolute top-[-14px] left-[-14px] z-[3] flex size-14 items-center justify-center bg-text font-['Noto_Serif_JP',serif] text-[36px] leading-none font-bold text-background min-[701px]:top-[-5.3%] min-[701px]:left-[-6.8%] min-[701px]:size-16 min-[701px]:text-[42px] min-[1101px]:size-[84px] min-[1101px]:text-[54px]"
-        >
-          狂
-        </div>
-      </div>
-
-      <div className="relative z-[2] order-2 flex flex-col items-start gap-4 min-[701px]:order-none min-[701px]:max-w-[min(600px,46%)] min-[701px]:gap-6">
-        <p className="text-base leading-[1.45] text-muted min-[701px]:max-w-[480px] min-[701px]:text-[clamp(18px,1.5vw,22px)] min-[701px]:leading-[1.4]">
-          Oi, eu sou a Kuruttina. Vim para deixar a sua comunidade mais viva, e ficar por perto.
-        </p>
-        <div className="flex w-full flex-col gap-2.5 min-[701px]:w-auto min-[701px]:flex-row min-[701px]:flex-wrap min-[701px]:items-center min-[701px]:gap-3">
-          <Pill onClick={() => onNotice('O convite do bot estará disponível em breve.')}>Adicionar ao Discord</Pill>
-          <div className="flex gap-2.5 min-[701px]:contents">
-            <a
-              className="inline-flex h-[52px] flex-1 items-center justify-center rounded-[6px] border-2 border-text px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-text hover:bg-surface min-[701px]:h-[clamp(46px,3.5vw,56px)] min-[701px]:flex-none min-[701px]:text-base"
-              href="/dashboard"
-            >
-              Painel de controle
-            </a>
-            <button
-              className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-[6px] border border-border bg-surface p-0 text-muted hover:border-accent-fg hover:text-accent-fg min-[701px]:size-[clamp(46px,3.5vw,56px)]"
-              type="button"
-              aria-label="Servidor de suporte"
-              onClick={() => onNotice('O servidor de suporte estará disponível em breve.')}
-            >
-              <IconImage src="/icons/community/discord.svg" mobileSrc="/icons/community/discord-mobile.svg" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        aria-hidden="true"
-        className="my-auto hidden h-16 w-[calc(100%-54%)] bg-[repeating-linear-gradient(180deg,var(--color-text)_0,var(--color-text)_8px,transparent_8px,transparent_16px)] min-[701px]:block min-[1101px]:w-[calc(100%-520px)]"
-      />
-
-      <h1 className="home-title relative z-[3] order-1 mt-5 font-display text-[66px] leading-[0.95] font-medium tracking-[-0.04em] whitespace-nowrap min-[701px]:order-none min-[701px]:mt-0 min-[701px]:-ml-1.5 min-[701px]:text-[clamp(72px,min(11vw,17dvh),160px)]">
-        Kuruttina
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="ml-[0.07em] inline-block size-[0.26em] fill-current">
-          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-        </svg>
+        <span aria-hidden="true" className="absolute right-[calc(50%+26.7dvh)] whitespace-nowrap">Kuru</span>
+        <span aria-hidden="true" className="absolute left-[calc(50%+30dvh)] whitespace-nowrap">ttina</span>
       </h1>
+      <div className="absolute bottom-[-7%] left-1/2 hidden h-[96%] -translate-x-1/2 min-[1101px]:block">{art}</div>
 
-      <nav
-        className="relative z-[3] order-3 mt-auto flex items-center justify-center gap-2.5 py-4 min-[701px]:order-none min-[701px]:mt-0 min-[701px]:justify-start min-[701px]:py-4"
-        aria-label="Redes do criador"
-      >
-        {socials.map((item) => (
-          <button
-            key={item.label}
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-transparent p-0 text-muted hover:border-accent-fg hover:text-accent-fg"
-            type="button"
-            aria-label={item.label}
-            onClick={() => onNotice(item.notice)}
-          >
-            <img src={item.icon} alt="" />
-          </button>
-        ))}
-      </nav>
+      <div className="relative z-[2] mt-4 flex w-full max-w-[420px] flex-col gap-3 min-[1101px]:absolute min-[1101px]:bottom-16 min-[1101px]:left-[5%] min-[1101px]:mt-0 min-[1101px]:w-[min(330px,28%)] min-[1101px]:max-w-none min-[1101px]:gap-[18px]">
+        <div className="flex items-center gap-3.5">
+          <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center bg-text font-['Noto_Serif_JP','Hiragino_Mincho_ProN',serif] text-[28px] leading-none font-bold text-background">狂</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <p className={`${statement} text-[25px] leading-[1.12] min-[1101px]:text-[34px]`}>Sua comunidade merece mais do que silêncio.</p>
+      </div>
 
-      <div
-        aria-hidden="true"
-        className="relative order-4 mr-[84px] mb-[22px] h-[18px] shrink-0 bg-text bg-[length:30px_18px] bg-repeat-x bg-[radial-gradient(circle_at_center,var(--color-background)_0,var(--color-background)_2.9px,transparent_3.5px)] min-[701px]:order-none min-[701px]:mr-0 min-[701px]:mb-[26px] min-[701px]:h-7 min-[701px]:bg-[length:44px_28px] min-[701px]:bg-[radial-gradient(circle_at_center,var(--color-background)_0,var(--color-background)_4.5px,transparent_5.1px)]"
-      >
-        <span className="absolute -top-[7px] right-10 h-8 w-10 box-border rounded-[4px] border-[3px] border-text bg-background min-[701px]:-top-2 min-[701px]:right-[120px] min-[701px]:h-11 min-[701px]:w-14">
-          <span className="absolute top-1/2 left-1/2 h-[3px] w-[55%] -translate-x-[27%] -translate-y-1/2 bg-text" />
-        </span>
+      <div className="relative z-[2] mt-3.5 flex w-full max-w-[420px] flex-col gap-2.5 min-[1101px]:absolute min-[1101px]:right-[5%] min-[1101px]:bottom-16 min-[1101px]:mt-0 min-[1101px]:w-[min(300px,26%)] min-[1101px]:max-w-none min-[1101px]:gap-3.5 min-[1101px]:border-t min-[1101px]:border-border min-[1101px]:pt-[18px]">
+        <p className="m-0 mb-1 hidden text-base leading-[1.45] text-muted min-[1101px]:block">Eu sou a Kuruttina. Adicione-me ao seu servidor.</p>
+        <button className={`${cta} border-button bg-button text-button-text hover:opacity-90`} type="button" onClick={() => onNotice('O convite do bot estará disponível em breve.')}>
+          Adicionar ao Discord
+        </button>
+        <a className={`${cta} border-text bg-transparent text-text hover:bg-surface`} href="/dashboard">
+          Painel de controle
+        </a>
       </div>
     </main>
-  );
-}
-
-function Pill({ children, onClick }: { children: ReactNode; onClick: () => void }) {
-  return (
-    <button
-      className="h-[52px] w-full rounded-[6px] border-2 border-button bg-button px-[30px] text-base leading-4 font-semibold whitespace-nowrap text-button-text hover:border-secondary hover:bg-secondary min-[701px]:h-[clamp(46px,3.5vw,56px)] min-[701px]:w-auto min-[701px]:text-base"
-      type="button"
-      onClick={onClick}
-    >
-      {children}
-    </button>
   );
 }
 

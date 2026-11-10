@@ -18,3 +18,10 @@ Valores, contraste medido e regras estão no [Design System](https://claude.ai/a
 Status: proposta em 6 de novembro de 2026, a confirmar pelo responsável pelo projeto.
 
 A paleta rosa foi substituída por cinzas neutros (matiz e saturação zero) em `globals.css`, nos mesmos nomes de token. Botão e destaque têm a polaridade do tema: quase preto no claro (`#171717`), quase branco no escuro (`#fafafa`). Os gradientes dos tópicos de Comandos são cinzas escuros no claro e claros no escuro, porque o texto do chip selecionado usa `button-text`. Os semáforos do terminal são três cinzas. Única exceção de cor: `danger`, `success` e `warning`, para o usuário distinguir erro, sucesso e aviso sem depender só de forma. A ilustração da capa (R2) continua colorida; a prévia de mensagens do Discord mantém as cores do Discord.
+
+## Escuro executivo e capa editorial (novembro de 2026)
+
+Status: aprovado pelo responsável pelo projeto.
+
+- **Escuro em preto e branco puros.** Fundo `#000000`, texto e botão `#ffffff`, superfície `#0f0f0f`, borda `#262626`; a hierarquia vem dos cinzas intermediários (`muted` `#a6a6a6`, `subtle` `#8a8a8a`, `control` `#6b6b6b`). Foi pedido assim pelo responsável, em lugar de um escuro suavizado (`#1e1e1e`/`#d6d6d6`) que chegou a ser desenhado. Risco conhecido: o contraste máximo (21:1) pode cansar a vista; se isso voltar, o ajuste mais barato é `text` em `#e5e5e5` mantendo o fundo preto.
+- **Capa editorial** substitui a mangá/zine e a tentativa com raios: veja `cover-design.md` na skill do site. Token novo `--color-halo` (contorno da arte no escuro).

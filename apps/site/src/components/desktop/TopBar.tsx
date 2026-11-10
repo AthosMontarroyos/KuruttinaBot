@@ -5,6 +5,7 @@ import { navigation, type NavigationItem } from '../../lib/site-navigation';
 import type { Session } from '../../lib/session';
 import { AccountMenu } from '../AccountMenu';
 import { WheelMenu } from '../mobile/WheelMenu';
+import { LanguageIndicator } from '../LanguageIndicator';
 import { ThemeToggle } from '../ThemeToggle';
 
 type TopBarProps = {
@@ -46,15 +47,13 @@ function TopBar({ appIconUrl, onNotice, session, onLogout, overlay = false }: To
             <img className="size-10 rounded-full bg-surface object-cover min-[1101px]:size-[clamp(40px,2.6vw,52px)]" src={appIconUrl} alt="" width={36} height={36} onError={() => setAvatarFailed(true)} />
           ) : null}
           <span>Kuruttina</span>
+          <span aria-hidden="true" className="ml-1 border-l border-border pl-3.5 text-subtle font-bold leading-none text-[19px] font-['Noto_Serif_JP','Hiragino_Mincho_ProN',serif]">狂</span>
         </a>
         <nav className="flex items-center gap-7 min-[701px]:order-3 min-[701px]:w-full min-[1101px]:order-none min-[1101px]:w-auto min-[1101px]:gap-[clamp(28px,2vw,44px)]" aria-label="Navegação principal">
           {navigation.map((item) => renderItem(item, 'text-[15px] font-medium whitespace-nowrap text-muted hover:text-text min-[1101px]:text-[clamp(16px,1.05vw,20px)]'))}
         </nav>
         <div className="flex items-center gap-7 min-[1101px]:gap-[clamp(28px,2vw,44px)]">
-          <span className="flex items-center gap-2 text-[15px] font-medium whitespace-nowrap min-[1101px]:gap-3 min-[1101px]:text-[clamp(15px,1vw,19px)]" aria-label="Idioma: português do Brasil">
-            <img className="w-[22px] min-[1101px]:w-[clamp(22px,1.4vw,28px)]" src="/icons/language/brasil.svg" alt="" />
-            pt-BR (Brasil)
-          </span>
+          <LanguageIndicator />
           <ThemeToggle />
           <AccountMenu session={session} onLogout={onLogout} />
         </div>

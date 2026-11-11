@@ -15,7 +15,7 @@ Cada tela é um arquivo `project/*.dc.html`; `project/canvas.json` lista página
 
 - [Kuruttina — Home](https://claude.ai/artifact/EQTpe4ukbPY5KhjtX8ZkmP): Home, Comandos, Módulos (vazia), Termos (vazia), Painel de controle (escolha de servidor) e Mobile Components (a roleta do celular, que no celular substitui a barra superior).
 - [Kuruttina — Painel do servidor](https://claude.ai/artifact/KBW335o3MkvZpmzi4g7HLQ): Visão geral, Mensagens, Entrada e saída, Cargos e Components (seletores, seletores avançados, controles de formulário, feedback e diálogos).
-- [Design System](https://claude.ai/artifact/Y2HRdEM97Ag26dG7pPZFGy): paleta, contraste e tema escuro.
+- [Design System](https://claude.ai/artifact/Y2HRdEM97Ag26dG7pPZFGy): paleta, contraste, tema escuro (preto e branco puros) e a capa editorial (`HomeCover` e `Cover`).
 
 ## Procedimento
 

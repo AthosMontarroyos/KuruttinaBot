@@ -7,6 +7,8 @@
   --font-display: "Fraunces", Georgia, serif;
   --color-stage-disc: #e5e5e5;
   --color-halo: #fafafa;
+  --color-glow-low: rgb(10 10 10 / 0.08);
+  --color-glow-high: rgb(10 10 10 / 0.26);
   --color-background: #fafafa;
   --color-surface: #f0f0f0;
   --color-border: #d4d4d4;
@@ -65,6 +67,8 @@
     --icon-filter: none;
     --color-stage-disc: #111111;
     --color-halo: #8a8a8a;
+    --color-glow-low: rgb(255 255 255 / 0.28);
+    --color-glow-high: rgb(255 255 255 / 0.75);
     --color-background: #000000;
     --color-surface: #0f0f0f;
     --color-border: #262626;
@@ -113,6 +117,8 @@
   --icon-filter: none;
   --color-stage-disc: #111111;
   --color-halo: #8a8a8a;
+  --color-glow-low: rgb(255 255 255 / 0.28);
+  --color-glow-high: rgb(255 255 255 / 0.75);
   --color-background: #000000;
   --color-surface: #0f0f0f;
   --color-border: #262626;
@@ -330,6 +336,88 @@ a.icon-link img[src^="/icons/"] {
 
 @media (prefers-reduced-motion: reduce) {
   .matrix-column {
+    animation: none;
+  }
+}
+
+/* Home: cordões, cartas coringa e seus efeitos. Tudo é decoração e fica parado para quem prefere menos movimento. */
+.necklace-sway {
+  animation: necklace-sway ease-in-out infinite alternate;
+}
+
+@keyframes necklace-sway {
+  from {
+    transform: rotate(-0.7deg);
+  }
+  to {
+    transform: rotate(0.7deg);
+  }
+}
+
+.joker-face {
+  position: absolute;
+  top: calc(var(--card-w) * -0.7);
+  left: calc(var(--card-w) / -2);
+  width: var(--card-w);
+  height: calc(var(--card-w) * 1.4);
+  backface-visibility: hidden;
+  animation: joker-glow 3.6s ease-in-out infinite;
+  animation-delay: var(--joker-delay);
+}
+
+.joker-sheen {
+  animation: joker-sweep 3.8s ease-in-out infinite;
+  animation-delay: var(--joker-delay);
+}
+
+.joker-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: joker-twinkle 2.6s ease-in-out infinite;
+}
+
+@keyframes joker-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px var(--color-glow-low)) drop-shadow(0 4px 7px rgb(0 0 0 / 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 13px var(--color-glow-high)) drop-shadow(0 4px 7px rgb(0 0 0 / 0.3));
+  }
+}
+
+@keyframes joker-sweep {
+  0%,
+  45% {
+    transform: translateX(-80px);
+  }
+  85%,
+  100% {
+    transform: translateX(190px);
+  }
+}
+
+@keyframes joker-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+  70% {
+    opacity: 0.2;
+    transform: scale(0.2) rotate(90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .necklace-sway,
+  .joker-face,
+  .joker-sheen,
+  .joker-spark {
     animation: none;
   }
 }

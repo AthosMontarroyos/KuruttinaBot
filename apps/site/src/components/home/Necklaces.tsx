@@ -35,7 +35,7 @@ const compact: SwagShape = { x0: -30, x1: 92, sag: 72, top: -8, spacing: 5.2, rx
  *     <Necklaces />
  */
 function Necklaces() {
-  const box = 'pointer-events-none absolute top-0 z-[1] text-text';
+  const box = 'home-drop pointer-events-none absolute top-0 z-[1] text-text';
   return (
     <>
       <svg className={`${box} left-0 hidden h-[226px] w-[340px] min-[1101px]:block`} viewBox="-10 -12 340 226" aria-hidden="true">

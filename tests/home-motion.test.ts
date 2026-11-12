@@ -85,3 +85,30 @@ describe('joker deck cycle plan', () => {
     expect(cycleMs).toBeGreaterThanOrEqual(20000);
   });
 });
+
+describe('home parallax', () => {
+  const box = { left: 100, top: 50, width: 1000, height: 600 };
+
+  it('maps the pointer inside the stage to -1..1 and clamps outside it', async () => {
+    const { pointerToUnit } = await import('../apps/site/src/components/home/parallax.js');
+    expect(pointerToUnit({ x: 600, y: 350 }, box)).toEqual({ x: 0, y: 0 });
+    expect(pointerToUnit({ x: 100, y: 50 }, box)).toEqual({ x: -1, y: -1 });
+    expect(pointerToUnit({ x: 5000, y: -900 }, box)).toEqual({ x: 1, y: -1 });
+    expect(pointerToUnit({ x: 10, y: 10 }, { left: 0, top: 0, width: 0, height: 0 })).toEqual({ x: 0, y: 0 });
+  });
+
+  it('eases toward the target without overshooting and settles exactly on it', async () => {
+    const { stepParallax } = await import('../apps/site/src/components/home/parallax.js');
+    let value = { x: 0, y: 0 };
+    let settled = false;
+    for (let step = 0; step < 400 && !settled; step += 1) {
+      const next = stepParallax(value, { x: 1, y: -0.5 });
+      expect(next.value.x).toBeGreaterThanOrEqual(value.x);
+      expect(next.value.x).toBeLessThanOrEqual(1);
+      value = next.value;
+      settled = next.settled;
+    }
+    expect(settled).toBe(true);
+    expect(value).toEqual({ x: 1, y: -0.5 });
+  });
+});

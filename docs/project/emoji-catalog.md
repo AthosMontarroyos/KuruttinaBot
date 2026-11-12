@@ -80,8 +80,8 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `santa` | Natal, eventos de fim de ano e presentes | disponível | disponível |
 | `think` | Dúvida, reflexão ou "hmm, deixa eu pensar" | disponível | disponível |
 | `love` | Carinho, amor ou agradecimento afetuoso | disponível | disponível |
-| `GiveHeart` | pendente | disponível | disponível |
-| `heart` | pendente | disponível | disponível |
+| `GiveHeart` | Agradecimento carinhoso ou ao entregar algo com afeto | disponível | disponível |
+| `heart` | Agradecimento ou carinho | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

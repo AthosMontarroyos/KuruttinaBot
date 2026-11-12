@@ -6,7 +6,7 @@ O DevOps do GrokBot mantém este arquivo atualizado pelo GitHub. A IA de código
 
 A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Production, com os nomes exatos do Discord. O resolver compara o nome diferenciando maiúsculas de minúsculas (use `API`, não `api`). As respostas atuais usam 36 desses nomes; os outros 35 ficam reservados para o contexto descrito e ainda não entram nas mensagens. `pendente` indica uso ainda não descrito ou disponibilidade não conferida.
 
-Última conferência pelo GrokBot: Development 2026-11-02; Production 2026-11-02.
+Última conferência pelo GrokBot: Development 2026-11-12; Production 2026-11-12.
 
 | Nome | Uso na mensagem | Development | Production |
 | --- | --- | --- | --- |
@@ -35,7 +35,6 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `Documentation` | Documentação ou referência | disponível | disponível |
 | `folder` | Pasta, categoria ou arquivos | disponível | disponível |
 | `guild` | Importação de emoji sem servidor de destino | disponível | disponível |
-| `Heart` | Agradecimento ou carinho | disponível | disponível |
 | `home` | Início ou menu principal | disponível | disponível |
 | `ID` | Usuário inválido na limpeza e campo Membro ou Usuário na confirmação de moderação | disponível | disponível |
 | `info` | Campo Duração na confirmação de castigo; omitido quando indisponível | disponível | disponível |
@@ -81,6 +80,8 @@ A tabela lista todos os emojis das aplicações KuruttinaBot de Development e Pr
 | `santa` | Natal, eventos de fim de ano e presentes | disponível | disponível |
 | `think` | Dúvida, reflexão ou "hmm, deixa eu pensar" | disponível | disponível |
 | `love` | Carinho, amor ou agradecimento afetuoso | disponível | disponível |
+| `GiveHeart` | pendente | disponível | disponível |
+| `heart` | pendente | disponível | disponível |
 
 ## Atualização pelo GrokBot
 

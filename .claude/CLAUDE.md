@@ -31,6 +31,14 @@ O design do site já está pronto e vive em artefatos do Claude. Quando o **Clau
 
 Esta regra é só do Claude: os artefatos ficam na conta dele, e outro agente no mesmo repositório (Cursor, Codex, Copilot) não é obrigado a segui-la nem tem acesso a eles. Não imponha esse fluxo a outro agente nem reverta o código dele por divergir do artefato; avise o usuário.
 
+## Branches e PRs
+
+- `main` é a única branch permanente. Todo trabalho entra nela por PR com squash; não se faz push direto.
+- Nome: `tipo/assunto-curto` em minúsculas e sem acento, com `tipo` em `feat`, `fix`, `docs`, `chore`, `refactor` ou `test` (exemplo: `fix/painel-grade`). Não crie nomes aleatórios (`ccr-…`, `claude/…`, hashes).
+- Uma branch por tarefa, criada a partir do `main` atualizado e apagada quando a PR for mesclada. Não reaproveite uma branch já mesclada: recrie-a do `main` (o squash deixa o histórico divergente).
+- Exceção em nuvem: se o ambiente fixar o nome da branch de trabalho (ex.: `main-xs2tan`), use somente essa, não crie outras, e antes de cada nova tarefa reponha-a no `main` atualizado.
+- Abra PR somente quando o usuário pedir. Antes de criar uma branch nova, confira `git branch -r` e reutilize ou apague as que já foram mescladas em vez de acumular.
+
 ## Guardar contexto sem inflar leituras
 
 Procedimentos e aprendizados reutilizáveis pertencem ao `SKILL.md` do domínio; detalhes condicionais pertencem a `references/`, ligados com um gatilho de leitura. Atualize isso durante a tarefa quando uma correção ou decisão mudar como executar o trabalho; não espere pedido adicional. Não salve transcrições, segredos, tentativas descartadas ou status efêmero.

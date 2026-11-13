@@ -10,6 +10,7 @@ import { MemberEventsView } from './member-events/view';
 import { primaryButton, outlineButton, StatusSkeleton, Message } from '../ui';
 import { sectionIcons, type SectionId } from '../../../components/dashboard/section-icons';
 import { CheckIcon, ChevronDownIcon } from '../../../components/icons';
+import { serverColumnWidth, serverContentInset, serverHeaderHeight } from '../../../components/dashboard/shell';
 
 type Section = SectionId;
 
@@ -146,7 +147,7 @@ function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageP
         ) : null}
       </div>
 
-      <aside className="hidden w-[264px] min-[1101px]:w-[clamp(264px,18vw,340px)] shrink-0 border-r border-border px-4 py-6 min-[701px]:flex min-[701px]:flex-col">
+      <aside className={`hidden shrink-0 overflow-y-auto border-r border-border px-4 py-6 min-[701px]:sticky min-[701px]:flex min-[701px]:flex-col min-[701px]:self-start ${serverColumnWidth}`} style={{ top: serverHeaderHeight, height: `calc(100dvh - ${serverHeaderHeight})` }}>
         <nav aria-label="Seções do servidor" className="flex flex-col">
           {sectionGroups.map((group, index) => (
             <div key={group.label} role="group" aria-label={group.label} className={`flex flex-col gap-1 ${index > 0 ? 'mt-7' : ''}`}>
@@ -172,7 +173,7 @@ function ServerDashboardPage({ session, failed, serverId }: ServerDashboardPageP
         </nav>
       </aside>
 
-      <main id="conteudo" className="flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-5 py-8 min-[701px]:px-[5%]">
+      <main id="conteudo" className={`flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-5 py-8 ${serverContentInset}`}>
         <GuildIdProvider guildId={guild.id} name={guild.name} iconUrl={guild.iconUrl}>
           {section === 'overview' ? (
             <OverviewView guild={guild} />

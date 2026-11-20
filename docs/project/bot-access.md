@@ -6,14 +6,16 @@ O bot usa PostgreSQL no Supabase por `@kuruttina/database`. Tokens Discord e cre
 
 | Ambiente | Projeto Supabase |
 | --- | --- |
-| development | Dev Kuruttina Bot — `nzpvcxdxwoyjvxqkioam` |
-| production | Kuruttina Bot — `ewzbassdebmjtabxpcnh` |
+| development | Dev Kuruttina Bot. O ref fica em `SUPABASE_PROJECT_REF` no config Doppler `dev`. |
+| production | Kuruttina Bot. O ref fica em `SUPABASE_PROJECT_REF` no config Doppler `prd`. |
 
-Os dois projetos receberam a migration e o cadastro inicial em 23/09/2026:
+Os dois projetos receberam a migration e o cadastro inicial em 23/09/2026. Os snowflakes não ficam neste documento. Cada config Doppler guarda o valor daquele ambiente:
 
-- Guilda inicial: `1422623678205657160`.
-- Creator: `666948364507545600`.
-- Dev: `1509331533348212808`.
+- Guilda inicial: `SEED_GUILD_ID`.
+- Creator: `SEED_CREATOR_ID`.
+- Dev: `SEED_DEV_ID`.
+
+`npm run database:seed` lê esses três nomes do ambiente e não tem valor embutido no código. Nome ausente, valor vazio ou snowflake inválido interrompe o seed antes de conectar. Creator e Dev precisam ser snowflakes distintos.
 
 `bot_private.bot_settings` contém um único registro, só com o ambiente. `bot_private.bot_dev_guilds` contém as guildas de desenvolvimento daquele ambiente, zero ou mais, uma linha por snowflake. A migration `20261102120000_dev_guilds.sql` copia a antiga `dev_guild_id` para essa tabela e remove a coluna. Outras guildas entram por SQL administrativo, não pelo código. `bot_private.bot_staff` contém usuário, papel e status ativo, com um usuário por papel e sem repetição de usuário. IDs são strings de snowflake; não use números JavaScript. `kuruttina_site` não tem `SELECT` em `bot_settings`, `bot_dev_guilds` nem `bot_staff`. O DevMock do site, só em development, chama `bot_private.active_dev_user_id()` e recebe apenas o `user_id` do papel `dev` quando `active` é verdadeiro.
 
@@ -21,13 +23,13 @@ Os cadastros são independentes. Alterar uma conta ou guilda em development não
 
 ## Credenciais e primeiro startup
 
-As conexões dos dois ambientes foram validadas com senhas distintas, usando o pooler IPv4 `aws-0-sa-east-1.pooler.supabase.com:5432` e a CA oficial Supabase Root 2021. Nenhuma senha é versionada. Cada config Doppler (`dev` e `prd`) guarda `DATABASE_URL` (role `kuruttina_bot`), `SITE_DATABASE_URL` (role `kuruttina_site`) e `DATABASE_CA` daquele projeto.
+As conexões dos dois ambientes foram validadas com senhas distintas, usando o pooler IPv4 do projeto (host em `DATABASE_POOLER_HOST`, porta 5432) e a CA oficial Supabase Root 2021. Senha, ref de projeto e host do pooler não são versionados. O processo não lê `SUPABASE_PROJECT_REF` nem `DATABASE_POOLER_HOST`; a conexão continua em `DATABASE_URL`, `SITE_DATABASE_URL` e `DATABASE_MIGRATION_URL`. Cada config Doppler (`dev` e `prd`) guarda `DATABASE_URL` (role `kuruttina_bot`), `SITE_DATABASE_URL` (role `kuruttina_site`) e `DATABASE_CA` daquele projeto.
 
 Para recriar o provisionamento, siga os passos abaixo. A migration cria `kuruttina_owner` (NOLOGIN, owner) e `kuruttina_bot` (LOGIN, sem senha inicial e sem escrita). A senha do projeto/role `postgres` não deve ser usada pelo bot.
 
 1. Conecte administrativamente ao projeto pelo cliente PostgreSQL, usando a conexão indicada no painel Supabase.
 2. No psql, execute `\password kuruttina_bot` para definir uma senha forte exclusiva daquele ambiente. O prompt evita colocar a senha em SQL versionado ou no histórico do shell.
-3. Copie a conexão do painel, substituindo a role por `kuruttina_bot`; no pooler, preserve o sufixo `.<project-ref>`. Codifique caracteres especiais da senha na URL.
+3. Copie a conexão do painel, substituindo a role por `kuruttina_bot`; no pooler, preserve o sufixo `.<project-ref>` (o ref é o valor de `SUPABASE_PROJECT_REF` naquele config). Codifique caracteres especiais da senha na URL.
 4. Grave `DATABASE_URL` no config Doppler do ambiente (`dev` ou `prd`). O processo do bot recebe somente essa conexão, role `kuruttina_bot`.
 5. Grave `SITE_DATABASE_URL` no mesmo config, com a role `kuruttina_site`. Os configs `dev` e `prd` precisam desse nome. O Compose entrega o valor como `DATABASE_URL` só no serviço `site`, junto com `DATABASE_CA`. O bot não recebe `SITE_DATABASE_URL`.
 6. Remova query parameters como `sslmode` ou `options`: o código define TLS com verificação de certificado e timeouts. Se a CA do projeto não estiver na cadeia confiável do sistema, forneça o PEM em `DATABASE_CA`. O site e o bot recebem esse PEM.

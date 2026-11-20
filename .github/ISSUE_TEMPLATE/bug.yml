@@ -1,0 +1,44 @@
+name: Bug
+description: Defeito no bot ou no painel da instância oficial
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Não inclua token, senha, URL de conexão, ref de projeto nem dado de outra pessoa. Vulnerabilidade vai em privado, pelo SECURITY.md.
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu
+      description: O que você viu e o que esperava.
+    validations:
+      required: true
+  - type: textarea
+    id: como
+    attributes:
+      label: Como reproduzir
+      description: Passos, comando (k! ou slash) ou tela do painel.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: onde
+    attributes:
+      label: Onde
+      options:
+        - Bot (comandos)
+        - Painel
+        - Site público
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Contexto
+      description: Instância oficial ou não, e o que mais ajudar, sem segredo.
+    validations:
+      required: false

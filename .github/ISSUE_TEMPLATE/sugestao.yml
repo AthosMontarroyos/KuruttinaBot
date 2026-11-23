@@ -1,0 +1,40 @@
+name: Sugestão
+description: Ideia para o bot ou para o painel
+title: "sugestão: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Descreva a necessidade da comunidade. Não envie segredo nem dado de outra pessoa.
+  - type: textarea
+    id: necessidade
+    attributes:
+      label: Qual é a necessidade
+      description: Quem esbarra nisso e em que situação.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: O que você sugere
+      description: O comportamento que resolveria a necessidade.
+    validations:
+      required: true
+  - type: dropdown
+    id: onde
+    attributes:
+      label: Onde
+      options:
+        - Bot (comandos)
+        - Painel
+        - Site público
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Contexto
+      description: Exemplo, limitação ou alternativa que você já tentou.
+    validations:
+      required: false

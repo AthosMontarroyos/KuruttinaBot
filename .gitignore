@@ -1,6 +1,7 @@
 # Local environment and secrets
 .env
 .env.*
+!.env.example
 
 # Dependencies and generated outputs
 node_modules/
@@ -26,3 +27,6 @@ IDEA.md
 
 # Prompts e saídas temporárias de agentes
 .kuru/
+
+# Estado local da CLI do Supabase
+packages/database/supabase/.temp/

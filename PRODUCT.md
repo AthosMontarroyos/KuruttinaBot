@@ -30,7 +30,7 @@ Loritta é uma referência de abrangência registrada no replanejamento, sem aut
 
 O uso atual ocorre em servidores Discord, por comandos de aplicação e prefixos `k!`/`K!`. Ações administrativas dependem de permissões, hierarquia de cargos e políticas de acesso aplicáveis. Ferramentas da equipe possuem acesso restrito.
 
-O projeto também é apresentado no portfólio de desenvolvimento de software de Athos Montarroyos. O código é proprietário, conforme [LICENSE.md](LICENSE.md).
+O código é software livre sob a GNU AGPL-3.0 a partir do commit que introduz `LICENSE` e `NOTICE`. A marca permanece reservada, conforme [TRADEMARK.md](TRADEMARK.md).
 
 ## Capabilities and Constraints
 
@@ -52,7 +52,7 @@ A identidade visual geral continua em definição. Uma proposta de Home não est
 
 - [Replanejamento](docs/project/replanning.md): propósito, decisões aprovadas, identidade descartada e escolhas pendentes.
 - [Estado implementado](docs/project/current-state.md), [README](README.md) e código em `apps/bot/` e `packages/`: evidências locais da implementação; não comprovam disponibilidade dos serviços remotos.
-- [LICENSE.md](LICENSE.md): autoria e termos do projeto.
+- [LICENSE](LICENSE), [NOTICE](NOTICE) e [TRADEMARK.md](TRADEMARK.md): licença do código, vigência da mudança e marca reservada.
 
 Não foram fornecidas métricas verificadas de adoção ou disponibilidade para uso como prova pública. A origem da foto atual do bot e a URL real de convite continuam pendentes.
 
